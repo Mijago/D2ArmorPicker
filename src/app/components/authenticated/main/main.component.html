@@ -13,7 +13,7 @@
   </mat-select>
 </mat-form-field>
 
-<br/><h2>Select the minimum values your gear should have.</h2>
+<br/><h2>1. Select the minimum values your gear should have.</h2>
 <table>
   <tr>
     <td>Mobility</td>
@@ -59,7 +59,7 @@
   </tr>
 </table>
 
-<br/><h2>Now select the combat style mods and abilities you want to use.</h2>
+<br/><h2>2. Now select the combat style mods and abilities you want to use.</h2>
 <div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enablePowerfulFriends" [checked]="enablePowerfulFriends"
@@ -101,13 +101,13 @@
 
 <br/>
 <div>
-  <h2>How many stat-mods do you want to use?</h2>
+  <h2>3. How many stat-mods do you want to use?</h2>
   <app-stat-minimum-selection (onChange)="maxMods = $event.valueOf(); onAllowedModChange()" [value]="5"
                               [values]="[0,1,2,3,4,5]"></app-stat-minimum-selection>
 </div>
 
 <div>
-  <h2>Do you want to lock an exotic?</h2>
+  <h2>(4.)Do you want to lock an exotic?</h2>
   Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticHelmet" src="https://www.bungie.net/{{item.icon}}"
