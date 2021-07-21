@@ -3,6 +3,11 @@
 <mat-card class="info" *ngIf="updatingPermutations">Updating armor permutations. Please wait.</mat-card>
 <mat-card class="info" *ngIf="updatingTable">Updating result table. Please wait.</mat-card>
 
+<div id="buttonContainer">
+  <button id="refreshBtn" mat-raised-button color="primary" (click)="refreshAll(true)">Refresh items</button>
+  <button id="logoutBtn" mat-raised-button color="warn" (click)="logout()">Logout</button>
+</div>
+
 <h2>Select the class of your guardian.</h2>
 <mat-form-field appearance="fill">
   <mat-label>Class</mat-label>

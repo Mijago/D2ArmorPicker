@@ -174,7 +174,7 @@ export class BungieApiService {
     return r;
   }
 
-  async updateManifest(force= false) {
+  async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate"))
       if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 3600 * 24 * 3)
         return;

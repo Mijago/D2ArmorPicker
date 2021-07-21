@@ -7,6 +7,7 @@ import {DestinyArmorPermutationService} from "../../../services/destiny-armor-pe
 import {DatabaseService, IInventoryArmor} from "../../../services/database.service";
 import {GearPermutation} from "../../../data/permutation";
 import {animate, state, style, transition, trigger} from "@angular/animations";
+import {Router} from "@angular/router";
 
 export interface ISelectedExotic {
   icon: string;
@@ -46,8 +47,9 @@ export class MainComponent implements OnInit {
   updatePermutationsSubject: Subject<any> = new Subject();
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
-  constructor(private bungieApi: BungieApiService, private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
-              private db: DatabaseService, private ref: ChangeDetectorRef) {
+  constructor(private bungieApi: BungieApiService, private router: Router,
+              private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
+              private db: DatabaseService) {
   }
 
   selectedClass: number = 0;
@@ -87,14 +89,6 @@ export class MainComponent implements OnInit {
   updatingTable = false;
 
   async ngOnInit(): Promise<void> {
-    this.updatingManifest = true;
-    let a = await this.bungieApi.updateManifest()
-    this.updatingManifest = false;
-
-    this.updatingArmor = true;
-    let c = await this.bungieApi.updateArmorItems()
-    this.updatingArmor = false;
-    console.log({updateManifest: a, armor: c})
 
     this.updateTableSubject
       .pipe(debounceTime(500))
@@ -111,7 +105,7 @@ export class MainComponent implements OnInit {
         this.updatingPermutations = false;
       });
 
-    await this.updatePermutationsSubject.next();
+    await this.refreshAll(false);
   }
 
   async updateItemList() {
@@ -231,5 +225,28 @@ export class MainComponent implements OnInit {
       this.lockedExotic = hash;
 
     this.triggerPermutationsUpdate()
+  }
+
+  async refreshAll(b: boolean) {
+    this.lockedExotic = 0;
+    this.permutations = [];
+    this.tablePermutations = [];
+    this.expandedElement = null;
+
+    this.updatingManifest = true;
+    let a = await this.bungieApi.updateManifest() // manifest NOT forced
+    this.updatingManifest = false;
+
+    this.updatingArmor = true;
+    let c = await this.bungieApi.updateArmorItems(b)
+    this.updatingArmor = false;
+    console.log({updateManifest: a, armor: c})
+
+    await this.updatePermutationsSubject.next();
+  }
+
+  async logout() {
+    await this.auth.logout();
+    await this.router.navigate(["login"])
   }
 }

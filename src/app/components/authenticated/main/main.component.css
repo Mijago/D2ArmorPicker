@@ -45,7 +45,6 @@ tr.example-detail-row {
   border-bottom-width: 0;
 }
 
-
 .specificStatTable tr>td {
   text-align: right;
 }
@@ -61,4 +60,13 @@ tr.example-detail-row {
   left: 50%;
   top: 1%;
   transform: translateX(-50%);
+}
+
+#refreshBtn {
+  margin-right: 20px;
+}
+#buttonContainer {
+  position: fixed;
+  bottom: 2px;
+  right: 2px;
 }
