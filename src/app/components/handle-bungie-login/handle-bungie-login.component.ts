@@ -14,8 +14,16 @@ export class HandleBungieLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(async (params) => {
-      console.log(params['code'])
-      this.loginService.authCode = params['code'];
+      let code = params['code']
+      if (window.location.search.indexOf("?code=") > -1)
+        code = window.location.search.substr(6);
+
+      console.log({code})
+
+      if (!code)
+        return;
+
+      this.loginService.authCode = code;
 
       await this.loginService.generateTokens()
 

@@ -43,7 +43,7 @@ const routes: Routes = [
     HttpClientModule,
     BrowserAnimationsModule,
     MatButtonModule,
-    RouterModule.forRoot(routes),
+    RouterModule.forRoot(routes,{useHash: true}),
     MatFormFieldModule,
     MatSelectModule,
     MatOptionModule,
