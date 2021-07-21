@@ -1,4 +1,4 @@
-import {Component, OnInit, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, Output} from '@angular/core';
 import {BungieApiService} from "../../../services/bungie-api.service";
 import {AuthService} from "../../../services/auth.service";
 import {Subject} from "rxjs";
@@ -10,8 +10,9 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 
 export interface ISelectedExotic {
   icon: string;
-  slot: string,
-  hash: number
+  slot: string;
+  name: string;
+  hash: number;
 }
 
 export interface IMappedGearPermutation {
@@ -42,10 +43,11 @@ export interface IMappedGearPermutation {
 export class MainComponent implements OnInit {
 
   updateTableSubject: Subject<any> = new Subject();
+  updatePermutationsSubject: Subject<any> = new Subject();
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
   constructor(private bungieApi: BungieApiService, private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
-              private db: DatabaseService) {
+              private db: DatabaseService, private ref: ChangeDetectorRef) {
   }
 
   selectedClass: number = 0;
@@ -73,28 +75,49 @@ export class MainComponent implements OnInit {
   lockedExoticChest: ISelectedExotic[] = [];
   lockedExoticLegs: ISelectedExotic[] = [];
 
+  private permutations: GearPermutation[] = [];
 
   expandedElement: IMappedGearPermutation | null = null;
   tablePermutations: IMappedGearPermutation[] = [];
 
+
+  updatingManifest = false;
+  updatingArmor = false;
+  updatingPermutations = false;
+  updatingTable = false;
+
   async ngOnInit(): Promise<void> {
+    this.updatingManifest = true;
     let a = await this.bungieApi.updateManifest()
-    console.log({updateManifest: a})
+    this.updatingManifest = false;
+
+    this.updatingArmor = true;
     let c = await this.bungieApi.updateArmorItems()
-    console.log({c})
+    this.updatingArmor = false;
+    console.log({updateManifest: a, armor: c})
 
     this.updateTableSubject
       .pipe(debounceTime(500))
-      .subscribe(() => {
-          this.updateTable()
-        }
-      );
+      .subscribe(async () => {
+        this.updatingTable = true;
+        await this.updateTable()
+        this.updatingTable = false;
+      });
+    this.updatePermutationsSubject
+      .pipe(debounceTime(500))
+      .subscribe(async () => {
+        this.updatingPermutations = true;
+        await this.updateItemList();
+        this.updatingPermutations = false;
+      });
 
-    this.updateTableSubject.next()
+    await this.updatePermutationsSubject.next();
   }
 
-  async updateTable() {
-    console.log("Update Table")
+  async updateItemList() {
+    this.updatingPermutations = true;
+
+    console.log("updateItemList")
     let allArmor = await this.db.inventoryArmor.where('clazz').equals(this.selectedClass).toArray()
     console.log("All Armor", allArmor)
 
@@ -102,7 +125,8 @@ export class MainComponent implements OnInit {
       return {
         slot: d.slot,
         icon: d.icon,
-        hash: d.hash
+        hash: d.hash,
+        name: d.name
       } as ISelectedExotic
     })
     let lookupArray: number[] = []
@@ -118,11 +142,15 @@ export class MainComponent implements OnInit {
     this.lockedExoticChest = allExotics.filter(d => d.slot == "Chest");
     this.lockedExoticLegs = allExotics.filter(d => d.slot == "Legs");
 
+    this.permutations = this.permBuilder.buildPermutations(allArmor, this.lockedExotic)
+    console.log({permutations: this.permutations})
 
-    let permutations = this.permBuilder.buildPermutations(allArmor, this.lockedExotic)
-    console.log({perms: permutations})
+    this.updatingPermutations = false;
+    this.triggerTableUpdate()
+  }
 
-    let mappedPermutations = permutations.map(perm => {
+  async updateTable() {
+    let mappedPermutations = this.permutations.map(perm => {
       let stats = Object.assign({}, perm.stats);
       if (this.enablePowerfulFriends) stats.mobility += 20;
       if (this.enableRadiantLight) stats.strength += 20;
@@ -149,8 +177,8 @@ export class MainComponent implements OnInit {
         mods: mods
       } as IMappedGearPermutation
     }).filter(d => d.mods.total <= this.maxMods)
-      .sort((a,b) => a.mods.total-b.mods.total)
-      .splice( 0, 100)
+      .sort((a, b) => a.mods.total - b.mods.total)
+      .splice(0, 100)
 
     this.tablePermutations = mappedPermutations;
   }
@@ -178,8 +206,13 @@ export class MainComponent implements OnInit {
     this.updateTableSubject.next();
   }
 
-  onClassChange() {
-    this.triggerTableUpdate()
+  triggerPermutationsUpdate() {
+    this.updatePermutationsSubject.next()
+  }
+
+  async onClassChange() {
+    this.lockedExotic = 0;
+    this.triggerPermutationsUpdate()
   }
 
   onMinStatValueChange() {
@@ -197,6 +230,6 @@ export class MainComponent implements OnInit {
     else
       this.lockedExotic = hash;
 
-    this.triggerTableUpdate();
+    this.triggerPermutationsUpdate()
   }
 }

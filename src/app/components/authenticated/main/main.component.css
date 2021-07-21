@@ -53,3 +53,12 @@ tr.example-detail-row {
 .statTotalRow > td {
   border-top: aliceblue double;
 }
+
+.info {
+  position: absolute;
+  width: 200px;
+
+  left: 50%;
+  top: 1%;
+  transform: translateX(-50%);
+}

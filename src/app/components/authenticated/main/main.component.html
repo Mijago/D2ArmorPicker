@@ -1,3 +1,8 @@
+<mat-card class="info" *ngIf="updatingManifest">Updating the manifest. Please wait.</mat-card>
+<mat-card class="info" *ngIf="updatingArmor">Updating the character armor. Please wait.</mat-card>
+<mat-card class="info" *ngIf="updatingPermutations">Updating armor permutations. Please wait.</mat-card>
+<mat-card class="info" *ngIf="updatingTable">Updating result table. Please wait.</mat-card>
+
 <h2>Select the class of your guardian.</h2>
 <mat-form-field appearance="fill">
   <mat-label>Class</mat-label>
@@ -97,7 +102,7 @@
 <br/>
 <div>
   <h2>How many stat-mods do you want to use?</h2>
-  <app-stat-minimum-selection (onChange)="minStrength = $event.valueOf()" [value]="5"
+  <app-stat-minimum-selection (onChange)="maxMods = $event.valueOf(); onAllowedModChange()" [value]="5"
                               [values]="[0,1,2,3,4,5]"></app-stat-minimum-selection>
 </div>
 
@@ -106,15 +111,19 @@
   Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticHelmet" src="https://www.bungie.net/{{item.icon}}"
+       matTooltip="{{item.name}}"  #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticGauntlet" src="https://www.bungie.net/{{item.icon}}"
+       matTooltip="{{item.name}}"  #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticChest" src="https://www.bungie.net/{{item.icon}}"
+       matTooltip="{{item.name}}"  #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticLegs" src="https://www.bungie.net/{{item.icon}}"
+       matTooltip="{{item.name}}"  #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
 
 </div>
@@ -192,6 +201,7 @@
       <th mat-header-cell *matHeaderCellDef> Exotic</th>
       <td mat-cell *matCellDef="let element ">
         <img *ngIf="element.permutation.hasExotic" class="itemIcon"
+             matTooltip="{{getExoticForPermutation(element.permutation)?.name}}"  #tooltip="matTooltip"
              src="https://bungie.net/{{getExoticForPermutation(element.permutation)?.icon}}">
         <img *ngIf="!element.permutation.hasExotic" class="itemIcon"
              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">

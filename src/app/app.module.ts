@@ -21,6 +21,8 @@ import { StatMinimumSelectionComponent } from './components/authenticated/stat-m
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import { StatModAmountComponent } from './components/authenticated/stat-mod-amount/stat-mod-amount.component';
 import {MatTableModule} from "@angular/material/table";
+import {MatCardModule} from "@angular/material/card";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 
 const routes: Routes = [
@@ -43,7 +45,7 @@ const routes: Routes = [
     HttpClientModule,
     BrowserAnimationsModule,
     MatButtonModule,
-    RouterModule.forRoot(routes,{useHash: true}),
+    RouterModule.forRoot(routes, {useHash: true}),
     MatFormFieldModule,
     MatSelectModule,
     MatOptionModule,
@@ -52,7 +54,9 @@ const routes: Routes = [
     MatInputModule,
     MatSlideToggleModule,
     FormsModule,
-    MatTableModule
+    MatTableModule,
+    MatCardModule,
+    MatTooltipModule
   ],
   providers: [],
   bootstrap: [AppComponent]
