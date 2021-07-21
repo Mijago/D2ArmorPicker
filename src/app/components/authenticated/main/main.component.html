@@ -1,0 +1,334 @@
+<h2>Select the class of your guardian.</h2>
+<mat-form-field appearance="fill">
+  <mat-label>Class</mat-label>
+  <mat-select [(value)]="selectedClass" (selectionChange)="onClassChange()">
+    <mat-option [value]="1">Hunter</mat-option>
+    <mat-option [value]="0">Titan</mat-option>
+    <mat-option [value]="2">Warlock</mat-option>
+  </mat-select>
+</mat-form-field>
+
+<br/><h2>Select the minimum values your gear should have.</h2>
+<table>
+  <tr>
+    <td>Mobility</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minMobility = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+  <tr>
+    <td>Resilience</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minResilience = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+  <tr>
+    <td>Recovery</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minRecovery = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+  <tr>
+    <td>Discipline</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minDiscipline = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+  <tr>
+    <td>Intellect</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minIntellect = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+  <tr>
+    <td>Strength</td>
+    <td>
+      <app-stat-minimum-selection
+        (onChange)="minStrength = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
+    </td>
+  </tr>
+</table>
+
+<br/><h2>Now select the mods you want to use</h2>
+<div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enablePowerfulFriends" [checked]="enablePowerfulFriends"
+                      (change)="onAllowedModChange()">Powerful Friends (<span class="statBonus">+20</span> Mobility)
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enableRadiantLight" [checked]="enableRadiantLight"
+                      (change)="onAllowedModChange()">Radiant Light (<span class="statBonus">+20</span> Strength)
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfDurance"
+                      [checked]="enableStasisWhisperOfDurance" (change)="onAllowedModChange()">Whisper of Durance (
+      <span class="statBonusStasis">+10</span>
+      Strength)
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfShards" [checked]="enableStasisWhisperOfShards"
+                      (change)="onAllowedModChange()">Whisper of Shards (<span class="statBonusStasis">+10</span>
+      Resilience)
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfConduction"
+                      [checked]="enableStasisWhisperOfConduction" (change)="onAllowedModChange()">Whisper of Conduction
+      (<span class="statBonusStasis">+10</span> Resilience,
+      <span class="statBonusStasis">+10</span> Intellect)
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfChains" [checked]="enableStasisWhisperOfChains"
+                      (change)="onAllowedModChange()">Whisper of Chains (<span class="statBonusStasis">+10</span>
+      Recovery)
+    </mat-slide-toggle>
+  </div>
+</div>
+
+<br/>
+<div>
+  <h2>How many stat-mods do you want to use?</h2>
+  <app-stat-minimum-selection (onChange)="minStrength = $event.valueOf()" [value]="5"
+                              [values]="[0,1,2,3,4,5]"></app-stat-minimum-selection>
+</div>
+
+<div>
+  <h2>Do you want to lock an exotic?</h2>
+  Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
+  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
+       *ngFor="let item of lockedExoticHelmet" src="https://www.bungie.net/{{item.icon}}"
+       (click)="changeLockedExotic(item.hash)"><br/>
+  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
+       *ngFor="let item of lockedExoticGauntlet" src="https://www.bungie.net/{{item.icon}}"
+       (click)="changeLockedExotic(item.hash)"><br/>
+  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
+       *ngFor="let item of lockedExoticChest" src="https://www.bungie.net/{{item.icon}}"
+       (click)="changeLockedExotic(item.hash)"><br/>
+  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
+       *ngFor="let item of lockedExoticLegs" src="https://www.bungie.net/{{item.icon}}"
+       (click)="changeLockedExotic(item.hash)"><br/>
+
+</div>
+
+
+<br/>
+<h2>Results</h2>
+<div *ngIf="tablePermutations.length == 0">
+  No results found... 😭
+</div>
+
+<div *ngIf="tablePermutations.length > 0">
+  <table class="result-table" mat-table [dataSource]="tablePermutations" multiTemplateDataRows>
+    <!--- Note that these columns can be defined in any order.
+     The actual rendered columns are set as a property on the row definition" -->
+    <!-- Name Column -->
+    <ng-container matColumnDef="mobility">
+      <th mat-header-cell *matHeaderCellDef> Mobility</th>
+      <td mat-cell *matCellDef="let element ">
+        {{element.permutation.stats.mobility}}
+        <span class="statBonus" *ngIf="this.enablePowerfulFriends">+20</span>
+        <span class="statBonusMod" *ngIf="element.mods.mobility > 0">+{{element.mods.mobility}}x10</span>
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="resilience">
+      <th mat-header-cell *matHeaderCellDef> Resilience</th>
+      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.resilience}}
+        <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfShards">+10</span>
+        <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
+        <span class="statBonusMod" *ngIf="element.mods.resilience > 0">+{{element.mods.resilience}}x10</span>
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="recovery">
+      <th mat-header-cell *matHeaderCellDef> Recovery</th>
+      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.recovery}}
+        <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains">+10</span>
+        <span class="statBonusMod" *ngIf="element.mods.recovery > 0">+{{element.mods.recovery}}x10</span>
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="discipline">
+      <th mat-header-cell *matHeaderCellDef> Discipline</th>
+      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.discipline}}
+        <span class="statBonusMod" *ngIf="element.mods.discipline > 0">+{{element.mods.discipline}}x10</span>
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="intellect">
+      <th mat-header-cell *matHeaderCellDef> Intellect</th>
+      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.intellect}}
+        <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
+        <span class="statBonusMod" *ngIf="element.mods.intellect > 0">+{{element.mods.intellect}}x10</span>
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="strength">
+      <th mat-header-cell *matHeaderCellDef> Strength</th>
+      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.strength}}
+        <span class="statBonus" *ngIf="this.enableRadiantLight">+20</span>
+        <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
+        <span class="statBonusMod" *ngIf="element.mods.strength > 0">+{{element.mods.strength}}x10</span>
+      </td>
+    </ng-container>
+
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="exotic">
+      <th mat-header-cell *matHeaderCellDef> Exotic</th>
+      <td mat-cell *matCellDef="let element ">
+        <img *ngIf="element.permutation.hasExotic" class="itemIcon"
+             src="https://bungie.net/{{getExoticForPermutation(element.permutation)?.icon}}">
+        <img *ngIf="!element.permutation.hasExotic" class="itemIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
+      </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="tiers">
+      <th mat-header-cell *matHeaderCellDef>Tiers</th>
+      <td mat-cell *matCellDef="let element "> {{getSkillTierFromPermutation(element.permutation.stats)}} </td>
+    </ng-container>
+
+
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell *matCellDef="let element" [attr.colspan]="shownColumns.length">
+        <div class="example-element-detail"
+             [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+          <div class="example-element-diagram">
+            Items:
+          </div>
+          <div class="example-element-description">
+
+            <table class="specificStatTable">
+              <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobility</th>
+                <th>Resilience</th>
+                <th>Recovery</th>
+                <th>Discipline</th>
+                <th>Intellect</th>
+                <th>Strength</th>
+                <th></th>
+              </tr>
+              </thead>
+              <tr
+                *ngFor="let i of element.permutation.items">
+                <td>{{i.name}}</td>
+                <td>{{i.mobility + 2}}</td>
+                <td>{{i.resilience + 2}}</td>
+                <td>{{i.recovery + 2}}</td>
+                <td>{{i.discipline + 2}}</td>
+                <td>{{i.intellect + 2}}</td>
+                <td>{{i.strength + 2}}</td>
+              </tr>
+              <tr>
+                <td>Any Class Item</td>
+                <td>{{2}}</td>
+                <td>{{2}}</td>
+                <td>{{2}}</td>
+                <td>{{2}}</td>
+                <td>{{2}}</td>
+                <td>{{2}}</td>
+              </tr>
+              <tr class="staticModBoostRow">
+                <td>Static Boosts</td>
+                <td><span class="statBonus" *ngIf="this.enablePowerfulFriends">+20</span></td>
+                <td>
+                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfShards">+10</span>
+                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
+                </td>
+                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains">+10</span></td>
+                <td></td>
+                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span></td>
+                <td>
+                  <span class="statBonus" *ngIf="this.enableRadiantLight">+20</span>
+                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
+                </td>
+              </tr>
+              <tr class="statTotalRow">
+                <td>Total</td>
+                <td>{{element.permutation.stats.mobility + (this.enablePowerfulFriends ? 20 : 0)}}</td>
+                <td>{{element.permutation.stats.resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
+                <td>{{element.permutation.stats.recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}</td>
+                <td>{{element.permutation.stats.discipline}}</td>
+                <td>{{element.permutation.stats.intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
+                <td>{{element.permutation.stats.strength
+                + (this.enableRadiantLight ? 20 : 0)
+                + (this.enableStasisWhisperOfDurance ? 10 : 0)}}</td>
+              </tr>
+
+              <tr class="modRow">
+                <td>Mods</td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.mobility > 0">+{{element.mods.mobility}}x10</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.resilience > 0">+{{element.mods.resilience}}x10</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.recovery > 0">+{{element.mods.recovery}}x10</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.discipline > 0">+{{element.mods.discipline}}x10</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.intellect > 0">+{{element.mods.intellect}}x10</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.strength > 0">+{{element.mods.strength}}x10</span>
+                </td>
+              </tr>
+              <tr class="statTotalRow">
+                <td>Total with mods</td>
+                <td>{{element.permutation.stats.mobility + (this.enablePowerfulFriends ? 20 : 0) + element.mods.mobility * 10}}</td>
+                <td>{{
+                  element.permutation.stats.resilience
+                  + (this.enableStasisWhisperOfShards ? 10 : 0)
+                  + (this.enableStasisWhisperOfConduction ? 10 : 0)
+                  + element.mods.resilience * 10
+                  }}
+                </td>
+                <td>{{element.permutation.stats.recovery + (this.enableStasisWhisperOfChains ? 10 : 0) + element.mods.recovery * 10  }}</td>
+                <td>{{element.permutation.stats.discipline + element.mods.discipline * 10}}</td>
+                <td>{{element.permutation.stats.intellect + (this.enableStasisWhisperOfConduction ? 10 : 0) + element.mods.intellect * 10}}</td>
+                <td>
+                  {{element.permutation.stats.strength
+                + (this.enableRadiantLight ? 20 : 0)
+                + (this.enableStasisWhisperOfDurance ? 10 : 0)
+                + element.mods.strength * 10
+                  }}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+
+    <tr mat-header-row *matHeaderRowDef="shownColumns"></tr>
+    <tr mat-row *matRowDef="let element; columns: shownColumns;"
+        class="example-element-row"
+        [class.example-expanded-row]="expandedElement === element"
+        (click)="expandedElement = expandedElement === element ? null : element">
+    </tr>
+    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+  </table>
+
+</div>

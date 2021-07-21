@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "INSTALL": "ng add @angular/material",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
@@ -11,13 +12,18 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "~12.1.2",
+    "@angular/cdk": "^12.1.2",
     "@angular/common": "~12.1.2",
     "@angular/compiler": "~12.1.2",
     "@angular/core": "~12.1.2",
     "@angular/forms": "~12.1.2",
+    "@angular/material": "^12.1.2",
     "@angular/platform-browser": "~12.1.2",
     "@angular/platform-browser-dynamic": "~12.1.2",
     "@angular/router": "~12.1.2",
+    "angular-oauth2-oidc": "^12.0.0",
+    "bungie-api-ts": "^4.9.0",
+    "dexie": "^3.0.3",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"

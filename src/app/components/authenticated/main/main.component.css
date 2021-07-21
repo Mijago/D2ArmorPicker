@@ -1,0 +1,55 @@
+.itemIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
+}
+
+.exoticIcon {
+  width: 40px;
+  height: 40px;
+  margin-right: 3px;
+
+  border: #00000000 solid 2px;
+}
+
+.selected {
+  border: red solid 2px;
+}
+
+.result-table {
+  width: 100%;
+  max-width: 900px;
+}
+
+.statBonusMod {
+  color: cornflowerblue;
+}
+
+.statBonus {
+  color: lightseagreen;
+}
+
+.statBonusStasis {
+  color: lightblue;
+}
+
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
+tr.example-detail-row {
+  height: 0;
+}
+
+.example-element-row td {
+  border-bottom-width: 0;
+}
+
+
+.specificStatTable tr>td {
+  text-align: right;
+}
+
+.statTotalRow > td {
+  border-top: aliceblue double;
+}

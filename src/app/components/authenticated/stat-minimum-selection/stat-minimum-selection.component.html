@@ -1,0 +1,6 @@
+<button mat-flat-button
+        *ngFor="let n of values"
+        [color]="value >= n ? 'primary' : ''"
+        (click)="setValue(n)">
+  {{n}}
+</button>
