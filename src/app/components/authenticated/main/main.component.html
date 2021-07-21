@@ -114,21 +114,30 @@
 <div>
   <h2>(4.)Do you want to lock an exotic?</h2>
   Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
+
+  <img class="exoticIcon {{ -1 === lockedExotic ? 'selected' : '' }}"
+       src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+       matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"
+       (click)="changeLockedExotic(-1)">
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticHelmet" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}"  #tooltip="matTooltip"
+       matTooltip="{{item.name}}" #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
+
+
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticGauntlet" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}"  #tooltip="matTooltip"
+       matTooltip="{{item.name}}" #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
+
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticChest" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}"  #tooltip="matTooltip"
+       matTooltip="{{item.name}}" #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
+
   <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
        *ngFor="let item of lockedExoticLegs" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}"  #tooltip="matTooltip"
+       matTooltip="{{item.name}}" #tooltip="matTooltip"
        (click)="changeLockedExotic(item.hash)"><br/>
 
 </div>
@@ -206,7 +215,7 @@
       <th mat-header-cell *matHeaderCellDef> Exotic</th>
       <td mat-cell *matCellDef="let element ">
         <img *ngIf="element.permutation.hasExotic" class="itemIcon"
-             matTooltip="{{getExoticForPermutation(element.permutation)?.name}}"  #tooltip="matTooltip"
+             matTooltip="{{getExoticForPermutation(element.permutation)?.name}}" #tooltip="matTooltip"
              src="https://bungie.net/{{getExoticForPermutation(element.permutation)?.icon}}">
         <img *ngIf="!element.permutation.hasExotic" class="itemIcon"
              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
