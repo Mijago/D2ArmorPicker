@@ -1,6 +1,21 @@
-button {
+mat-card {
   position: absolute;
+  max-width: 600px;
   left: 50%;
   top: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+
+a {
+  color: antiquewhite;
+}
+.example-header-image {
+  background-image: url('../../../assets/superGreatLogo.png');
+  background-size: cover;
 }

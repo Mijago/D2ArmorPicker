@@ -1,1 +1,21 @@
-<button mat-raised-button color="warn" (click)="startLogin()">Login</button>
+<mat-card>
+  <mat-card-header>
+    <div mat-card-avatar class="example-header-image"></div>
+    <mat-card-title>Destiny 2 Armor Picker</mat-card-title>
+    <mat-card-subtitle>A simple armor min-max tool by Mijago for the <a href="https://d2s.gg">D2Sanctuary community</a>.
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <p>
+      This tool allows you to select the optimal armor from your inventory and vault to satisfy your stat needs.
+      It also tells you which status mods you have to use!
+      <br/>
+      <br/>
+      You have to log in to enable this tool to grab your armor from the API.
+    </p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button color="warn" (click)="startLogin()">Login</button>
+  </mat-card-actions>
+
+</mat-card>
