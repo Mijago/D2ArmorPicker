@@ -45,6 +45,7 @@ export class MainComponent implements OnInit {
 
   updateTableSubject: Subject<any> = new Subject();
   updatePermutationsSubject: Subject<any> = new Subject();
+  updateExoticPermutationsSubject: Subject<any> = new Subject();
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
   constructor(private bungieApi: BungieApiService, private router: Router,
@@ -78,6 +79,7 @@ export class MainComponent implements OnInit {
   lockedExoticLegs: ISelectedExotic[] = [];
 
   private permutations: GearPermutation[] = [];
+  private permutationsFilteredByExotic: GearPermutation[] = [];
 
   expandedElement: IMappedGearPermutation | null = null;
   tablePermutations: IMappedGearPermutation[] = [];
@@ -91,18 +93,23 @@ export class MainComponent implements OnInit {
   async ngOnInit(): Promise<void> {
 
     this.updateTableSubject
-      .pipe(debounceTime(500))
+      .pipe(debounceTime(350))
       .subscribe(async () => {
         this.updatingTable = true;
         await this.updateTable()
         this.updatingTable = false;
       });
     this.updatePermutationsSubject
-      .pipe(debounceTime(500))
+      .pipe(debounceTime(350))
       .subscribe(async () => {
         this.updatingPermutations = true;
         await this.updateItemList();
         this.updatingPermutations = false;
+      });
+    this.updateExoticPermutationsSubject
+      .pipe(debounceTime(350))
+      .subscribe(async () => {
+        await this.updateFilteredExoticPermutations();
       });
 
     await this.refreshAll(false);
@@ -136,15 +143,36 @@ export class MainComponent implements OnInit {
     this.lockedExoticChest = allExotics.filter(d => d.slot == "Chest");
     this.lockedExoticLegs = allExotics.filter(d => d.slot == "Legs");
 
-    this.permutations = this.permBuilder.buildPermutations(allArmor, this.lockedExotic)
+    this.permutations = this.permBuilder.buildPermutations(allArmor)
     console.log({permutations: this.permutations})
 
     this.updatingPermutations = false;
-    this.triggerTableUpdate()
+    //this.triggerExoticPermutationUpdate()
+    await this.updateFilteredExoticPermutations();
+  }
+
+  async updateFilteredExoticPermutations() {
+    console.log("updateFilteredExoticPermutations")
+    if (this.lockedExotic == 0) {
+      this.permutationsFilteredByExotic = this.permutations;
+    } else if (this.lockedExotic == -1) {
+      this.permutationsFilteredByExotic = this.permutations.filter(d => !d.hasExotic);
+    } else {
+      this.permutationsFilteredByExotic = this.permutations.filter(d => {
+        if (!d.hasExotic)
+          return false;
+        return (d.helmet.hash == this.lockedExotic || d.gauntlet.hash == this.lockedExotic
+          || d.chest.hash == this.lockedExotic || d.legs.hash == this.lockedExotic)
+      });
+    }
+
+    //await this.triggerTableUpdate();
+    await this.updateTable();
   }
 
   async updateTable() {
-    let mappedPermutations = this.permutations.map(perm => {
+    console.log("updateTable")
+    let mappedPermutations = this.permutationsFilteredByExotic.map(perm => {
       let stats = Object.assign({}, perm.stats);
       if (this.enablePowerfulFriends) stats.mobility += 20;
       if (this.enableRadiantLight) stats.strength += 20;
@@ -196,6 +224,10 @@ export class MainComponent implements OnInit {
   }
 
 
+  triggerExoticPermutationUpdate() {
+    this.updateExoticPermutationsSubject.next();
+  }
+
   triggerTableUpdate() {
     this.updateTableSubject.next();
   }
@@ -224,7 +256,7 @@ export class MainComponent implements OnInit {
     else
       this.lockedExotic = hash;
 
-    this.triggerPermutationsUpdate()
+    this.triggerExoticPermutationUpdate()
   }
 
   async refreshAll(b: boolean) {

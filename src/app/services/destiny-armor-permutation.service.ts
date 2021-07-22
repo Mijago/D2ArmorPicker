@@ -11,7 +11,7 @@ export class DestinyArmorPermutationService {
   constructor() {
   }
 
-  public buildPermutations(armor: IInventoryArmor[], lockedExotic: number): GearPermutation[] {
+  public buildPermutations(armor: IInventoryArmor[]): GearPermutation[] {
     let permutations: GearPermutation[] = []
 
     let helmets = armor.filter(s => s.slot == "Helmets");
@@ -21,18 +21,12 @@ export class DestinyArmorPermutationService {
 
 
     for (let helmet of helmets) {
-      if (lockedExotic < 0 && helmet.isExotic) continue;
       for (let gauntlet of gauntlets) {
-        if (lockedExotic < 0 && gauntlet.isExotic) continue;
         if (helmet.isExotic && gauntlet.isExotic) continue;
         for (let chest of chests) {
-          if (lockedExotic < 0 && chest.isExotic) continue;
           if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
           for (let leg of legs) {
-            if (lockedExotic < 0 && leg.isExotic) continue;
             if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
-            if (lockedExotic > 0 && !(helmet.hash == lockedExotic || gauntlet.hash == lockedExotic || chest.hash == lockedExotic || leg.hash == lockedExotic))
-              continue
             permutations.push(new GearPermutation(
               helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic,
               helmet, gauntlet, chest, leg
