@@ -14,6 +14,7 @@ export interface ISelectedExotic {
   slot: string;
   name: string;
   hash: number;
+  count: number;
 }
 
 export interface IMappedGearPermutation {
@@ -127,15 +128,21 @@ export class MainComponent implements OnInit {
         slot: d.slot,
         icon: d.icon,
         hash: d.hash,
-        name: d.name
+        name: d.name,
+        count: 1
       } as ISelectedExotic
     })
-    let lookupArray: number[] = []
-    allExotics = allExotics.filter(d => {
-      if (lookupArray.indexOf(d.hash) > -1)
+    let lookup: any = {}
+    allExotics = allExotics.filter((d, i) => {
+      if (lookup[d.hash]) {
+        lookup[d.hash]++;
         return false;
-      lookupArray.push(d.hash);
+      }
+      lookup[d.hash] = 1;
       return true;
+    })
+    allExotics.forEach((d) => {
+      d.count = lookup[d.hash]
     })
 
     this.lockedExoticHelmet = allExotics.filter(d => d.slot == "Helmets");

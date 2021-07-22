@@ -119,26 +119,34 @@
        src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
        matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"
        (click)="changeLockedExotic(-1)">
-  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
-       *ngFor="let item of lockedExoticHelmet" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}" #tooltip="matTooltip"
-       (click)="changeLockedExotic(item.hash)"><br/>
 
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticHelmet"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display><br/>
 
-  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
-       *ngFor="let item of lockedExoticGauntlet" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}" #tooltip="matTooltip"
-       (click)="changeLockedExotic(item.hash)"><br/>
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticGauntlet"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display><br/>
 
-  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
-       *ngFor="let item of lockedExoticChest" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}" #tooltip="matTooltip"
-       (click)="changeLockedExotic(item.hash)"><br/>
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticChest"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display><br/>
 
-  <img class="exoticIcon {{ item.hash === lockedExotic ? 'selected' : '' }}"
-       *ngFor="let item of lockedExoticLegs" src="https://www.bungie.net/{{item.icon}}"
-       matTooltip="{{item.name}}" #tooltip="matTooltip"
-       (click)="changeLockedExotic(item.hash)"><br/>
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticLegs"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display><br/>
 
 </div>
 

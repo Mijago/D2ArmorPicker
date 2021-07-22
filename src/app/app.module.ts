@@ -23,6 +23,7 @@ import { StatModAmountComponent } from './components/authenticated/stat-mod-amou
 import {MatTableModule} from "@angular/material/table";
 import {MatCardModule} from "@angular/material/card";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import { ExoticItemDisplayComponent } from './components/authenticated/exotic-item-display/exotic-item-display.component';
 
 
 const routes: Routes = [
@@ -38,7 +39,8 @@ const routes: Routes = [
     HandleBungieLoginComponent,
     MainComponent,
     StatMinimumSelectionComponent,
-    StatModAmountComponent
+    StatModAmountComponent,
+    ExoticItemDisplayComponent
   ],
   imports: [
     BrowserModule,

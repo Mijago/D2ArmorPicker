@@ -4,18 +4,6 @@
   margin-right: 3px;
 }
 
-.exoticIcon {
-  width: 40px;
-  height: 40px;
-  margin-right: 3px;
-
-  border: #00000000 solid 2px;
-}
-
-.selected {
-  border: red solid 2px;
-}
-
 .result-table {
   width: 100%;
   max-width: 900px;
@@ -69,4 +57,15 @@ tr.example-detail-row {
   position: fixed;
   bottom: 2px;
   right: 2px;
+}
+.exoticIcon {
+  width: 40px;
+  height: 40px;
+  margin-right: 3px;
+
+  border: #00000000 solid 2px;
+}
+
+.selected {
+  border: red solid 2px;
 }

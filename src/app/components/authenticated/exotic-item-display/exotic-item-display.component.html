@@ -1,0 +1,7 @@
+<span class="container">
+  <img class="exoticIcon {{ selected ? 'selected' : '' }}" src="https://www.bungie.net/{{item?.icon}}"
+       matTooltip="{{item?.name}}" #tooltip="matTooltip"
+       (click)="click()">
+
+  <span class="exoticText" *ngIf="(!!item && item.count || 0) > 0">{{item?.count}}</span>
+</span>
