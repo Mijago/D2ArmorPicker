@@ -41,8 +41,17 @@ tr.example-detail-row {
   border-top: aliceblue double;
 }
 
+#loading{
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
 .info {
-  position: absolute;
+
+  z-index: 1000;
+  position: fixed;
   width: 200px;
 
   left: 50%;

@@ -111,6 +111,7 @@ export class MainComponent implements OnInit {
       .pipe(debounceTime(350))
       .subscribe(async () => {
         await this.updateFilteredExoticPermutations();
+        this.updatingPermutations = false;
       });
 
     await this.refreshAll(false);
@@ -232,14 +233,17 @@ export class MainComponent implements OnInit {
 
 
   triggerExoticPermutationUpdate() {
+    this.updatingPermutations = true;
     this.updateExoticPermutationsSubject.next();
   }
 
   triggerTableUpdate() {
+    this.updatingTable = true;
     this.updateTableSubject.next();
   }
 
   triggerPermutationsUpdate() {
+    this.updatingPermutations = true;
     this.updatePermutationsSubject.next()
   }
 

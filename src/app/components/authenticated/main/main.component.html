@@ -3,6 +3,10 @@
 <mat-card class="info" *ngIf="updatingPermutations">Updating armor permutations. Please wait.</mat-card>
 <mat-card class="info" *ngIf="updatingTable">Updating result table. Please wait.</mat-card>
 
+<mat-progress-bar mode="indeterminate" id="loading"
+*ngIf="updatingPermutations || updatingTable || updatingArmor || updatingManifest"
+></mat-progress-bar>
+
 <div id="buttonContainer">
   <button id="refreshBtn" mat-raised-button color="primary" (click)="refreshAll(true)">Refresh items</button>
   <button id="logoutBtn" mat-raised-button color="warn" (click)="logout()">Logout</button>
