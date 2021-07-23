@@ -82,6 +82,7 @@ export class MainComponent implements OnInit {
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
 
+  possiblePermutationCount: number = 0;
   maximumPossibleStats: Stats = {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0};
   expandedElement: IMappedGearPermutation | null = null;
   tablePermutations: IMappedGearPermutation[] = [];
@@ -239,7 +240,7 @@ export class MainComponent implements OnInit {
       return pre;
     }, {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0} as Stats)
 
-
+    this.possiblePermutationCount = mappedPermutations.length;
     this.tablePermutations = mappedPermutations.splice(0, 100);
   }
 

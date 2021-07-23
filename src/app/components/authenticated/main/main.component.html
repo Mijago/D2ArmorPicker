@@ -79,6 +79,8 @@
     </td>
   </tr>
 </table>
+Your selection results in {{possiblePermutationCount}} permutations.
+<span *ngIf="possiblePermutationCount == 0">You may want to reduce your stat requirements.</span>
 
 <br/><h2>2. Now select the combat style mods and abilities you want to use.</h2>
 <div>
@@ -175,9 +177,14 @@
 <h2>Results</h2>
 <div *ngIf="tablePermutations.length == 0">
   No results found... 😭
+  You may want to reduce your stat requirements.
 </div>
 
 <div *ngIf="tablePermutations.length > 0">
+  Your selection results in {{possiblePermutationCount}} permutations.
+  <span *ngIf="tablePermutations.length != possiblePermutationCount">
+    This table displays the first {{tablePermutations.length}} entries.
+  </span>
   <table class="result-table" mat-table [dataSource]="tablePermutations" multiTemplateDataRows>
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->
