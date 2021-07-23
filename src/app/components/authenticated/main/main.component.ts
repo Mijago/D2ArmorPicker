@@ -19,6 +19,7 @@ export interface ISelectedExotic {
 
 export interface IMappedGearPermutation {
   permutation: GearPermutation;
+  stats: Stats,
   mods: {
     mobility: number;
     resilience: number;
@@ -204,8 +205,16 @@ export class MainComponent implements OnInit {
       }
       mods.total = mods.mobility + mods.resilience + mods.recovery + mods.discipline + mods.intellect + mods.strength
 
+
+      if (perm.helmet.name == "Kabr's Battlecage"
+        && perm.gauntlet.name == "Lightkin Gauntlets"
+        && perm.chest.name == "Lightkin Plate"
+        && perm.legs.name == "Kabr's Forceful Greaves") {
+        console.log("aa", stats, mods)
+      }
       return {
         permutation: perm,
+        stats: stats,
         mods: mods
       } as IMappedGearPermutation
     }).filter(d => d.mods.total <= this.maxMods)
@@ -213,32 +222,31 @@ export class MainComponent implements OnInit {
 
     // get maximum possible stats for the current selection
     this.maximumPossibleStats = mappedPermutations.reduce((pre, curr) => {
-      let mobility = 10 * (Math.floor(curr.permutation.stats.mobility / 10) + curr.mods.mobility
-        + (this.enablePowerfulFriends ? 2 : 0));
+      // add empty mod slots
+      let added = 10 * (this.maxMods - curr.mods.total);
+
+      let mobility = curr.stats.mobility + curr.mods.mobility * 10 + added;
       if (mobility > pre.mobility) pre.mobility = mobility;
 
-      let resilience = 10 * (Math.floor(curr.permutation.stats.resilience / 10) + curr.mods.resilience
-        + (this.enableStasisWhisperOfShards ? 1 : 0) + (this.enableStasisWhisperOfConduction ? 1 : 0));
+      let resilience = curr.stats.resilience + curr.mods.resilience * 10 + added;
       if (resilience > pre.resilience) pre.resilience = resilience;
 
-      let recovery = 10 * (Math.floor(curr.permutation.stats.recovery / 10) + curr.mods.recovery
-        + (this.enableStasisWhisperOfChains ? 1 : 0));
+      let recovery = curr.stats.recovery + curr.mods.recovery * 10 + added;
       if (recovery > pre.recovery) pre.recovery = recovery;
 
-      let discipline = 10 * (Math.floor(curr.permutation.stats.discipline / 10) + curr.mods.discipline);
+      let discipline = curr.stats.discipline + curr.mods.discipline * 10 + added;
       if (discipline > pre.discipline) pre.discipline = discipline;
 
-      let intellect = 10 * (Math.floor(curr.permutation.stats.intellect / 10) + curr.mods.intellect
-        + (this.enableStasisWhisperOfConduction ? 1 : 0));
+      let intellect = curr.stats.intellect + curr.mods.intellect * 10 + added;
       if (intellect > pre.intellect) pre.intellect = intellect;
 
-
-      let strength = 10 * (Math.floor(curr.permutation.stats.strength / 10) + curr.mods.strength
-        + (this.enableRadiantLight ? 2 : 0) + (this.enableStasisWhisperOfDurance ? 1 : 0));
+      let strength = curr.stats.strength + curr.mods.strength * 10 + added;
       if (strength > pre.strength) pre.strength = strength;
 
       return pre;
     }, {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0} as Stats)
+
+    console.log("this.maximumPossibleStats", this.maximumPossibleStats)
 
     this.possiblePermutationCount = mappedPermutations.length;
     this.tablePermutations = mappedPermutations.splice(0, 100);
