@@ -5,7 +5,7 @@ import {Subject} from "rxjs";
 import {debounceTime} from "rxjs/operators";
 import {DestinyArmorPermutationService} from "../../../services/destiny-armor-permutation.service";
 import {DatabaseService, IInventoryArmor} from "../../../services/database.service";
-import {GearPermutation} from "../../../data/permutation";
+import {GearPermutation, Stats} from "../../../data/permutation";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {Router} from "@angular/router";
 
@@ -82,6 +82,7 @@ export class MainComponent implements OnInit {
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
 
+  maximumPossibleStats: Stats = {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0};
   expandedElement: IMappedGearPermutation | null = null;
   tablePermutations: IMappedGearPermutation[] = [];
 
@@ -208,9 +209,38 @@ export class MainComponent implements OnInit {
       } as IMappedGearPermutation
     }).filter(d => d.mods.total <= this.maxMods)
       .sort((a, b) => a.mods.total - b.mods.total)
-      .splice(0, 100)
 
-    this.tablePermutations = mappedPermutations;
+    // get maximum possible stats for the current selection
+    this.maximumPossibleStats = mappedPermutations.reduce((pre, curr) => {
+      let mobility = 10 * (Math.floor(curr.permutation.stats.mobility / 10) + curr.mods.mobility
+        + (this.enablePowerfulFriends ? 2 : 0));
+      if (mobility > pre.mobility) pre.mobility = mobility;
+
+      let resilience = 10 * (Math.floor(curr.permutation.stats.resilience / 10) + curr.mods.resilience
+        + (this.enableStasisWhisperOfShards ? 1 : 0) + (this.enableStasisWhisperOfConduction ? 1 : 0));
+      if (resilience > pre.resilience) pre.resilience = resilience;
+
+      let recovery = 10 * (Math.floor(curr.permutation.stats.recovery / 10) + curr.mods.recovery
+        + (this.enableStasisWhisperOfChains ? 1 : 0));
+      if (recovery > pre.recovery) pre.recovery = recovery;
+
+      let discipline = 10 * (Math.floor(curr.permutation.stats.discipline / 10) + curr.mods.discipline);
+      if (discipline > pre.discipline) pre.discipline = discipline;
+
+      let intellect = 10 * (Math.floor(curr.permutation.stats.intellect / 10) + curr.mods.intellect
+        + (this.enableStasisWhisperOfConduction ? 1 : 0));
+      if (intellect > pre.intellect) pre.intellect = intellect;
+
+
+      let strength = 10 * (Math.floor(curr.permutation.stats.strength / 10) + curr.mods.strength
+        + (this.enableRadiantLight ? 2 : 0) + (this.enableStasisWhisperOfDurance ? 1 : 0));
+      if (strength > pre.strength) pre.strength = strength;
+
+      return pre;
+    }, {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0} as Stats)
+
+
+    this.tablePermutations = mappedPermutations.splice(0, 100);
   }
 
 

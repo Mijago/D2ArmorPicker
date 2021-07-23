@@ -1,6 +1,6 @@
-<button mat-flat-button
-        *ngFor="let n of values"
-        [color]="value >= n ? 'primary' : ''"
-        (click)="setValue(n)">
-  {{n}}
-</button>
+<span *ngFor="let n of values">
+  <button mat-flat-button [color]="getColor(n)" (click)="setValue(n)"
+          *ngIf="maxPossibleValue >= n || value >= n">{{n}}</button>
+  <button mat-stroked-button [color]="getColor(n)" (click)="setValue(n)"
+          *ngIf="maxPossibleValue < n && value < n">{{n}}</button>
+</span>

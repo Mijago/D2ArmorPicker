@@ -4,7 +4,7 @@
 <mat-card class="info" *ngIf="updatingTable">Updating result table. Please wait.</mat-card>
 
 <mat-progress-bar mode="indeterminate" id="loading"
-*ngIf="updatingPermutations || updatingTable || updatingArmor || updatingManifest"
+                  *ngIf="updatingPermutations || updatingTable || updatingArmor || updatingManifest"
 ></mat-progress-bar>
 
 <div id="buttonContainer">
@@ -22,12 +22,19 @@
   </mat-select>
 </mat-form-field>
 
-<br/><h2>1. Select the minimum values your gear should have.</h2>
+<br/>
+<h2>1. Select the minimum values your gear should have.
+  <mat-icon inline aria-hidden="false" aria-label="Help" id="help-select-stats"
+            matTooltip='Use the buttons to define the stats you want. Colored values are selected, gray means they are selectable and hollow values are not achievable with your gear.'
+            #tooltip="matTooltip"> help
+  </mat-icon>
+</h2>
 <table>
   <tr>
     <td>Mobility</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.mobility"
         (onChange)="minMobility = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -35,6 +42,7 @@
     <td>Resilience</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.resilience"
         (onChange)="minResilience = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -42,6 +50,7 @@
     <td>Recovery</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.recovery"
         (onChange)="minRecovery = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -49,6 +58,7 @@
     <td>Discipline</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.discipline"
         (onChange)="minDiscipline = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -56,6 +66,7 @@
     <td>Intellect</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.intellect"
         (onChange)="minIntellect = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -63,6 +74,7 @@
     <td>Strength</td>
     <td>
       <app-stat-minimum-selection
+        [maxPossibleValue]="maximumPossibleStats.strength"
         (onChange)="minStrength = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
@@ -129,28 +141,32 @@
     [item]="item"
     [selected]="item.hash === lockedExotic"
     (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display><br/>
+  ></app-exotic-item-display>
+  <br/>
 
   <app-exotic-item-display
     *ngFor="let item of lockedExoticGauntlet"
     [item]="item"
     [selected]="item.hash === lockedExotic"
     (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display><br/>
+  ></app-exotic-item-display>
+  <br/>
 
   <app-exotic-item-display
     *ngFor="let item of lockedExoticChest"
     [item]="item"
     [selected]="item.hash === lockedExotic"
     (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display><br/>
+  ></app-exotic-item-display>
+  <br/>
 
   <app-exotic-item-display
     *ngFor="let item of lockedExoticLegs"
     [item]="item"
     [selected]="item.hash === lockedExotic"
     (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display><br/>
+  ></app-exotic-item-display>
+  <br/>
 
 </div>
 
