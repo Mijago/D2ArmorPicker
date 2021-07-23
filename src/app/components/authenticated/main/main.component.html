@@ -23,7 +23,7 @@
 </mat-form-field>
 
 <br/>
-<h2>1. Select the minimum values your gear should have.
+<h2>1. Select the values your gear should have.
   <mat-icon inline aria-hidden="false" aria-label="Help" id="help-select-stats"
             matTooltip='Use the buttons to define the stats you want. Colored values are selected, gray means they are selectable and hollow values are not achievable with your gear.'
             #tooltip="matTooltip"> help
@@ -242,6 +242,12 @@ Your selection results in {{possiblePermutationCount}} permutations.
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.strength > 0">+{{element.mods.strength}}x10</span>
       </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="mods">
+      <th mat-header-cell *matHeaderCellDef> Used Mods</th>
+      <td mat-cell *matCellDef="let element ">{{element.mods.total}}</td>
     </ng-container>
 
 

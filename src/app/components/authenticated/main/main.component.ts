@@ -48,7 +48,7 @@ export class MainComponent implements OnInit {
   updateTableSubject: Subject<any> = new Subject();
   updatePermutationsSubject: Subject<any> = new Subject();
   updateExoticPermutationsSubject: Subject<any> = new Subject();
-  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
+  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "mods"]
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
