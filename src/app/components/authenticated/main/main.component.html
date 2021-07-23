@@ -184,7 +184,8 @@ Your selection results in {{possiblePermutationCount}} permutations.
   Your selection results in {{possiblePermutationCount}} permutations.
   <span *ngIf="tablePermutations.length != possiblePermutationCount">
     This table displays the first {{tablePermutations.length}} entries.
-  </span>
+  </span><br/>
+  Click on a row to expand it and to see the list of the items required for this build.
   <table class="result-table" mat-table [dataSource]="tablePermutations" multiTemplateDataRows>
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->
@@ -260,13 +261,15 @@ Your selection results in {{possiblePermutationCount}} permutations.
              src="https://bungie.net/{{getExoticForPermutation(element.permutation)?.icon}}">
         <img *ngIf="!element.permutation.hasExotic" class="itemIcon"
              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
+
+        <mat-icon>{{expandedElement === element ? 'expand_less' : 'expand_more'}}</mat-icon>
       </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="tiers">
       <th mat-header-cell *matHeaderCellDef>Tiers</th>
-      <td mat-cell *matCellDef="let element "> {{getSkillTierFromPermutation(element.permutation.stats)}} </td>
+      <td mat-cell *matCellDef="let element "> {{getSkillTierFromPermutation(element.stats)}} </td>
     </ng-container>
 
 

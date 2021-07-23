@@ -48,7 +48,7 @@ export class MainComponent implements OnInit {
   updateTableSubject: Subject<any> = new Subject();
   updatePermutationsSubject: Subject<any> = new Subject();
   updateExoticPermutationsSubject: Subject<any> = new Subject();
-  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "mods"]
+  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers","mods"]
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
@@ -261,13 +261,13 @@ export class MainComponent implements OnInit {
     return null;
   }
 
-  getSkillTierFromPermutation(permutation: GearPermutation) {
-    return Math.floor(permutation.stats.mobility / 10)
-      + Math.floor(permutation.stats.resilience / 10)
-      + Math.floor(permutation.stats.recovery / 10)
-      + Math.floor(permutation.stats.discipline / 10)
-      + Math.floor(permutation.stats.intellect / 10)
-      + Math.floor(permutation.stats.strength / 10)
+  getSkillTierFromPermutation(stats: Stats) {
+    return Math.floor(stats.mobility / 10)
+      + Math.floor(stats.resilience / 10)
+      + Math.floor(stats.recovery / 10)
+      + Math.floor(stats.discipline / 10)
+      + Math.floor(stats.intellect / 10)
+      + Math.floor(stats.strength / 10)
   }
 
 
