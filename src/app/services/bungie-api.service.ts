@@ -104,6 +104,7 @@ export class BungieApiService {
 
           let r = Object.assign({
             itemInstanceId: d.itemInstanceId || "",
+            masterworked: !!instance.energy && instance.energy.energyCapacity == 10,
             mobility: stats[2996146975].value,
             resilience: stats[392767087].value,
             recovery: stats[1943323491].value,
@@ -115,14 +116,13 @@ export class BungieApiService {
 
 
           // TODO: Negative values are capped at 0, thus i get always ~8 strength
-          if (!!instance.energy && instance.energy.energyCapacity == 10) {
+          if (r.masterworked) {
             r.mobility -= 2
             r.resilience -= 2
             r.recovery -= 2
             r.discipline -= 2
             r.intellect -= 2
             r.strength -= 2;
-            (r as any).__mwd = true;
           }
           //(r as any).__stats = stats;
 

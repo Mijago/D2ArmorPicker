@@ -14,6 +14,7 @@ export interface IManifestArmor {
 
 export interface IInventoryArmor extends IManifestArmor {
   itemInstanceId: string;
+  masterworked: boolean;
   mobility: number;
   resilience: number;
   recovery: number;
@@ -35,9 +36,13 @@ export class DatabaseService {
     this.db = new Dexie('d2armorpicker');
 
     // Declare tables, IDs and indexes
-    this.db.version(1).stores({
+    this.db.version(2).stores({
       manifestArmor: 'hash, name, icon, slot, isExotic, clazz',
-      inventoryArmor: 'itemInstanceId, hash, name, slot, isExotic, clazz, mobility, resilience, recovery, discipline, intellect, strength'
+      inventoryArmor: 'itemInstanceId, hash, name, masterworked, slot, isExotic, clazz, mobility, resilience, recovery, discipline, intellect, strength'
+    }).upgrade(async tx => {
+      // simply clear all the armor. It'll be updated either way.
+      await tx.db.table("inventoryArmor").clear();
+      localStorage.setItem("LastArmorUpdate", "0")
     });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");

@@ -130,7 +130,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 </div>
 
 <div>
-  <h2>(4.) Do you want to lock an exotic?</h2>
+  <h2>4. Do you want to lock an exotic?</h2>
   Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
 
   <img class="exoticIcon {{ -1 === lockedExotic ? 'selected' : '' }}"
@@ -174,6 +174,31 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
 
 <br/>
+<div>
+  <h2>(5.) Advanced settings</h2>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="filterAssumeMasterworked" [checked]="filterAssumeMasterworked"
+                      (change)="triggerTableUpdate()">Assume items are masterworked
+      <mat-icon inline aria-hidden="false" aria-label="Help"
+                matTooltip="If you enable this setting, this tool will assume that all items are masterworked. If an item is not masterworked, it is assumed that you will masterwork it and the +2 on every stat are automatically added to every item."
+                #tooltip="matTooltip"> help
+      </mat-icon>
+    </mat-slide-toggle>
+  </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="filterOnlyUseMasterworkedItems"
+                      [checked]="filterOnlyUseMasterworkedItems"
+                      (change)="triggerExoticPermutationUpdate()">Only use currently masterworked items
+      <mat-icon inline aria-hidden="false" aria-label="Help"
+                matTooltip="If you enable this setting, this tool will only use armor that is currently masterworked. Use it if you dont want to masterwork any more items. If you don't have any masterworked items, you won't get any results."
+                #tooltip="matTooltip"> help
+      </mat-icon>
+    </mat-slide-toggle>
+  </div>
+</div>
+
+
+<br/>
 <h2>Results</h2>
 <div *ngIf="tablePermutations.length == 0">
   No results found... 😭
@@ -193,7 +218,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <ng-container matColumnDef="mobility">
       <th mat-header-cell *matHeaderCellDef> Mobility</th>
       <td mat-cell *matCellDef="let element ">
-        {{element.permutation.stats.mobility}}
+        {{element.permutation.getStats(filterAssumeMasterworked).mobility}}
         <span class="statBonus" *ngIf="this.enablePowerfulFriends">+20</span>
         <span class="statBonusMod" *ngIf="element.mods.mobility > 0">+{{element.mods.mobility}}x10</span>
       </td>
@@ -202,7 +227,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="resilience">
       <th mat-header-cell *matHeaderCellDef> Resilience</th>
-      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.resilience}}
+      <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).resilience}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfShards">+10</span>
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.resilience > 0">+{{element.mods.resilience}}x10</span>
@@ -212,7 +237,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="recovery">
       <th mat-header-cell *matHeaderCellDef> Recovery</th>
-      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.recovery}}
+      <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).recovery}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.recovery > 0">+{{element.mods.recovery}}x10</span>
       </td>
@@ -221,7 +246,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="discipline">
       <th mat-header-cell *matHeaderCellDef> Discipline</th>
-      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.discipline}}
+      <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).discipline}}
         <span class="statBonusMod" *ngIf="element.mods.discipline > 0">+{{element.mods.discipline}}x10</span>
       </td>
     </ng-container>
@@ -229,7 +254,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="intellect">
       <th mat-header-cell *matHeaderCellDef> Intellect</th>
-      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.intellect}}
+      <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).intellect}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.intellect > 0">+{{element.mods.intellect}}x10</span>
       </td>
@@ -238,7 +263,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="strength">
       <th mat-header-cell *matHeaderCellDef> Strength</th>
-      <td mat-cell *matCellDef="let element ">{{element.permutation.stats.strength}}
+      <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).strength}}
         <span class="statBonus" *ngIf="this.enableRadiantLight">+20</span>
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.strength > 0">+{{element.mods.strength}}x10</span>
@@ -350,12 +375,12 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </tr>
               <tr class="statTotalRow">
                 <td>Total</td>
-                <td>{{element.permutation.stats.mobility + (this.enablePowerfulFriends ? 20 : 0)}}</td>
-                <td>{{element.permutation.stats.resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
-                <td>{{element.permutation.stats.recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}</td>
-                <td>{{element.permutation.stats.discipline}}</td>
-                <td>{{element.permutation.stats.intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
-                <td>{{element.permutation.stats.strength
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0)}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).discipline}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).strength
                 + (this.enableRadiantLight ? 20 : 0)
                 + (this.enableStasisWhisperOfDurance ? 10 : 0)}}</td>
               </tr>
@@ -383,19 +408,19 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </tr>
               <tr class="statTotalRow">
                 <td>Total with mods</td>
-                <td>{{element.permutation.stats.mobility + (this.enablePowerfulFriends ? 20 : 0) + element.mods.mobility * 10}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0) + element.mods.mobility * 10}}</td>
                 <td>{{
-                  element.permutation.stats.resilience
+                  element.permutation.getStats(filterAssumeMasterworked).resilience
                   + (this.enableStasisWhisperOfShards ? 10 : 0)
                   + (this.enableStasisWhisperOfConduction ? 10 : 0)
                   + element.mods.resilience * 10
                   }}
                 </td>
-                <td>{{element.permutation.stats.recovery + (this.enableStasisWhisperOfChains ? 10 : 0) + element.mods.recovery * 10  }}</td>
-                <td>{{element.permutation.stats.discipline + element.mods.discipline * 10}}</td>
-                <td>{{element.permutation.stats.intellect + (this.enableStasisWhisperOfConduction ? 10 : 0) + element.mods.intellect * 10}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0) + element.mods.recovery * 10  }}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).discipline + element.mods.discipline * 10}}</td>
+                <td>{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0) + element.mods.intellect * 10}}</td>
                 <td>
-                  {{element.permutation.stats.strength
+                  {{element.permutation.getStats(filterAssumeMasterworked).strength
                 + (this.enableRadiantLight ? 20 : 0)
                 + (this.enableStasisWhisperOfDurance ? 10 : 0)
                 + element.mods.strength * 10

@@ -48,7 +48,7 @@ export class MainComponent implements OnInit {
   updateTableSubject: Subject<any> = new Subject();
   updatePermutationsSubject: Subject<any> = new Subject();
   updateExoticPermutationsSubject: Subject<any> = new Subject();
-  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers","mods"]
+  shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods"]
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
@@ -65,6 +65,8 @@ export class MainComponent implements OnInit {
   minStrength: number = 0;
 
   maxMods: number = 5;
+  filterAssumeMasterworked: boolean = true;
+  filterOnlyUseMasterworkedItems: boolean = false;
 
   enablePowerfulFriends: boolean = true;
   enableRadiantLight: boolean = true;
@@ -177,6 +179,11 @@ export class MainComponent implements OnInit {
       });
     }
 
+    // update masterwork
+    if (this.filterOnlyUseMasterworkedItems) {
+      this.permutationsFilteredByExotic = this.permutationsFilteredByExotic.filter(p => p.allMasterworked);
+    }
+
     //await this.triggerTableUpdate();
     await this.updateTable();
   }
@@ -184,7 +191,7 @@ export class MainComponent implements OnInit {
   async updateTable() {
     console.log("updateTable")
     let mappedPermutations = this.permutationsFilteredByExotic.map(perm => {
-      let stats = Object.assign({}, perm.stats);
+      let stats = perm.getStats(this.filterAssumeMasterworked);
       if (this.enablePowerfulFriends) stats.mobility += 20;
       if (this.enableRadiantLight) stats.strength += 20;
       if (this.enableStasisWhisperOfChains) stats.recovery += 10;
@@ -205,13 +212,6 @@ export class MainComponent implements OnInit {
       }
       mods.total = mods.mobility + mods.resilience + mods.recovery + mods.discipline + mods.intellect + mods.strength
 
-
-      if (perm.helmet.name == "Kabr's Battlecage"
-        && perm.gauntlet.name == "Lightkin Gauntlets"
-        && perm.chest.name == "Lightkin Plate"
-        && perm.legs.name == "Kabr's Forceful Greaves") {
-        console.log("aa", stats, mods)
-      }
       return {
         permutation: perm,
         stats: stats,
@@ -332,8 +332,7 @@ export class MainComponent implements OnInit {
     await this.router.navigate(["login"])
   }
 
-  generateEmptyArray(n:number) {
-    console.log(Array(n).fill(1))
+  generateEmptyArray(n: number) {
     return Array(n).fill(1);
   }
 }
