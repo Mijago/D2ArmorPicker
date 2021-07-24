@@ -331,4 +331,9 @@ export class MainComponent implements OnInit {
     await this.auth.logout();
     await this.router.navigate(["login"])
   }
+
+  generateEmptyArray(n:number) {
+    console.log(Array(n).fill(1))
+    return Array(n).fill(1);
+  }
 }

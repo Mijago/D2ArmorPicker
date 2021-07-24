@@ -78,3 +78,9 @@ tr.example-detail-row {
 .selected {
   border: red solid 2px;
 }
+
+
+.modPreview {
+  width: 32px;
+  margin-right: 2px;
+}

@@ -248,7 +248,26 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="mods">
       <th mat-header-cell *matHeaderCellDef> Used Mods</th>
-      <td mat-cell *matCellDef="let element ">{{element.mods.total}}</td>
+      <td mat-cell *matCellDef="let element ">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"
+             *ngFor="let x of generateEmptyArray(element.mods.mobility)" class="modPreview"
+             matTooltip="Mobility Mod" #tooltip="matTooltip">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"
+             *ngFor="let x of generateEmptyArray(element.mods.resilience)" class="modPreview"
+             matTooltip="Resilience Mod" #tooltip="matTooltip">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"
+             *ngFor="let x of generateEmptyArray(element.mods.recovery)" class="modPreview"
+             matTooltip="Recovery Mod" #tooltip="matTooltip">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"
+             *ngFor="let x of generateEmptyArray(element.mods.discipline)" class="modPreview"
+             matTooltip="Discipline Mod" #tooltip="matTooltip">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"
+             *ngFor="let x of generateEmptyArray(element.mods.intellect)" class="modPreview"
+             matTooltip="Intellect Mod" #tooltip="matTooltip">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"
+             *ngFor="let x of generateEmptyArray(element.mods.strength)" class="modPreview"
+             matTooltip="Strength Mod" #tooltip="matTooltip">
+      </td>
     </ng-container>
 
 
