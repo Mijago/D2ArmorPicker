@@ -13,6 +13,7 @@ export class AuthService {
 
 
   async generateTokens() {
+    console.info("Generate auth tokens")
     const CLIENT_ID = environment.clientId;
     const TOKEN = this.authCode;
 
@@ -42,10 +43,14 @@ export class AuthService {
   }
 
   set authCode(newCode: string | null) {
-    if (!newCode)
+    if (!newCode) {
+      console.info("Clearing auth code")
       localStorage.removeItem("code");
-    else
+    }
+    else {
+      console.info("Setting new auth code")
       localStorage.setItem("code", "" + newCode)
+    }
   }
 
   get accessToken() {
@@ -53,10 +58,14 @@ export class AuthService {
   }
 
   set accessToken(newCode: string | null) {
-    if (!newCode)
+    if (!newCode) {
+      console.info("Clearing access token")
       localStorage.removeItem("accessToken");
-    else
+    }
+    else {
+      console.info("Setting new access token")
       localStorage.setItem("accessToken", "" + newCode)
+    }
   }
 
   get lastRefresh() {

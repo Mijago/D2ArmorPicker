@@ -18,15 +18,17 @@ export class HandleBungieLoginComponent implements OnInit {
       if (window.location.search.indexOf("?code=") > -1)
         code = window.location.search.substr(6);
 
-      console.log({code})
+      console.info({code})
 
       if (!code)
         return;
 
       this.loginService.authCode = code;
 
+      console.info("Generate tokens with the new code")
       await this.loginService.generateTokens()
 
+      console.info("Now navigate to /")
       await this.router.navigate(["/"]);
     });
   }
