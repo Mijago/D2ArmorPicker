@@ -41,9 +41,10 @@ export interface IMappedGearPermutation {
   styleUrls: ['./main.component.css'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed', style({height: '0px', minHeight: '0'})),
-      state('expanded', style({height: '*'})),
+      state('collapsed, void', style({ height: '0px' })),
+      state('expanded', style({ height: '*' })),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      transition('expanded <=> void', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
     ]),],
 })
 export class MainComponent implements OnInit {
@@ -358,8 +359,9 @@ export class MainComponent implements OnInit {
   sortData(sort: Sort) {
     const data = this.allTablePermutations.slice();
     this.sortCriteria = sort;
+    this.expandedElement = null;
     if (!sort.active || sort.direction === '') {
-      this.sortedTablePermutations = this.allTablePermutations.splice(0, 100);
+      this.sortedTablePermutations = data.splice(0, 100);
       return;
     }
 
