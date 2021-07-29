@@ -221,7 +221,7 @@ export class MainComponent implements OnInit {
       let totalStats = {
         mobility: stats.mobility + mods.mobility * 10,
         resilience: stats.resilience + mods.resilience * 10,
-        recovery: stats.recovery + mods.discipline * 10,
+        recovery: stats.recovery + mods.recovery * 10,
         discipline: stats.discipline + mods.discipline * 10,
         intellect: stats.intellect + mods.intellect * 10,
         strength: stats.strength + mods.strength * 10
