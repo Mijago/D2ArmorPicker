@@ -48,7 +48,7 @@ export class BungieApiService {
 
   async updateArmorItems(force = false) {
     if (!force && localStorage.getItem("LastArmorUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 3600 * 24 * 3)
+      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2 )
         return;
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
@@ -181,7 +181,7 @@ export class BungieApiService {
 
   async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 3600 * 24 * 3)
+      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24 * 1)
         return;
 
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
