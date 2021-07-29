@@ -412,24 +412,12 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </tr>
               <tr class="statTotalRow">
                 <td>Total with mods</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0) + element.mods.mobility * 10}}</td>
-                <td>{{
-                  element.permutation.getStats(filterAssumeMasterworked).resilience
-                  + (this.enableStasisWhisperOfShards ? 10 : 0)
-                  + (this.enableStasisWhisperOfConduction ? 10 : 0)
-                  + element.mods.resilience * 10
-                  }}
-                </td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0) + element.mods.recovery * 10  }}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).discipline + element.mods.discipline * 10}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0) + element.mods.intellect * 10}}</td>
-                <td>
-                  {{element.permutation.getStats(filterAssumeMasterworked).strength
-                + (this.enableRadiantLight ? 20 : 0)
-                + (this.enableStasisWhisperOfDurance ? 10 : 0)
-                + element.mods.strength * 10
-                  }}
-                </td>
+                <td>{{element.totalStatsWithMods.mobility}}</td>
+                <td>{{element.totalStatsWithMods.resilience}}</td>
+                <td>{{element.totalStatsWithMods.recovery}}</td>
+                <td>{{element.totalStatsWithMods.discipline}}</td>
+                <td>{{element.totalStatsWithMods.intellect}}</td>
+                <td>{{element.totalStatsWithMods.strength}}</td>
               </tr>
             </table>
           </div>
