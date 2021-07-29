@@ -181,7 +181,7 @@ export class BungieApiService {
 
   async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24 * 1)
+      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2 )
         return;
 
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
