@@ -1,5 +1,7 @@
-<span *ngFor="let n of values">
+<span *ngFor="let n of values;index as i;">
   <button mat-raised-button [color]="getColor(n)" (click)="setValue(n)"
+          [matTooltip]="tooltips[i] || ''"
+          matTooltipClass="allow-cr"
           *ngIf="maxPossibleValue >= n || value >= n">{{n}}</button>
   <button mat-stroked-button [color]="getColor(n)" (click)="setValue(n)"
           *ngIf="maxPossibleValue < n && value < n" disabled>{{n}}</button>

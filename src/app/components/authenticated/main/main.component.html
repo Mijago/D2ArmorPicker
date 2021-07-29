@@ -39,6 +39,7 @@
     <td>Mobility</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipMobilitySelector"
         [maxPossibleValue]="maximumPossibleStats.mobility"
         (onChange)="minMobility = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
@@ -47,6 +48,7 @@
     <td>Resilience</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipResilienceSelector"
         [maxPossibleValue]="maximumPossibleStats.resilience"
         (onChange)="minResilience = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
@@ -55,6 +57,7 @@
     <td>Recovery</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipRecoverySelector"
         [maxPossibleValue]="maximumPossibleStats.recovery"
         (onChange)="minRecovery = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
@@ -63,6 +66,7 @@
     <td>Discipline</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipDisciplineSelector"
         [maxPossibleValue]="maximumPossibleStats.discipline"
         (onChange)="minDiscipline = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
@@ -71,6 +75,7 @@
     <td>Intellect</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipIntellectSelector"
         [maxPossibleValue]="maximumPossibleStats.intellect"
         (onChange)="minIntellect = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
@@ -79,6 +84,7 @@
     <td>Strength</td>
     <td>
       <app-stat-minimum-selection
+        [tooltips]="tooltipStrengthSelector"
         [maxPossibleValue]="maximumPossibleStats.strength"
         (onChange)="minStrength = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>

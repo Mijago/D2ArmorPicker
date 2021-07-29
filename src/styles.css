@@ -13,3 +13,7 @@ body {
   margin-left: 2px;
   margin-right: 2px;
 }
+
+.allow-cr {
+  white-space: pre;
+}

@@ -10,6 +10,7 @@ export class StatMinimumSelectionComponent implements OnInit {
   @Input() values: number[] = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   @Input() value: number = 10;
   @Input() maxPossibleValue: number = 100;
+  @Input() tooltips: string[]= [];
   @Output() onChange = new EventEmitter<number>();
 
 
