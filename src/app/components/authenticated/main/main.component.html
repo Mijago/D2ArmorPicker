@@ -341,7 +341,10 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </thead>
               <tr
                 *ngFor="let i of element.permutation.items">
-                <td>{{i.name}}</td>
+                <td *ngIf="!i.masterworked">{{i.name}}</td>
+                <td *ngIf="i.masterworked">
+                  <u matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
+                </td>
                 <td>{{i.mobility + 2}}</td>
                 <td>{{i.resilience + 2}}</td>
                 <td>{{i.recovery + 2}}</td>
