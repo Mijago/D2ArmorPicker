@@ -8,6 +8,7 @@ import {DatabaseService, IInventoryArmor} from "../../../services/database.servi
 import {GearPermutation, Stats} from "../../../data/permutation";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {Router} from "@angular/router";
+import {Sort} from "@angular/material/sort";
 
 export interface ISelectedExotic {
   icon: string;
@@ -20,6 +21,8 @@ export interface ISelectedExotic {
 export interface IMappedGearPermutation {
   permutation: GearPermutation;
   stats: Stats,
+  totalStatsWithMods: Stats,
+  tiers: number,
   mods: {
     mobility: number;
     resilience: number;
@@ -84,11 +87,13 @@ export class MainComponent implements OnInit {
 
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
+  private sortCriteria: Sort = {active: "", direction: ""};
+  private allTablePermutations: IMappedGearPermutation[] = [];
+  sortedTablePermutations: IMappedGearPermutation[] = [];
 
   possiblePermutationCount: number = 0;
   maximumPossibleStats: Stats = {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0};
   expandedElement: IMappedGearPermutation | null = null;
-  tablePermutations: IMappedGearPermutation[] = [];
 
 
   updatingManifest = false;
@@ -212,10 +217,23 @@ export class MainComponent implements OnInit {
       }
       mods.total = mods.mobility + mods.resilience + mods.recovery + mods.discipline + mods.intellect + mods.strength
 
+      let totalStats = {
+        mobility: stats.mobility + mods.mobility * 10 + (this.enablePowerfulFriends ? 20 : 0),
+        resilience: stats.resilience + mods.resilience * 10
+          + (this.enableStasisWhisperOfShards ? 10 : 0)
+          + (this.enableStasisWhisperOfConduction ? 10 : 0),
+        recovery: stats.recovery + mods.discipline * 10 + (this.enableStasisWhisperOfChains ? 10 : 0),
+        discipline: stats.discipline + mods.discipline * 10,
+        intellect: stats.intellect + mods.intellect * 10 + (this.enableStasisWhisperOfConduction ? 10 : 0),
+        strength: stats.strength + mods.strength * 10 + (this.enableStasisWhisperOfDurance ? 10 : 0)
+      }
+
       return {
         permutation: perm,
         stats: stats,
-        mods: mods
+        mods: mods,
+        tiers: this.getSkillTierFromPermutation(totalStats),
+        totalStatsWithMods: totalStats
       } as IMappedGearPermutation
     }).filter(d => d.mods.total <= this.maxMods)
       .sort((a, b) => a.mods.total - b.mods.total)
@@ -248,8 +266,9 @@ export class MainComponent implements OnInit {
 
     console.log("this.maximumPossibleStats", this.maximumPossibleStats)
 
+    this.allTablePermutations = mappedPermutations;
     this.possiblePermutationCount = mappedPermutations.length;
-    this.tablePermutations = mappedPermutations.splice(0, 100);
+    this.sortData(this.sortCriteria)
   }
 
 
@@ -312,7 +331,7 @@ export class MainComponent implements OnInit {
   async refreshAll(b: boolean) {
     this.lockedExotic = 0;
     this.permutations = [];
-    this.tablePermutations = [];
+    this.sortedTablePermutations = [];
     this.expandedElement = null;
 
     this.updatingManifest = true;
@@ -335,4 +354,40 @@ export class MainComponent implements OnInit {
   generateEmptyArray(n: number) {
     return Array(n).fill(1);
   }
+
+  sortData(sort: Sort) {
+    const data = this.allTablePermutations.slice();
+    this.sortCriteria = sort;
+    if (!sort.active || sort.direction === '') {
+      this.sortedTablePermutations = this.allTablePermutations.splice(0, 100);
+      return;
+    }
+
+    this.sortedTablePermutations = data.sort((a, b) => {
+      const isAsc = sort.direction === 'asc';
+      switch (sort.active) {
+        case 'Mobility':
+          return compare(a.totalStatsWithMods.mobility, b.totalStatsWithMods.mobility, isAsc);
+        case 'Resilience':
+          return compare(a.totalStatsWithMods.resilience, b.totalStatsWithMods.resilience, isAsc);
+        case 'Recovery':
+          return compare(a.totalStatsWithMods.recovery, b.totalStatsWithMods.recovery, isAsc);
+        case 'Discipline':
+          return compare(a.totalStatsWithMods.discipline, b.totalStatsWithMods.discipline, isAsc);
+        case 'Intellect':
+          return compare(a.totalStatsWithMods.intellect, b.totalStatsWithMods.intellect, isAsc);
+        case 'Strength':
+          return compare(a.totalStatsWithMods.strength, b.totalStatsWithMods.strength, isAsc);
+        case 'Tiers':
+          return compare(a.tiers, b.tiers, isAsc);
+        default:
+          return 0;
+      }
+    }).splice(0, 100);
+  }
+}
+
+
+function compare(a: number | string, b: number | string, isAsc: boolean) {
+  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
 }

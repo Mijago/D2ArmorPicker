@@ -200,23 +200,24 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
 <br/>
 <h2>Results</h2>
-<div *ngIf="tablePermutations.length == 0">
+<div *ngIf="sortedTablePermutations.length == 0">
   No results found... 😭
   You may want to reduce your stat requirements.
 </div>
 
-<div *ngIf="tablePermutations.length > 0">
+<div *ngIf="sortedTablePermutations.length > 0">
   Your selection results in {{possiblePermutationCount}} permutations.
-  <span *ngIf="tablePermutations.length != possiblePermutationCount">
-    This table displays the first {{tablePermutations.length}} entries.
+  <span *ngIf="sortedTablePermutations.length != possiblePermutationCount">
+    This table displays the first {{sortedTablePermutations.length}} entries.
   </span><br/>
   Click on a row to expand it and to see the list of the items required for this build.
-  <table class="result-table" mat-table [dataSource]="tablePermutations" multiTemplateDataRows>
+  <table class="result-table" mat-table [dataSource]="sortedTablePermutations" multiTemplateDataRows
+         matSort (matSortChange)="sortData($event)">
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->
     <!-- Name Column -->
     <ng-container matColumnDef="mobility">
-      <th mat-header-cell *matHeaderCellDef> Mobility</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility"> Mobility</th>
       <td mat-cell *matCellDef="let element ">
         {{element.permutation.getStats(filterAssumeMasterworked).mobility}}
         <span class="statBonus" *ngIf="this.enablePowerfulFriends">+20</span>
@@ -226,7 +227,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="resilience">
-      <th mat-header-cell *matHeaderCellDef> Resilience</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Resilience"> Resilience</th>
       <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).resilience}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfShards">+10</span>
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
@@ -236,7 +237,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="recovery">
-      <th mat-header-cell *matHeaderCellDef> Recovery</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Recovery"> Recovery</th>
       <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).recovery}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.recovery > 0">+{{element.mods.recovery}}x10</span>
@@ -245,7 +246,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="discipline">
-      <th mat-header-cell *matHeaderCellDef> Discipline</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Discipline"> Discipline</th>
       <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).discipline}}
         <span class="statBonusMod" *ngIf="element.mods.discipline > 0">+{{element.mods.discipline}}x10</span>
       </td>
@@ -253,7 +254,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="intellect">
-      <th mat-header-cell *matHeaderCellDef> Intellect</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Intellect"> Intellect</th>
       <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).intellect}}
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
         <span class="statBonusMod" *ngIf="element.mods.intellect > 0">+{{element.mods.intellect}}x10</span>
@@ -262,7 +263,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="strength">
-      <th mat-header-cell *matHeaderCellDef> Strength</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Strength"> Strength</th>
       <td mat-cell *matCellDef="let element ">{{element.permutation.getStats(filterAssumeMasterworked).strength}}
         <span class="statBonus" *ngIf="this.enableRadiantLight">+20</span>
         <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
@@ -312,7 +313,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="tiers">
-      <th mat-header-cell *matHeaderCellDef>Tiers</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Tiers">Tiers</th>
       <td mat-cell *matCellDef="let element "> {{getSkillTierFromPermutation(element.stats)}} </td>
     </ng-container>
 
