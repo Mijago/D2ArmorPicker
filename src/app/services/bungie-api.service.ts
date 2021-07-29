@@ -31,10 +31,10 @@ export class BungieApiService {
         }
       }
     ).toPromise()
-      .catch(err => {
+      .catch(async err => {
         console.error(err);
         console.info("Revoking auth, must re-login")
-        this.authService.logout();
+        await this.authService.logout();
         // TODO: go to login page
       })
   }
@@ -43,7 +43,7 @@ export class BungieApiService {
   async getMembershipDataForCurrentUser() {
     console.info("BungieApiService", "getMembershipDataForCurrentUser")
     let response = await getMembershipDataForCurrentUser(d => this.$http(d));
-    return response.Response.destinyMemberships[0];
+    return response?.Response.destinyMemberships[0];
   }
 
   async updateArmorItems(force = false) {
@@ -51,6 +51,11 @@ export class BungieApiService {
       if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 3600 * 24 * 3)
         return;
     let destinyMembership = await this.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      await this.authService.logout();
+      return;
+    }
+
 
     console.info("BungieApiService", "getProfile")
     let profile = await getProfile(d => this.$http(d), {
