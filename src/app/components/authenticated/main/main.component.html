@@ -12,6 +12,11 @@
   <button id="logoutBtn" mat-raised-button color="warn" (click)="logout()">Logout</button>
 </div>
 
+
+<mat-card id="card-config">
+  <mat-card-title> Configuration</mat-card-title>
+  <mat-card-content>
+
 <h2>Select the class of your guardian.</h2>
 <mat-form-field appearance="fill">
   <mat-label>Class</mat-label>
@@ -130,6 +135,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
 </div>
 
 <div>
+  <br>
   <h2>4. Do you want to lock an exotic?</h2>
   Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
 
@@ -196,10 +202,12 @@ Your selection results in {{possiblePermutationCount}} permutations.
     </mat-slide-toggle>
   </div>
 </div>
+  </mat-card-content>
+</mat-card>
 
-
-<br/>
-<h2>Results</h2>
+<mat-card id="card-results">
+  <mat-card-title> Results</mat-card-title>
+  <mat-card-content>
 <div *ngIf="sortedTablePermutations.length == 0">
   No results found... 😭
   You may want to reduce your stat requirements.
@@ -306,8 +314,13 @@ Your selection results in {{possiblePermutationCount}} permutations.
              src="https://bungie.net/{{getExoticForPermutation(element.permutation)?.icon}}">
         <img *ngIf="!element.permutation.hasExotic" class="itemIcon"
              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
-
-        <mat-icon>{{expandedElement === element ? 'expand_less' : 'expand_more'}}</mat-icon>
+      </td>
+    </ng-container>
+    <!-- Name Column -->
+    <ng-container matColumnDef="dropdown">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let element ">
+          <mat-icon>{{expandedElement === element ? 'expand_less' : 'expand_more'}}</mat-icon>
       </td>
     </ng-container>
 
@@ -436,3 +449,6 @@ Your selection results in {{possiblePermutationCount}} permutations.
   </table>
 
 </div>
+
+  </mat-card-content>
+</mat-card>

@@ -25,6 +25,7 @@
   overflow: hidden;
   display: flex;
 }
+
 tr.example-detail-row {
   height: 0;
 }
@@ -33,7 +34,7 @@ tr.example-detail-row {
   border-bottom-width: 0;
 }
 
-.specificStatTable tr>td {
+.specificStatTable tr > td {
   text-align: right;
 }
 
@@ -41,7 +42,7 @@ tr.example-detail-row {
   border-top: aliceblue double;
 }
 
-#loading{
+#loading {
   position: fixed;
   top: 0;
   width: 100%;
@@ -62,11 +63,14 @@ tr.example-detail-row {
 #refreshBtn {
   margin-right: 20px;
 }
+
 #buttonContainer {
   position: fixed;
   bottom: 2px;
   right: 2px;
+  z-index: 100;
 }
+
 .exoticIcon {
   width: 40px;
   height: 40px;
@@ -83,4 +87,16 @@ tr.example-detail-row {
 .modPreview {
   width: 32px;
   margin-right: 2px;
+}
+
+#card-config {
+  float: left;
+  width: fit-content;
+  margin-bottom: 20px;
+  margin-right: 4px;
+}
+
+#card-results {
+  float: left;
+  width: fit-content;
 }

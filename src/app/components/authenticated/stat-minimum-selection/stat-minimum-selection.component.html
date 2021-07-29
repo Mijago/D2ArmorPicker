@@ -1,6 +1,6 @@
 <span *ngFor="let n of values">
-  <button mat-flat-button [color]="getColor(n)" (click)="setValue(n)"
+  <button mat-raised-button [color]="getColor(n)" (click)="setValue(n)"
           *ngIf="maxPossibleValue >= n || value >= n">{{n}}</button>
   <button mat-stroked-button [color]="getColor(n)" (click)="setValue(n)"
-          *ngIf="maxPossibleValue < n && value < n">{{n}}</button>
+          *ngIf="maxPossibleValue < n && value < n" disabled>{{n}}</button>
 </span>
