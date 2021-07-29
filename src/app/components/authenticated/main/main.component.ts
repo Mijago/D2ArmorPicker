@@ -41,8 +41,8 @@ export interface IMappedGearPermutation {
   styleUrls: ['./main.component.css'],
   animations: [
     trigger('detailExpand', [
-      state('collapsed, void', style({ height: '0px' })),
-      state('expanded', style({ height: '*' })),
+      state('collapsed, void', style({height: '0px'})),
+      state('expanded', style({height: '*'})),
       transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
       transition('expanded <=> void', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
     ]),],
@@ -219,14 +219,12 @@ export class MainComponent implements OnInit {
       mods.total = mods.mobility + mods.resilience + mods.recovery + mods.discipline + mods.intellect + mods.strength
 
       let totalStats = {
-        mobility: stats.mobility + mods.mobility * 10 + (this.enablePowerfulFriends ? 20 : 0),
-        resilience: stats.resilience + mods.resilience * 10
-          + (this.enableStasisWhisperOfShards ? 10 : 0)
-          + (this.enableStasisWhisperOfConduction ? 10 : 0),
-        recovery: stats.recovery + mods.discipline * 10 + (this.enableStasisWhisperOfChains ? 10 : 0),
+        mobility: stats.mobility + mods.mobility * 10,
+        resilience: stats.resilience + mods.resilience * 10,
+        recovery: stats.recovery + mods.discipline * 10,
         discipline: stats.discipline + mods.discipline * 10,
-        intellect: stats.intellect + mods.intellect * 10 + (this.enableStasisWhisperOfConduction ? 10 : 0),
-        strength: stats.strength + mods.strength * 10 + (this.enableStasisWhisperOfDurance ? 10 : 0)
+        intellect: stats.intellect + mods.intellect * 10,
+        strength: stats.strength + mods.strength * 10
       }
 
       return {

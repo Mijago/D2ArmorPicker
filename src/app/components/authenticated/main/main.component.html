@@ -314,7 +314,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="tiers">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Tiers">Tiers</th>
-      <td mat-cell *matCellDef="let element "> {{getSkillTierFromPermutation(element.stats)}} </td>
+      <td mat-cell *matCellDef="let element "> {{element.tiers}} </td>
     </ng-container>
 
 
