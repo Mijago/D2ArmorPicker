@@ -106,7 +106,6 @@ export class BungieApiService {
           let instanceData = profile.Response.itemComponents.instances.data || {};
           let instance = instanceData[d.itemInstanceId || ""] || {}
 
-
           let r = Object.assign({
             itemInstanceId: d.itemInstanceId || "",
             masterworked: !!instance.energy && instance.energy.energyCapacity == 10,
@@ -116,6 +115,7 @@ export class BungieApiService {
             discipline: stats[1735777505].value,
             intellect: stats[144602215].value,
             strength: stats[4244567218].value,
+            energyAffinity: instance.energy?.energyType || 0,
             instanceRawData: JSON.stringify(d),
           }, res[d.itemHash]) as IInventoryArmor
 

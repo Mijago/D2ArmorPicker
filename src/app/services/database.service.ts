@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import Dexie from 'dexie';
-import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
+import {DestinyClass, DestinyEnergyType} from "bungie-api-ts/destiny2/interfaces";
 
 export interface IManifestArmor {
   hash: number;
@@ -21,6 +21,7 @@ export interface IInventoryArmor extends IManifestArmor {
   discipline: number;
   intellect: number;
   strength: number;
+  energyAffinity: DestinyEnergyType;
 }
 
 @Injectable({
@@ -36,9 +37,9 @@ export class DatabaseService {
     this.db = new Dexie('d2armorpicker');
 
     // Declare tables, IDs and indexes
-    this.db.version(2).stores({
+    this.db.version(3).stores({
       manifestArmor: 'hash, name, icon, slot, isExotic, clazz',
-      inventoryArmor: 'itemInstanceId, hash, name, masterworked, slot, isExotic, clazz, mobility, resilience, recovery, discipline, intellect, strength'
+      inventoryArmor: 'itemInstanceId, hash, name, masterworked, slot, isExotic, clazz, mobility, resilience, recovery, discipline, intellect, strength, energyAffinity'
     }).upgrade(async tx => {
       // simply clear all the armor. It'll be updated either way.
       await tx.db.table("inventoryArmor").clear();

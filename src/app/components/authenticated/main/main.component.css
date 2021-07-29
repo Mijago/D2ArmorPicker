@@ -102,3 +102,7 @@ tr.example-detail-row {
   float: left;
   width: fit-content;
 }
+
+.element-icon {
+  width: 16px;
+}
