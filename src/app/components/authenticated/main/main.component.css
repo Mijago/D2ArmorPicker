@@ -58,6 +58,8 @@ tr.example-detail-row {
   left: 50%;
   top: 1%;
   transform: translateX(-50%);
+
+  border: antiquewhite 1px solid;
 }
 
 #refreshBtn {
