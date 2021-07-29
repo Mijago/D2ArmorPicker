@@ -104,5 +104,9 @@ tr.example-detail-row {
 }
 
 .element-icon {
-  width: 16px;
+  width: 22px;
+}
+
+.item-icon {
+  width: 22px;
 }
