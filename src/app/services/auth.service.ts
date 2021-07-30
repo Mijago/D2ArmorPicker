@@ -86,7 +86,6 @@ export class AuthService {
     this.authCode = null;
     this.lastRefresh = null;
 
-    await this.db.inventoryArmor.clear();
     localStorage.removeItem("LastArmorUpdate")
     await this.router.navigate(["login"]);
   }
