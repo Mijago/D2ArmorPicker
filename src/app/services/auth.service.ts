@@ -82,11 +82,10 @@ export class AuthService {
   }
 
   async logout() {
-    this.accessToken = null;
-    this.authCode = null;
-    this.lastRefresh = null;
-
     localStorage.removeItem("LastArmorUpdate")
+    this.lastRefresh = null;
+    this.authCode = null;
+    this.accessToken = null;
     await this.router.navigate(["login"]);
   }
 }
