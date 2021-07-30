@@ -257,9 +257,9 @@ export class BungieApiService {
     // TODO: fix slot
 
     console.log({entries})
-    localStorage.setItem("LastManifestUpdate", Date.now().toString())
     await this.db.manifestArmor.clear();
     await this.db.manifestArmor.bulkPut(entries);
+    localStorage.setItem("LastManifestUpdate", Date.now().toString())
 
     return manifestTables;
   }
