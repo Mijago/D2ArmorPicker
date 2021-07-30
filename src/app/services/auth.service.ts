@@ -83,6 +83,7 @@ export class AuthService {
 
   async logout() {
     localStorage.removeItem("LastArmorUpdate")
+    localStorage.removeItem("LastManifestUpdate")
     this.lastRefresh = null;
     this.authCode = null;
     this.accessToken = null;
