@@ -43,12 +43,39 @@ export class BungieApiService {
   async getMembershipDataForCurrentUser() {
     console.info("BungieApiService", "getMembershipDataForCurrentUser")
     let response = await getMembershipDataForCurrentUser(d => this.$http(d));
-    return response?.Response.destinyMemberships[0];
+    if (response?.Response.destinyMemberships.length == 1) {
+      // This guardian only has one account linked, so we can proceed as normal
+      return response?.Response.destinyMemberships[0];
+    } else {
+      // This guardian has multiple accounts linked.
+      // Fetch the last login time for each account, and use the one that was most recently used.
+      let lastLoggedInProfileIndex: any = 0;
+      let lastPlayed = 0;
+      for (let id in response?.Response.destinyMemberships) {
+        const membership = response?.Response.destinyMemberships[id];
+        const profile = await getProfile(d => this.$http(d), {
+          components: [
+            DestinyComponentType.Profiles,
+          ],
+          membershipType: membership.membershipType,
+          destinyMembershipId: membership.membershipId
+        });
+        if (profile.Response?.profile.data?.dateLastPlayed) {
+          let date = Date.parse(profile.Response?.profile.data?.dateLastPlayed)
+          if (date > lastPlayed) {
+            lastPlayed = date;
+            lastLoggedInProfileIndex = id;
+          }
+        }
+      }
+      console.info("getMembershipDataForCurrentUser", "Selected membership data for the last logged in membership.");
+      return response?.Response.destinyMemberships[lastLoggedInProfileIndex];
+    }
   }
 
   async updateArmorItems(force = false) {
     if (!force && localStorage.getItem("LastArmorUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2 )
+      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
         return;
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
@@ -181,7 +208,7 @@ export class BungieApiService {
 
   async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2 )
+      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2)
         return;
 
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
