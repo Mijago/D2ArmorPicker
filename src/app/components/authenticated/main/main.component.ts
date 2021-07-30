@@ -156,6 +156,12 @@ export class MainComponent implements OnInit {
       d.count = lookup[d.hash]
     })
 
+    this.permutations.length = 0;
+    this.lockedExoticHelmet.length = 0;
+    this.lockedExoticGauntlet.length = 0;
+    this.lockedExoticChest.length = 0;
+    this.lockedExoticLegs.length = 0;
+
     this.lockedExoticHelmet = allExotics.filter(d => d.slot == "Helmets");
     this.lockedExoticGauntlet = allExotics.filter(d => d.slot == "Arms");
     this.lockedExoticChest = allExotics.filter(d => d.slot == "Chest");
@@ -261,6 +267,7 @@ export class MainComponent implements OnInit {
 
     console.log("this.maximumPossibleStats", this.maximumPossibleStats)
 
+    this.allTablePermutations.length = 0;
     this.allTablePermutations = mappedPermutations;
     this.possiblePermutationCount = mappedPermutations.length;
     this.sortData(this.sortCriteria)
