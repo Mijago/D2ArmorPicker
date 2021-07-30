@@ -2,13 +2,14 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Router} from "@angular/router";
+import {DatabaseService} from "./database.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private db: DatabaseService) {
   }
 
 
@@ -84,6 +85,9 @@ export class AuthService {
     this.accessToken = null;
     this.authCode = null;
     this.lastRefresh = null;
+
+    await this.db.inventoryArmor.clear();
+    localStorage.removeItem("LastArmorUpdate")
     await this.router.navigate(["login"]);
   }
 }
