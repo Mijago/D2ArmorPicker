@@ -33,8 +33,10 @@ export class BungieApiService {
     ).toPromise()
       .catch(async err => {
         console.error(err);
-        console.info("Revoking auth, must re-login")
-        await this.authService.logout();
+        if (err.ErrorStatus != "Internal Server Error") {
+          console.info("Revoking auth, must re-login")
+          //await this.authService.logout();
+        }
         // TODO: go to login page
       })
   }
@@ -43,16 +45,21 @@ export class BungieApiService {
   async getMembershipDataForCurrentUser() {
     console.info("BungieApiService", "getMembershipDataForCurrentUser")
     let response = await getMembershipDataForCurrentUser(d => this.$http(d));
-    if (response?.Response.destinyMemberships.length == 1) {
+    let memberships = response?.Response.destinyMemberships;
+    console.info("Memberships:", memberships)
+    memberships = memberships.filter(m => m.crossSaveOverride == 0 || m.crossSaveOverride == m.membershipType);
+    console.info("Filtered Memberships:", memberships)
+
+    if (memberships?.length == 1) {
       // This guardian only has one account linked, so we can proceed as normal
-      return response?.Response.destinyMemberships[0];
+      return memberships?.[0];
     } else {
       // This guardian has multiple accounts linked.
       // Fetch the last login time for each account, and use the one that was most recently used.
       let lastLoggedInProfileIndex: any = 0;
       let lastPlayed = 0;
-      for (let id in response?.Response.destinyMemberships) {
-        const membership = response?.Response.destinyMemberships[id];
+      for (let id in memberships) {
+        const membership = memberships?.[id];
         const profile = await getProfile(d => this.$http(d), {
           components: [
             DestinyComponentType.Profiles,
@@ -60,7 +67,7 @@ export class BungieApiService {
           membershipType: membership.membershipType,
           destinyMembershipId: membership.membershipId
         });
-        if (profile.Response?.profile.data?.dateLastPlayed) {
+        if (!!profile && profile.Response?.profile.data?.dateLastPlayed) {
           let date = Date.parse(profile.Response?.profile.data?.dateLastPlayed)
           if (date > lastPlayed) {
             lastPlayed = date;
@@ -69,7 +76,7 @@ export class BungieApiService {
         }
       }
       console.info("getMembershipDataForCurrentUser", "Selected membership data for the last logged in membership.");
-      return response?.Response.destinyMemberships[lastLoggedInProfileIndex];
+      return memberships?.[lastLoggedInProfileIndex];
     }
   }
 
