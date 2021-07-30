@@ -9,7 +9,7 @@ import {DatabaseService} from "./database.service";
 })
 export class AuthService {
 
-  constructor(private http: HttpClient, private router: Router, private db: DatabaseService) {
+  constructor(private http: HttpClient, private router: Router) {
   }
 
 

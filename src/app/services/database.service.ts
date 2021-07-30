@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import Dexie from 'dexie';
 import {DestinyClass, DestinyEnergyType} from "bungie-api-ts/destiny2/interfaces";
+import {AuthService} from "./auth.service";
 
 export interface IManifestArmor {
   hash: number;
@@ -33,11 +34,11 @@ export class DatabaseService {
   public manifestArmor: Dexie.Table<IManifestArmor, number>;
   public inventoryArmor: Dexie.Table<IInventoryArmor, number>;
 
-  constructor() {
+  constructor(private auth: AuthService) {
     this.db = new Dexie('d2armorpicker');
 
     // Declare tables, IDs and indexes
-    this.db.version(4).stores({
+    this.db.version(5).stores({
       manifestArmor: 'hash, name, icon, slot, isExotic, clazz',
       inventoryArmor: 'itemInstanceId, hash, name, masterworked, slot, isExotic, clazz, mobility, resilience, recovery, discipline, intellect, strength, energyAffinity'
     }).upgrade(async tx => {
@@ -46,6 +47,7 @@ export class DatabaseService {
       localStorage.removeItem("LastArmorUpdate")
       await tx.db.table("inventoryArmor").clear();
       await tx.db.table("manifestArmor").clear();
+      await this.auth.logout();
     });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
