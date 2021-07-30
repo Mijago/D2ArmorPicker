@@ -131,9 +131,8 @@ export class MainComponent implements OnInit {
   async updateItemList() {
     this.updatingPermutations = true;
 
-    console.log("updateItemList")
+    console.info("updateItemList")
     let allArmor = await this.db.inventoryArmor.where('clazz').equals(this.selectedClass).toArray()
-    console.log("All Armor", allArmor)
 
     let allExotics = allArmor.filter(d => d.isExotic).map(d => {
       return {
@@ -163,7 +162,6 @@ export class MainComponent implements OnInit {
     this.lockedExoticLegs = allExotics.filter(d => d.slot == "Legs");
 
     this.permutations = this.permBuilder.buildPermutations(allArmor)
-    console.log({permutations: this.permutations})
 
     this.updatingPermutations = false;
     //this.triggerExoticPermutationUpdate()
@@ -184,12 +182,10 @@ export class MainComponent implements OnInit {
           || d.chest.hash == this.lockedExotic || d.legs.hash == this.lockedExotic)
       });
     }
-
     // update masterwork
     if (this.filterOnlyUseMasterworkedItems) {
       this.permutationsFilteredByExotic = this.permutationsFilteredByExotic.filter(p => p.allMasterworked);
     }
-
     //await this.triggerTableUpdate();
     await this.updateTable();
   }
@@ -334,13 +330,12 @@ export class MainComponent implements OnInit {
     this.expandedElement = null;
 
     this.updatingManifest = true;
-    let a = await this.bungieApi.updateManifest() // manifest NOT forced
+    await this.bungieApi.updateManifest() // manifest NOT forced
     this.updatingManifest = false;
 
     this.updatingArmor = true;
-    let c = await this.bungieApi.updateArmorItems(b)
+    await this.bungieApi.updateArmorItems(b)
     this.updatingArmor = false;
-    console.log({updateManifest: a, armor: c})
 
     await this.updatePermutationsSubject.next();
   }

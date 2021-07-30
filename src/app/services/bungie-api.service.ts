@@ -186,8 +186,6 @@ export class BungieApiService {
           for (let perk of perks) {
             let f = fields[perk.perkHash ?? 0];
             if (!!f) {
-              if (r.name == "Stronghold")
-                console.log(perk.perkHash, f);
               (r as any)[f[0]] += f[1]
             }
           }
@@ -196,8 +194,6 @@ export class BungieApiService {
         }
       ) || []
 
-
-    console.log("Armor", r)
     // Now add the stuff to the db..
     await this.db.inventoryArmor.clear();
     await this.db.inventoryArmor.bulkPut(r);
@@ -217,7 +213,6 @@ export class BungieApiService {
       tableNames: ['DestinyInventoryItemDefinition', "DestinySocketTypeDefinition"],
       language: 'en'
     });
-    console.log({manifestTables})
 
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
@@ -256,7 +251,6 @@ export class BungieApiService {
     // TODO: clazz
     // TODO: fix slot
 
-    console.log({entries})
     await this.db.manifestArmor.clear();
     await this.db.manifestArmor.bulkPut(entries);
     localStorage.setItem("LastManifestUpdate", Date.now().toString())
