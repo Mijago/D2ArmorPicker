@@ -329,8 +329,8 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <ng-container matColumnDef="dropdown">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let element ">
-          <mat-icon *ngIf="expandedElement !== element" matTooltip="Click to show details for this build.">expand_less</mat-icon>
-          <mat-icon *ngIf="expandedElement === element" matTooltip="Click to hide details for this build.">expand_more</mat-icon>
+          <mat-icon *ngIf="expandedElement !== element" matTooltip="Click to show details for this build.">expand_more</mat-icon>
+          <mat-icon *ngIf="expandedElement === element" matTooltip="Click to hide details for this build.">expand_less</mat-icon>
       </td>
     </ng-container>
 
