@@ -150,7 +150,6 @@ export class BungieApiService {
             intellect: stats[144602215].value,
             strength: stats[4244567218].value,
             energyAffinity: instance.energy?.energyType || 0,
-            instanceRawData: JSON.stringify(d),
           }, res[d.itemHash]) as IInventoryArmor
 
 
@@ -250,8 +249,7 @@ export class BungieApiService {
           name: v.displayProperties.name,
           clazz: v.classType,
           slot: slot,
-          isExotic: v.inventory?.tierTypeName == 'Exotic',
-          rawData: JSON.stringify(v)
+          isExotic: v.inventory?.tierTypeName == 'Exotic'
         } as IManifestArmor
       });
 
