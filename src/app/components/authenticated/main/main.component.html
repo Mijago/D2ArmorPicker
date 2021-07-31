@@ -218,18 +218,17 @@ Your selection results in {{possiblePermutationCount}} permutations.
   <mat-card-content>
 <div *ngIf="allTablePermutations.length == 0">
   No results found... 😭
-  You may want to reduce your stat requirements.
+  You may want to reduce your stat requirements.<br/><br/>
 </div>
 
-<div *ngIf="allTablePermutations.length > 0">
-  Your selection results in {{possiblePermutationCount}} permutations.
-  <span *ngIf="allTablePermutations.length != possiblePermutationCount">
-    This table displays the first {{allTablePermutations.length}} entries.
-  </span><br/>
+<div>
+  <div *ngIf="allTablePermutations.length > 0">
+  Your selection results in {{possiblePermutationCount}} permutations.<br/>
   Click on a row to expand it and to see the list of the items required for this build.<br/>
   Use the listed stats to identify the armor you have to use.
-  <table class="result-table" mat-table [dataSource]="allTablePermutations | slice:0:100" multiTemplateDataRows
-         matSort (matSortChange)="sortData($event)" matSortActive="Tiers" matSortDirection="desc">
+  </div>
+  <table class="result-table" mat-table [dataSource]="tableDataSource" multiTemplateDataRows
+         matSort matSortActive="Tiers" matSortDirection="desc">
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->
     <!-- Name Column -->
@@ -265,7 +264,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
     <!-- Name Column -->
     <ng-container matColumnDef="strength">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Strength">Strength</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.intellect}}</td>
+      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.strength}}</td>
     </ng-container>
 
     <!-- Name Column -->
@@ -455,7 +454,11 @@ Your selection results in {{possiblePermutationCount}} permutations.
     </tr>
     <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
   </table>
-
+  <mat-paginator [pageSizeOptions]="[10, 20, 50, 100, 200]"
+                 pageSize="20"
+                 showFirstLastButtons
+                 aria-label="Select page of periodic elements">
+  </mat-paginator>
 </div>
 
   </mat-card-content>

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, Output, ViewChild} from '@angular/core';
 import {BungieApiService} from "../../../services/bungie-api.service";
 import {AuthService} from "../../../services/auth.service";
 import {Subject} from "rxjs";
@@ -8,7 +8,9 @@ import {DatabaseService, IInventoryArmor} from "../../../services/database.servi
 import {GearPermutation, Stats} from "../../../data/permutation";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {Router} from "@angular/router";
-import {Sort} from "@angular/material/sort";
+import {MatSort, Sort} from "@angular/material/sort";
+import {MatTableDataSource} from "@angular/material/table";
+import {MatPaginator} from "@angular/material/paginator";
 
 export interface ISelectedExotic {
   icon: string;
@@ -88,8 +90,13 @@ export class MainComponent implements OnInit {
 
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
-  private sortCriteria: Sort = {active: "", direction: ""};
   allTablePermutations: IMappedGearPermutation[] = [];
+  tableDataSource = new MatTableDataSource<IMappedGearPermutation>();
+
+  @ViewChild(MatPaginator)
+  paginator: MatPaginator | null = null;
+  @ViewChild(MatSort)
+  sort: MatSort | null = null;
 
   possiblePermutationCount: number = 0;
   maximumPossibleStats: Stats = {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0};
@@ -243,7 +250,6 @@ export class MainComponent implements OnInit {
         totalStatsWithMods: totalStats
       } as IMappedGearPermutation
     }).filter(d => d.mods.total <= this.maxMods)
-      .sort((a, b) => a.mods.total - b.mods.total)
 
     // get maximum possible stats for the current selection
     this.maximumPossibleStats = mappedPermutations.reduce((pre, curr) => {
@@ -276,7 +282,29 @@ export class MainComponent implements OnInit {
     this.allTablePermutations.length = 0;
     this.allTablePermutations = mappedPermutations;
     this.possiblePermutationCount = mappedPermutations.length;
-    this.sortData(this.sortCriteria)
+
+    this.tableDataSource.paginator = this.paginator;
+    this.tableDataSource.sort = this.sort;
+    this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      switch (sortHeaderId) {
+        case 'Mobility':
+          return data.totalStatsWithMods.mobility
+        case 'Resilience':
+          return data.totalStatsWithMods.resilience
+        case 'Recovery':
+          return data.totalStatsWithMods.recovery
+        case 'Discipline':
+          return data.totalStatsWithMods.discipline
+        case 'Intellect':
+          return data.totalStatsWithMods.intellect
+        case 'Strength':
+          return data.totalStatsWithMods.strength
+        case 'Tiers':
+          return data.tiers
+      }
+      return 0;
+    }
+    this.tableDataSource.data = this.allTablePermutations
   }
 
 
@@ -365,37 +393,6 @@ export class MainComponent implements OnInit {
   async logout() {
     await this.auth.logout();
     await this.router.navigate(["login"])
-  }
-
-  sortData(sort: Sort) {
-    this.sortCriteria = sort;
-    this.expandedElement = null;
-    if (!sort.active || sort.direction === '') {
-      sort.direction = "desc";
-      sort.active = "Tiers";
-    }
-
-    this.allTablePermutations = this.allTablePermutations.sort((a, b) => {
-      const isAsc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'Mobility':
-          return compare(a.totalStatsWithMods.mobility, b.totalStatsWithMods.mobility, isAsc);
-        case 'Resilience':
-          return compare(a.totalStatsWithMods.resilience, b.totalStatsWithMods.resilience, isAsc);
-        case 'Recovery':
-          return compare(a.totalStatsWithMods.recovery, b.totalStatsWithMods.recovery, isAsc);
-        case 'Discipline':
-          return compare(a.totalStatsWithMods.discipline, b.totalStatsWithMods.discipline, isAsc);
-        case 'Intellect':
-          return compare(a.totalStatsWithMods.intellect, b.totalStatsWithMods.intellect, isAsc);
-        case 'Strength':
-          return compare(a.totalStatsWithMods.strength, b.totalStatsWithMods.strength, isAsc);
-        case 'Tiers':
-          return compare(a.tiers, b.tiers, isAsc);
-        default:
-          return 0;
-      }
-    });
   }
 
   tooltipMobilitySelector: string[] = [
