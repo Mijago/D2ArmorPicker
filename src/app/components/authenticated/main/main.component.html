@@ -216,19 +216,19 @@ Your selection results in {{possiblePermutationCount}} permutations.
 <mat-card id="card-results">
   <mat-card-title> Results</mat-card-title>
   <mat-card-content>
-<div *ngIf="sortedTablePermutations.length == 0">
+<div *ngIf="allTablePermutations.length == 0">
   No results found... 😭
   You may want to reduce your stat requirements.
 </div>
 
-<div *ngIf="sortedTablePermutations.length > 0">
+<div *ngIf="allTablePermutations.length > 0">
   Your selection results in {{possiblePermutationCount}} permutations.
-  <span *ngIf="sortedTablePermutations.length != possiblePermutationCount">
-    This table displays the first {{sortedTablePermutations.length}} entries.
+  <span *ngIf="allTablePermutations.length != possiblePermutationCount">
+    This table displays the first {{allTablePermutations.length}} entries.
   </span><br/>
   Click on a row to expand it and to see the list of the items required for this build.<br/>
   Use the listed stats to identify the armor you have to use.
-  <table class="result-table" mat-table [dataSource]="sortedTablePermutations" multiTemplateDataRows
+  <table class="result-table" mat-table [dataSource]="allTablePermutations | slice:0:100" multiTemplateDataRows
          matSort (matSortChange)="sortData($event)">
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->

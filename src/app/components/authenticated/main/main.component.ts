@@ -89,8 +89,7 @@ export class MainComponent implements OnInit {
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
   private sortCriteria: Sort = {active: "", direction: ""};
-  private allTablePermutations: IMappedGearPermutation[] = [];
-  sortedTablePermutations: IMappedGearPermutation[] = [];
+  allTablePermutations: IMappedGearPermutation[] = [];
 
   possiblePermutationCount: number = 0;
   maximumPossibleStats: Stats = {mobility: 0, resilience: 0, recovery: 0, discipline: 0, intellect: 0, strength: 0};
@@ -131,6 +130,13 @@ export class MainComponent implements OnInit {
   async updateItemList() {
     this.updatingPermutations = true;
 
+    // free memory
+    this.permutations.length = 0;
+    this.lockedExoticHelmet.length = 0;
+    this.lockedExoticGauntlet.length = 0;
+    this.lockedExoticChest.length = 0;
+    this.lockedExoticLegs.length = 0;
+
     console.info("updateItemList")
     let allArmor = await this.db.inventoryArmor.where('clazz').equals(this.selectedClass).toArray()
 
@@ -156,11 +162,6 @@ export class MainComponent implements OnInit {
       d.count = lookup[d.hash]
     })
 
-    this.permutations.length = 0;
-    this.lockedExoticHelmet.length = 0;
-    this.lockedExoticGauntlet.length = 0;
-    this.lockedExoticChest.length = 0;
-    this.lockedExoticLegs.length = 0;
 
     this.lockedExoticHelmet = allExotics.filter(d => d.slot == "Helmets");
     this.lockedExoticGauntlet = allExotics.filter(d => d.slot == "Arms");
@@ -176,6 +177,7 @@ export class MainComponent implements OnInit {
 
   async updateFilteredExoticPermutations() {
     console.log("updateFilteredExoticPermutations")
+    this.permutationsFilteredByExotic = [];
     if (this.lockedExotic == 0) {
       this.permutationsFilteredByExotic = this.permutations;
     } else if (this.lockedExotic == -1) {
@@ -198,6 +200,10 @@ export class MainComponent implements OnInit {
 
   async updateTable() {
     console.log("updateTable")
+    //this.allTablePermutations = []
+    // free memory
+    this.allTablePermutations.length = 0;
+
     let mappedPermutations = this.permutationsFilteredByExotic.map(perm => {
       let stats = perm.getStats(this.filterAssumeMasterworked);
       if (this.enablePowerfulFriends) stats.mobility += 20;
@@ -333,7 +339,6 @@ export class MainComponent implements OnInit {
   async refreshAll(b: boolean) {
     this.lockedExotic = 0;
     this.permutations = [];
-    this.sortedTablePermutations = [];
     this.expandedElement = null;
 
     // log out if refresh token is expired
@@ -367,15 +372,14 @@ export class MainComponent implements OnInit {
   }
 
   sortData(sort: Sort) {
-    const data = this.allTablePermutations.slice();
     this.sortCriteria = sort;
     this.expandedElement = null;
     if (!sort.active || sort.direction === '') {
-      this.sortedTablePermutations = data.splice(0, 100);
-      return;
+      sort.direction = "desc";
+      sort.active = "Tiers";
     }
 
-    this.sortedTablePermutations = data.sort((a, b) => {
+    this.allTablePermutations = this.allTablePermutations.sort((a, b) => {
       const isAsc = sort.direction === 'asc';
       switch (sort.active) {
         case 'Mobility':
@@ -395,7 +399,7 @@ export class MainComponent implements OnInit {
         default:
           return 0;
       }
-    }).splice(0, 100);
+    });
   }
 
   tooltipMobilitySelector: string[] = [
