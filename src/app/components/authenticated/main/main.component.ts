@@ -336,6 +336,16 @@ export class MainComponent implements OnInit {
     this.sortedTablePermutations = [];
     this.expandedElement = null;
 
+    // log out if refresh token is expired
+    if (this.auth.refreshTokenExpired) {
+      await this.auth.logout();
+      return;
+    }
+    if (!await this.auth.autoRegenerateTokens()) {
+      await this.auth.logout();
+      return;
+    }
+
     this.updatingManifest = true;
     await this.bungieApi.updateManifest() // manifest NOT forced
     this.updatingManifest = false;
