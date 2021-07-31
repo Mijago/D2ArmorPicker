@@ -1,0 +1,23 @@
+.modIcon {
+  width: 35px;
+  height: 35px;
+
+  border: #00000000 solid 2px;
+}
+
+.selected {
+  border: red solid 2px;
+}
+
+:host {
+  position: relative;
+}
+
+.modText {
+  position: absolute;
+  text-shadow:  0 0 6px #000000;
+  background: rgba(33, 33, 33, 0.51);
+  color: whitesmoke;
+  bottom: 5px;
+  right: 2px;
+}

@@ -27,6 +27,7 @@ import { ExoticItemDisplayComponent } from './components/authenticated/exotic-it
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSortModule} from "@angular/material/sort";
+import { TableModDisplayComponent } from './components/authenticated/table-mod-display/table-mod-display.component';
 
 
 const routes: Routes = [
@@ -43,29 +44,30 @@ const routes: Routes = [
     MainComponent,
     StatMinimumSelectionComponent,
     StatModAmountComponent,
-    ExoticItemDisplayComponent
+    ExoticItemDisplayComponent,
+    TableModDisplayComponent
   ],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    RouterModule.forRoot(routes, {useHash: true}),
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatSliderModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatIconModule,
-    MatSortModule
-  ],
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatButtonModule,
+        RouterModule.forRoot(routes, {useHash: true}),
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatSliderModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        FormsModule,
+        MatTableModule,
+        MatCardModule,
+        MatTooltipModule,
+        MatProgressBarModule,
+        MatIconModule,
+        MatSortModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

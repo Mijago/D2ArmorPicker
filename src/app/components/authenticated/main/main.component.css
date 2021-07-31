@@ -85,12 +85,6 @@ tr.example-detail-row {
   border: red solid 2px;
 }
 
-
-.modPreview {
-  width: 32px;
-  margin-right: 2px;
-}
-
 #card-config {
   float: left;
   width: fit-content;
