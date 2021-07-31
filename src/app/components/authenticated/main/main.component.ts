@@ -289,12 +289,12 @@ export class MainComponent implements OnInit {
   }
 
   getSkillTierFromPermutation(stats: Stats) {
-    return Math.floor(stats.mobility / 10)
-      + Math.floor(stats.resilience / 10)
-      + Math.floor(stats.recovery / 10)
-      + Math.floor(stats.discipline / 10)
-      + Math.floor(stats.intellect / 10)
-      + Math.floor(stats.strength / 10)
+    return Math.floor(Math.min(100, stats.mobility) / 10)
+      + Math.floor(Math.min(100, stats.resilience) / 10)
+      + Math.floor(Math.min(100, stats.recovery) / 10)
+      + Math.floor(Math.min(100, stats.discipline) / 10)
+      + Math.floor(Math.min(100, stats.intellect) / 10)
+      + Math.floor(Math.min(100, stats.strength) / 10)
   }
 
 
