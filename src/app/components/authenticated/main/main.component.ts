@@ -367,10 +367,6 @@ export class MainComponent implements OnInit {
     await this.router.navigate(["login"])
   }
 
-  generateEmptyArray(n: number) {
-    return Array(n).fill(1);
-  }
-
   sortData(sort: Sort) {
     this.sortCriteria = sort;
     this.expandedElement = null;

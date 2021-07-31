@@ -131,6 +131,12 @@ export class BungieApiService {
         let stats = statData[d.itemInstanceId || ""]?.stats || {}
         return !!stats[392767087];
       })
+      .filter(d => {
+        // remove sunset items
+        let instanceData = profile.Response.itemComponents.instances.data || {};
+        let instance = instanceData[d.itemInstanceId || ""] || {}
+        return !!instance.energy;
+      })
       .map(
         d => {
 
