@@ -25,19 +25,26 @@ export interface IMappedGearPermutation {
   stats: Stats,
   totalStatsWithMods: Stats,
   tiers: number,
-  mods:
-    {
-      mobility: { "5": number; "10": number, bonus: number, total: number };
-      resilience: { "5": number; "10": number, bonus: number, total: number }
-      recovery: { "5": number; "10": number, bonus: number, total: number };
-      discipline: { "5": number; "10": number, bonus: number, total: number };
-      intellect: { "5": number; "10": number, bonus: number, total: number };
-      strength: { "5": number; "10": number, bonus: number, total: number };
-      total: number;
-      cost: number;
-    }
+  // Use an array instead of a dict, because otherwise too much memory is used
+  mods: number[]
 }
 
+export enum MOD_INDICES {
+  MOBILITY_MINOR,
+  MOBILITY_MAJOR,
+  RESILIENCE_MINOR,
+  RESILIENCE_MAJOR,
+  RECOVERY_MINOR,
+  RECOVERY_MAJOR,
+  DISCIPLINE_MINOR,
+  DISCIPLINE_MAJOR,
+  INTELLECT_MINOR,
+  INTELLECT_MAJOR,
+  STRENGTH_MINOR,
+  STRENGTH_MAJOR,
+  MOD_COUNT,
+  MOD_COST
+}
 
 @Component({
   selector: 'app-main',
@@ -206,12 +213,46 @@ export class MainComponent implements OnInit {
     await this.updateTable();
   }
 
+  getModBonusFromSet(minor: number, major: number) {
+    return 5 * minor + 10 * major
+  }
+
+  getTotalModsFromSet(minor: number, major: number) {
+    return minor + major
+  }
+
   async updateTable() {
     console.log("updateTable")
     // Clear memory
     this.tableDataSource.data.length = 0;
+    this.tableDataSource.data = [];
 
-    let mappedPermutations = this.permutationsFilteredByExotic.map(perm => {
+
+    this.tableDataSource.paginator = this.paginator;
+    this.tableDataSource.sort = this.sort;
+    this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      switch (sortHeaderId) {
+        case 'Mobility':
+          return data.totalStatsWithMods.mobility
+        case 'Resilience':
+          return data.totalStatsWithMods.resilience
+        case 'Recovery':
+          return data.totalStatsWithMods.recovery
+        case 'Discipline':
+          return data.totalStatsWithMods.discipline
+        case 'Intellect':
+          return data.totalStatsWithMods.intellect
+        case 'Strength':
+          return data.totalStatsWithMods.strength
+        case 'Tiers':
+          return data.tiers
+        case 'Mods':
+          return 100 * data.mods[MOD_INDICES.MOD_COUNT] + data.mods[MOD_INDICES.MOD_COST]
+      }
+      return 0;
+    }
+
+    this.tableDataSource.data = this.permutationsFilteredByExotic.map(perm => {
       let stats = perm.getStats(this.filterAssumeMasterworked);
       if (this.enablePowerfulFriends) stats.mobility += 20;
       if (this.enableRadiantLight) stats.strength += 20;
@@ -246,44 +287,29 @@ export class MainComponent implements OnInit {
       let modStrength05 = (strengthDifference % 10 > 0 && strengthDifference % 10 <= 5) ? 1 : 0
       let modStrength10 = Math.ceil(Math.max(0, strengthDifference - modStrength05 * 5) / 10)
 
-      let mods = {
-        mobility: {
-          5: modMobility05, 10: modMobility10,
-          bonus: 5 * modMobility05 + 10 * modMobility10, total: modMobility05 + modMobility10
-        },
-        resilience: {
-          5: modResilience05, 10: modResilience10,
-          bonus: 5 * modResilience05 + 10 * modResilience10, total: modResilience05 + modResilience10
-        },
-        recovery: {
-          5: modRecovery05, 10: modRecovery10,
-          bonus: 5 * modRecovery05 + 10 * modRecovery10, total: modRecovery05 + modRecovery10
-        },
-        discipline: {
-          5: modDiscipline05, 10: modDiscipline10,
-          bonus: 5 * modDiscipline05 + 10 * modDiscipline10, total: modDiscipline05 + modDiscipline10
-        },
-        intellect: {
-          5: modIntellect05, 10: modIntellect10,
-          bonus: 5 * modIntellect05 + 10 * modIntellect10, total: modIntellect05 + modIntellect10
-        },
-        strength: {
-          5: modStrength05, 10: modStrength10,
-          bonus: 5 * modStrength05 + 10 * modStrength10, total: modStrength05 + modStrength10
-        },
-        total: modMobility05 + modResilience05 + modRecovery05 + modDiscipline05 + modIntellect05 + modStrength05
-          + modMobility10 + modResilience10 + modRecovery10 + modDiscipline10 + modIntellect10 + modStrength10,
-        cost: modMobility05 + modResilience05 + 2 * modRecovery05 + modDiscipline05 + 2 * modIntellect05 + modStrength05
-          + 3 * modMobility10 + 3 * modResilience10 + 4 * modRecovery10 + 3 * modDiscipline10 + 5 * modIntellect10 + 3 * modStrength10
-      }
+      let mods = [
+        modMobility05, modMobility10,
+        modResilience05, modResilience10,
+        modRecovery05, modRecovery10,
+        modDiscipline05, modDiscipline10,
+        modIntellect05, modIntellect10,
+        modStrength05, modStrength10,
+        // TOTAL
+        modMobility05 + modMobility10 + modResilience05 + modResilience10 + modRecovery05 + modRecovery10
+        + modDiscipline05 + modDiscipline10 + modIntellect05 + modIntellect10 + modStrength05 + modStrength10,
+        // COST
+        modMobility05 + 3 * modMobility10 + modResilience05 + 3 * modResilience10 + 2 * modRecovery05 + 4 * modRecovery10
+        + modDiscipline05 + 3 * modDiscipline10 + 2 * modIntellect05 + 5 * modIntellect10 + modStrength05 + 3 * modStrength10,
+      ]
+
 
       let totalStats = {
-        mobility: stats.mobility + mods.mobility.bonus,
-        resilience: stats.resilience + mods.resilience.bonus,
-        recovery: stats.recovery + mods.recovery.bonus,
-        discipline: stats.discipline + mods.discipline.bonus,
-        intellect: stats.intellect + mods.intellect.bonus,
-        strength: stats.strength + mods.strength.bonus
+        mobility: stats.mobility + this.getModBonusFromSet(mods[MOD_INDICES.MOBILITY_MINOR], mods[MOD_INDICES.MOBILITY_MAJOR]),
+        resilience: stats.resilience + this.getModBonusFromSet(mods[MOD_INDICES.RESILIENCE_MINOR], mods[MOD_INDICES.RESILIENCE_MAJOR]),
+        recovery: stats.recovery + this.getModBonusFromSet(mods[MOD_INDICES.RECOVERY_MINOR], mods[MOD_INDICES.RECOVERY_MAJOR]),
+        discipline: stats.discipline + this.getModBonusFromSet(mods[MOD_INDICES.DISCIPLINE_MINOR], mods[MOD_INDICES.DISCIPLINE_MAJOR]),
+        intellect: stats.intellect + this.getModBonusFromSet(mods[MOD_INDICES.INTELLECT_MINOR], mods[MOD_INDICES.INTELLECT_MAJOR]),
+        strength: stats.strength + this.getModBonusFromSet(mods[MOD_INDICES.STRENGTH_MINOR], mods[MOD_INDICES.STRENGTH_MAJOR])
       }
 
       return {
@@ -293,29 +319,29 @@ export class MainComponent implements OnInit {
         tiers: this.getSkillTierFromPermutation(totalStats),
         totalStatsWithMods: totalStats
       } as IMappedGearPermutation
-    }).filter(d => d.mods.total <= this.maxMods)
+    }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
 
     // get maximum possible stats for the current selection
-    this.maximumPossibleStats = mappedPermutations.reduce((pre, curr) => {
+    this.maximumPossibleStats = this.tableDataSource.data.reduce((pre, curr) => {
       // add empty mod slots
-      let added = 10 * (this.maxMods - curr.mods.total);
+      let added = 10 * (this.maxMods - curr.mods[MOD_INDICES.MOD_COUNT]);
 
-      let mobility = curr.stats.mobility + curr.mods.mobility.bonus + added;
+      let mobility = curr.stats.mobility + this.getModBonusFromSet(curr.mods[MOD_INDICES.MOBILITY_MINOR], curr.mods[MOD_INDICES.MOBILITY_MAJOR]) + added;
       if (mobility > pre.mobility) pre.mobility = mobility;
 
-      let resilience = curr.stats.resilience + curr.mods.resilience.bonus + added;
+      let resilience = curr.stats.resilience + this.getModBonusFromSet(curr.mods[MOD_INDICES.RESILIENCE_MINOR], curr.mods[MOD_INDICES.RESILIENCE_MAJOR]) + added;
       if (resilience > pre.resilience) pre.resilience = resilience;
 
-      let recovery = curr.stats.recovery + curr.mods.recovery.bonus + added;
+      let recovery = curr.stats.recovery + this.getModBonusFromSet(curr.mods[MOD_INDICES.RECOVERY_MINOR], curr.mods[MOD_INDICES.RECOVERY_MAJOR]) + added;
       if (recovery > pre.recovery) pre.recovery = recovery;
 
-      let discipline = curr.stats.discipline + curr.mods.discipline.bonus + added;
+      let discipline = curr.stats.discipline + this.getModBonusFromSet(curr.mods[MOD_INDICES.DISCIPLINE_MINOR], curr.mods[MOD_INDICES.DISCIPLINE_MAJOR]) + added;
       if (discipline > pre.discipline) pre.discipline = discipline;
 
-      let intellect = curr.stats.intellect + curr.mods.intellect.bonus + added;
+      let intellect = curr.stats.intellect + this.getModBonusFromSet(curr.mods[MOD_INDICES.INTELLECT_MINOR], curr.mods[MOD_INDICES.INTELLECT_MAJOR]) + added;
       if (intellect > pre.intellect) pre.intellect = intellect;
 
-      let strength = curr.stats.strength + curr.mods.strength.bonus + added;
+      let strength = curr.stats.strength + this.getModBonusFromSet(curr.mods[MOD_INDICES.STRENGTH_MINOR], curr.mods[MOD_INDICES.STRENGTH_MAJOR]) + added;
       if (strength > pre.strength) pre.strength = strength;
 
       return pre;
@@ -323,32 +349,7 @@ export class MainComponent implements OnInit {
 
     console.log("this.maximumPossibleStats", this.maximumPossibleStats)
 
-    this.possiblePermutationCount = mappedPermutations.length;
-
-    this.tableDataSource.paginator = this.paginator;
-    this.tableDataSource.sort = this.sort;
-    this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
-      switch (sortHeaderId) {
-        case 'Mobility':
-          return data.totalStatsWithMods.mobility
-        case 'Resilience':
-          return data.totalStatsWithMods.resilience
-        case 'Recovery':
-          return data.totalStatsWithMods.recovery
-        case 'Discipline':
-          return data.totalStatsWithMods.discipline
-        case 'Intellect':
-          return data.totalStatsWithMods.intellect
-        case 'Strength':
-          return data.totalStatsWithMods.strength
-        case 'Tiers':
-          return data.tiers
-        case 'Mods':
-          return 100*data.mods.total + data.mods.cost
-      }
-      return 0;
-    }
-    this.tableDataSource.data = mappedPermutations
+    this.possiblePermutationCount = this.tableDataSource.data.length;
   }
 
 
