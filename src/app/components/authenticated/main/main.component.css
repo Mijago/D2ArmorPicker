@@ -104,3 +104,26 @@ tr.example-detail-row {
 .item-icon {
   width: 22px;
 }
+
+.statColumn {
+  position: relative;
+}
+
+.statIcon {
+  position: absolute;
+  height: 22px;
+  margin-left: 2px;
+  top: 11px;
+}
+
+.statMiniColumn{
+  position: relative;
+  padding-right: 14px;
+}
+
+.statIconMini {
+  position: absolute;
+  height: 14px;
+  margin-left: 2px;
+  top: 3px;
+}

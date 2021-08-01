@@ -233,38 +233,50 @@ Your selection results in {{possiblePermutationCount}} permutations.
      The actual rendered columns are set as a property on the row definition" -->
     <!-- Name Column -->
     <ng-container matColumnDef="mobility">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility"> Mobility</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.mobility}}</td>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility">Mobility</th>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.mobility}}
+      <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="resilience">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Resilience"> Resilience</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.resilience}}</td>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.resilience}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="recovery">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Recovery"> Recovery</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.recovery}}</td>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.recovery}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="discipline">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Discipline"> Discipline</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.discipline}}</td>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.discipline}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="intellect">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Intellect"> Intellect</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.intellect}}</td>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.intellect}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="strength">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Strength">Strength</th>
-      <td mat-cell *matCellDef="let element ">{{element.totalStatsWithMods.strength}}</td>
+      <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.strength}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="statIcon">
+      </td>
     </ng-container>
 
     <!-- Name Column -->
@@ -399,14 +411,26 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </tr>
               <tr class="statTotalRow">
                 <td>Total</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0)}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).discipline}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}</td>
-                <td>{{element.permutation.getStats(filterAssumeMasterworked).strength
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0)}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).discipline}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).strength
                 + (this.enableRadiantLight ? 20 : 0)
-                + (this.enableStasisWhisperOfDurance ? 10 : 0)}}</td>
+                + (this.enableStasisWhisperOfDurance ? 10 : 0)}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="statIconMini">
+                </td>
               </tr>
 
               <tr class="modRow" *ngIf="(element.mods[0]+element.mods[2]+element.mods[4]+element.mods[6]+element.mods[8] + element.mods[10]) > 0">
@@ -465,12 +489,24 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </tr>
               <tr class="statTotalRow" *ngIf="element.mods[12] > 0">
                 <td>Total with mods</td>
-                <td>{{element.totalStatsWithMods.mobility}}</td>
-                <td>{{element.totalStatsWithMods.resilience}}</td>
-                <td>{{element.totalStatsWithMods.recovery}}</td>
-                <td>{{element.totalStatsWithMods.discipline}}</td>
-                <td>{{element.totalStatsWithMods.intellect}}</td>
-                <td>{{element.totalStatsWithMods.strength}}</td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.mobility}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.resilience}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.recovery}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.discipline}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.intellect}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="statIconMini">
+                </td>
+                <td class="statMiniColumn">{{element.totalStatsWithMods.strength}}
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="statIconMini">
+                </td>
               </tr>
             </table>
           </div>
