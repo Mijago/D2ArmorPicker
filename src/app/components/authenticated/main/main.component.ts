@@ -90,7 +90,6 @@ export class MainComponent implements OnInit {
 
   private permutations: GearPermutation[] = [];
   private permutationsFilteredByExotic: GearPermutation[] = [];
-  allTablePermutations: IMappedGearPermutation[] = [];
   tableDataSource = new MatTableDataSource<IMappedGearPermutation>();
 
   @ViewChild(MatPaginator)
@@ -207,9 +206,8 @@ export class MainComponent implements OnInit {
 
   async updateTable() {
     console.log("updateTable")
-    //this.allTablePermutations = []
-    // free memory
-    this.allTablePermutations.length = 0;
+    // Clear memory
+    this.tableDataSource.data.length = 0;
 
     let mappedPermutations = this.permutationsFilteredByExotic.map(perm => {
       let stats = perm.getStats(this.filterAssumeMasterworked);
@@ -279,8 +277,6 @@ export class MainComponent implements OnInit {
 
     console.log("this.maximumPossibleStats", this.maximumPossibleStats)
 
-    this.allTablePermutations.length = 0;
-    this.allTablePermutations = mappedPermutations;
     this.possiblePermutationCount = mappedPermutations.length;
 
     this.tableDataSource.paginator = this.paginator;
@@ -304,7 +300,7 @@ export class MainComponent implements OnInit {
       }
       return 0;
     }
-    this.tableDataSource.data = this.allTablePermutations
+    this.tableDataSource.data = mappedPermutations
   }
 
 

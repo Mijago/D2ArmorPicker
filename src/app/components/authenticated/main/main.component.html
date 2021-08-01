@@ -216,13 +216,13 @@ Your selection results in {{possiblePermutationCount}} permutations.
 <mat-card id="card-results">
   <mat-card-title> Results</mat-card-title>
   <mat-card-content>
-<div *ngIf="allTablePermutations.length == 0">
+<div *ngIf="possiblePermutationCount == 0">
   No results found... 😭
   You may want to reduce your stat requirements.<br/><br/>
 </div>
 
 <div>
-  <div *ngIf="allTablePermutations.length > 0">
+  <div *ngIf="possiblePermutationCount > 0">
   Your selection results in {{possiblePermutationCount}} permutations.<br/>
   Click on a row to expand it and to see the list of the items required for this build.<br/>
   Use the listed stats to identify the armor you have to use.
