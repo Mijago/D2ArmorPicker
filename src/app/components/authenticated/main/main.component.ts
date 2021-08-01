@@ -72,7 +72,7 @@ export class MainComponent implements OnInit {
               private db: DatabaseService) {
   }
 
-  selectedClass: number = 0;
+  selectedClass: number = -1;
 
   minMobility: number = 0;
   minResilience: number = 0;
@@ -417,7 +417,7 @@ export class MainComponent implements OnInit {
     this.expandedElement = null;
 
     this.characters = await this.bungieApi.getCharacters();
-    if (this.characters.length > 0)
+    if (this.selectedClass == -1 && this.characters.length > 0)
       this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
 
     // log out if refresh token is expired
