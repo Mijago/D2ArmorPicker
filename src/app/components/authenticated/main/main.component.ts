@@ -248,7 +248,6 @@ export class MainComponent implements OnInit {
 
       let mods = {
         mobility: {
-          mobilityDifference,
           5: modMobility05, 10: modMobility10,
           bonus: 5 * modMobility05 + 10 * modMobility10, total: modMobility05 + modMobility10
         },
