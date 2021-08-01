@@ -29,6 +29,7 @@ import {MatIconModule} from "@angular/material/icon";
 import {MatSortModule} from "@angular/material/sort";
 import { TableModDisplayComponent } from './components/authenticated/table-mod-display/table-mod-display.component';
 import {MatPaginatorModule} from "@angular/material/paginator";
+import {MatToolbarModule} from "@angular/material/toolbar";
 
 
 const routes: Routes = [
@@ -48,28 +49,29 @@ const routes: Routes = [
     ExoticItemDisplayComponent,
     TableModDisplayComponent
   ],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    RouterModule.forRoot(routes, {useHash: true}),
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatSliderModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatIconModule,
-    MatSortModule,
-    MatPaginatorModule
-  ],
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatButtonModule,
+        RouterModule.forRoot(routes, {useHash: true}),
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatSliderModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        FormsModule,
+        MatTableModule,
+        MatCardModule,
+        MatTooltipModule,
+        MatProgressBarModule,
+        MatIconModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatToolbarModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

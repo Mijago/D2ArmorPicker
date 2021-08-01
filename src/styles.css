@@ -10,8 +10,6 @@ html, body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  margin-left: 2px;
-  margin-right: 2px;
 }
 
 .allow-cr {

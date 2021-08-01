@@ -66,11 +66,14 @@ tr.example-detail-row {
   margin-right: 20px;
 }
 
-#buttonContainer {
-  position: fixed;
-  bottom: 2px;
-  right: 2px;
-  z-index: 100;
+#header {
+  position: relative;
+  height: 42px;
+  margin-bottom: 5px;
+}
+
+#header .header-spacer {
+  flex: 1 1 auto;
 }
 
 .exoticIcon {
@@ -89,12 +92,14 @@ tr.example-detail-row {
   float: left;
   width: fit-content;
   margin-bottom: 20px;
-  margin-right: 4px;
+  margin-left: 3px;
+  margin-right: 3px;
 }
 
 #card-results {
   float: left;
   width: fit-content;
+  margin-left: 3px;
 }
 
 .element-icon {
