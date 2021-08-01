@@ -228,7 +228,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
   Use the listed stats to identify the armor you have to use.
   </div>
   <table class="result-table" mat-table [dataSource]="tableDataSource" multiTemplateDataRows
-         matSort matSortActive="Tiers" matSortDirection="desc">
+         matSort matSortActive="Mods" matSortDirection="asc">
     <!--- Note that these columns can be defined in any order.
      The actual rendered columns are set as a property on the row definition" -->
     <!-- Name Column -->
@@ -269,27 +269,27 @@ Your selection results in {{possiblePermutationCount}} permutations.
 
     <!-- Name Column -->
     <ng-container matColumnDef="mods">
-      <th mat-header-cell *matHeaderCellDef> Used Mods</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="Mods"> Used Mods</th>
       <td mat-cell *matCellDef="let element ">
         <span *ngIf="element.mods.total == 0">None</span>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"
-          tooltipText="Mobility" [amount]="element.mods.mobility"></app-table-mod-display>
+          tooltipText="Mobility" [amount]="element.mods.mobility.total"></app-table-mod-display>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"
-          tooltipText="Resilience" [amount]="element.mods.resilience"></app-table-mod-display>
+          tooltipText="Resilience" [amount]="element.mods.resilience.total"></app-table-mod-display>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"
-          tooltipText="Recovery" [amount]="element.mods.recovery"></app-table-mod-display>
+          tooltipText="Recovery" [amount]="element.mods.recovery.total"></app-table-mod-display>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"
-          tooltipText="Discipline" [amount]="element.mods.discipline"></app-table-mod-display>
+          tooltipText="Discipline" [amount]="element.mods.discipline.total"></app-table-mod-display>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"
-          tooltipText="Intellect" [amount]="element.mods.intellect"></app-table-mod-display>
+          tooltipText="Intellect" [amount]="element.mods.intellect.total"></app-table-mod-display>
         <app-table-mod-display class="modPreview"
           url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"
-          tooltipText="Strength" [amount]="element.mods.strength"></app-table-mod-display>
+          tooltipText="Strength" [amount]="element.mods.strength.total"></app-table-mod-display>
       </td>
     </ng-container>
 
@@ -409,28 +409,63 @@ Your selection results in {{possiblePermutationCount}} permutations.
                 + (this.enableStasisWhisperOfDurance ? 10 : 0)}}</td>
               </tr>
 
-              <tr class="modRow">
-                <td>Mods</td>
+              <tr class="modRow" *ngIf="(element.mods.mobility['5']+element.mods.resilience['5']+element.mods.recovery['5']
+              +element.mods.discipline['5']+element.mods.intellect['5'] + element.mods.strength['5']) > 0">
+                <td>+5 Mods</td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.mobility > 0">+{{element.mods.mobility}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.mobility['5'] > 0">{{element.mods.mobility["5"]}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.mobility['5'] == 0">-</span>
                 </td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.resilience > 0">+{{element.mods.resilience}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.resilience['5'] > 0">{{element.mods.resilience['5']}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.resilience['5'] == 0">-</span>
                 </td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.recovery > 0">+{{element.mods.recovery}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.recovery['5'] > 0">{{element.mods.recovery['5']}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.recovery['5'] == 0">-</span>
                 </td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.discipline > 0">+{{element.mods.discipline}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.discipline['5'] > 0">{{element.mods.discipline['5']}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.discipline['5'] == 0">-</span>
                 </td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.intellect > 0">+{{element.mods.intellect}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.intellect['5'] > 0">{{element.mods.intellect['5']}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.intellect['5'] == 0">-</span>
                 </td>
                 <td>
-                  <span class="statBonusMod" *ngIf="element.mods.strength > 0">+{{element.mods.strength}}x10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.strength['5'] > 0">{{element.mods.strength['5']}}x +5</span>
+                  <span class="statBonusMod" *ngIf="element.mods.strength['5'] == 0">-</span>
                 </td>
               </tr>
-              <tr class="statTotalRow">
+              <tr class="modRow" *ngIf="(element.mods.mobility['10']+element.mods.resilience['10']+element.mods.recovery['10']
+              +element.mods.discipline['10']+element.mods.intellect['10'] + element.mods.strength['10']) > 0">
+                <td>+10 Mods</td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.mobility['10'] > 0">{{element.mods.mobility["10"]}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.mobility['10'] == 0">-</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.resilience['10'] > 0">{{element.mods.resilience['10']}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.resilience['10'] == 0">-</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.recovery['10'] > 0">{{element.mods.recovery['10']}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.recovery['10'] == 0">-</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.discipline['10'] > 0">{{element.mods.discipline['10']}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.discipline['10'] == 0">-</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.intellect['10'] > 0">{{element.mods.intellect['10']}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.intellect['10'] == 0">-</span>
+                </td>
+                <td>
+                  <span class="statBonusMod" *ngIf="element.mods.strength['10'] > 0">{{element.mods.strength['10']}}x +10</span>
+                  <span class="statBonusMod" *ngIf="element.mods.strength['10'] == 0">-</span>
+                </td>
+              </tr>
+              <tr class="statTotalRow" *ngIf="element.mods.total > 0">
                 <td>Total with mods</td>
                 <td>{{element.totalStatsWithMods.mobility}}</td>
                 <td>{{element.totalStatsWithMods.resilience}}</td>

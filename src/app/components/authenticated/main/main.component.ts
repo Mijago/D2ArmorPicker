@@ -25,15 +25,17 @@ export interface IMappedGearPermutation {
   stats: Stats,
   totalStatsWithMods: Stats,
   tiers: number,
-  mods: {
-    mobility: number;
-    resilience: number;
-    recovery: number;
-    discipline: number;
-    intellect: number;
-    strength: number;
-    total: number;
-  }
+  mods:
+    {
+      mobility: { "5": number; "10": number, bonus: number, total: number };
+      resilience: { "5": number; "10": number, bonus: number, total: number }
+      recovery: { "5": number; "10": number, bonus: number, total: number };
+      discipline: { "5": number; "10": number, bonus: number, total: number };
+      intellect: { "5": number; "10": number, bonus: number, total: number };
+      strength: { "5": number; "10": number, bonus: number, total: number };
+      total: number;
+      cost: number;
+    }
 }
 
 
@@ -219,25 +221,70 @@ export class MainComponent implements OnInit {
       if (this.enableStasisWhisperOfDurance) stats.strength += 10;
       if (this.enableStasisWhisperOfShards) stats.resilience += 10;
 
+      const mobilityDifference = Math.max(0, this.minMobility - stats.mobility);
+      let modMobility05 = (mobilityDifference % 10 > 0 && mobilityDifference % 10 <= 5) ? 1 : 0
+      let modMobility10 = Math.ceil(Math.max(0, mobilityDifference - modMobility05 * 5) / 10)
+
+      const resilienceDifference = Math.max(0, this.minResilience - stats.resilience);
+      let modResilience05 = (resilienceDifference % 10 > 0 && resilienceDifference % 10 <= 5) ? 1 : 0
+      let modResilience10 = Math.ceil(Math.max(0, resilienceDifference - modResilience05 * 5) / 10)
+
+      const recoveryDifference = Math.max(0, this.minRecovery - stats.recovery);
+      let modRecovery05 = (recoveryDifference % 10 > 0 && recoveryDifference % 10 <= 5) ? 1 : 0
+      let modRecovery10 = Math.ceil(Math.max(0, recoveryDifference - modRecovery05 * 5) / 10)
+
+      const disciplineDifference = Math.max(0, this.minDiscipline - stats.discipline);
+      let modDiscipline05 = (disciplineDifference % 10 > 0 && disciplineDifference % 10 <= 5) ? 1 : 0
+      let modDiscipline10 = Math.ceil(Math.max(0, disciplineDifference - modDiscipline05 * 5) / 10)
+
+      const intellectDifference = Math.max(0, this.minIntellect - stats.intellect);
+      let modIntellect05 = (intellectDifference % 10 > 0 && intellectDifference % 10 <= 5) ? 1 : 0
+      let modIntellect10 = Math.ceil(Math.max(0, intellectDifference - modIntellect05 * 5) / 10)
+
+
+      const strengthDifference = Math.max(0, this.minStrength - stats.strength);
+      let modStrength05 = (strengthDifference % 10 > 0 && strengthDifference % 10 <= 5) ? 1 : 0
+      let modStrength10 = Math.ceil(Math.max(0, strengthDifference - modStrength05 * 5) / 10)
 
       let mods = {
-        mobility: Math.ceil(Math.max(0, this.minMobility - stats.mobility) / 10),
-        resilience: Math.ceil(Math.max(0, this.minResilience - stats.resilience) / 10),
-        recovery: Math.ceil(Math.max(0, this.minRecovery - stats.recovery) / 10),
-        discipline: Math.ceil(Math.max(0, this.minDiscipline - stats.discipline) / 10),
-        intellect: Math.ceil(Math.max(0, this.minIntellect - stats.intellect) / 10),
-        strength: Math.ceil(Math.max(0, this.minStrength - stats.strength) / 10),
-        total: 0
+        mobility: {
+          mobilityDifference,
+          5: modMobility05, 10: modMobility10,
+          bonus: 5 * modMobility05 + 10 * modMobility10, total: modMobility05 + modMobility10
+        },
+        resilience: {
+          5: modResilience05, 10: modResilience10,
+          bonus: 5 * modResilience05 + 10 * modResilience10, total: modResilience05 + modResilience10
+        },
+        recovery: {
+          5: modRecovery05, 10: modRecovery10,
+          bonus: 5 * modRecovery05 + 10 * modRecovery10, total: modRecovery05 + modRecovery10
+        },
+        discipline: {
+          5: modDiscipline05, 10: modDiscipline10,
+          bonus: 5 * modDiscipline05 + 10 * modDiscipline10, total: modDiscipline05 + modDiscipline10
+        },
+        intellect: {
+          5: modIntellect05, 10: modIntellect10,
+          bonus: 5 * modIntellect05 + 10 * modIntellect10, total: modIntellect05 + modIntellect10
+        },
+        strength: {
+          5: modStrength05, 10: modStrength10,
+          bonus: 5 * modStrength05 + 10 * modStrength10, total: modStrength05 + modStrength10
+        },
+        total: modMobility05 + modResilience05 + modRecovery05 + modDiscipline05 + modIntellect05 + modStrength05
+          + modMobility10 + modResilience10 + modRecovery10 + modDiscipline10 + modIntellect10 + modStrength10,
+        cost: modMobility05 + modResilience05 + 2 * modRecovery05 + modDiscipline05 + 2 * modIntellect05 + modStrength05
+          + 3 * modMobility10 + 3 * modResilience10 + 4 * modRecovery10 + 3 * modDiscipline10 + 5 * modIntellect10 + 3 * modStrength10
       }
-      mods.total = mods.mobility + mods.resilience + mods.recovery + mods.discipline + mods.intellect + mods.strength
 
       let totalStats = {
-        mobility: stats.mobility + mods.mobility * 10,
-        resilience: stats.resilience + mods.resilience * 10,
-        recovery: stats.recovery + mods.recovery * 10,
-        discipline: stats.discipline + mods.discipline * 10,
-        intellect: stats.intellect + mods.intellect * 10,
-        strength: stats.strength + mods.strength * 10
+        mobility: stats.mobility + mods.mobility.bonus,
+        resilience: stats.resilience + mods.resilience.bonus,
+        recovery: stats.recovery + mods.recovery.bonus,
+        discipline: stats.discipline + mods.discipline.bonus,
+        intellect: stats.intellect + mods.intellect.bonus,
+        strength: stats.strength + mods.strength.bonus
       }
 
       return {
@@ -254,22 +301,22 @@ export class MainComponent implements OnInit {
       // add empty mod slots
       let added = 10 * (this.maxMods - curr.mods.total);
 
-      let mobility = curr.stats.mobility + curr.mods.mobility * 10 + added;
+      let mobility = curr.stats.mobility + curr.mods.mobility.bonus + added;
       if (mobility > pre.mobility) pre.mobility = mobility;
 
-      let resilience = curr.stats.resilience + curr.mods.resilience * 10 + added;
+      let resilience = curr.stats.resilience + curr.mods.resilience.bonus + added;
       if (resilience > pre.resilience) pre.resilience = resilience;
 
-      let recovery = curr.stats.recovery + curr.mods.recovery * 10 + added;
+      let recovery = curr.stats.recovery + curr.mods.recovery.bonus + added;
       if (recovery > pre.recovery) pre.recovery = recovery;
 
-      let discipline = curr.stats.discipline + curr.mods.discipline * 10 + added;
+      let discipline = curr.stats.discipline + curr.mods.discipline.bonus + added;
       if (discipline > pre.discipline) pre.discipline = discipline;
 
-      let intellect = curr.stats.intellect + curr.mods.intellect * 10 + added;
+      let intellect = curr.stats.intellect + curr.mods.intellect.bonus + added;
       if (intellect > pre.intellect) pre.intellect = intellect;
 
-      let strength = curr.stats.strength + curr.mods.strength * 10 + added;
+      let strength = curr.stats.strength + curr.mods.strength.bonus + added;
       if (strength > pre.strength) pre.strength = strength;
 
       return pre;
@@ -297,6 +344,8 @@ export class MainComponent implements OnInit {
           return data.totalStatsWithMods.strength
         case 'Tiers':
           return data.tiers
+        case 'Mods':
+          return 100*data.mods.total + data.mods.cost
       }
       return 0;
     }
@@ -389,6 +438,10 @@ export class MainComponent implements OnInit {
   async logout() {
     await this.auth.logout();
     await this.router.navigate(["login"])
+  }
+
+  toJson(d: any) {
+    return JSON.stringify(d, null, 2)
   }
 
   tooltipMobilitySelector: string[] = [
