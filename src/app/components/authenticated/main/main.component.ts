@@ -422,14 +422,15 @@ export class MainComponent implements OnInit {
       return;
     }
 
-    this.characters = await this.bungieApi.getCharacters();
-    if (this.selectedClass == -1 && this.characters.length > 0)
-      this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
-
     if (!await this.auth.autoRegenerateTokens()) {
       await this.auth.logout();
       return;
     }
+
+    this.characters = await this.bungieApi.getCharacters();
+    if (this.selectedClass == -1 && this.characters.length > 0)
+      this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
+
 
     this.updatingManifest = true;
     await this.bungieApi.updateManifest() // manifest NOT forced
