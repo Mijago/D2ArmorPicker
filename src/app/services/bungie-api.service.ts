@@ -1,9 +1,15 @@
 import {Injectable} from '@angular/core';
-import {getDestinyManifest, getDestinyManifestSlice, getProfile, HttpClientConfig} from 'bungie-api-ts/destiny2';
+import {
+  getDestinyManifest,
+  getDestinyManifestSlice,
+  getProfile, getItem,
+  HttpClientConfig,
+  transferItem
+} from 'bungie-api-ts/destiny2';
 import {getMembershipDataForCurrentUser} from 'bungie-api-ts/user';
 import {AuthService} from "./auth.service";
 import {HttpClient} from "@angular/common/http";
-import {DestinyComponentType} from "bungie-api-ts/destiny2/interfaces";
+import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
 import {DatabaseService, IInventoryArmor, IManifestArmor} from "./database.service";
 import {environment} from "../../environments/environment";
 
@@ -20,6 +26,20 @@ export class BungieApiService {
         params: config.params,
       }
     ).toPromise();
+  }
+
+  async $httpPost(config: HttpClientConfig) {
+    return this.http.post<any>(config.url, config.body, {
+        params: config.params,
+        headers: {
+          "X-API-Key": environment.apiKey,
+          "Authorization": "Bearer " + this.authService.accessToken
+        }
+      }
+    ).toPromise()
+      .catch(async err => {
+        console.error(err);
+      })
   }
 
   async $http(config: HttpClientConfig) {
@@ -41,6 +61,102 @@ export class BungieApiService {
       })
   }
 
+  async getCharacters() {
+    let destinyMembership = await this.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      await this.authService.logout();
+      return [];
+    }
+
+    const profile = await getProfile(d => this.$http(d), {
+      components: [
+        DestinyComponentType.Characters,
+      ],
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId
+    });
+
+    return Object.values(profile?.Response.characters.data || {}).map(d => {
+      return {
+        characterId: d.characterId,
+        clazz: d.classType as DestinyClass,
+        lastPlayed: Date.parse(d.dateLastPlayed)
+      }
+    }) || [];
+  }
+
+  async transferItem(itemInstanceId: string, targetCharacter: string) {
+    let destinyMembership = await this.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      await this.authService.logout();
+      return;
+    }
+
+    let r1 = await getItem(d => this.$http(d), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [
+        DestinyComponentType.ItemCommonData
+      ]
+    })
+
+    if (!r1) return;
+    if (r1.Response.characterId == targetCharacter) return;
+    if (r1.Response.item.data?.location != 2) {
+      await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
+      r1 = await getItem(d => this.$http(d), {
+        membershipType: destinyMembership.membershipType,
+        destinyMembershipId: destinyMembership.membershipId,
+        itemInstanceId: itemInstanceId,
+        components: [
+          DestinyComponentType.ItemCommonData
+        ]
+      })
+    }
+
+    const payload = {
+      "characterId": targetCharacter,
+      "membershipType": 3,
+      "itemId": r1?.Response.item.data?.itemInstanceId || "",
+      "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+      "stackSize": 1,
+      "transferToVault": false
+    }
+
+   await transferItem(d => this.$httpPost(d), payload);
+  }
+
+
+  async moveItemToVault(itemInstanceId: string) {
+    console.info("moveItemToVault", itemInstanceId)
+    let destinyMembership = await this.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      await this.authService.logout();
+      return;
+    }
+
+
+    const r1 = await getItem(d => this.$http(d), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [
+        DestinyComponentType.ItemCommonData
+      ]
+    })
+
+    const payload = {
+      "characterId": r1?.Response.characterId || "",
+      "membershipType": 3,
+      "itemId": r1?.Response.item.data?.itemInstanceId || "",
+      "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+      "stackSize": 1,
+      "transferToVault": true
+    }
+
+    await transferItem(d => this.$httpPost(d), payload);
+  }
 
   async getMembershipDataForCurrentUser() {
     console.info("BungieApiService", "getMembershipDataForCurrentUser")

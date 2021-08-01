@@ -127,3 +127,13 @@ tr.example-detail-row {
   margin-left: 2px;
   top: 3px;
 }
+
+.svgClassIcon {
+  width: 14px;
+  cursor: pointer;
+}
+
+.itemTransferStatusIcon {
+  font-size: 12px;
+  margin-right: 3px;
+}

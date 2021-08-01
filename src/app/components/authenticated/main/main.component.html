@@ -23,9 +23,12 @@
 <mat-form-field appearance="fill">
   <mat-label>Class</mat-label>
   <mat-select [(value)]="selectedClass" (selectionChange)="onClassChange()">
-    <mat-option [value]="1">Hunter</mat-option>
-    <mat-option [value]="0">Titan</mat-option>
-    <mat-option [value]="2">Warlock</mat-option>
+
+    <mat-option *ngFor="let character of characters" [value]="character.clazz">
+      <span *ngIf="character.clazz == 0">Titan</span>
+      <span *ngIf="character.clazz == 1">Hunter</span>
+      <span *ngIf="character.clazz == 2">Warlock</span>
+    </mat-option>
   </mat-select>
 </mat-form-field>
 
@@ -358,9 +361,11 @@ Your selection results in {{possiblePermutationCount}} permutations.
               </thead>
               <tr
                 *ngFor="let i of element.permutation.items">
-                <td *ngIf="!i.masterworked">{{i.name}}</td>
-                <td *ngIf="i.masterworked">
-                  <u matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
+                <td>
+                  <mat-icon aria-hidden="false" aria-label="Done" class="itemTransferStatusIcon" *ngIf="i.parseStatus == 2">check_circle_outline</mat-icon>
+                  <mat-icon aria-hidden="false" aria-label="Waiting" class="itemTransferStatusIcon" *ngIf="i.parseStatus == 1">hourglass_empty</mat-icon>
+                  <u *ngIf="i.masterworked" matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
+                  <span *ngIf="!i.masterworked">{{i.name}}</span>
                 </td>
                 <td>{{i.mobility + 2}}</td>
                 <td>{{i.resilience + 2}}</td>
@@ -386,7 +391,7 @@ Your selection results in {{possiblePermutationCount}} permutations.
                 </td>
               </tr>
               <tr>
-                <td>Any Class Item</td>
+                <td><u matTooltip='Class item should be masterworked.' #tooltip="matTooltip">Any Class Item</u></td>
                 <td>{{2}}</td>
                 <td>{{2}}</td>
                 <td>{{2}}</td>
@@ -509,6 +514,27 @@ Your selection results in {{possiblePermutationCount}} permutations.
                 </td>
               </tr>
             </table>
+
+            <!-- Equip stuff -->
+            <div>
+              Move all items to:
+              <span *ngFor="let character of characters">
+                <span
+                  *ngIf="character.clazz == selectedClass"
+                  (click)="movePermutationItems(character.characterId, element)">
+                <!-- SVGs shamelessly stolen from DIM. I hereby credit them ;) -->
+                <svg *ngIf="character.clazz == 0" class="svgClassIcon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="currentColor" d="m14.839 15.979-13.178-7.609v15.218zm2.322 0 13.178 7.609v-15.218zm5.485-12.175-6.589-3.804-13.178 7.609 13.178 7.609 13.179-7.609zm0 16.784-6.589-3.805-13.178 7.609 13.178 7.608 13.179-7.608-6.59-3.805z"></path></svg>
+                <svg *ngIf="character.clazz == 2" class="svgClassIcon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="currentColor" d="m5.442 23.986 7.255-11.65-2.71-4.322-9.987 15.972zm5.986 0 4.28-6.849-2.717-4.333-6.992 11.182zm7.83-11.611 7.316 11.611h5.426l-10.015-15.972zm-7.26 11.611h8.004l-4.008-6.392zm6.991-11.182-2.703 4.324 4.302 6.858h5.413zm-5.707-.459 2.71-4.331 2.71 4.331-2.703 4.326z"></path></svg>
+                <svg *ngIf="character.clazz == 1" class="svgClassIcon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path fill="currentColor" d="m9.055 10.446 6.945-.023-6.948 10.451 6.948-.024-7.412 11.15h-7.045l7.036-10.428h-7.036l7.032-10.422h-7.032l7.507-11.126 6.95-.024zm13.89 0-6.945-10.446 6.95.024 7.507 11.126h-7.032l7.032 10.422h-7.036l7.036 10.428h-7.045l-7.412-11.15 6.948.024-6.948-10.451z"></path></svg>
+                </span>
+              </span>
+              (beta!)
+              <mat-icon inline aria-hidden="false" aria-label="Help"
+                               matTooltip='Moves the items into the inventory. It DOES NOT check for full inventory. It DOES NOT equip the items.'
+                               #tooltip="matTooltip"> help
+              </mat-icon>
+            </div>
+            <!-- /Equip stuff -->
           </div>
         </div>
       </td>

@@ -11,6 +11,7 @@ import {Router} from "@angular/router";
 import {MatSort, Sort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
+import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 
 export interface ISelectedExotic {
   icon: string;
@@ -64,6 +65,7 @@ export class MainComponent implements OnInit {
   updatePermutationsSubject: Subject<any> = new Subject();
   updateExoticPermutationsSubject: Subject<any> = new Subject();
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
+  characters: { characterId: any; clazz: DestinyClass; lastPlayed: number }[] = [];
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
@@ -414,6 +416,10 @@ export class MainComponent implements OnInit {
     this.permutations = [];
     this.expandedElement = null;
 
+    this.characters = await this.bungieApi.getCharacters();
+    if (this.characters.length > 0)
+      this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
+
     // log out if refresh token is expired
     if (this.auth.refreshTokenExpired) {
       await this.auth.logout();
@@ -520,6 +526,21 @@ export class MainComponent implements OnInit {
     "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t0:37 / 0:37\r\n Hunter:\t\t0:44 / 0:47\r\n Warlock:\t0:37 / 0:47",
     "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t0:32 / 0:32\r\n Hunter:\t\t0:37 / 0:43\r\n Warlock:\t0:32 / 0:43",
   ]
+
+  async movePermutationItems(characterId: string, element: IMappedGearPermutation) {
+    for (let item of element.permutation.items) {
+      (item as any)["parseStatus"] = 1;
+    }
+
+    for (let item of element.permutation.items) {
+      (item as any)["parseStatus"] = 1;
+      await this.bungieApi.transferItem(item.itemInstanceId, characterId);
+      (item as any)["parseStatus"] = 2;
+    }
+    for (let item of element.permutation.items) {
+      delete (item as any)["parseStatus"];
+    }
+  }
 }
 
 
