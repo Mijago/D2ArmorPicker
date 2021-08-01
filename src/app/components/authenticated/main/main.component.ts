@@ -416,15 +416,16 @@ export class MainComponent implements OnInit {
     this.permutations = [];
     this.expandedElement = null;
 
-    this.characters = await this.bungieApi.getCharacters();
-    if (this.selectedClass == -1 && this.characters.length > 0)
-      this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
-
     // log out if refresh token is expired
     if (this.auth.refreshTokenExpired) {
       await this.auth.logout();
       return;
     }
+
+    this.characters = await this.bungieApi.getCharacters();
+    if (this.selectedClass == -1 && this.characters.length > 0)
+      this.selectedClass = this.characters.sort((a, b) => b.lastPlayed - a.lastPlayed)[0].clazz;
+
     if (!await this.auth.autoRegenerateTokens()) {
       await this.auth.logout();
       return;
