@@ -56,6 +56,7 @@
     <td>Mobility</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minMobility"
         [tooltips]="tooltipMobilitySelector"
         [maxPossibleValue]="maximumPossibleStats.mobility"
         (onChange)="minMobility = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
@@ -65,6 +66,7 @@
     <td>Resilience</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minResilience"
         [tooltips]="tooltipResilienceSelector"
         [maxPossibleValue]="maximumPossibleStats.resilience"
         (onChange)="minResilience = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
@@ -74,6 +76,7 @@
     <td>Recovery</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minRecovery"
         [tooltips]="tooltipRecoverySelector"
         [maxPossibleValue]="maximumPossibleStats.recovery"
         (onChange)="minRecovery = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
@@ -83,6 +86,7 @@
     <td>Discipline</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minDiscipline"
         [tooltips]="tooltipDisciplineSelector"
         [maxPossibleValue]="maximumPossibleStats.discipline"
         (onChange)="minDiscipline = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
@@ -92,6 +96,7 @@
     <td>Intellect</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minIntellect"
         [tooltips]="tooltipIntellectSelector"
         [maxPossibleValue]="maximumPossibleStats.intellect"
         (onChange)="minIntellect = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
@@ -101,14 +106,55 @@
     <td>Strength</td>
     <td>
       <app-stat-minimum-selection
+        [value]="minStrength"
         [tooltips]="tooltipStrengthSelector"
         [maxPossibleValue]="maximumPossibleStats.strength"
         (onChange)="minStrength = $event.valueOf(); onMinStatValueChange()"></app-stat-minimum-selection>
     </td>
   </tr>
 </table>
-Your selection results in {{possiblePermutationCount}} permutations.
-<span *ngIf="possiblePermutationCount == 0">You may want to reduce your stat requirements.</span>
+
+<span>
+  <button mat-stroked-button id="clearStatButton" (click)="clearStatSelection()">Clear</button>
+</span>
+
+<span *ngIf="maximumPossibleAmountPerTier[3] > 0">
+  <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu" aria-label="Select builds with three stats at tier 10.">
+    <mat-icon>expand_more</mat-icon>
+    Select 3x T10 Builds
+  </button>
+  <mat-menu #menu="matMenu">
+  <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:3" (click)="useStatPreset(d)">
+    <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
+    </span>
+  </button>
+  </mat-menu>
+</span>
+<span *ngIf="maximumPossibleAmountPerTier[4] > 0">
+  <button mat-stroked-button [matMenuTriggerFor]="menu" aria-label="Select builds with four stats at tier 10.">
+    <mat-icon>expand_more</mat-icon>
+    Select 4x T10 Builds
+  </button>
+  <mat-menu #menu="matMenu">
+  <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:4" (click)="useStatPreset(d)">
+    <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
+    </span>
+  </button>
+  </mat-menu>
+</span>
+
 
 <br/><h2>2. Now select the combat style mods and abilities you want to use.</h2>
 <div>

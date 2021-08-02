@@ -13,6 +13,8 @@ import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 
+export type MaxStatData = [boolean, boolean, boolean, boolean, boolean, boolean, number]
+
 export interface ISelectedExotic {
   icon: string;
   slot: string;
@@ -67,6 +69,7 @@ export class MainComponent implements OnInit {
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
   characters: { characterId: any; clazz: DestinyClass; lastPlayed: number }[] = [];
   maximumPossibleAmountPerTier: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+  maximumPossibleAmountSets: MaxStatData[] = [];
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
@@ -75,12 +78,12 @@ export class MainComponent implements OnInit {
 
   selectedClass: number = -1;
 
-  minMobility: number = 0;
-  minResilience: number = 0;
-  minRecovery: number = 0;
-  minDiscipline: number = 0;
-  minIntellect: number = 0;
-  minStrength: number = 0;
+  minMobility: number = 10;
+  minResilience: number = 10;
+  minRecovery: number = 10;
+  minDiscipline: number = 10;
+  minIntellect: number = 10;
+  minStrength: number = 10;
 
   maxMods: number = 5;
   filterAssumeMasterworked: boolean = true;
@@ -324,7 +327,9 @@ export class MainComponent implements OnInit {
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
 
-    this.maximumPossibleAmountPerTier = this.tableDataSource.data.map(d => {
+    this.maximumPossibleAmountPerTier = [0, 0, 0, 0, 0]
+    this.maximumPossibleAmountSets = []
+    let maximumPossibleAmount = this.tableDataSource.data.map(d => {
       // find the most possible amount of 100 stats you can have
       const stats = Object.assign({}, d.totalStatsWithMods);
       let todos = [
@@ -340,13 +345,15 @@ export class MainComponent implements OnInit {
 
       if (freeModSlots > 0) {
         let idx = todos
-          .filter(d => d > 0)
-          .sort((a, b) => a - b)
+          .map((d, i) => [d, i])
+          .filter(d => d[0] > 0)
+          .sort((a, b) => a[0] - b[0])
 
         for (let stat of idx) {
-          if (stat - freeModSlots > 0)
+          if (stat[0] - freeModSlots > 0)
             break;
-          freeModSlots -= stat
+          freeModSlots -= stat[0]
+          todos[stat[1]] = 0
           current100s++;
           if (freeModSlots < 0)
             throw new Error("freeModSlots < 0??")
@@ -354,9 +361,19 @@ export class MainComponent implements OnInit {
             break;
         }
       }
-      return current100s;
-    }).reduce((p, c) => {
-      p[c]++;
+      const result = todos.map(d => d == 0) as MaxStatData;
+      result.push(current100s);
+      return result;
+    })
+
+    function calcScore(d: MaxStatData) {
+      return (d[0] ? 1e6 : 0) + (d[1] ? 1e5 : 0) + (d[2] ? 1e4 : 0) + (d[3] ? 1e3 : 0) + (d[4] ? 1e2 : 0) + (d[5] ? 1e1 : 0)
+    }
+
+    this.maximumPossibleAmountSets = Array.from(new Map(maximumPossibleAmount.map((p) => [p.join(), p])).values())
+      .sort((a, b) => calcScore(b)- calcScore(a))
+    this.maximumPossibleAmountPerTier = maximumPossibleAmount.reduce((p, c) => {
+      p[c[6]]++;
       return p;
     }, [0, 0, 0, 0, 0])
 
@@ -390,7 +407,6 @@ export class MainComponent implements OnInit {
 
     this.possiblePermutationCount = this.tableDataSource.data.length;
   }
-
 
   getExoticForPermutation(permutation: GearPermutation) {
     if (permutation.helmet.isExotic) return permutation.helmet;
@@ -579,6 +595,26 @@ export class MainComponent implements OnInit {
     for (let item of element.permutation.items) {
       delete (item as any)["parseStatus"];
     }
+  }
+
+  clearStatSelection() {
+    this.minMobility = 10;
+    this.minResilience = 10;
+    this.minRecovery = 10;
+    this.minDiscipline = 10;
+    this.minIntellect = 10;
+    this.minStrength = 10;
+    this.onMinStatValueChange();
+  }
+
+  useStatPreset(d: MaxStatData) {
+    if (d[0]) this.minMobility = 100;
+    if (d[1]) this.minResilience = 100;
+    if (d[2]) this.minRecovery = 100;
+    if (d[3]) this.minDiscipline = 100;
+    if (d[4]) this.minIntellect = 100;
+    if (d[5]) this.minStrength = 100;
+    this.onMinStatValueChange();
   }
 }
 

@@ -31,6 +31,8 @@ import { TableModDisplayComponent } from './components/authenticated/table-mod-d
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {NotAuthenticatedGuard} from "./guards/not-authenticated.guard";
+import {MatMenuModule} from "@angular/material/menu";
+import { FilterPossibleAmountSetPipe } from './components/authenticated/main/filter-possible-amount-set.pipe';
 
 
 const routes: Routes = [
@@ -48,31 +50,33 @@ const routes: Routes = [
     StatMinimumSelectionComponent,
     StatModAmountComponent,
     ExoticItemDisplayComponent,
-    TableModDisplayComponent
+    TableModDisplayComponent,
+    FilterPossibleAmountSetPipe
   ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
-        BrowserAnimationsModule,
-        MatButtonModule,
-        RouterModule.forRoot(routes, {useHash: true}),
-        MatFormFieldModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatSliderModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatSlideToggleModule,
-        FormsModule,
-        MatTableModule,
-        MatCardModule,
-        MatTooltipModule,
-        MatProgressBarModule,
-        MatIconModule,
-        MatSortModule,
-        MatPaginatorModule,
-        MatToolbarModule
-    ],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    RouterModule.forRoot(routes, {useHash: true}),
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatSliderModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    FormsModule,
+    MatTableModule,
+    MatCardModule,
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatToolbarModule,
+    MatMenuModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

@@ -142,3 +142,15 @@ tr.example-detail-row {
   font-size: 12px;
   margin-right: 3px;
 }
+.statContainerWrapper {
+  position: relative;
+  top: 6px;
+}
+.dialogStatIcon {
+  width: 25px;
+  margin-right: 3px;
+}
+
+#clearStatButton, .selectStatDistributionButton {
+  margin-right: 4px;
+}
