@@ -66,6 +66,7 @@ export class MainComponent implements OnInit {
   updateExoticPermutationsSubject: Subject<any> = new Subject();
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
   characters: { characterId: any; clazz: DestinyClass; lastPlayed: number }[] = [];
+  maximumPossibleAmountPerTier: [number, number, number, number, number] = [0, 0, 0, 0, 0];
 
   constructor(private bungieApi: BungieApiService, private router: Router,
               private auth: AuthService, private permBuilder: DestinyArmorPermutationService,
@@ -322,6 +323,42 @@ export class MainComponent implements OnInit {
         totalStatsWithMods: totalStats
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
+
+    this.maximumPossibleAmountPerTier = this.tableDataSource.data.map(d => {
+      // find the most possible amount of 100 stats you can have
+      const stats = Object.assign({}, d.totalStatsWithMods);
+      let todos = [
+        Math.ceil(Math.max(0, (100 - stats.mobility)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.resilience)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.recovery)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.discipline)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.intellect)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.strength)) / 10)
+      ]
+      let current100s = todos.filter(d => d == 0).length
+      let freeModSlots = this.maxMods - d.mods[MOD_INDICES.MOD_COUNT]
+
+      if (freeModSlots > 0) {
+        let idx = todos
+          .filter(d => d > 0)
+          .sort((a, b) => a - b)
+
+        for (let stat of idx) {
+          if (stat - freeModSlots > 0)
+            break;
+          freeModSlots -= stat
+          current100s++;
+          if (freeModSlots < 0)
+            throw new Error("freeModSlots < 0??")
+          if (freeModSlots == 0)
+            break;
+        }
+      }
+      return current100s;
+    }).reduce((p, c) => {
+      p[c]++;
+      return p;
+    }, [0, 0, 0, 0, 0])
 
     // get maximum possible stats for the current selection
     this.maximumPossibleStats = this.tableDataSource.data.reduce((pre, curr) => {
