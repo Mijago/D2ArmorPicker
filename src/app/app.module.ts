@@ -9,7 +9,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {HttpClientModule} from "@angular/common/http";
 import {RouterModule, Routes} from "@angular/router";
 import {HandleBungieLoginComponent} from './components/handle-bungie-login/handle-bungie-login.component';
-import {AuthGuard} from "./guards/auth.guard";
+import {AuthenticatedGuard} from "./guards/authenticated.guard";
 import { MainComponent } from './components/authenticated/main/main.component';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
@@ -30,11 +30,12 @@ import {MatSortModule} from "@angular/material/sort";
 import { TableModDisplayComponent } from './components/authenticated/table-mod-display/table-mod-display.component';
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatToolbarModule} from "@angular/material/toolbar";
+import {NotAuthenticatedGuard} from "./guards/not-authenticated.guard";
 
 
 const routes: Routes = [
-  {path: '', component: MainComponent, canActivate: [AuthGuard]},
-  {path: 'login', component: LoginComponent},
+  {path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
+  {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
 ];
 
