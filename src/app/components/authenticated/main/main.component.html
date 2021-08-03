@@ -118,12 +118,13 @@
   <button mat-stroked-button id="clearStatButton" (click)="clearStatSelection()">Clear</button>
 </span>
 
-<span *ngIf="maximumPossibleAmountPerTier[3] > 0">
-  <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu" aria-label="Select builds with three stats at tier 10.">
+<span>
+  <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu1" aria-label="Select builds with three stats at tier 10."
+  [disabled]="maximumPossibleAmountPerTier[3] == 0">
     <mat-icon>expand_more</mat-icon>
     Select 3x T10 Builds
   </button>
-  <mat-menu #menu="matMenu">
+  <mat-menu #menu1="matMenu" menu>
   <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:3" (click)="useStatPreset(d)">
     <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
         <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
@@ -136,12 +137,12 @@
   </button>
   </mat-menu>
 </span>
-<span *ngIf="maximumPossibleAmountPerTier[4] > 0">
-  <button mat-stroked-button [matMenuTriggerFor]="menu" aria-label="Select builds with four stats at tier 10.">
+<span>
+  <button mat-stroked-button [matMenuTriggerFor]="menu2" aria-label="Select builds with four stats at tier 10." [disabled]="maximumPossibleAmountPerTier[4] == 0">
     <mat-icon>expand_more</mat-icon>
     Select 4x T10 Builds
   </button>
-  <mat-menu #menu="matMenu">
+  <mat-menu #menu2="matMenu">
   <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:4" (click)="useStatPreset(d)">
     <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
         <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
