@@ -284,10 +284,7 @@
 
 <div>
   <div *ngIf="possiblePermutationCount > 0">
-  Your selection results in {{possiblePermutationCount}} permutations.
-    <span *ngIf="maximumPossibleAmountPerTier[2] > 0 && maximumPossibleAmountPerTier[4] == 0"> {{maximumPossibleAmountPerTier[2]}} with two times T10. </span>
-    <span *ngIf="maximumPossibleAmountPerTier[3] > 0">{{maximumPossibleAmountPerTier[3]}} with three times T10. </span>
-    <span *ngIf="maximumPossibleAmountPerTier[4] > 0"><u>{{maximumPossibleAmountPerTier[4]}} with four times T10!</u></span><br/>
+  Your selection results in {{possiblePermutationCount}} permutations.<br/>
   Click on a row to expand it and to see the list of the items required for this build.<br/>
   Use the listed stats to identify the armor you have to use.
   </div>

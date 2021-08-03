@@ -1,14 +1,14 @@
-import {ChangeDetectorRef, Component, OnInit, Output, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {BungieApiService} from "../../../services/bungie-api.service";
 import {AuthService} from "../../../services/auth.service";
 import {Subject} from "rxjs";
 import {debounceTime} from "rxjs/operators";
 import {DestinyArmorPermutationService} from "../../../services/destiny-armor-permutation.service";
-import {DatabaseService, IInventoryArmor} from "../../../services/database.service";
+import {DatabaseService} from "../../../services/database.service";
 import {GearPermutation, Stats} from "../../../data/permutation";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 import {Router} from "@angular/router";
-import {MatSort, Sort} from "@angular/material/sort";
+import {MatSort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
@@ -230,6 +230,9 @@ export class MainComponent implements OnInit {
   async updateTable() {
     console.log("updateTable")
     // Clear memory
+    this.maximumPossibleAmountSets.length = 0;
+    this.maximumPossibleAmountSets = []
+    this.maximumPossibleAmountPerTier = [0, 0, 0, 0, 0]
     this.tableDataSource.data.length = 0;
     this.tableDataSource.data = [];
 
@@ -256,6 +259,43 @@ export class MainComponent implements OnInit {
           return 100 * data.mods[MOD_INDICES.MOD_COUNT] + data.mods[MOD_INDICES.MOD_COST]
       }
       return 0;
+    }
+
+
+    let getMaximumPossibleAmount = (stats: Stats, mods: number[]) => {
+      let todos = [
+        Math.ceil(Math.max(0, (100 - stats.mobility)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.resilience)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.recovery)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.discipline)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.intellect)) / 10),
+        Math.ceil(Math.max(0, (100 - stats.strength)) / 10)
+      ]
+      let current100s = todos.filter(d => d == 0).length
+      let freeModSlots = this.maxMods - mods[MOD_INDICES.MOD_COUNT]
+
+      if (freeModSlots > 0) {
+        let idx = todos
+          .map((d, i) => [d, i])
+          .filter(d => d[0] > 0)
+          .sort((a, b) => a[0] - b[0])
+
+        for (let stat of idx) {
+          if (stat[0] - freeModSlots > 0)
+            break;
+          freeModSlots -= stat[0]
+          todos[stat[1]] = 0
+          current100s++;
+          if (freeModSlots < 0)
+            throw new Error("freeModSlots < 0??")
+          if (freeModSlots == 0)
+            break;
+        }
+      }
+      const result = todos.map(d => d == 0 ? 1 : 0);
+      return (current100s << 6)
+        + (result[0] << 5) + (result[1] << 4) + (result[2] << 3)
+        + (result[3] << 2) + (result[4] << 1) + (result[5] << 0);
     }
 
     this.tableDataSource.data = this.permutationsFilteredByExotic.map(perm => {
@@ -327,52 +367,18 @@ export class MainComponent implements OnInit {
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
 
-    this.maximumPossibleAmountPerTier = [0, 0, 0, 0, 0]
-    this.maximumPossibleAmountSets = []
-    let maximumPossibleAmount = this.tableDataSource.data.map(d => {
-      // find the most possible amount of 100 stats you can have
-      const stats = Object.assign({}, d.totalStatsWithMods);
-      let todos = [
-        Math.ceil(Math.max(0, (100 - stats.mobility)) / 10),
-        Math.ceil(Math.max(0, (100 - stats.resilience)) / 10),
-        Math.ceil(Math.max(0, (100 - stats.recovery)) / 10),
-        Math.ceil(Math.max(0, (100 - stats.discipline)) / 10),
-        Math.ceil(Math.max(0, (100 - stats.intellect)) / 10),
-        Math.ceil(Math.max(0, (100 - stats.strength)) / 10)
-      ]
-      let current100s = todos.filter(d => d == 0).length
-      let freeModSlots = this.maxMods - d.mods[MOD_INDICES.MOD_COUNT]
-
-      if (freeModSlots > 0) {
-        let idx = todos
-          .map((d, i) => [d, i])
-          .filter(d => d[0] > 0)
-          .sort((a, b) => a[0] - b[0])
-
-        for (let stat of idx) {
-          if (stat[0] - freeModSlots > 0)
-            break;
-          freeModSlots -= stat[0]
-          todos[stat[1]] = 0
-          current100s++;
-          if (freeModSlots < 0)
-            throw new Error("freeModSlots < 0??")
-          if (freeModSlots == 0)
-            break;
-        }
-      }
-      const result = todos.map(d => d == 0) as MaxStatData;
-      result.push(current100s);
-      return result;
-    })
-
     function calcScore(d: MaxStatData) {
       return (d[0] ? 1e6 : 0) + (d[1] ? 1e5 : 0) + (d[2] ? 1e4 : 0) + (d[3] ? 1e3 : 0) + (d[4] ? 1e2 : 0) + (d[5] ? 1e1 : 0)
     }
 
-    this.maximumPossibleAmountSets = Array.from(new Map(maximumPossibleAmount.map((p) => [p.join(), p])).values())
-      .sort((a, b) => calcScore(b)- calcScore(a))
-    this.maximumPossibleAmountPerTier = maximumPossibleAmount.reduce((p, c) => {
+    this.maximumPossibleAmountSets = Array.from(new Set(this.tableDataSource.data.map(d => getMaximumPossibleAmount(d.totalStatsWithMods, d.mods))))
+      .map((d: number) => [
+        !!(d & 1 << 5), !!(d & 1 << 4), !!(d & 1 << 3),
+        !!(d & 1 << 2), !!(d & 1 << 1), !!(d & 1 << 0),
+        d >> 6
+      ] as MaxStatData)
+      .sort((a, b) => calcScore(b) - calcScore(a))
+    this.maximumPossibleAmountPerTier = this.maximumPossibleAmountSets.reduce((p, c) => {
       p[c[6]]++;
       return p;
     }, [0, 0, 0, 0, 0])
