@@ -661,6 +661,19 @@ export class MainComponent implements OnInit {
     this.onMinStatValueChange();
   }
 
+  get selectedStasisFragmentsAmount() {
+    let n = 0;
+    if (this.enableStasisWhisperOfDurance) n++;
+    if (this.enableStasisWhisperOfChains) n++;
+    if (this.enableStasisWhisperOfConduction) n++;
+    if (this.enableStasisWhisperOfShards) n++;
+    if (this.enableStasisWhisperOfHedrons) n++;
+    if (this.enableStasisWhisperOfBonds) n++;
+    if (this.enableStasisWhisperOfHunger) n++;
+    if (this.enableStasisWhisperOfFractures) n++;
+    return n;
+  }
+
   get selectedCombatModAmount() {
     let n = 0;
     if (this.enablePowerfulFriends) n++;

@@ -224,6 +224,7 @@
   </div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfDurance"
+                      [disabled]="!enableStasisWhisperOfDurance && selectedStasisFragmentsAmount >= 5"
                       [checked]="enableStasisWhisperOfDurance" (change)="onAllowedModChange()">Whisper of Durance (
       <span class="statBonusStasis">+10</span>
       Strength)
@@ -231,12 +232,14 @@
   </div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfShards" [checked]="enableStasisWhisperOfShards"
+                      [disabled]="!enableStasisWhisperOfShards && selectedStasisFragmentsAmount >= 5"
                       (change)="onAllowedModChange()">Whisper of Shards (<span class="statBonusStasis">+10</span>
       Resilience)
     </mat-slide-toggle>
   </div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfConduction"
+                      [disabled]="!enableStasisWhisperOfConduction && selectedStasisFragmentsAmount >= 5"
                       [checked]="enableStasisWhisperOfConduction" (change)="onAllowedModChange()">Whisper of Conduction
       (<span class="statBonusStasis">+10</span> Resilience,
       <span class="statBonusStasis">+10</span> Intellect)
@@ -244,46 +247,59 @@
   </div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfChains" [checked]="enableStasisWhisperOfChains"
+                      [disabled]="!enableStasisWhisperOfChains && selectedStasisFragmentsAmount >= 5"
                       (change)="onAllowedModChange()">Whisper of Chains (<span class="statBonusStasis">+10</span> Recovery)
     </mat-slide-toggle>
   </div>
   <div>Negative effects:</div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModChargeHarvester" [checked]="enableModChargeHarvester" [disabled]="!enableModChargeHarvester && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModChargeHarvester" [checked]="enableModChargeHarvester"
+                         [disabled]="!enableModChargeHarvester && selectedCombatModAmount >= 5"
                          (change)="onAllowedModChange()">Charge Harvester (<span class="statMalus">-10</span> {{["Resilience", "Mobility", "Recovery"][selectedClass] || "Class ability regeneration stat"}})
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModEnergyConverter" [checked]="enableModEnergyConverter" [disabled]="!enableModEnergyConverter && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModEnergyConverter" [checked]="enableModEnergyConverter"
+                         [disabled]="!enableModEnergyConverter && selectedCombatModAmount >= 5"
                          (change)="onAllowedModChange()">Energy Converter (<span class="statMalus">-10</span> Discipline)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModExtraReserves" [checked]="enableModExtraReserves" [disabled]="!enableModExtraReserves && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModExtraReserves" [checked]="enableModExtraReserves"
+                         [disabled]="!enableModExtraReserves && selectedCombatModAmount >= 5"
                          (change)="onAllowedModChange()">Extra Reserves (<span class="statMalus">-10</span> Intellect)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecicelyCharged" [checked]="enableModPrecicelyCharged" [disabled]="!enableModPrecicelyCharged && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecicelyCharged" [checked]="enableModPrecicelyCharged"
+                         [disabled]="!enableModPrecicelyCharged && selectedCombatModAmount >= 5"
                          (change)="onAllowedModChange()">Precicely Charged (<span class="statMalus">-10</span> Discipline)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecisionCharge" [checked]="enableModPrecisionCharge" [disabled]="!enableModPrecisionCharge && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecisionCharge" [checked]="enableModPrecisionCharge"
+                         [disabled]="!enableModPrecisionCharge && selectedCombatModAmount >= 5"
                          (change)="onAllowedModChange()">Precision Charge (<span class="statMalus">-10</span> Strength)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModProtectiveLight" [checked]="enableModProtectiveLight" [disabled]="!enableModProtectiveLight && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModProtectiveLight" [checked]="enableModProtectiveLight"
+                         [disabled]="!enableModProtectiveLight && selectedCombatModAmount >= 5"
                       (change)="onAllowedModChange()">Protective Light (<span class="statMalus">-10</span> Strength)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModStacksOnStacks" [checked]="enableModStacksOnStacks" [disabled]="!enableModStacksOnStacks && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModStacksOnStacks" [checked]="enableModStacksOnStacks"
+                         [disabled]="!enableModStacksOnStacks && selectedCombatModAmount >= 5"
         (change)="onAllowedModChange()">Stacks on Stacks (<span class="statMalus">-10</span> Recovery)
   </mat-slide-toggle></div>
-  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModSurpriseAttack" [checked]="enableModSurpriseAttack" [disabled]="!enableModSurpriseAttack && selectedCombatModAmount >= 5"
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModSurpriseAttack" [checked]="enableModSurpriseAttack"
+                         [disabled]="!enableModSurpriseAttack && selectedCombatModAmount >= 5"
         (change)="onAllowedModChange()">Surprise Attack (<span class="statMalus">-10</span> Intellect)
   </mat-slide-toggle></div>
   <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfBonds" [checked]="enableStasisWhisperOfBonds"
+                         [disabled]="!enableStasisWhisperOfBonds && selectedStasisFragmentsAmount >= 5"
                          (change)="onAllowedModChange()">Whisper of Bonds (
     <span class="statMalusStasis">-10</span> Discipline,
     <span class="statMalusStasis">-10</span> Intellect)
   </mat-slide-toggle></div>
   <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfFractures" [checked]="enableStasisWhisperOfFractures"
+                         [disabled]="!enableStasisWhisperOfFractures && selectedStasisFragmentsAmount >= 5"
                          (change)="onAllowedModChange()">Whisper of Fractures (<span class="statMalusStasis">-10</span> Discipline)
   </mat-slide-toggle></div>
   <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfHedrons" [checked]="enableStasisWhisperOfHedrons"
+                         [disabled]="!enableStasisWhisperOfHedrons && selectedStasisFragmentsAmount >= 5"
         (change)="onAllowedModChange()">Whisper of Hedrons (<span class="statMalusStasis">-10</span> Strength)
   </mat-slide-toggle></div>
   <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfHunger" [checked]="enableStasisWhisperOfHunger"
+                         [disabled]="!enableStasisWhisperOfHunger && selectedStasisFragmentsAmount >= 5"
         (change)="onAllowedModChange()">Whisper of Hunger (
     <span class="statMalusStasis">-10</span> Mobility,
     <span class="statMalusStasis">-10</span> Recovery)
@@ -504,37 +520,83 @@
                 <td>Static Boosts</td>
                 <td><span class="statBonus" *ngIf="this.enablePowerfulFriends">+20</span></td>
                 <td>
-                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfShards">+10</span>
-                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span>
+                  <span class="statBonusStasis" *ngIf="enableStasisWhisperOfShards || enableStasisWhisperOfConduction">
+                    +{{(enableStasisWhisperOfShards ? 10 : 0) + (enableStasisWhisperOfConduction ? 10 : 0)}}
+                  </span>
                 </td>
-                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains">+10</span></td>
+                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfChains"> +10</span></td>
                 <td></td>
-                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction">+10</span></td>
+                <td><span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfConduction"> +10</span></td>
                 <td>
                   <span class="statBonus" *ngIf="this.enableRadiantLight">+20</span>
-                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance">+10</span>
+                  <span class="statBonusStasis" *ngIf="this.enableStasisWhisperOfDurance"> +10</span>
+                </td>
+              </tr>
+              <tr class="staticModPenaltyRow">
+                <td>Static Penalties</td>
+                <td>
+                  <span class="statMalus" *ngIf="selectedClass == 1 && enableModChargeHarvester">-10</span>
+                  <span class="statMalusStasis" *ngIf="enableStasisWhisperOfHunger"> -10</span>
+                </td>
+                <td>
+                  <span class="statMalus" *ngIf="selectedClass == 0 && enableModChargeHarvester">-10</span>
+                </td>
+                <td>
+                  <span class="statMalus" *ngIf="enableModStacksOnStacks ||(enableModChargeHarvester && selectedClass == 2)">-{{
+                    (enableModStacksOnStacks ? 10: 0) + ((enableModChargeHarvester && selectedClass == 2) ? 10 : 0)}}</span>
+                  <span class="statMalusStasis" *ngIf="enableStasisWhisperOfHunger"> -10</span>
+                </td>
+                <td>
+                  <span class="statMalus" *ngIf="enableModPrecicelyCharged || enableModEnergyConverter">-{{
+                    (enableModPrecicelyCharged ? 10: 0) + (enableModEnergyConverter ? 10 : 0)}}</span>
+                  <span class="statMalusStasis" *ngIf="enableStasisWhisperOfBonds || enableStasisWhisperOfFractures"> -{{
+                    (enableStasisWhisperOfFractures ? 10: 0) + (enableStasisWhisperOfBonds ? 10 : 0)
+                    }}</span>
+                </td>
+                <td>
+                  <span class="statMalus" *ngIf="enableModExtraReserves || enableModSurpriseAttack">-{{
+                  (enableModExtraReserves ? 10: 0) + (enableModSurpriseAttack ? 10 : 0)}}</span>
+                  <span class="statMalusStasis" *ngIf="enableStasisWhisperOfBonds"> -10</span>
+                </td>
+                <td>
+                  <span class="statMalus" *ngIf="enableModProtectiveLight || enableModPrecisionCharge">+{{
+                    (enableModProtectiveLight ? 10: 0) + (enableModPrecisionCharge ? 10: 0)
+                    }}</span>
+                  <span class="statMalusStasis" *ngIf="enableStasisWhisperOfHedrons"> -10</span>
                 </td>
               </tr>
               <tr class="statTotalRow">
                 <td>Total</td>
-                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).mobility + (this.enablePowerfulFriends ? 20 : 0)}}
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).mobility
+                + (enablePowerfulFriends ? 20 : 0)
+                - (enableStasisWhisperOfHunger ? 10 : 0) - ((selectedClass==1 && enableModChargeHarvester) ? 10 : 0)}}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIconMini">
                 </td>
-                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).resilience + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)}}
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).resilience
+                + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)
+                - ((selectedClass == 0 && enableModChargeHarvester) ? 10 : 0)}}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIconMini">
                 </td>
-                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).recovery + (this.enableStasisWhisperOfChains ? 10 : 0)}}
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).recovery
+                + (this.enableStasisWhisperOfChains ? 10 : 0)
+                - (this.enableModStacksOnStacks ? 10 : 0) - (this.enableStasisWhisperOfHunger ? 10 : 0) - ((selectedClass == 2 && enableModChargeHarvester) ? 10 : 0)}}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIconMini">
                 </td>
-                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).discipline}}
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).discipline
+                - (enableModPrecicelyCharged ? 10 : 0) - (enableModEnergyConverter ? 10 : 0)
+                - (enableStasisWhisperOfBonds ? 10 : 0) - (enableStasisWhisperOfFractures ? 10 : 0)}}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIconMini">
                 </td>
-                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).intellect + (this.enableStasisWhisperOfConduction ? 10 : 0)}}
+                <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).intellect
+                + (enableStasisWhisperOfConduction ? 10 : 0)
+                - (enableModExtraReserves ? 10 : 0) - (enableModSurpriseAttack ? 10 : 0) - (enableStasisWhisperOfBonds ? 10 : 0)
+                  }}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).strength
-                + (this.enableRadiantLight ? 20 : 0)
-                + (this.enableStasisWhisperOfDurance ? 10 : 0)}}
+                + (this.enableRadiantLight ? 20 : 0) + (this.enableStasisWhisperOfDurance ? 10 : 0)
+                - (this.enableModPrecisionCharge ? 10 : 0) - (this.enableModProtectiveLight ? 10 : 0) - (this.enableStasisWhisperOfHedrons ? 10 : 0)
+                  }}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="statIconMini">
                 </td>
               </tr>
