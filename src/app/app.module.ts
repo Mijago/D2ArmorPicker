@@ -33,9 +33,14 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {NotAuthenticatedGuard} from "./guards/not-authenticated.guard";
 import {MatMenuModule} from "@angular/material/menu";
 import { FilterPossibleAmountSetPipe } from './components/authenticated/main/filter-possible-amount-set.pipe';
+import { AppV2CoreComponent } from './components/authenticated-v2/app-v2-core/app-v2-core.component';
+import { SettingsComponent } from './components/authenticated-v2/settings/settings.component';
+import { ResultsComponent } from './components/authenticated-v2/results/results.component';
+import { DesiredStatSelectionComponent } from './components/authenticated-v2/settings/desired-stat-selection/desired-stat-selection.component';
 
 
 const routes: Routes = [
+  {path: 'v2', component: MainComponent, canActivate: [AppV2CoreComponent]},
   {path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
   {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
@@ -51,7 +56,11 @@ const routes: Routes = [
     StatModAmountComponent,
     ExoticItemDisplayComponent,
     TableModDisplayComponent,
-    FilterPossibleAmountSetPipe
+    FilterPossibleAmountSetPipe,
+    AppV2CoreComponent,
+    SettingsComponent,
+    ResultsComponent,
+    DesiredStatSelectionComponent
   ],
   imports: [
     BrowserModule,
