@@ -156,16 +156,69 @@
   </mat-menu>
 </span>
 
-
-<br/><h2>2. Now select the combat style mods and abilities you want to use.</h2>
+<br/>
 <div>
+  <h2>2. How many stat-mods do you want to use?</h2>
+  <app-stat-minimum-selection (onChange)="maxMods = $event.valueOf(); onAllowedModChange()" [value]="5"
+                              [values]="[0,1,2,3,4,5]"></app-stat-minimum-selection>
+</div>
+
+
+
+<div>
+  <br>
+  <h2>3. Do you want to lock an exotic?</h2>
+  Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
+
+  <img class="exoticIcon {{ -1 === lockedExotic ? 'selected' : '' }}"
+       src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+       matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"
+       (click)="changeLockedExotic(-1)">
+
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticHelmet"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display>
+  <br *ngIf="lockedExoticHelmet.length > 0"/>
+
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticGauntlet"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display>
+  <br *ngIf="lockedExoticGauntlet.length > 0"/>
+
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticChest"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display>
+  <br *ngIf="lockedExoticChest.length > 0"/>
+
+  <app-exotic-item-display
+    *ngFor="let item of lockedExoticLegs"
+    [item]="item"
+    [selected]="item.hash === lockedExotic"
+    (onClick)="changeLockedExotic(item.hash)"
+  ></app-exotic-item-display>
+</div>
+
+
+<br/><h2>4. Now select the combat style mods and abilities you want to use.</h2>
+<div>
+  <div><i>Please note that this tool ignores energy affinities at the moment.</i></div>
+  <div>Positive effects:</div>
   <div>
-    <mat-slide-toggle color="primary" [(ngModel)]="enablePowerfulFriends" [checked]="enablePowerfulFriends"
+    <mat-slide-toggle color="primary" [(ngModel)]="enablePowerfulFriends" [checked]="enablePowerfulFriends" [disabled]="!enablePowerfulFriends && selectedCombatModAmount >= 5"
                       (change)="onAllowedModChange()">Powerful Friends (<span class="statBonus">+20</span> Mobility)
     </mat-slide-toggle>
   </div>
   <div>
-    <mat-slide-toggle color="primary" [(ngModel)]="enableRadiantLight" [checked]="enableRadiantLight"
+    <mat-slide-toggle color="primary" [(ngModel)]="enableRadiantLight" [checked]="enableRadiantLight" [disabled]="!enableRadiantLight && selectedCombatModAmount >= 5"
                       (change)="onAllowedModChange()">Radiant Light (<span class="statBonus">+20</span> Strength)
     </mat-slide-toggle>
   </div>
@@ -191,61 +244,50 @@
   </div>
   <div>
     <mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfChains" [checked]="enableStasisWhisperOfChains"
-                      (change)="onAllowedModChange()">Whisper of Chains (<span class="statBonusStasis">+10</span>
-      Recovery)
+                      (change)="onAllowedModChange()">Whisper of Chains (<span class="statBonusStasis">+10</span> Recovery)
     </mat-slide-toggle>
   </div>
-</div>
-
-<br/>
-<div>
-  <h2>3. How many stat-mods do you want to use?</h2>
-  <app-stat-minimum-selection (onChange)="maxMods = $event.valueOf(); onAllowedModChange()" [value]="5"
-                              [values]="[0,1,2,3,4,5]"></app-stat-minimum-selection>
-</div>
-
-<div>
-  <br>
-  <h2>4. Do you want to lock an exotic?</h2>
-  Click on any exotic to lock it. All results will contain this exotic. Click it again to remove the lock.<br/>
-
-  <img class="exoticIcon {{ -1 === lockedExotic ? 'selected' : '' }}"
-       src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
-       matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"
-       (click)="changeLockedExotic(-1)">
-
-  <app-exotic-item-display
-    *ngFor="let item of lockedExoticHelmet"
-    [item]="item"
-    [selected]="item.hash === lockedExotic"
-    (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display>
-  <br/>
-
-  <app-exotic-item-display
-    *ngFor="let item of lockedExoticGauntlet"
-    [item]="item"
-    [selected]="item.hash === lockedExotic"
-    (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display>
-  <br/>
-
-  <app-exotic-item-display
-    *ngFor="let item of lockedExoticChest"
-    [item]="item"
-    [selected]="item.hash === lockedExotic"
-    (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display>
-  <br/>
-
-  <app-exotic-item-display
-    *ngFor="let item of lockedExoticLegs"
-    [item]="item"
-    [selected]="item.hash === lockedExotic"
-    (onClick)="changeLockedExotic(item.hash)"
-  ></app-exotic-item-display>
-  <br/>
-
+  <div>Negative effects:</div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModChargeHarvester" [checked]="enableModChargeHarvester" [disabled]="!enableModChargeHarvester && selectedCombatModAmount >= 5"
+                         (change)="onAllowedModChange()">Charge Harvester (<span class="statMalus">-10</span> {{["Resilience", "Mobility", "Recovery"][selectedClass] || "Class ability regeneration stat"}})
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModEnergyConverter" [checked]="enableModEnergyConverter" [disabled]="!enableModEnergyConverter && selectedCombatModAmount >= 5"
+                         (change)="onAllowedModChange()">Energy Converter (<span class="statMalus">-10</span> Discipline)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModExtraReserves" [checked]="enableModExtraReserves" [disabled]="!enableModExtraReserves && selectedCombatModAmount >= 5"
+                         (change)="onAllowedModChange()">Extra Reserves (<span class="statMalus">-10</span> Intellect)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecicelyCharged" [checked]="enableModPrecicelyCharged" [disabled]="!enableModPrecicelyCharged && selectedCombatModAmount >= 5"
+                         (change)="onAllowedModChange()">Precicely Charged (<span class="statMalus">-10</span> Discipline)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModPrecisionCharge" [checked]="enableModPrecisionCharge" [disabled]="!enableModPrecisionCharge && selectedCombatModAmount >= 5"
+                         (change)="onAllowedModChange()">Precision Charge (<span class="statMalus">-10</span> Strength)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModProtectiveLight" [checked]="enableModProtectiveLight" [disabled]="!enableModProtectiveLight && selectedCombatModAmount >= 5"
+                      (change)="onAllowedModChange()">Protective Light (<span class="statMalus">-10</span> Strength)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModStacksOnStacks" [checked]="enableModStacksOnStacks" [disabled]="!enableModStacksOnStacks && selectedCombatModAmount >= 5"
+        (change)="onAllowedModChange()">Stacks on Stacks (<span class="statMalus">-10</span> Recovery)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableModSurpriseAttack" [checked]="enableModSurpriseAttack" [disabled]="!enableModSurpriseAttack && selectedCombatModAmount >= 5"
+        (change)="onAllowedModChange()">Surprise Attack (<span class="statMalus">-10</span> Intellect)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfBonds" [checked]="enableStasisWhisperOfBonds"
+                         (change)="onAllowedModChange()">Whisper of Bonds (
+    <span class="statMalusStasis">-10</span> Discipline,
+    <span class="statMalusStasis">-10</span> Intellect)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfFractures" [checked]="enableStasisWhisperOfFractures"
+                         (change)="onAllowedModChange()">Whisper of Fractures (<span class="statMalusStasis">-10</span> Discipline)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfHedrons" [checked]="enableStasisWhisperOfHedrons"
+        (change)="onAllowedModChange()">Whisper of Hedrons (<span class="statMalusStasis">-10</span> Strength)
+  </mat-slide-toggle></div>
+  <div><mat-slide-toggle color="primary" [(ngModel)]="enableStasisWhisperOfHunger" [checked]="enableStasisWhisperOfHunger"
+        (change)="onAllowedModChange()">Whisper of Hunger (
+    <span class="statMalusStasis">-10</span> Mobility,
+    <span class="statMalusStasis">-10</span> Recovery)
+  </mat-slide-toggle></div>
 </div>
 
 

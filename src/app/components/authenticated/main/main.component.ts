@@ -99,12 +99,27 @@ export class MainComponent implements OnInit {
   filterAssumeMasterworked: boolean = true;
   filterOnlyUseMasterworkedItems: boolean = false;
 
+  // Positive mods
   enablePowerfulFriends: boolean = true;
   enableRadiantLight: boolean = true;
   enableStasisWhisperOfDurance: boolean = false;
   enableStasisWhisperOfChains: boolean = false;
   enableStasisWhisperOfConduction: boolean = false;
   enableStasisWhisperOfShards: boolean = false;
+
+  // Negative mods
+  enableModProtectiveLight: boolean = false; // - 10 Strength
+  enableModExtraReserves: boolean = false; // - 10 Intellect
+  enableModPrecicelyCharged: boolean = false; // - 10 Discipline
+  enableModStacksOnStacks: boolean = false; // - 10 Recovery
+  enableModPrecisionCharge: boolean = false; // - 10 Strength
+  enableModSurpriseAttack: boolean = false; // - 10 Intellect
+  enableModEnergyConverter: boolean = false; // - 10 Discipline
+  enableModChargeHarvester: boolean = false; // - 10 to class regen stat (Mobility/Resilience/Recovery)
+  enableStasisWhisperOfHedrons: boolean = false; // -10 Strength
+  enableStasisWhisperOfBonds: boolean = false; // -10 Intellect; -10 Discipline
+  enableStasisWhisperOfHunger: boolean = false; // -10 Mobility; -10 Recovery
+  enableStasisWhisperOfFractures: boolean = false; // -10 Discipline
 
 
   lockedExotic: number = 0;
@@ -317,6 +332,29 @@ export class MainComponent implements OnInit {
       if (this.enableStasisWhisperOfConduction) stats.intellect += 10;
       if (this.enableStasisWhisperOfDurance) stats.strength += 10;
       if (this.enableStasisWhisperOfShards) stats.resilience += 10;
+
+      // negative stat mods
+      if (this.enableModProtectiveLight) stats.strength = Math.max(0, stats.strength - 10);
+      if (this.enableModExtraReserves) stats.intellect = Math.max(0, stats.intellect - 10);
+      if (this.enableModPrecicelyCharged) stats.discipline = Math.max(0, stats.discipline - 10);
+      if (this.enableModStacksOnStacks) stats.recovery = Math.max(0, stats.recovery - 10);
+      if (this.enableModPrecisionCharge) stats.strength = Math.max(0, stats.strength - 10);
+      if (this.enableModSurpriseAttack) stats.intellect = Math.max(0, stats.intellect - 10);
+      if (this.enableModEnergyConverter) stats.discipline = Math.max(0, stats.discipline - 10);
+
+      if (this.enableModChargeHarvester && this.selectedClass == 0)
+        stats.resilience = Math.max(0, stats.resilience - 10)
+      else if (this.enableModChargeHarvester && this.selectedClass == 1)
+        stats.mobility = Math.max(0, stats.mobility - 10)
+      else if (this.enableModChargeHarvester && this.selectedClass == 2)
+        stats.recovery = Math.max(0, stats.recovery - 10)
+
+      if (this.enableStasisWhisperOfHedrons) stats.strength = Math.max(0, stats.strength - 10);
+      if (this.enableStasisWhisperOfFractures) stats.discipline = Math.max(0, stats.discipline - 10);
+      if (this.enableStasisWhisperOfBonds) stats.intellect = Math.max(0, stats.intellect - 10);
+      if (this.enableStasisWhisperOfBonds) stats.discipline = Math.max(0, stats.discipline - 10);
+      if (this.enableStasisWhisperOfHunger) stats.mobility = Math.max(0, stats.mobility - 10);
+      if (this.enableStasisWhisperOfHunger) stats.recovery = Math.max(0, stats.recovery - 10);
 
       const mobilityDifference = Math.max(0, this.minMobility - stats.mobility);
       let modMobility05 = (mobilityDifference % 10 > 0 && mobilityDifference % 10 <= 5) ? 1 : 0
@@ -621,6 +659,21 @@ export class MainComponent implements OnInit {
     if (d[4]) this.minIntellect = 100;
     if (d[5]) this.minStrength = 100;
     this.onMinStatValueChange();
+  }
+
+  get selectedCombatModAmount() {
+    let n = 0;
+    if (this.enablePowerfulFriends) n++;
+    if (this.enableRadiantLight) n++;
+    if (this.enableModProtectiveLight) n++;
+    if (this.enableModExtraReserves) n++;
+    if (this.enableModPrecicelyCharged) n++;
+    if (this.enableModPrecisionCharge) n++;
+    if (this.enableModStacksOnStacks) n++;
+    if (this.enableModSurpriseAttack) n++;
+    if (this.enableModEnergyConverter) n++;
+    if (this.enableModChargeHarvester) n++;
+    return n;
   }
 }
 
