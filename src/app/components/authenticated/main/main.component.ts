@@ -15,6 +15,16 @@ import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 
 export type MaxStatData = [boolean, boolean, boolean, boolean, boolean, boolean, number]
 
+export function getSkillTierFromPermutation(stats: Stats) {
+  return Math.floor(Math.min(100, stats.mobility) / 10)
+    + Math.floor(Math.min(100, stats.resilience) / 10)
+    + Math.floor(Math.min(100, stats.recovery) / 10)
+    + Math.floor(Math.min(100, stats.discipline) / 10)
+    + Math.floor(Math.min(100, stats.intellect) / 10)
+    + Math.floor(Math.min(100, stats.strength) / 10)
+}
+
+
 export interface ISelectedExotic {
   icon: string;
   slot: string;
@@ -362,7 +372,7 @@ export class MainComponent implements OnInit {
         permutation: perm,
         stats: stats,
         mods: mods,
-        tiers: this.getSkillTierFromPermutation(totalStats),
+        tiers: getSkillTierFromPermutation(totalStats),
         totalStatsWithMods: totalStats
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
@@ -421,16 +431,6 @@ export class MainComponent implements OnInit {
     else if (permutation.legs.isExotic) return permutation.legs;
     return null;
   }
-
-  getSkillTierFromPermutation(stats: Stats) {
-    return Math.floor(Math.min(100, stats.mobility) / 10)
-      + Math.floor(Math.min(100, stats.resilience) / 10)
-      + Math.floor(Math.min(100, stats.recovery) / 10)
-      + Math.floor(Math.min(100, stats.discipline) / 10)
-      + Math.floor(Math.min(100, stats.intellect) / 10)
-      + Math.floor(Math.min(100, stats.strength) / 10)
-  }
-
 
   triggerExoticPermutationUpdate() {
     this.updatingPermutations = true;
