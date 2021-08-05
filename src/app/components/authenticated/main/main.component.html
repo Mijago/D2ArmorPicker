@@ -11,6 +11,12 @@
   <span>D2ArmorPicker <small> by Mijago</small></span>
   <span class="header-spacer"></span>
   <div id="buttonContainer">
+    <button mat-stroked-button matTooltip="You like my work? This leads you to buymeacoffee.com, where you can easily support me!"
+      color="accent" (click)="goToBuymeacoffee()">
+      <mat-icon inline>attach_money</mat-icon>
+      Buy me a coffee!
+    </button>
+
     <button mat-icon-button class="example-icon" aria-label="Refresh" (click)="refreshAll(true)"
       matTooltip="Reload all items from the API.">
       <mat-icon>refresh</mat-icon>

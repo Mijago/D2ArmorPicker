@@ -688,6 +688,10 @@ export class MainComponent implements OnInit {
     if (this.enableModChargeHarvester) n++;
     return n;
   }
+
+  goToBuymeacoffee() {
+    window.location.href= `https://www.buymeacoffee.com/mijago`
+  }
 }
 
 
