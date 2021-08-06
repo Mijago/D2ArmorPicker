@@ -41,6 +41,7 @@ import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {StatTierSelectionComponent} from "./components/authenticated-v2/settings/desired-stat-selection/stat-tier-selection/stat-tier-selection.component";
 import { DesiredModSelectionComponent } from './components/authenticated-v2/settings/desired-mod-selection/desired-mod-selection.component';
 import { DesiredExoticSelectionComponent } from './components/authenticated-v2/settings/desired-exotic-selection/desired-exotic-selection.component';
+import { DesiredClassSelectionComponent } from './components/authenticated-v2/settings/desired-class-selection/desired-class-selection.component';
 
 
 const routes: Routes = [
@@ -67,7 +68,8 @@ const routes: Routes = [
     DesiredStatSelectionComponent,
     StatTierSelectionComponent,
     DesiredModSelectionComponent,
-    DesiredExoticSelectionComponent
+    DesiredExoticSelectionComponent,
+    DesiredClassSelectionComponent
   ],
   imports: [
     BrowserModule,
