@@ -1,0 +1,5 @@
+<mat-button-toggle-group name="fontStyle" appearance="standard">
+  <mat-button-toggle *ngFor="let r of ModRange; let i = index" [value]="i"
+                     (click)="setValue(i)"
+                     class="select-button {{selection >= i ? 'mat-button-toggle-checked' : ''}}">{{i}}</mat-button-toggle>
+</mat-button-toggle-group>

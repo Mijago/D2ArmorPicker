@@ -18,6 +18,8 @@ export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Strength]: "Strength"
 }
 
+type Literal<T extends ArmorStat> = `${T}`;
+export type ArmorStatLiteral = Literal<ArmorStat>;
 
 export enum SpecialArmorStat {
   ClassAbilityRegenerationStat = 10

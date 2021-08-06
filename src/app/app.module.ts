@@ -37,10 +37,14 @@ import { AppV2CoreComponent } from './components/authenticated-v2/app-v2-core/ap
 import { SettingsComponent } from './components/authenticated-v2/settings/settings.component';
 import { ResultsComponent } from './components/authenticated-v2/results/results.component';
 import { DesiredStatSelectionComponent } from './components/authenticated-v2/settings/desired-stat-selection/desired-stat-selection.component';
+import {MatButtonToggleModule} from "@angular/material/button-toggle";
+import {StatTierSelectionComponent} from "./components/authenticated-v2/settings/desired-stat-selection/stat-tier-selection/stat-tier-selection.component";
+import { DesiredModSelectionComponent } from './components/authenticated-v2/settings/desired-mod-selection/desired-mod-selection.component';
+import { DesiredExoticSelectionComponent } from './components/authenticated-v2/settings/desired-exotic-selection/desired-exotic-selection.component';
 
 
 const routes: Routes = [
-  {path: 'v2', component: MainComponent, canActivate: [AppV2CoreComponent]},
+  {path: 'v2', component: AppV2CoreComponent, canActivate: [AuthenticatedGuard]},
   {path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
   {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
@@ -60,7 +64,10 @@ const routes: Routes = [
     AppV2CoreComponent,
     SettingsComponent,
     ResultsComponent,
-    DesiredStatSelectionComponent
+    DesiredStatSelectionComponent,
+    StatTierSelectionComponent,
+    DesiredModSelectionComponent,
+    DesiredExoticSelectionComponent
   ],
   imports: [
     BrowserModule,
@@ -84,7 +91,8 @@ const routes: Routes = [
     MatSortModule,
     MatPaginatorModule,
     MatToolbarModule,
-    MatMenuModule
+    MatMenuModule,
+    MatButtonToggleModule
   ],
   providers: [],
   bootstrap: [AppComponent]

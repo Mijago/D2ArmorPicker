@@ -1,0 +1,10 @@
+<mat-button-toggle-group name="fontStyle" appearance="standard">
+  <mat-button-toggle *ngFor="let tier of TierRange; let i = index"
+                     class="select-button {{selectedTier>=i ? 'mat-button-toggle-checked' : ''}}"
+                     [disabled]="maximumAvailableTier < i"
+                     [checked]="selectedTier == i"
+                     (click)="setValue(i)"
+                     value="{{i}}">
+    {{i * 10}}
+  </mat-button-toggle>
+</mat-button-toggle-group>

@@ -1,0 +1,28 @@
+@import '~@angular/material/theming';
+@include mat-core();
+
+$app-primary: mat-palette($mat-indigo);
+$app-accent:  mat-palette($mat-pink, A200, A100, A400);
+
+$app-theme: mat-light-theme($app-primary, $app-accent);
+
+@mixin mix-app-theme($app-theme) {
+  $primary: map-get($app-theme, primary);
+  $accent: map-get($app-theme, accent);
+
+  .mat-button-toggle {
+    //background-color: mat-color($primary);
+    //color: mat-color($primary, default-contrast);
+  }
+
+  .mat-button-toggle-checked {
+    background-color: mat-color($primary);
+    color: mat-color($primary, default-contrast);
+  }
+}
+@include mix-app-theme($app-theme);
+
+
+.select-button {
+  min-width: 40px;
+}

@@ -1,0 +1,11 @@
+<table>
+  <tr *ngFor="let enum of stats">
+    <td>{{enum.name}}</td>
+    <td>
+      <!-- TODO [maximumAvailableTier]=""-->
+      <app-stat-tier-selection
+        [(selectedTier)]="config.configuration.minimumStatTier[enum.value]"
+      ></app-stat-tier-selection>
+    </td>
+  </tr>
+</table>
