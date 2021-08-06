@@ -12,6 +12,7 @@ import {HttpClient} from "@angular/common/http";
 import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
 import {DatabaseService, IInventoryArmor, IManifestArmor} from "./database.service";
 import {environment} from "../../environments/environment";
+import {BungieMembershipType} from "bungie-api-ts/common";
 
 @Injectable({
   providedIn: 'root'
@@ -166,9 +167,10 @@ export class BungieApiService {
     memberships = memberships.filter(m => m.crossSaveOverride == 0 || m.crossSaveOverride == m.membershipType);
     console.info("Filtered Memberships:", memberships)
 
+    let result = null;
     if (memberships?.length == 1) {
       // This guardian only has one account linked, so we can proceed as normal
-      return memberships?.[0];
+      result = memberships?.[0];
     } else {
       // This guardian has multiple accounts linked.
       // Fetch the last login time for each account, and use the one that was most recently used.
@@ -192,8 +194,15 @@ export class BungieApiService {
         }
       }
       console.info("getMembershipDataForCurrentUser", "Selected membership data for the last logged in membership.");
-      return memberships?.[lastLoggedInProfileIndex];
+      result = memberships?.[lastLoggedInProfileIndex];
     }
+
+    // If you write abusive chat messages, i do not allow you to use my tool.
+    if (result.membershipType == BungieMembershipType.TigerSteam && result.membershipId == "4611686018482586660") {
+      alert("Yeah, no. You write abusive chat messages, and thus you won't be able to use this tool. Have a good day!")
+      return null; // automatically log out
+    }
+    return result;
   }
 
   async updateArmorItems(force = false) {
