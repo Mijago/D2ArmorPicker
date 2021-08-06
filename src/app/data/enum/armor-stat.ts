@@ -1,3 +1,5 @@
+import {EnumDictionary} from "../types/EnumDictionary";
+
 export enum ArmorStat {
   Mobility,
   Resilience,
@@ -5,6 +7,15 @@ export enum ArmorStat {
   Discipline,
   Intellect,
   Strength
+}
+
+export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
+  [ArmorStat.Mobility]: "Mobility",
+  [ArmorStat.Resilience]: "Resilience",
+  [ArmorStat.Recovery]: "Recovery",
+  [ArmorStat.Discipline]: "Discipline",
+  [ArmorStat.Intellect]: "Intellect",
+  [ArmorStat.Strength]: "Strength"
 }
 
 
