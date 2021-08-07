@@ -1,6 +1,8 @@
 <table>
   <tr *ngFor="let enum of stats">
-    <td>{{enum.name}}</td>
+    <td>
+      {{enum.name}}
+    </td>
     <td>
       <!-- TODO [maximumAvailableTier]=""-->
       <app-stat-tier-selection

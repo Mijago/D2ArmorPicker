@@ -1,4 +1,4 @@
-<mat-form-field appearance="fill">
+<mat-form-field appearance="outline">
   <mat-label>Class</mat-label>
   <mat-select [value]="selectedClass" (valueChange)="selectClass($event)">
     <mat-option *ngFor="let clazz of availableClasses" [value]="clazz">

@@ -39,9 +39,17 @@ import { ResultsComponent } from './components/authenticated-v2/results/results.
 import { DesiredStatSelectionComponent } from './components/authenticated-v2/settings/desired-stat-selection/desired-stat-selection.component';
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {StatTierSelectionComponent} from "./components/authenticated-v2/settings/desired-stat-selection/stat-tier-selection/stat-tier-selection.component";
-import { DesiredModSelectionComponent } from './components/authenticated-v2/settings/desired-mod-selection/desired-mod-selection.component';
 import { DesiredExoticSelectionComponent } from './components/authenticated-v2/settings/desired-exotic-selection/desired-exotic-selection.component';
 import { DesiredClassSelectionComponent } from './components/authenticated-v2/settings/desired-class-selection/desired-class-selection.component';
+import { HeaderBarComponent } from './components/authenticated-v2/header-bar/header-bar.component';
+import { StatIconComponent } from './components/authenticated-v2/components/stat-icon/stat-icon.component';
+import {DesiredModLimitSelectionComponent} from "./components/authenticated-v2/settings/desired-mod-limit-selection/desired-mod-limit-selection.component";
+import { DesiredModsSelectionComponent } from './components/authenticated-v2/settings/desired-mods-selection/desired-mods-selection.component';
+import { VarDirectiveDirective } from './components/authenticated-v2/components/var-directive.directive';
+import { AdvancedSettingsComponent } from './components/authenticated-v2/settings/advanced-settings/advanced-settings.component';
+import { LoadAndSaveSettingsComponent } from './components/authenticated-v2/settings/load-and-save-settings/load-and-save-settings.component';
+import {MatListModule} from "@angular/material/list";
+import {MatExpansionModule} from "@angular/material/expansion";
 
 
 const routes: Routes = [
@@ -67,9 +75,15 @@ const routes: Routes = [
     ResultsComponent,
     DesiredStatSelectionComponent,
     StatTierSelectionComponent,
-    DesiredModSelectionComponent,
+    DesiredModLimitSelectionComponent,
     DesiredExoticSelectionComponent,
-    DesiredClassSelectionComponent
+    DesiredClassSelectionComponent,
+    HeaderBarComponent,
+    StatIconComponent,
+    DesiredModsSelectionComponent,
+    VarDirectiveDirective,
+    AdvancedSettingsComponent,
+    LoadAndSaveSettingsComponent
   ],
   imports: [
     BrowserModule,
@@ -94,7 +108,9 @@ const routes: Routes = [
     MatPaginatorModule,
     MatToolbarModule,
     MatMenuModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatListModule,
+    MatExpansionModule
   ],
   providers: [],
   bootstrap: [AppComponent]

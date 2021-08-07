@@ -1,0 +1,8 @@
+<div *ngFor="let f of fields">
+    <mat-slide-toggle color="primary"
+                      [checked]="f.value"
+                      (change)="f.cp($event.checked)">
+      {{f.name}}
+      <!-- TODO: Help text -->
+    </mat-slide-toggle>
+</div>

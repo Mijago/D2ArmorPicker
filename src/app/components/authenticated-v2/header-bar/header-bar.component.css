@@ -1,0 +1,9 @@
+#header {
+  position: relative;
+  height: 42px;
+  margin-bottom: 5px;
+}
+
+#header .header-spacer {
+  flex: 1 1 auto;
+}

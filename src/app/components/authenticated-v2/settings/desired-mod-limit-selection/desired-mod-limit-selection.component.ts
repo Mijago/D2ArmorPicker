@@ -4,10 +4,10 @@ import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../data/constants";
 
 @Component({
   selector: 'app-desired-mod-selection',
-  templateUrl: './desired-mod-selection.component.html',
-  styleUrls: ['./desired-mod-selection.component.scss']
+  templateUrl: './desired-mod-limit-selection.component.html',
+  styleUrls: ['./desired-mod-limit-selection.component.scss']
 })
-export class DesiredModSelectionComponent implements OnInit {
+export class DesiredModLimitSelectionComponent implements OnInit {
   readonly ModRange = new Array(MAXIMUM_STAT_MOD_AMOUNT + 1);
   selection: number = MAXIMUM_STAT_MOD_AMOUNT;
 
