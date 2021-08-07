@@ -4,7 +4,8 @@
     <td>
       <!-- TODO [maximumAvailableTier]=""-->
       <app-stat-tier-selection
-        [(selectedTier)]="config.configuration.minimumStatTier[enum.value]"
+        [selectedTier]="minimumStatTiers[enum.value]"
+        (selectedTierChange)="setSelectedTier(enum.value, $event)"
       ></app-stat-tier-selection>
     </td>
   </tr>

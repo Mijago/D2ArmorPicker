@@ -1,6 +1,6 @@
 <mat-form-field appearance="fill">
   <mat-label>Class</mat-label>
-  <mat-select [(value)]="selection" (valueChange)="selectionChange.emit($event)">
+  <mat-select [value]="selectedClass" (valueChange)="selectClass($event)">
     <mat-option *ngFor="let clazz of availableClasses" [value]="clazz">
       <span *ngIf="clazz == 0">Titan</span>
       <span *ngIf="clazz == 1">Hunter</span>

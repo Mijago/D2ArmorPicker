@@ -124,7 +124,7 @@ export class BungieApiService {
       "transferToVault": false
     }
 
-   await transferItem(d => this.$httpPost(d), payload);
+    await transferItem(d => this.$httpPost(d), payload);
   }
 
 
@@ -342,6 +342,8 @@ export class BungieApiService {
       language: 'en'
     });
 
+    console.log("manifestTables.DestinyInventoryItemDefinition", manifestTables.DestinyInventoryItemDefinition)
+
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
         if (!v.displayProperties.name)
@@ -365,14 +367,24 @@ export class BungieApiService {
         if ((v.itemCategoryHashes?.indexOf(48) || -1) > -1) slot = "Legs";
         if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = "Class Items";
 
-        return {
-          hash: v.hash,
-          icon: v.displayProperties.icon,
-          name: v.displayProperties.name,
-          clazz: v.classType,
-          slot: slot,
-          isExotic: v.inventory?.tierTypeName == 'Exotic'
-        } as IManifestArmor
+        const isArmor2 = ((v.sockets?.socketEntries.filter(d => {
+          return d.socketTypeHash == 2512726577 // general
+            || d.socketTypeHash == 1108765570 // arms
+            || d.socketTypeHash == 959256494 // chest
+            || d.socketTypeHash == 2512726577 // class
+            || d.socketTypeHash == 3219375296 // legs
+            || d.socketTypeHash == 968742181 // head
+        }).length || []) > 0)
+
+          return {
+            hash: v.hash,
+            icon: v.displayProperties.icon,
+            name: v.displayProperties.name,
+            clazz: v.classType,
+            armor2: isArmor2,
+            slot: slot,
+            isExotic: v.inventory?.tierTypeName == 'Exotic'
+          } as IManifestArmor
       });
 
     // TODO: clazz

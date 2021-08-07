@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {CharacterClass} from "../../../../data/enum/character-Class";
+import {ConfigurationService} from "../../../../services/v2/configuration.service";
 
 @Component({
   selector: 'app-desired-class-selection',
@@ -8,14 +9,19 @@ import {CharacterClass} from "../../../../data/enum/character-Class";
 })
 export class DesiredClassSelectionComponent implements OnInit {
 
-  @Input() availableClasses: CharacterClass[] = []
-  @Input() selection: number = 0;
-  @Output() selectionChange = new EventEmitter<CharacterClass>();
+  @Input() availableClasses: CharacterClass[] = [0,1,2]
+  selectedClass = -1;
 
-  constructor() {
+  constructor(public config: ConfigurationService) {
   }
 
   ngOnInit(): void {
+    this.config.configuration.subscribe(
+      c => this.selectedClass = c.characterClass
+    )
   }
 
+  selectClass(clazz: number) {
+    this.config.modifyConfiguration(d => d.characterClass = clazz);
+  }
 }

@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {EnumDictionary} from "../../../../data/types/EnumDictionary";
+import {getDefaultStatDict} from "../../../../data/configuration";
 
 @Component({
   selector: 'app-desired-stat-selection',
@@ -10,6 +12,7 @@ import {ConfigurationService} from "../../../../services/v2/configuration.servic
 export class DesiredStatSelectionComponent implements OnInit {
   readonly ArmorStats = ArmorStat;
   readonly stats: { name: string; value: ArmorStat }[];
+  minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
 
 
   constructor(public config: ConfigurationService) {
@@ -18,10 +21,19 @@ export class DesiredStatSelectionComponent implements OnInit {
       .map(value => {
         return {name: (ArmorStat as any)[value], value: +value}
       });
-    console.log(this.stats)
   }
 
   ngOnInit(): void {
+    this.config.configuration.subscribe(
+      c => {
+        this.minimumStatTiers = c.minimumStatTier;
+      }
+    )
   }
 
+  setSelectedTier(stat: ArmorStat, value: number) {
+    this.config.modifyConfiguration(c => {
+      c.minimumStatTier[stat] = value;
+    })
+  }
 }
