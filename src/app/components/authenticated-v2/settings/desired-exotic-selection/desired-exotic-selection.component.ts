@@ -3,14 +3,26 @@ import {InventoryService} from "../../../../services/v2/inventory.service";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {IManifestArmor} from "../../../../services/database.service";
+import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 
 export const FORCE_USE_NO_EXOTIC = -1;
 export const DID_NOT_SELECT_EXOTIC = 0;
 
+
+export const listAnimation = trigger('listAnimation', [
+  transition('* <=> *', [
+    query(':enter',
+      [style({opacity: 0}), stagger('30ms', animate('500ms ease-out', style({opacity: 1})))],
+      {optional: true}
+    ),
+  ])
+]);
+
 @Component({
   selector: 'app-desired-exotic-selection',
   templateUrl: './desired-exotic-selection.component.html',
-  styleUrls: ['./desired-exotic-selection.component.scss']
+  styleUrls: ['./desired-exotic-selection.component.scss'],
+  animations: [listAnimation]
 })
 export class DesiredExoticSelectionComponent implements OnInit {
 

@@ -1,12 +1,13 @@
-<div *ngFor="let itemGroup of exotics; let i = index">
+<div *ngFor="let itemGroup of exotics; let i = index" [@listAnimation]="itemGroup.length">
   <img class="exoticIcon {{ -1 === selectedExoticHash ? 'selected' : '' }}" *ngIf="i == 0"
        src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
        matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"
        (click)="selectExotic(-1)">
   <span class="container" *ngFor="let exotic of itemGroup">
-    <img class="exoticIcon {{selectedExoticHash == exotic.hash ? 'selected' : ''}}" src="https://www.bungie.net/{{exotic.icon}}"
+    <img class="exoticIcon {{selectedExoticHash == exotic.hash ? 'selected' : ''}}"
+         src="https://www.bungie.net/{{exotic.icon}}"
          matTooltip="{{exotic.name}}" #tooltip="matTooltip"
-    (click)="selectExotic(exotic.hash)">
+         (click)="selectExotic(exotic.hash)">
     <!--
     TODO: amount
     <span class="exoticText" *ngIf="(!!item && item.count || 0) > 0">{{item?.count}}</span>
