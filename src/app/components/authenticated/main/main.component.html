@@ -11,6 +11,12 @@
   <span>D2ArmorPicker <small> by Mijago</small></span>
   <span class="header-spacer"></span>
   <div id="buttonContainer">
+    <button mat-stroked-button matTooltip="You like my work? This leads you to buymeacoffee.com, where you can easily support me!"
+      color="accent" (click)="goToBuymeacoffee()">
+      <mat-icon inline>attach_money</mat-icon>
+      Buy me a coffee!
+    </button>
+
     <button mat-icon-button class="example-icon" aria-label="Refresh" (click)="refreshAll(true)"
       matTooltip="Reload all items from the API.">
       <mat-icon>refresh</mat-icon>
@@ -559,7 +565,7 @@
                   <span class="statMalusStasis" *ngIf="enableStasisWhisperOfBonds"> -10</span>
                 </td>
                 <td>
-                  <span class="statMalus" *ngIf="enableModProtectiveLight || enableModPrecisionCharge">+{{
+                  <span class="statMalus" *ngIf="enableModProtectiveLight || enableModPrecisionCharge">-{{
                     (enableModProtectiveLight ? 10: 0) + (enableModPrecisionCharge ? 10: 0)
                     }}</span>
                   <span class="statMalusStasis" *ngIf="enableStasisWhisperOfHedrons"> -10</span>
