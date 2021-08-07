@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ConfigurationService, StoredConfiguration} from "../../../../services/v2/configuration.service";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {MatDialog} from "@angular/material/dialog";
+import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confirm-dialog/confirm-dialog.component";
 
 @Component({
   selector: 'app-load-and-save-settings',
@@ -9,11 +11,12 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 })
 export class LoadAndSaveSettingsComponent implements OnInit {
   storedConfigs: StoredConfiguration[] = [];
-  displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete"];
+  displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete", "load"];
 
   settingsNameForm: FormGroup;
 
-  constructor(private config: ConfigurationService, private formBuilder: FormBuilder) {
+  constructor(private config: ConfigurationService, private formBuilder: FormBuilder,
+              public dialog: MatDialog) {
     this.settingsNameForm = this.formBuilder.group({name: [null,]});
   }
 
@@ -24,15 +27,55 @@ export class LoadAndSaveSettingsComponent implements OnInit {
   submit() {
     const name = this.settingsNameForm.get("name")?.value;
     if (!name) return; // TODO LOG ERROR
-    this.config.saveCurrentConfigurationToName(name);
-    this.settingsNameForm.reset();
+
+    if (this.config.doesSavedConfigurationExist(name)) {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '300px',
+        data: {description: "Do you want to overwrite this configuration?"} as ConfirmDialogData
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.config.saveCurrentConfigurationToName(name);
+          this.settingsNameForm.reset();
+        }
+      });
+    } else {
+      this.config.saveCurrentConfigurationToName(name);
+      this.settingsNameForm.reset();
+    }
   }
 
   delete(element: StoredConfiguration) {
-    this.config.deleteStoredConfiguration(element.name);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {description: "Do you want to delete this configuration?"} as ConfirmDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.config.deleteStoredConfiguration(element.name);
+    });
   }
 
   clearEverything() {
-    this.config.resetCurrentConfiguration()
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {description: "Do you want to clear all settings?"} as ConfirmDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.config.resetCurrentConfiguration()
+    });
+  }
+
+  load(element: StoredConfiguration) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: {description: "Do you want to load this preset?"} as ConfirmDialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) this.config.saveCurrentConfiguration(element.configuration);
+    });
   }
 }

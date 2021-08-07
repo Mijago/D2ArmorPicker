@@ -8,7 +8,7 @@
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" type="submit">Save current</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value">Save current</button>
       </td>
       <td>
         <button mat-raised-button color="warn" (click)="clearEverything()">Clear everything</button>
@@ -105,6 +105,14 @@
     </th>
     <td mat-cell *matCellDef="let element">
       <button mat-stroked-button color="warn" (click)="delete(element)">Delete</button>
+    </td>
+  </ng-container>
+
+  <!-- Position Column -->
+  <ng-container matColumnDef="load">
+    <th mat-header-cell *matHeaderCellDef>Load</th>
+    <td mat-cell *matCellDef="let element">
+      <button mat-flat-button color="primary" (click)="load(element)">Load</button>
     </td>
   </ng-container>
 

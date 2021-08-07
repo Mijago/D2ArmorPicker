@@ -41,12 +41,6 @@
   min-width: 150px;
 }
 
-
-.mat-row {
-  cursor: pointer;
-}
-
-
 th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type {
   padding-right: 0;
 }
@@ -88,4 +82,9 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 .selected .mat-column-recovery,
 .selected .mat-column-intellect {
   background-color: rgba(137, 178, 255, 0.11);
+}
+
+.mat-column-load, .mat-column-delete {
+  padding-left: 3px;
+  padding-right: 3px;
 }

@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Configuration} from "../../data/configuration";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {ModOrAbility} from "../../data/enum/modOrAbility";
 
 const CURRENT_CONFIGURATION = "CURRENT_CONFIGURATION"
 
@@ -40,9 +41,11 @@ export class ConfigurationService {
 
   saveConfiguration(name: string, config: Configuration) {
     let list = this.listSavedConfigurations();
-    let c = this.listSavedConfigurations().filter(c => c.name == name)[0];
+    let c = this.listSavedConfigurations()
+      .map((value, index): [StoredConfiguration, number] => [value, index])
+      .filter(c => c[0].name == name)[0];
     if (!!c) {
-      list.splice(list.indexOf(c), 1)
+      list.splice(c[1], 1)
     }
     list.push({
       configuration: config,
@@ -56,6 +59,10 @@ export class ConfigurationService {
     })
     localStorage.setItem("storedConfigurations", JSON.stringify(list))
     this._storedConfigurations.next(list);
+  }
+
+  doesSavedConfigurationExist(name: string) {
+    return this.listSavedConfigurations().filter(c => c.name == name).length > 0;
   }
 
   loadSavedConfiguration(name: string): boolean {
@@ -93,7 +100,11 @@ export class ConfigurationService {
 
   saveCurrentConfiguration(configuration: Configuration) {
     console.log("write configuration", configuration)
-    this.__configuration = configuration;
+    // deep copy it
+    this.__configuration = Object.assign({}, configuration);
+    this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);
+    this.__configuration.minimumStatTier = Object.assign({}, this.__configuration.minimumStatTier)
+
     localStorage.setItem("currentConfig", JSON.stringify(configuration));
     this._configuration.next(Object.assign({}, configuration));
   }
