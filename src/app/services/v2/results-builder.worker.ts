@@ -109,28 +109,27 @@ addEventListener('message', ({data}) => {
       }
 
       let openModSlots = config.maximumStatMods - usedMods.length
-      const adaptedStats = stats.map((value, index: ArmorStat) =>
-        value + 10 * usedMods.filter(d => Math.floor((d - 1) / 2) == index).length
-      );
-      let todo = adaptedStats.map((value, index: ArmorStat) => [Math.max(0, Math.ceil((100 - value) / 10)), index])
-        .sort((a, b) => a[0] - b[0]);
-
-      for (let statId in todo) {
-        while (openModSlots > 0 && todo[statId][0] > 0) {
-          openModSlots--;
-          todo[statId][0]--;
+      if (openModSlots >= 0) {
+        let todo = stats.map((value, index: ArmorStat) =>
+          value + 10 * usedMods.filter(d => Math.floor((d - 1) / 2) == index).length
+        ).map((value, index: ArmorStat) => [Math.max(0, Math.ceil((100 - value) / 10)), index])
+          .sort((a, b) => a[0] - b[0]);
+        for (let statId in todo) {
+          while (openModSlots > 0 && todo[statId][0] > 0) {
+            openModSlots--;
+            todo[statId][0]--;
+          }
         }
+        let stats100amount = todo.filter(d => d[0] == 0).length
+        let stats100values = todo.filter(d => d[0] == 0).map(d => d[1]).reduce((p, d) => {
+          p += 1 << d;
+          return p;
+        }, 0);
+
+
+        if (stats100amount == 3) statCombo3x100.add(stats100values);
+        if (stats100amount == 4) statCombo4x100.add(stats100values);
       }
-      let stats100amount = todo.filter(d => d[0] == 0).length
-      let stats100values = todo.filter(d => d[0] == 0).map(d => d[1]).reduce((p, d) => {
-        p += 1 << d;
-        return p;
-      }, 0);
-
-
-      if (stats100amount == 3) statCombo3x100.add(stats100values);
-      if (stats100amount == 4) statCombo4x100.add(stats100values);
-
 
       results.push([
         i / 12, // Index of the current set in the big permutation array
