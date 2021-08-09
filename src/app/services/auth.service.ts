@@ -47,7 +47,6 @@ export class AuthService {
       body = `grant_type=refresh_token&refresh_token=${this.refreshToken}&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`;
     }
 
-    console.log(body)
     return await this.http.post<any>(`https://www.bungie.net/Platform/App/OAuth/Token/`,
       body, {
         headers: {

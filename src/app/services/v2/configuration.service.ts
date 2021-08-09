@@ -99,7 +99,7 @@ export class ConfigurationService {
   }
 
   saveCurrentConfiguration(configuration: Configuration) {
-    console.log("write configuration", configuration)
+    console.debug("write configuration", configuration)
     // deep copy it
     this.__configuration = Object.assign({}, configuration);
     this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);

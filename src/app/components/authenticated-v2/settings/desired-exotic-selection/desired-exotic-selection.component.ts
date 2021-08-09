@@ -2,11 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {InventoryService} from "../../../../services/v2/inventory.service";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
-import {IManifestArmor} from "../../../../services/database.service";
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
-
-export const FORCE_USE_NO_EXOTIC = -1;
-export const DID_NOT_SELECT_EXOTIC = 0;
+import {IManifestArmor} from "../../../../services/IManifestArmor";
+import {DID_NOT_SELECT_EXOTIC} from "../../../../data/constants";
 
 
 export const listAnimation = trigger('listAnimation', [
@@ -38,7 +36,6 @@ export class DesiredExoticSelectionComponent implements OnInit {
       if (c.characterClass != this.currentClass) {
         this.currentClass = c.characterClass;
         const armors = await this.inventory.getExoticsForClass(this.currentClass);
-
         this.exotics = [
           armors.filter(a => a.slot == "Helmets"),
           armors.filter(a => a.slot == "Arms"),

@@ -1,0 +1,25 @@
+#card-results {
+  float: left;
+  width: fit-content;
+  margin-left: 3px;
+}
+
+.statColumn {
+  position: relative;
+}
+
+.statIcon {
+  position: absolute;
+  height: 22px;
+  margin-left: 2px;
+  top: 11px;
+}
+.itemIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
+}
+
+.mat-row.loading {
+  filter: blur(4px);
+}

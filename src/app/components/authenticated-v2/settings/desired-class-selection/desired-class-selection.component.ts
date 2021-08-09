@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
-import {DID_NOT_SELECT_EXOTIC} from "../desired-exotic-selection/desired-exotic-selection.component";
+import {DID_NOT_SELECT_EXOTIC} from "../../../../data/constants";
 
 @Component({
   selector: 'app-desired-class-selection',

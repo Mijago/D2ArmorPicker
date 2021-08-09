@@ -16,8 +16,10 @@ export class StatTierSelectionComponent {
   }
 
   setValue(newValue: number) {
-    this.selectedTier = newValue;
-    this.selectedTierChange.emit(newValue)
+    if (newValue <= this.maximumAvailableTier) {
+      this.selectedTier = newValue;
+      this.selectedTierChange.emit(newValue)
+    }
   }
 
 

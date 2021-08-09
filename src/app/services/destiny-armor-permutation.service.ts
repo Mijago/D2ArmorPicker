@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
-import {IInventoryArmor} from "./database.service";
 import {GearPermutation, Stats} from "../data/permutation";
+import {IInventoryArmor} from "./IInventoryArmor";
 
 
 @Injectable({
@@ -28,7 +28,7 @@ export class DestinyArmorPermutationService {
           for (let leg of legs) {
             if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
             permutations.push(new GearPermutation(
-              helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic,
+              !!(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic),
               helmet, gauntlet, chest, leg
             ))
           }

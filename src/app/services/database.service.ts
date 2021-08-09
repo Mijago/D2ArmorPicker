@@ -1,30 +1,9 @@
 import {Injectable} from '@angular/core';
 import Dexie from 'dexie';
-import {DestinyClass, DestinyEnergyType} from "bungie-api-ts/destiny2/interfaces";
 import {AuthService} from "./auth.service";
-
-export interface IManifestArmor {
-  hash: number;
-  name: string;
-  icon: string;
-  slot: string;
-  clazz: DestinyClass;
-  isExotic: boolean;
-  armor2: boolean;
-  rawData?: string;
-}
-
-export interface IInventoryArmor extends IManifestArmor {
-  itemInstanceId: string;
-  masterworked: boolean;
-  mobility: number;
-  resilience: number;
-  recovery: number;
-  discipline: number;
-  intellect: number;
-  strength: number;
-  energyAffinity: DestinyEnergyType;
-}
+import {buildDb} from "../data/database";
+import {IManifestArmor} from "./IManifestArmor";
+import {IInventoryArmor} from "./IInventoryArmor";
 
 @Injectable({
   providedIn: 'root'
@@ -36,20 +15,9 @@ export class DatabaseService {
   public inventoryArmor: Dexie.Table<IInventoryArmor, number>;
 
   constructor(private auth: AuthService) {
-    this.db = new Dexie('d2armorpicker');
-
-    // Declare tables, IDs and indexes
-    this.db.version(6).stores({
-      manifestArmor: 'hash, name, icon, slot, isExotic, clazz, armor2',
-      inventoryArmor: 'itemInstanceId, hash, name, masterworked, slot, isExotic, clazz, armor2, mobility, resilience, recovery, discipline, intellect, strength, energyAffinity'
-    }).upgrade(async tx => {
-      // simply clear all the armor. It'll be updated either way.
-      localStorage.removeItem("LastManifestUpdate")
-      localStorage.removeItem("LastArmorUpdate")
-      await tx.db.table("inventoryArmor").clear();
-      await tx.db.table("manifestArmor").clear();
+    this.db = buildDb(async () => {
       await this.auth.logout();
-    });
+    })
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
   }

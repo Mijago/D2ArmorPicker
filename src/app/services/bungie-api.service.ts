@@ -10,9 +10,11 @@ import {getMembershipDataForCurrentUser} from 'bungie-api-ts/user';
 import {AuthService} from "./auth.service";
 import {HttpClient} from "@angular/common/http";
 import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
-import {DatabaseService, IInventoryArmor, IManifestArmor} from "./database.service";
+import {DatabaseService} from "./database.service";
 import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
+import {IManifestArmor} from "./IManifestArmor";
+import {IInventoryArmor} from "./IInventoryArmor";
 
 @Injectable({
   providedIn: 'root'
@@ -282,6 +284,7 @@ export class BungieApiService {
             strength: stats[4244567218].value,
             energyAffinity: instance.energy?.energyType || 0,
           }, res[d.itemHash]) as IInventoryArmor
+          (r.id as any) = undefined;
 
 
           // TODO: Negative values are capped at 0, thus i get always ~8 strength
@@ -333,7 +336,7 @@ export class BungieApiService {
 
     // Now add the stuff to the db..
     await this.db.inventoryArmor.clear();
-    await this.db.inventoryArmor.bulkPut(r);
+    await this.db.inventoryArmor.bulkAdd(r);
     localStorage.setItem("LastArmorUpdate", Date.now().toString())
 
     return r;
@@ -392,7 +395,7 @@ export class BungieApiService {
             clazz: v.classType,
             armor2: isArmor2,
             slot: slot,
-            isExotic: v.inventory?.tierTypeName == 'Exotic'
+            isExotic:( v.inventory?.tierTypeName == 'Exotic') ? 1 : 0
           } as IManifestArmor
       });
 

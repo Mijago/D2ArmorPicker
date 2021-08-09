@@ -1,4 +1,19 @@
-import {IInventoryArmor} from "../services/database.service";
+import {IInventoryArmor} from "../services/IInventoryArmor";
+
+export type Permutation = [
+  number[], // [helmet, gauntlet, chest, legs]
+
+  [number, number, number, number, number, number], // mobility, etc
+    undefined | number, // hash of the exotic, or undefined if not set
+  number, // byte encoded whether stuff is masterworked or not.
+  /*
+  1<<3 helmet
+  1<<2 gauntlet
+  1<<1 chest
+  1<<0 legs
+   */
+]
+
 
 export enum ArmorClass {
   Titan,
