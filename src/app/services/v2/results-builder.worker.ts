@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import {Configuration} from "../../data/configuration";
-import {DID_NOT_SELECT_EXOTIC} from "../../data/constants";
+import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC} from "../../data/constants";
 import {ModOrAbility} from "../../data/enum/modOrAbility";
 import {ModInformation} from "../../data/ModInformation";
 import {ArmorStat, SpecialArmorStat, StatModifier} from "../../data/enum/armor-stat";
@@ -35,7 +35,10 @@ addEventListener('message', ({data}) => {
     for (let i = 0; i < allArmorPermutations.length; i += 12) {
       // Skip if we want to filter out a specific exotic
       const permutation = allArmorPermutations.subarray(i, i + 12)
-      if (config.selectedExoticHash != DID_NOT_SELECT_EXOTIC && permutation[10] != config.selectedExoticHash) {
+      if (config.selectedExoticHash > DID_NOT_SELECT_EXOTIC && permutation[10] != config.selectedExoticHash) {
+        continue
+      }
+      if (config.selectedExoticHash == FORCE_USE_NO_EXOTIC && permutation[10] != 0) {
         continue
       }
 
