@@ -6,8 +6,13 @@ import {ConfigurationService, StoredConfiguration} from "./configuration.service
 import {debounce, debounceTime} from "rxjs/operators";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Configuration} from "../../data/configuration";
+import {ArmorStat} from "../../data/enum/armor-stat";
 
-type info = { results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[] };
+type info = {
+  results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
+  statCombo3x100: [ArmorStat, ArmorStat, ArmorStat][],
+  statCombo4x100: [ArmorStat, ArmorStat, ArmorStat, ArmorStat][]
+};
 
 @Injectable({
   providedIn: 'root'
@@ -78,7 +83,21 @@ export class InventoryService {
       this._armorResults.next({
         results: this.allArmorResults,
         permutations: this.allArmorPermutations,
-        maximumPossibleTiers: data.maximumPossibleTiers
+        maximumPossibleTiers: data.maximumPossibleTiers,
+        statCombo3x100: data.statCombo3x100.map((d: number) => {
+          let r = []
+          for (let n = 0; n < 6; n++)
+            if ((d & (1 << n))>0)
+              r.push(n)
+          return r;
+        }) || [],
+        statCombo4x100: data.statCombo4x100.map((d: number) => {
+          let r = [];
+          for (let n = 0; n < 6; n++)
+            if ((d & (1 << n))>0)
+              r.push(n)
+          return r;
+        }, []) || []
       })
     };
     worker.postMessage({

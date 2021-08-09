@@ -5,6 +5,7 @@ import {DID_NOT_SELECT_EXOTIC} from "../../data/constants";
 import {ModOrAbility} from "../../data/enum/modOrAbility";
 import {ModInformation} from "../../data/ModInformation";
 import {ArmorStat, SpecialArmorStat, StatModifier} from "../../data/enum/armor-stat";
+import {toArray} from "rxjs/operators";
 
 addEventListener('message', ({data}) => {
     let start = Date.now();
@@ -25,6 +26,10 @@ addEventListener('message', ({data}) => {
     let allArmorPermutations = new Uint32Array(data);
     // How many tiers can we get? This is used to limit the stat tier selection
     let maximumPossibleTiers = [0, 0, 0, 0, 0, 0]
+
+
+    let statCombo3x100 = new Set();
+    let statCombo4x100 = new Set();
 
     // TODO: spawn multiple webworkers for this
     for (let i = 0; i < allArmorPermutations.length; i += 12) {
@@ -88,15 +93,41 @@ addEventListener('message', ({data}) => {
       if (usedMods.length > config.maximumStatMods)
         continue;
 
+
       for (let n = 0; n < 6; n++) {
         let stat = Math.min(10,
           Math.floor(stats[n] / 10)
           + (config.maximumStatMods - usedMods.length)
           + usedMods.filter(d => Math.floor((d - 1) / 2) == n).length
         )
+
         if (maximumPossibleTiers[n] < stat)
           maximumPossibleTiers[n] = stat
       }
+
+      let openModSlots = config.maximumStatMods - usedMods.length
+      const adaptedStats = stats.map((value, index: ArmorStat) =>
+        value + 10 * usedMods.filter(d => Math.floor((d - 1) / 2) == index).length
+      );
+      let todo = adaptedStats.map((value, index: ArmorStat) => [Math.max(0, Math.ceil((100 - value) / 10)), index])
+        .sort((a, b) => a[0] - b[0]);
+
+      for (let statId in todo) {
+        while (openModSlots > 0 && todo[statId][0] > 0) {
+          openModSlots--;
+          todo[statId][0]--;
+        }
+      }
+      let stats100amount = todo.filter(d => d[0] == 0).length
+      let stats100values = todo.filter(d => d[0] == 0).map(d => d[1]).reduce((p, d) => {
+        p += 1 << d;
+        return p;
+      }, 0);
+
+
+      if (stats100amount == 3) statCombo3x100.add(stats100values);
+      if (stats100amount == 4) statCombo4x100.add(stats100values);
+
 
       results.push([
         i / 12, // Index of the current set in the big permutation array
@@ -122,7 +153,9 @@ addEventListener('message', ({data}) => {
     postMessage({
       view: view.buffer,
       allArmorPermutations: allArmorPermutations.buffer,
-      maximumPossibleTiers
+      maximumPossibleTiers,
+      statCombo3x100: Array.from(statCombo3x100).sort(),
+      statCombo4x100: Array.from(statCombo4x100).sort()
     }, [view.buffer, allArmorPermutations.buffer]);
 
     //};

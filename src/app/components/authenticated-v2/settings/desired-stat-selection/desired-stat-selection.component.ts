@@ -4,6 +4,15 @@ import {ConfigurationService} from "../../../../services/v2/configuration.servic
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {getDefaultStatDict} from "../../../../data/configuration";
 import {InventoryService} from "../../../../services/v2/inventory.service";
+import {MaxStatData} from "../../../authenticated/main/main.component";
+
+function calcScore(d: number[]) {
+  let score = 0;
+  for (let n of d) {
+    score += Math.pow(10, 6-n)
+  }
+  return score;
+}
 
 @Component({
   selector: 'app-desired-stat-selection',
@@ -15,6 +24,8 @@ export class DesiredStatSelectionComponent implements OnInit {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
+  _statCombo4x100: [ArmorStat, ArmorStat, ArmorStat, ArmorStat][] = [];
+  _statCombo3x100: [ArmorStat, ArmorStat, ArmorStat][] = [];
 
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
@@ -39,12 +50,30 @@ export class DesiredStatSelectionComponent implements OnInit {
       if (tiers.filter(d => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }
+
+      this._statCombo3x100 = (d.statCombo3x100 || []).sort((a,b) => calcScore(b) - calcScore(a))
+      this._statCombo4x100 = d.statCombo4x100 || []
     })
   }
 
   setSelectedTier(stat: ArmorStat, value: number) {
     this.config.modifyConfiguration(c => {
       c.minimumStatTier[stat] = value;
+    })
+  }
+
+  clearStatSelection() {
+    this.config.modifyConfiguration(c => {
+      for (let n = 0; n < 6; n++)
+        c.minimumStatTier[n as ArmorStat] = 0;
+    })
+  }
+
+  useStatPreset(d: ArmorStat[]) {
+    this.config.modifyConfiguration(c => {
+      for (let armorStat of d) {
+        c.minimumStatTier[armorStat] = 10;
+      }
     })
   }
 }
