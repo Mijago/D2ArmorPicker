@@ -33,7 +33,12 @@ export class DesiredStatSelectionComponent implements OnInit {
     )
 
     this.inventory.armorResults.subscribe(d => {
-      this.maximumPossibleTiers = d.maximumPossibleTiers || [10, 10, 10, 10, 10, 10]
+      // Do not update if we get 0 results
+      const tiers = d.maximumPossibleTiers || [10, 10, 10, 10, 10, 10];
+      console.log("d.maximumPossibleTiers", tiers)
+      if (tiers.filter(d => d == 0).length < 6) {
+        this.maximumPossibleTiers = tiers;
+      }
     })
   }
 
