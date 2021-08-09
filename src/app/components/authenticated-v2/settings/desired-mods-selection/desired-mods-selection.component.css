@@ -54,7 +54,7 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 }
 
 .stat-positive {
-  color: cornflowerblue;
+  color: #b6cbfc;
 }
 
 .stat-display {
