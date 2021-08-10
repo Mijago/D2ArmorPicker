@@ -98,6 +98,7 @@ export class MainComponent implements OnInit {
   maxMods: number = 5;
   filterAssumeMasterworked: boolean = true;
   filterOnlyUseMasterworkedItems: boolean = false;
+  filterOptimizeWastedStats: boolean = false;
 
   // Positive mods
   enablePowerfulFriends: boolean = true;
@@ -280,6 +281,8 @@ export class MainComponent implements OnInit {
           return data.totalStatsWithMods.strength
         case 'Tiers':
           return data.tiers
+        case 'wastedStats':
+          return 1e5 * (data as any).w + 100 * data.mods[MOD_INDICES.MOD_COUNT] + data.mods[MOD_INDICES.MOD_COST]
         case 'Mods':
           return 100 * data.mods[MOD_INDICES.MOD_COUNT] + data.mods[MOD_INDICES.MOD_COST]
       }
@@ -406,12 +409,64 @@ export class MainComponent implements OnInit {
         strength: stats.strength + this.getModBonusFromSet(mods[MOD_INDICES.STRENGTH_MINOR], mods[MOD_INDICES.STRENGTH_MAJOR])
       }
 
+      let wastedStats = 0;
+      if (this.filterOptimizeWastedStats) {
+        let waste = [
+          totalStats.mobility % 10,
+          totalStats.resilience % 10,
+          totalStats.recovery % 10,
+          totalStats.discipline % 10,
+          totalStats.intellect % 10,
+          totalStats.strength % 10
+        ].map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])
+        for (let m = mods[MOD_INDICES.MOD_COUNT]; m < this.maxMods; m++) {
+          const result = waste.filter(k => k[0] == 5)
+          if (result.length == 0) break;
+          const resultElement = result[0];
+          resultElement[0] = 0;
+
+          mods[2 * resultElement[1]]++;
+          switch (resultElement[1]) {
+            case 0:
+              totalStats.mobility += 5;
+              mods[MOD_INDICES.MOD_COST] += 1;
+              break;
+            case 1:
+              totalStats.resilience += 5;
+              mods[MOD_INDICES.MOD_COST] += 1;
+              break;
+            case 2:
+              totalStats.discipline += 5;
+              mods[MOD_INDICES.MOD_COST] += 1;
+              break;
+            case 5:
+              totalStats.strength += 5;
+              mods[MOD_INDICES.MOD_COST] += 1;
+              break
+            case 4:
+              totalStats.intellect += 5;
+              mods[MOD_INDICES.MOD_COST] += 2;
+              break;
+            case 3:
+              totalStats.recovery += 5;
+              mods[MOD_INDICES.MOD_COST] += 22;
+              break;
+          }
+
+          mods[MOD_INDICES.MOD_COUNT]++;
+
+        }
+        wastedStats = waste.reduce((p, v) => p + v[0], 0)
+      }
+
+
       return {
         permutation: perm,
         stats: stats,
         mods: mods,
         tiers: getSkillTierFromPermutation(totalStats),
-        totalStatsWithMods: totalStats
+        totalStatsWithMods: totalStats,
+        w: wastedStats // wasted
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
 
@@ -471,6 +526,12 @@ export class MainComponent implements OnInit {
   }
 
   triggerExoticPermutationUpdate() {
+    if (this.filterOptimizeWastedStats) {
+      this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "wastedStats", "dropdown",]
+    } else {
+      this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
+    }
+
     this.updatingPermutations = true;
     this.updateExoticPermutationsSubject.next();
   }
@@ -690,7 +751,7 @@ export class MainComponent implements OnInit {
   }
 
   goToBuymeacoffee() {
-    window.location.href= `https://www.buymeacoffee.com/mijago`
+    window.location.href = `https://www.buymeacoffee.com/mijago`
   }
 }
 
