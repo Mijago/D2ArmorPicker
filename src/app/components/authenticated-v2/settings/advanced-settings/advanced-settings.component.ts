@@ -7,7 +7,7 @@ import {ConfigurationService} from "../../../../services/v2/configuration.servic
   styleUrls: ['./advanced-settings.component.css']
 })
 export class AdvancedSettingsComponent implements OnInit {
-  fields: { name: string; value: boolean; cp: (v: boolean) => void }[] = [];
+  fields: { name: string; value: boolean; disabled: boolean; cp: (v: boolean) => void }[] = [];
 
   constructor(private config: ConfigurationService) {
   }
@@ -19,12 +19,14 @@ export class AdvancedSettingsComponent implements OnInit {
           {
             name: "Assume all items are masterworked",
             cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeMasterworked = v),
-            value: c.assumeMasterworked
+            value: c.assumeMasterworked,
+            disabled: false
           },
           {
             name: "Only use already masterworked items",
             cp: (v: boolean) => this.config.modifyConfiguration(c => c.onlyUseMasterworkedItems = v),
-            value: c.onlyUseMasterworkedItems
+            value: c.onlyUseMasterworkedItems,
+            disabled: true
           }
         ];
       }

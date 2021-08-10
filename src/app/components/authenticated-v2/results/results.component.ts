@@ -15,6 +15,7 @@ import {IInventoryArmor} from "../../../services/IInventoryArmor";
 import {Stats} from "../../../data/permutation";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
+import {PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../../data/constants";
 
 export function getSkillTier(stats: number[]) {
   return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
@@ -58,6 +59,8 @@ export class ResultsComponent implements OnInit {
 
   selectedClass: CharacterClass = CharacterClass.None;
   private _items: Map<number, IInventoryArmor> = new Map<number, IInventoryArmor>();
+
+  constantModifiersFromConfig: number[] = [0, 0, 0, 0, 0, 0];
 
   constructor(private inventory: InventoryService, private db: DatabaseService,
               private bungieApi: BungieApiService, private config: ConfigurationService) {
@@ -104,38 +107,48 @@ export class ResultsComponent implements OnInit {
   }
 
   async updateData() {
-    //this.data = []
-    //this.tableDataSource.data = []
+    console.time("Update Table Data")
+    this.tableDataSource.data = []
     let data: any[] = []
     let itemsToGrab = new Set<number>();
+
+    const constantModifiersFromConfig = [2, 2, 2, 2, 2, 2]
+    for (let configEnabledMod of this._config_enabledMods) {
+      for (let bonus of ModInformation[configEnabledMod].bonus) {
+        constantModifiersFromConfig[bonus.stat] += bonus.value;
+      }
+    }
+
+
     for (let i = 0; i < this._results.length; i += 7) {
-      let entry = this._results.subarray(i, i + 7)
-      const entryPermutationPosition = 12 * (entry[0] + (entry[1] << 16));
-      let modList = Array.from(entry.subarray(2, 7));
-      let permutation = this._permutations.subarray(entryPermutationPosition, entryPermutationPosition + 12)
+      // console.time("l" + i + " total")
+      const entryPermutationPosition = 12 * (this._results[i] + (this._results[i + 1] << 16));
+      let modList = [
+        this._results[i + RESULTS_PACKAGE.USED_MOD1],
+        this._results[i + RESULTS_PACKAGE.USED_MOD2],
+        this._results[i + RESULTS_PACKAGE.USED_MOD3],
+        this._results[i + RESULTS_PACKAGE.USED_MOD4],
+        this._results[i + RESULTS_PACKAGE.USED_MOD5],
+      ]
+
+
       let items = ({
-        stats: [2, 2, 2, 2, 2, 2],
+        stats: Array.from(constantModifiersFromConfig),
         modCount: modList.length,
         modCost: modList.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
         tiers: 0,
         loaded: false,
-        mods: [
-          modList.filter
-          (a => a == StatModifier.MINOR_MOBILITY || a == StatModifier.MAJOR_MOBILITY).length,
-          modList.filter(a => a == StatModifier.MINOR_RESILIENCE || a == StatModifier.MAJOR_RESILIENCE).length,
-          modList.filter(a => a == StatModifier.MINOR_RECOVERY || a == StatModifier.MAJOR_RECOVERY).length,
-          modList.filter(a => a == StatModifier.MINOR_DISCIPLINE || a == StatModifier.MAJOR_DISCIPLINE).length,
-          modList.filter(a => a == StatModifier.MINOR_INTELLECT || a == StatModifier.MAJOR_INTELLECT).length,
-          modList.filter(a => a == StatModifier.MINOR_STRENGTH || a == StatModifier.MAJOR_STRENGTH).length,
-        ],
-        items: Array.from(permutation.subarray(0, 4))
+        mods: modList.reduce((p: number[], m) => {
+          p[Math.floor((m - 1) / 2)]++;
+          return p;
+        }, [0, 0, 0, 0, 0, 0]),
+        items: [
+          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.HELMET_ID],
+          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.GAUNTLET_ID],
+          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.CHEST_ID],
+          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.LEG_ID],
+        ]
       }) as ResultDefinition
-
-      for (let configEnabledMod of this._config_enabledMods) {
-        for (let bonus of ModInformation[configEnabledMod].bonus) {
-          items.stats[bonus.stat] += bonus.value;
-        }
-      }
 
       for (let modId of modList) {
         let smd = STAT_MOD_VALUES[modId as StatModifier]
@@ -149,6 +162,7 @@ export class ResultsComponent implements OnInit {
           itemsToGrab.add(items.items[n])
       }
       data.push(items)
+      //console.timeEnd("l" + i + " total")
     }
 
     // Load data async
@@ -184,7 +198,8 @@ export class ResultsComponent implements OnInit {
                 data[i].stats[ArmorStat.Discipline] += instance?.discipline;
                 data[i].stats[ArmorStat.Intellect] += instance?.intellect;
                 data[i].stats[ArmorStat.Strength] += instance?.strength;
-
+                return null;
+                /*
                 return {
                   exotic: instance?.isExotic || false,
                   itemInstanceId: instance?.itemInstanceId,
@@ -195,6 +210,7 @@ export class ResultsComponent implements OnInit {
                     instance?.discipline, instance?.intellect, instance?.strength
                   ]
                 }
+                 */
               }
             )
             data[i].tiers = getSkillTier(data[i].stats)
@@ -206,6 +222,8 @@ export class ResultsComponent implements OnInit {
 
       resolve(true);
     })
+
+    console.timeEnd("Update Table Data")
 
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;

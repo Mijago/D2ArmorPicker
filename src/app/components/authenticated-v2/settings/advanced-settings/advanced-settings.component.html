@@ -1,5 +1,5 @@
 <div *ngFor="let f of fields">
-    <mat-slide-toggle color="primary"
+    <mat-slide-toggle color="primary" [disabled]="f.disabled"
                       [checked]="f.value"
                       (change)="f.cp($event.checked)">
       {{f.name}}
