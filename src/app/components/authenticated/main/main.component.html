@@ -335,6 +335,16 @@
       </mat-icon>
     </mat-slide-toggle>
   </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="filterOptimizeWastedStats"
+                      [checked]="filterOptimizeWastedStats"
+                      (change)="triggerExoticPermutationUpdate()">Try to reduce wasted stats with minor mods
+      <mat-icon inline aria-hidden="false" aria-label="Help"
+                matTooltip="If you enable this setting, this tool will try to optimize your stats to have less wasted stats. Note, this only works if it has empty mod slots after fulfilling your desired stats!"
+                #tooltip="matTooltip"> help
+      </mat-icon>
+    </mat-slide-toggle>
+  </div>
 </div>
   </mat-card-content>
 </mat-card>
@@ -456,6 +466,12 @@
     <ng-container matColumnDef="tiers">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Tiers">Tiers</th>
       <td mat-cell *matCellDef="let element "> {{element.tiers}} </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="wastedStats">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header="wastedStats">Wasted</th>
+      <td mat-cell *matCellDef="let element "> {{element.w}} </td>
     </ng-container>
 
 
