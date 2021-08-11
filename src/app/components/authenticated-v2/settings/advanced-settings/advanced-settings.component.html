@@ -4,5 +4,9 @@
                       (change)="f.cp($event.checked)">
       {{f.name}}
       <!-- TODO: Help text -->
+      <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
+                matTooltip='{{f.help}}'
+                #tooltip="matTooltip"> help
+      </mat-icon>
     </mat-slide-toggle>
 </div>

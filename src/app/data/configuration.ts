@@ -30,6 +30,7 @@ export class Configuration {
 
   assumeMasterworked = true;
   onlyUseMasterworkedItems = false;
+  limitParsedResults = true;  // Limits the amount of results that are parsed. This looses some results, but solves memory issues
 
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
@@ -40,6 +41,7 @@ export class Configuration {
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
       assumeMasterworked: true,
+      limitParsedResults: true,
       characterClass: CharacterClass.Titan,
       selectedExoticHash: 0,
       minimumStatTier: {

@@ -49,18 +49,19 @@ export class ResultsComponent implements OnInit {
   private _permutations: Uint32Array = new Uint32Array();
   private _config_assumeMasterworked: Boolean = false;
   private _config_enabledMods: ModOrAbility[] = [];
+  private _config_limitParsedResults: Boolean = false;
+  private _items: Map<number, IInventoryArmor> = new Map<number, IInventoryArmor>();
 
   tableDataSource = new MatTableDataSource<ResultDefinition>()
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
   @ViewChild(MatSort) sort: MatSort | null = null;
   expandedElement: ResultDefinition | null = null;
   shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
-  //shownColumns = ["mobility"]
 
+  // info values
   selectedClass: CharacterClass = CharacterClass.None;
-  private _items: Map<number, IInventoryArmor> = new Map<number, IInventoryArmor>();
-
-  constantModifiersFromConfig: number[] = [0, 0, 0, 0, 0, 0];
+  totalResults: number = 0;
+  parsedResults: number = 0;
 
   constructor(private inventory: InventoryService, private db: DatabaseService,
               private bungieApi: BungieApiService, private config: ConfigurationService) {
@@ -72,6 +73,7 @@ export class ResultsComponent implements OnInit {
       this.selectedClass = c.characterClass;
       this._config_assumeMasterworked = c.assumeMasterworked;
       this._config_enabledMods = c.enabledMods;
+      this._config_limitParsedResults = c.limitParsedResults;
     })
 
     this.inventory.armorResults.subscribe(async value => {
@@ -119,8 +121,13 @@ export class ResultsComponent implements OnInit {
       }
     }
 
+    let limit = this.totalResults = this._results.length;
+    if (limit > 2.5e5 && this._config_limitParsedResults) {
+      limit = 2.5e5;
+    }
+    this.parsedResults = limit;
 
-    for (let i = 0; i < this._results.length; i += 7) {
+    for (let i = 0; i < limit; i += 7) {
       // console.time("l" + i + " total")
       const entryPermutationPosition = 12 * (this._results[i] + (this._results[i + 1] << 16));
       let modList = [
@@ -165,63 +172,50 @@ export class ResultsComponent implements OnInit {
       //console.timeEnd("l" + i + " total")
     }
 
-    // Load data async
-    new Promise(async resolve => {
-      const keys = Array.from(itemsToGrab);
-      let items = await this.db.inventoryArmor.bulkGet(keys)
-      for (let keyid in keys) {
-        if (items[keyid] != undefined)
-          this._items.set(keys[keyid], items[keyid] as IInventoryArmor);
-      }
+    const keys = Array.from(itemsToGrab);
+    let items = await this.db.inventoryArmor.bulkGet(keys)
+    for (let keyid in keys) {
+      if (items[keyid] != undefined)
+        this._items.set(keys[keyid], items[keyid] as IInventoryArmor);
+    }
 
-      for (let di = 0; di < data.length; di += 500) {
-        new Promise(resolve1 => {
-
-          // now fetch the item names
-          for (let i = di; i < di + 500; i++) {
-            if (i >= data.length) break;
-            data[i].items = data[i].items.map((e: number) => {
-                let instance = this._items.get(e);
-                if (!instance) return e;
-                if (instance?.isExotic) {
-                  data[i].exoticUrl = instance.icon;
-                }
-
-                if (instance?.masterworked || this._config_assumeMasterworked)
-                  for (let n = 0; n < 6; n++)
-                    data[i].stats[n] += 2;
-
-
-                data[i].stats[ArmorStat.Mobility] += instance?.mobility;
-                data[i].stats[ArmorStat.Resilience] += instance?.resilience;
-                data[i].stats[ArmorStat.Recovery] += instance?.recovery;
-                data[i].stats[ArmorStat.Discipline] += instance?.discipline;
-                data[i].stats[ArmorStat.Intellect] += instance?.intellect;
-                data[i].stats[ArmorStat.Strength] += instance?.strength;
-                return null;
-                /*
-                return {
-                  exotic: instance?.isExotic || false,
-                  itemInstanceId: instance?.itemInstanceId,
-                  name: instance?.name,
-                  masterworked: instance?.masterworked,
-                  stats: [
-                    instance?.mobility, instance?.resilience, instance?.recovery,
-                    instance?.discipline, instance?.intellect, instance?.strength
-                  ]
-                }
-                 */
-              }
-            )
-            data[i].tiers = getSkillTier(data[i].stats)
-            data[i].loaded = true;
+    // now fetch the item names
+    for (let i = 0; i < data.length; i ++) {
+      data[i].items = data[i].items.map((e: number) => {
+          let instance = this._items.get(e);
+          if (!instance) return e;
+          if (instance?.isExotic) {
+            data[i].exoticUrl = instance.icon;
           }
-        })
-      }
+
+          if (instance?.masterworked || this._config_assumeMasterworked)
+            for (let n = 0; n < 6; n++)
+              data[i].stats[n] += 2;
 
 
-      resolve(true);
-    })
+          data[i].stats[ArmorStat.Mobility] += instance.mobility;
+          data[i].stats[ArmorStat.Resilience] += instance.resilience;
+          data[i].stats[ArmorStat.Recovery] += instance.recovery;
+          data[i].stats[ArmorStat.Discipline] += instance.discipline;
+          data[i].stats[ArmorStat.Intellect] += instance.intellect;
+          data[i].stats[ArmorStat.Strength] += instance.strength;
+
+          return {
+            icon: instance.icon,
+            itemInstanceId: instance.itemInstanceId,
+            name: instance.name,
+            masterworked: instance.masterworked,
+            stats: [
+              instance.mobility, instance.resilience, instance.recovery,
+              instance.discipline, instance.intellect, instance.strength
+            ]
+          }
+        }
+      )
+      data[i].tiers = getSkillTier(data[i].stats)
+      data[i].loaded = true;
+    }
+
 
     console.timeEnd("Update Table Data")
 

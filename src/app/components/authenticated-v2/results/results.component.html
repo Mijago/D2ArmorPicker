@@ -3,8 +3,10 @@
   <mat-card-content>
 
     <div>
-      <div *ngIf="this.tableDataSource.data.length > 0">
-        Your selection results in {{this.tableDataSource.data.length}} permutations.<br/>
+      <div *ngIf="this.totalResults > 0">
+        Your selection results in {{this.totalResults}} permutations
+        <span *ngIf="this.parsedResults != this.totalResults">, but only {{this.parsedResults}} were parsed</span>.
+        <br/>
         Click on a row to expand it and to see the list of the items required for this build.<br/>
         Use the listed stats to identify the armor you have to use.
       </div>
