@@ -12,8 +12,6 @@ import {MatSort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
 import {MatPaginator} from "@angular/material/paginator";
 import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
-import {ModOrAbility} from "../../../data/enum/modOrAbility";
-import {ArmorStat} from "../../../data/enum/armor-stat";
 
 export type MaxStatData = [boolean, boolean, boolean, boolean, boolean, boolean, number]
 
@@ -430,29 +428,29 @@ export class MainComponent implements OnInit {
 
           mods[2 * resultElement[1]]++;
           switch (resultElement[1]) {
-            case ArmorStat.Mobility:
+            case 0:
               totalStats.mobility += 5;
               mods[MOD_INDICES.MOD_COST] += 1;
               break;
-            case ArmorStat.Resilience:
+            case 1:
               totalStats.resilience += 5;
               mods[MOD_INDICES.MOD_COST] += 1;
               break;
-            case ArmorStat.Discipline:
+            case 2:
+              totalStats.recovery += 5;
+              mods[MOD_INDICES.MOD_COST] += 2;
+              break;
+            case 3:
               totalStats.discipline += 5;
               mods[MOD_INDICES.MOD_COST] += 1;
-              break;
-            case ArmorStat.Strength:
-              totalStats.strength += 5;
-              mods[MOD_INDICES.MOD_COST] += 1;
               break
-            case ArmorStat.Intellect:
+            case 4:
               totalStats.intellect += 5;
               mods[MOD_INDICES.MOD_COST] += 2;
               break;
-            case ArmorStat.Recovery:
-              totalStats.recovery += 5;
-              mods[MOD_INDICES.MOD_COST] += 22;
+            case 5:
+              totalStats.strength += 5;
+              mods[MOD_INDICES.MOD_COST] += 2;
               break;
           }
 
