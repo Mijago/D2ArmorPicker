@@ -99,6 +99,7 @@ export class MainComponent implements OnInit {
   filterAssumeMasterworked: boolean = true;
   filterOnlyUseMasterworkedItems: boolean = false;
   filterOptimizeWastedStats: boolean = false;
+  filterOptimizeWastedStatsOnlyShowPossible: boolean = false;
 
   // Positive mods
   enablePowerfulFriends: boolean = true;
@@ -469,6 +470,9 @@ export class MainComponent implements OnInit {
         w: wastedStats // wasted
       } as IMappedGearPermutation
     }).filter(d => d.mods[MOD_INDICES.MOD_COUNT] <= this.maxMods)
+
+    if (this.filterOptimizeWastedStats && this.filterOptimizeWastedStatsOnlyShowPossible)
+      this.tableDataSource.data = this.tableDataSource.data.filter(d => (d as any).w == 0)
 
     function calcScore(d: MaxStatData) {
       return (d[0] ? 1e6 : 0) + (d[1] ? 1e5 : 0) + (d[2] ? 1e4 : 0) + (d[3] ? 1e3 : 0) + (d[4] ? 1e2 : 0) + (d[5] ? 1e1 : 0)
