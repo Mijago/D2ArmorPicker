@@ -31,17 +31,21 @@ export class Configuration {
   assumeMasterworked = true;
   onlyUseMasterworkedItems = false;
   limitParsedResults = true;  // Limits the amount of results that are parsed. This looses some results, but solves memory issues
+  tryLimitWastedStats = false;
+  onlyShowResultsWithNoWastedStats = false;
 
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
 
   static buildEmptyConfiguration(): Configuration {
     return {
-      enabledMods: [ModOrAbility.PowerfulFriends, ModOrAbility.RadiantLight],
+      enabledMods: [],
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
       assumeMasterworked: true,
       limitParsedResults: true,
+      tryLimitWastedStats: false,
+      onlyShowResultsWithNoWastedStats: false,
       characterClass: CharacterClass.Titan,
       selectedExoticHash: 0,
       minimumStatTier: {

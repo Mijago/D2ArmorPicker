@@ -121,15 +121,16 @@ export class ResultsComponent implements OnInit {
       }
     }
 
-    let limit = this.totalResults = this._results.length;
-    if (limit > 2.5e5 && this._config_limitParsedResults) {
-      limit = 2.5e5;
+    let limit = this._results.length;
+    if (limit > (2.5e5 * RESULTS_PACKAGE.WIDTH) && this._config_limitParsedResults) {
+      limit = 2.5e5 * RESULTS_PACKAGE.WIDTH;
     }
-    this.parsedResults = limit;
+    this.totalResults = this._results.length / RESULTS_PACKAGE.WIDTH;
+    this.parsedResults = limit / RESULTS_PACKAGE.WIDTH;
 
-    for (let i = 0; i < limit; i += 7) {
+    for (let i = 0; i < limit; i += RESULTS_PACKAGE.WIDTH) {
       // console.time("l" + i + " total")
-      const entryPermutationPosition = 12 * (this._results[i] + (this._results[i + 1] << 16));
+      const entryPermutationPosition = PERMUTATION_PACKAGE.WIDTH * (this._results[i] + (this._results[i + 1] << 16));
       let modList = [
         this._results[i + RESULTS_PACKAGE.USED_MOD1],
         this._results[i + RESULTS_PACKAGE.USED_MOD2],
@@ -138,11 +139,14 @@ export class ResultsComponent implements OnInit {
         this._results[i + RESULTS_PACKAGE.USED_MOD5],
       ]
 
-
       let items = ({
         stats: Array.from(constantModifiersFromConfig),
-        modCount: modList.length,
-        modCost: modList.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
+        modCount: modList.filter(d => d != StatModifier.NONE).length,
+        modCost: modList.reduce((p, d: StatModifier) => {
+          if (STAT_MOD_VALUES[d] == undefined)
+            console.log(p, d, STAT_MOD_VALUES[d], modList, this._results.subarray(i-10, i+20))
+          return p + STAT_MOD_VALUES[d][2]
+        }, 0),
         tiers: 0,
         loaded: false,
         mods: modList.reduce((p: number[], m) => {
@@ -180,7 +184,7 @@ export class ResultsComponent implements OnInit {
     }
 
     // now fetch the item names
-    for (let i = 0; i < data.length; i ++) {
+    for (let i = 0; i < data.length; i++) {
       data[i].items = data[i].items.map((e: number) => {
           let instance = this._items.get(e);
           if (!instance) return e;
@@ -201,6 +205,7 @@ export class ResultsComponent implements OnInit {
           data[i].stats[ArmorStat.Strength] += instance.strength;
 
           return {
+            waste: data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0),
             icon: instance.icon,
             itemInstanceId: instance.itemInstanceId,
             name: instance.name,

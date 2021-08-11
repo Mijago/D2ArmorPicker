@@ -39,16 +39,16 @@ export class AdvancedSettingsComponent implements OnInit {
           },
           {
             name: "Try to optimize wasted stats",
-            cp: (v: boolean) => undefined,
-            value: false,
-            disabled: true,
+            cp: (v: boolean) => this.config.modifyConfiguration(c => c.tryLimitWastedStats = v),
+            value: c.tryLimitWastedStats,
+            disabled: false,
             help: undefined
           },
           {
             name: "Only show builds with no wasted stats",
-            cp: (v: boolean) => undefined,
-            value: false,
-            disabled: true,
+            cp: (v: boolean) => this.config.modifyConfiguration(c => c.onlyShowResultsWithNoWastedStats = v),
+            value: c.tryLimitWastedStats && c.onlyShowResultsWithNoWastedStats,
+            disabled: !c.tryLimitWastedStats,
             help: undefined
           }
         ];

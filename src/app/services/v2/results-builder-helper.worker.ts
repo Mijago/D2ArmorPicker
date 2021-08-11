@@ -90,6 +90,40 @@ addEventListener('message', ({data}) => {
     if (usedMods.length > config.maximumStatMods)
       continue;
 
+    //////////////// Fix wasted stats, if possible
+    if (config.tryLimitWastedStats) {
+      let waste = [
+        (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)) % 10,
+        (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5: 0)) % 10,
+        (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)) % 10,
+        (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)) % 10,
+        (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)) % 10,
+        (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0)) % 10
+      ].map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])
+
+      if (usedMods.length < config.maximumStatMods)
+        for (let id = usedMods.length; id < config.maximumStatMods; id++) {
+          const result = waste.filter(k => k[0] == 5)[0]
+          if (!result) break;
+          result[0] = 0;
+          usedMods.push(1 + 2 * result[1])
+        }
+      // Ignore results with wasted stats if the setting is used
+      if (config.onlyShowResultsWithNoWastedStats && waste.reduce((p, v) => p + v[0], 0) > 0)
+        continue;
+      else {
+        console.log("SUCCESS", stats, waste.reduce((p, v) => p + v[0], 0), waste, [
+          (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)) % 10,
+          (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5: 0)) % 10,
+          (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)) % 10,
+          (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)) % 10,
+          (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)) % 10,
+          (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0)) % 10
+        ], usedMods)
+      }
+    }
+
+    //////////////// Statistics
 
     for (let n = 0; n < 6; n++) {
       let stat = Math.min(10,
@@ -102,6 +136,7 @@ addEventListener('message', ({data}) => {
         maximumPossibleTiers[n] = stat
     }
 
+    // Calculate how many 100 stats we can achieve
     let openModSlots = config.maximumStatMods - usedMods.length
     if (openModSlots >= 0) {
       let todo = stats.map((value, index: ArmorStat) =>

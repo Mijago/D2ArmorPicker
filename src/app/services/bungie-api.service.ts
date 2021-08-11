@@ -209,8 +209,9 @@ export class BungieApiService {
 
   async updateArmorItems(force = false) {
     if (!force && localStorage.getItem("LastArmorUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
-        return;
+      if (localStorage.getItem("last-armor-db-name") == this.db.inventoryArmor.db.name)
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
+          return;
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
       await this.authService.logout();
@@ -338,14 +339,17 @@ export class BungieApiService {
     await this.db.inventoryArmor.clear();
     await this.db.inventoryArmor.bulkAdd(r);
     localStorage.setItem("LastArmorUpdate", Date.now().toString())
+    localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name)
 
     return r;
   }
 
   async updateManifest(force = false) {
-    if (!force && localStorage.getItem("LastManifestUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2)
-        return;
+    if (!force && localStorage.getItem("LastManifestUpdate")) {
+      if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2)
+          return;
+    }
 
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
     const manifestTables = await getDestinyManifestSlice(d => this.$httpWithoutKey(d), {
@@ -388,15 +392,15 @@ export class BungieApiService {
             || d.socketTypeHash == 968742181 // head
         }).length || []) > 0)
 
-          return {
-            hash: v.hash,
-            icon: v.displayProperties.icon,
-            name: v.displayProperties.name,
-            clazz: v.classType,
-            armor2: isArmor2,
-            slot: slot,
-            isExotic:( v.inventory?.tierTypeName == 'Exotic') ? 1 : 0
-          } as IManifestArmor
+        return {
+          hash: v.hash,
+          icon: v.displayProperties.icon,
+          name: v.displayProperties.name,
+          clazz: v.classType,
+          armor2: isArmor2,
+          slot: slot,
+          isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0
+        } as IManifestArmor
       });
 
     // TODO: clazz
@@ -405,6 +409,7 @@ export class BungieApiService {
     await this.db.manifestArmor.clear();
     await this.db.manifestArmor.bulkPut(entries);
     localStorage.setItem("LastManifestUpdate", Date.now().toString())
+    localStorage.setItem("last-manifest-db-name", this.db.manifestArmor.db.name)
 
     return manifestTables;
   }
