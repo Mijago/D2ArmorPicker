@@ -27,7 +27,7 @@ export class AdvancedSettingsComponent implements OnInit {
             name: "Only use already masterworked items",
             cp: (v: boolean) => this.config.modifyConfiguration(c => c.onlyUseMasterworkedItems = v),
             value: c.onlyUseMasterworkedItems,
-            disabled: true,
+            disabled: false,
             help: undefined
           },
           {

@@ -32,6 +32,10 @@ addEventListener('message', ({data}) => {
     if (config.selectedExoticHash == FORCE_USE_NO_EXOTIC && permutation[10] != 0) {
       continue
     }
+    // Ignore this permutation if not every item is masterworked
+    if (config.onlyUseMasterworkedItems && permutation[11] != 0xF) {
+      continue
+    }
 
     let stats = [
       permutation[4] + 2,
