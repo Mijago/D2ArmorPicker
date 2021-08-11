@@ -145,13 +145,16 @@ export class AuthService {
   }
 
   async logout() {
-    localStorage.removeItem("LastArmorUpdate")
-    localStorage.removeItem("LastManifestUpdate")
-    this.lastRefresh = null;
-    this.refreshTokenExpiringAt = null;
-    this.authCode = null;
-    this.accessToken = null;
-    this.refreshToken = null;
-    await this.router.navigate(["login"]);
+    try {
+      localStorage.removeItem("LastArmorUpdate")
+      localStorage.removeItem("LastManifestUpdate")
+      this.lastRefresh = null;
+      this.refreshTokenExpiringAt = null;
+      this.authCode = null;
+      this.accessToken = null;
+      this.refreshToken = null;
+    } finally {
+      await this.router.navigate(["login"]);
+    }
   }
 }

@@ -345,6 +345,17 @@
       </mat-icon>
     </mat-slide-toggle>
   </div>
+  <div>
+    <mat-slide-toggle color="primary" [(ngModel)]="filterOptimizeWastedStatsOnlyShowPossible"
+                      [checked]="filterOptimizeWastedStatsOnlyShowPossible"
+                      [disabled]="!filterOptimizeWastedStats"
+                      (change)="triggerExoticPermutationUpdate()">Only show results with zero wasted stats.
+      <mat-icon inline aria-hidden="false" aria-label="Help"
+                matTooltip="If you enable this setting, tool will only show results that have 0 wasted stats. This also impacts the preview in the stat selection."
+                #tooltip="matTooltip"> help
+      </mat-icon>
+    </mat-slide-toggle>
+  </div>
 </div>
   </mat-card-content>
 </mat-card>
