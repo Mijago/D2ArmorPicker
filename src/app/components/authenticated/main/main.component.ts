@@ -437,20 +437,20 @@ export class MainComponent implements OnInit {
               mods[MOD_INDICES.MOD_COST] += 1;
               break;
             case 2:
-              totalStats.discipline += 5;
-              mods[MOD_INDICES.MOD_COST] += 1;
+              totalStats.recovery += 5;
+              mods[MOD_INDICES.MOD_COST] += 2;
               break;
-            case 5:
-              totalStats.strength += 5;
+            case 3:
+              totalStats.discipline += 5;
               mods[MOD_INDICES.MOD_COST] += 1;
               break
             case 4:
               totalStats.intellect += 5;
               mods[MOD_INDICES.MOD_COST] += 2;
               break;
-            case 3:
-              totalStats.recovery += 5;
-              mods[MOD_INDICES.MOD_COST] += 22;
+            case 5:
+              totalStats.strength += 5;
+              mods[MOD_INDICES.MOD_COST] += 2;
               break;
           }
 
