@@ -6,11 +6,15 @@ import {ArmorStat, SpecialArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
+import {MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS} from "@angular/material/slide-toggle";
 
 @Component({
   selector: 'app-desired-mods-selection',
   templateUrl: './desired-mods-selection.component.html',
-  styleUrls: ['./desired-mods-selection.component.css']
+  styleUrls: ['./desired-mods-selection.component.css'],
+  providers: [
+    {provide: MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS, useValue: {disableToggleValue: false, disableDragValue: true}},
+  ]
 })
 export class DesiredModsSelectionComponent implements OnInit {
   dataSource: Modifier[];

@@ -4,7 +4,13 @@
   <!-- Position Column -->
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef>Name</th>
-    <td mat-cell *matCellDef="let element">{{element.name}} </td>
+    <td mat-cell *matCellDef="let element">
+      <mat-slide-toggle
+        color="primary" disabled style="cursor: pointer !important;"
+        [checked]="selectedMods.indexOf(element.id) > -1">
+        {{element.name}}
+      </mat-slide-toggle>
+    </td>
   </ng-container>
 
     <!-- Position Column -->
