@@ -16,6 +16,7 @@ import {Stats} from "../../../data/permutation";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
 import {PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../../data/constants";
+import {StatusProviderService} from "../../../services/v2/status-provider.service";
 
 export function getSkillTier(stats: number[]) {
   return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
@@ -64,7 +65,8 @@ export class ResultsComponent implements OnInit {
   parsedResults: number = 0;
 
   constructor(private inventory: InventoryService, private db: DatabaseService,
-              private bungieApi: BungieApiService, private config: ConfigurationService) {
+              private bungieApi: BungieApiService, private config: ConfigurationService,
+              private status: StatusProviderService) {
 
   }
 
@@ -79,7 +81,10 @@ export class ResultsComponent implements OnInit {
     this.inventory.armorResults.subscribe(async value => {
       this._results = value.results;
       this._permutations = value.permutations;
+
+      this.status.modifyStatus(s => s.updatingResultsTable = true)
       await this.updateData();
+      this.status.modifyStatus(s => s.updatingResultsTable = false)
     })
 
     this.tableDataSource.paginator = this.paginator;

@@ -7,6 +7,7 @@ import {debounce, debounceTime} from "rxjs/operators";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Configuration} from "../../data/configuration";
 import {ArmorStat} from "../../data/enum/armor-stat";
+import {StatusProviderService} from "./status-provider.service";
 
 type info = {
   results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
@@ -38,7 +39,7 @@ export class InventoryService {
 
   private _config: Configuration = Configuration.buildEmptyConfiguration();
 
-  constructor(private db: DatabaseService, private config: ConfigurationService) {
+  constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService) {
     this._armorPermutations = new BehaviorSubject(new Uint32Array(0))
     this.armorPermutations = this._armorPermutations.asObservable();
 
@@ -61,9 +62,11 @@ export class InventoryService {
         // The results will automatically be updated
         if (c.characterClass != this.currentClass) {
           this.currentClass = c.characterClass;
+          this.status.modifyStatus(s => s.calculatingPermutations = true)
           const worker = new Worker(new URL('./permutation-webworker.worker', import.meta.url));
           worker.onmessage = ({data}) => {
             this.allArmorPermutations = new Uint32Array(data)
+            this.status.modifyStatus(s => s.calculatingPermutations = false)
             this._armorPermutations.next(this.allArmorPermutations)
           };
           worker.postMessage(this.currentClass);
@@ -76,10 +79,14 @@ export class InventoryService {
 
   updateResults() {
     console.debug("call updateResults")
+    this.status.modifyStatus(s => s.calculatingResults = true)
     const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
     worker.onmessage = ({data}) => {
       this.allArmorResults = new Uint16Array(data.view)
       this.allArmorPermutations = new Uint32Array(data.allArmorPermutations)
+
+      this.status.modifyStatus(s => s.calculatingResults = false)
+
       this._armorResults.next({
         results: this.allArmorResults,
         permutations: this.allArmorPermutations,

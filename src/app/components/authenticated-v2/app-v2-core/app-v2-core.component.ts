@@ -4,6 +4,7 @@ import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../data/constants";
 import {CharacterClass} from "../../../data/enum/character-Class";
 import {ArmorStat} from "../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../services/v2/configuration.service";
+import {StatusProviderService} from "../../../services/v2/status-provider.service";
 
 @Component({
   selector: 'app-app-v2-core',
@@ -13,7 +14,7 @@ import {ConfigurationService} from "../../../services/v2/configuration.service";
 export class AppV2CoreComponent implements OnInit {
 
 
-  constructor(private config: ConfigurationService) {
+  constructor(private config: ConfigurationService, public status: StatusProviderService) {
   }
 
 

@@ -1,3 +1,8 @@
-<app-header-bar></app-header-bar>
-<app-settings></app-settings>
-<app-results></app-results>
+<span *ngVar="(status.status | async) as stat">
+  <span class="{{(stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations) ? 'loading' : ''}}">
+    <app-header-bar></app-header-bar>
+    <app-settings></app-settings>
+    <app-results></app-results>
+  </span>
+</span>
+
