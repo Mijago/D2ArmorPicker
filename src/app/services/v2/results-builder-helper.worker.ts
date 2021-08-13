@@ -93,18 +93,18 @@ addEventListener('message', ({data}) => {
     //////////////// Fix wasted stats, if possible
     if (config.tryLimitWastedStats) {
       let waste = [
-        (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0)) % 10
-      ].map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])
+        (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0))
+      ].map((v, i) => [v % 10, i, v]).sort((a, b) => b[0] - a[0])
 
       if (usedMods.length < config.maximumStatMods)
         for (let id = usedMods.length; id < config.maximumStatMods; id++) {
           // First round: bring stats from X5 to Y0 (55 -> 60)
-          let result = waste.filter(k => k[0] == 5)[0]
+          let result = waste.filter(k => k[2] < 100).filter(k => k[0] == 5)[0]
           if (!result) {
             break;
             // Second round, bring stats from X6/X7/X8/X9 to Y1/Y2/Y3/Y4 (56 -> 61)
@@ -163,16 +163,16 @@ addEventListener('message', ({data}) => {
     // SECOND ROUND for stat waste reduction
     if (config.tryLimitWastedStats && usedMods.length < config.maximumStatMods) {
       let waste = [
-        (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)) % 10,
-        (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0)) % 10
-      ].map((v, i) => [v, i]).sort((a, b) => b[0] - a[0])
+        (stats[ArmorStat.Mobility] + ((usedMods.indexOf(StatModifier.MINOR_MOBILITY) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Resilience] + ((usedMods.indexOf(StatModifier.MINOR_RESILIENCE) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Recovery] + ((usedMods.indexOf(StatModifier.MINOR_RECOVERY) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Discipline] + ((usedMods.indexOf(StatModifier.MINOR_DISCIPLINE) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Intellect] + ((usedMods.indexOf(StatModifier.MINOR_INTELLECT) > -1) ? 5 : 0)),
+        (stats[ArmorStat.Strength] + ((usedMods.indexOf(StatModifier.MINOR_STRENGTH) > -1) ? 5 : 0))
+      ].map((v, i) => [v % 10, i, v]).sort((a, b) => b[0] - a[0])
 
       for (let id = usedMods.length; id < config.maximumStatMods; id++) {
-        let result = waste.filter(a => a[0] > 5).sort((a, b) => a[0] - b[0])[0]
+        let result = waste.filter(k => k[2] < 100).filter(a => a[0] > 5).sort((a, b) => a[0] - b[0])[0]
         if (!result) break;
         result[0] -= 5;
         usedMods.push(1 + 2 * result[1])
