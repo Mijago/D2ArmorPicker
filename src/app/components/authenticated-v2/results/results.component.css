@@ -14,6 +14,7 @@
   margin-left: 2px;
   top: 11px;
 }
+
 .itemIcon {
   width: 32px;
   height: 32px;
@@ -24,9 +25,14 @@
   filter: blur(4px);
 }
 
+tr.example-element-row td {
+  border-bottom-width: 0;
+}
+
 tr.example-detail-row {
   height: 0 !important;
 }
+
 .example-element-detail {
   overflow: hidden;
   display: flex;
