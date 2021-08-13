@@ -19,7 +19,8 @@
         <ng-container matColumnDef="mobility">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility">Mobility</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Mobility]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
+                 alt="Mobility" class="statIcon">
           </td>
         </ng-container>
 
@@ -27,7 +28,8 @@
         <ng-container matColumnDef="resilience">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Resilience"> Resilience</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Resilience]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
+                 alt="Resilience" class="statIcon">
           </td>
         </ng-container>
 
@@ -35,7 +37,8 @@
         <ng-container matColumnDef="recovery">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Recovery"> Recovery</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Recovery]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
+                 alt="Recovery" class="statIcon">
           </td>
         </ng-container>
 
@@ -43,7 +46,8 @@
         <ng-container matColumnDef="discipline">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Discipline"> Discipline</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Discipline]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
+                 alt="Discipline" class="statIcon">
           </td>
         </ng-container>
 
@@ -51,7 +55,8 @@
         <ng-container matColumnDef="intellect">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Intellect"> Intellect</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Intellect]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
+                 alt="Intellect" class="statIcon">
           </td>
         </ng-container>
 
@@ -59,34 +64,41 @@
         <ng-container matColumnDef="strength">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Strength">Strength</th>
           <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Strength]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="statIcon">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+                 alt="Strength" class="statIcon">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="mods">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Mods"> Used Mods</th>
-          <td mat-cell *matCellDef="let element ">
+          <td mat-cell *matCellDef="let element">
             <span *ngIf="element.mods[12] == 0">None</span>
             <!-- TODO amount -->
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"
-                                   tooltipText="Mobility" [amount]="element.mods[ArmorStat.Mobility]"></app-table-mod-display>
+                                   tooltipText="Mobility"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_MOBILITY) + (element.mods | count:StatModifier.MAJOR_MOBILITY)"></app-table-mod-display>
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"
-                                   tooltipText="Resilience" [amount]="element.mods[ArmorStat.Resilience]"></app-table-mod-display>
+                                   tooltipText="Resilience"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_RESILIENCE) + (element.mods | count:StatModifier.MAJOR_RESILIENCE)"></app-table-mod-display>
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"
-                                   tooltipText="Recovery" [amount]="element.mods[ArmorStat.Recovery]"></app-table-mod-display>
+                                   tooltipText="Recovery"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_RECOVERY) + (element.mods | count:StatModifier.MAJOR_RECOVERY)"></app-table-mod-display>
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"
-                                   tooltipText="Discipline" [amount]="element.mods[ArmorStat.Discipline]"></app-table-mod-display>
+                                   tooltipText="Discipline"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_DISCIPLINE) + (element.mods | count:StatModifier.MAJOR_DISCIPLINE)"></app-table-mod-display>
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"
-                                   tooltipText="Intellect" [amount]="element.mods[ArmorStat.Intellect]"></app-table-mod-display>
+                                   tooltipText="Intellect"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_INTELLECT) + (element.mods | count:StatModifier.MAJOR_INTELLECT)"></app-table-mod-display>
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"
-                                   tooltipText="Strength" [amount]="element.mods[ArmorStat.Strength]"></app-table-mod-display>
+                                   tooltipText="Strength"
+                                   [amount]="(element.mods | count:StatModifier.MINOR_STRENGTH) + (element.mods | count:StatModifier.MAJOR_STRENGTH)"></app-table-mod-display>
           </td>
         </ng-container>
 
@@ -107,8 +119,12 @@
         <ng-container matColumnDef="dropdown">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let element ">
-            <mat-icon *ngIf="expandedElement !== element" matTooltip="Click to show details for this build.">expand_more</mat-icon>
-            <mat-icon *ngIf="expandedElement === element" matTooltip="Click to hide details for this build.">expand_less</mat-icon>
+            <mat-icon *ngIf="expandedElement !== element" matTooltip="Click to show details for this build.">
+              expand_more
+            </mat-icon>
+            <mat-icon *ngIf="expandedElement === element" matTooltip="Click to hide details for this build.">
+              expand_less
+            </mat-icon>
           </td>
         </ng-container>
 
@@ -118,6 +134,17 @@
           <td mat-cell *matCellDef="let element "> {{element.tiers}} </td>
         </ng-container>
 
+
+        <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="shownColumns.length">
+            <div class="example-element-detail"
+                 [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+              <app-expanded-result-content [element]="element"></app-expanded-result-content>
+            </div>
+          </td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="shownColumns"></tr>
         <tr mat-row *matRowDef="let element; columns: shownColumns;"
             class="example-element-row"
@@ -125,7 +152,7 @@
             [class.example-expanded-row]="expandedElement === element"
             (click)="expandedElement = expandedElement === element ? null : element">
         </tr>
-
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
       </table>
       <mat-paginator [pageSizeOptions]="[10, 20, 50, 100, 200]"
                      pageSize="20"

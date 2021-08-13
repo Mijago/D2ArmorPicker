@@ -17,6 +17,7 @@ import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
 import {PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../../data/constants";
 import {StatusProviderService} from "../../../services/v2/status-provider.service";
+import {animate, state, style, transition, trigger} from "@angular/animations";
 
 export function getSkillTier(stats: number[]) {
   return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
@@ -28,23 +29,43 @@ export function getSkillTier(stats: number[]) {
 }
 
 
-type ResultDefinition = {
+export interface ResultDefinition {
   mods: number[];
   stats: number[];
-  items: number[];
+  statsNoMods: number[];
+  items: ResultItem[];
   tiers: number;
   modCost: number;
   modCount: number;
   loaded: boolean;
 }
 
+export interface ResultItem {
+  waste: number,
+  energy: number,
+  icon: string,
+  itemInstanceId: string,
+  name: string,
+  masterworked: boolean,
+  stats: number[],
+  statsNoMods: number[]
+}
+
 @Component({
   selector: 'app-results',
   templateUrl: './results.component.html',
-  styleUrls: ['./results.component.css']
+  styleUrls: ['./results.component.css'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed, void', style({height: '0px'})),
+      state('expanded', style({height: '*'})),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      transition('expanded <=> void', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+    ]),],
 })
 export class ResultsComponent implements OnInit {
   ArmorStat = ArmorStat;
+  public StatModifier = StatModifier;
 
   private _results: Uint16Array = new Uint16Array();
   private _permutations: Uint32Array = new Uint32Array();
@@ -146,24 +167,22 @@ export class ResultsComponent implements OnInit {
 
       let items = ({
         stats: Array.from(constantModifiersFromConfig),
+        statsNoMods: [2, 2, 2, 2, 2, 2],
         modCount: modList.filter(d => d != StatModifier.NONE).length,
         modCost: modList.reduce((p, d: StatModifier) => {
           if (STAT_MOD_VALUES[d] == undefined)
-            console.log(p, d, STAT_MOD_VALUES[d], modList, this._results.subarray(i-10, i+20))
+            console.log(p, d, STAT_MOD_VALUES[d], modList, this._results.subarray(i - 10, i + 20))
           return p + STAT_MOD_VALUES[d][2]
         }, 0),
         tiers: 0,
         loaded: false,
-        mods: modList.reduce((p: number[], m) => {
-          p[Math.floor((m - 1) / 2)]++;
-          return p;
-        }, [0, 0, 0, 0, 0, 0]),
+        mods: modList,
         items: [
           this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.HELMET_ID],
           this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.GAUNTLET_ID],
           this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.CHEST_ID],
           this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.LEG_ID],
-        ]
+        ] as any
       }) as ResultDefinition
 
       for (let modId of modList) {
@@ -174,8 +193,8 @@ export class ResultsComponent implements OnInit {
       }
 
       for (let n = 0; n < 4; n++) {
-        if (!this._items.has(items.items[n]))
-          itemsToGrab.add(items.items[n])
+        if (!this._items.has(items.items[n] as unknown as number))
+          itemsToGrab.add(items.items[n] as unknown as number)
       }
       data.push(items)
       //console.timeEnd("l" + i + " total")
@@ -198,8 +217,10 @@ export class ResultsComponent implements OnInit {
           }
 
           if (instance?.masterworked || this._config_assumeMasterworked)
-            for (let n = 0; n < 6; n++)
+            for (let n = 0; n < 6; n++) {
               data[i].stats[n] += 2;
+              data[i].statsNoMods[n] += 2;
+            }
 
 
           data[i].stats[ArmorStat.Mobility] += instance.mobility;
@@ -209,8 +230,16 @@ export class ResultsComponent implements OnInit {
           data[i].stats[ArmorStat.Intellect] += instance.intellect;
           data[i].stats[ArmorStat.Strength] += instance.strength;
 
+          data[i].statsNoMods[ArmorStat.Mobility] += instance.mobility;
+          data[i].statsNoMods[ArmorStat.Resilience] += instance.resilience;
+          data[i].statsNoMods[ArmorStat.Recovery] += instance.recovery;
+          data[i].statsNoMods[ArmorStat.Discipline] += instance.discipline;
+          data[i].statsNoMods[ArmorStat.Intellect] += instance.intellect;
+          data[i].statsNoMods[ArmorStat.Strength] += instance.strength;
+
           return {
             waste: data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0),
+            energy: instance.energyAffinity,
             icon: instance.icon,
             itemInstanceId: instance.itemInstanceId,
             name: instance.name,
@@ -219,7 +248,7 @@ export class ResultsComponent implements OnInit {
               instance.mobility, instance.resilience, instance.recovery,
               instance.discipline, instance.intellect, instance.strength
             ]
-          }
+          } as ResultItem
         }
       )
       data[i].tiers = getSkillTier(data[i].stats)

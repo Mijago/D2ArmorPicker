@@ -51,6 +51,8 @@ import {MatListModule} from "@angular/material/list";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {ConfirmDialogComponent} from './components/authenticated-v2/components/confirm-dialog/confirm-dialog.component';
 import {MatDialogModule} from "@angular/material/dialog";
+import { ExpandedResultContentComponent } from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
+import { CountElementInListPipe } from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
 
 
 const routes: Routes = [
@@ -85,7 +87,9 @@ const routes: Routes = [
     VarDirectiveDirective,
     AdvancedSettingsComponent,
     LoadAndSaveSettingsComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ExpandedResultContentComponent,
+    CountElementInListPipe
   ],
   imports: [
     BrowserModule,

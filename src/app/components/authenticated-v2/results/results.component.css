@@ -23,3 +23,11 @@
 .mat-row.loading {
   filter: blur(4px);
 }
+
+tr.example-detail-row {
+  height: 0 !important;
+}
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
