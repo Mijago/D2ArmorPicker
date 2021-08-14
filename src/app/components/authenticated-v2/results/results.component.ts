@@ -30,6 +30,10 @@ export function getSkillTier(stats: number[]) {
 
 
 export interface ResultDefinition {
+  exotic: undefined | {
+    icon: string,
+    name: string
+  },
   mods: number[];
   stats: number[];
   statsNoMods: number[];
@@ -213,7 +217,10 @@ export class ResultsComponent implements OnInit {
           let instance = this._items.get(e);
           if (!instance) return e;
           if (instance?.isExotic) {
-            data[i].exoticUrl = instance.icon;
+            data[i].exotic = {
+              icon: instance.icon,
+              name: instance.name
+            };
           }
 
           if (instance?.masterworked || this._config_assumeMasterworked)

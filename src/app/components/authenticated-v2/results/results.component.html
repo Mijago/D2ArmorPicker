@@ -108,10 +108,10 @@
           <th mat-header-cell *matHeaderCellDef> Exotic</th>
           <td mat-cell *matCellDef="let element ">
             <!-- TODO name , icon-->
-            <img *ngIf="!!element.exoticUrl" class="itemIcon"
-                 matTooltip="NAME" #tooltip="matTooltip"
-                 src="https://bungie.net/{{element.exoticUrl}}">
-            <img *ngIf="!element.exoticUrl" class="itemIcon"
+            <img *ngIf="!!element.exotic" class="itemIcon"
+                 matTooltip="{{element.exotic?.name}}" #tooltip="matTooltip"
+                 src="https://bungie.net/{{element.exotic?.icon}}">
+            <img *ngIf="!element.exotic" class="itemIcon"
                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
           </td>
         </ng-container>
