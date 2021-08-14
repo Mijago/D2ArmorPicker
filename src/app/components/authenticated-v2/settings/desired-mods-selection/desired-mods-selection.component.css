@@ -84,3 +84,8 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 .selected .mat-column-intellect {
   background-color: rgba(137, 178, 255, 0.11);
 }
+
+
+.mat-column-name {
+  min-width: 190px;
+}
