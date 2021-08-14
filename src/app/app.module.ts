@@ -53,6 +53,7 @@ import {ConfirmDialogComponent} from './components/authenticated-v2/components/c
 import {MatDialogModule} from "@angular/material/dialog";
 import { ExpandedResultContentComponent } from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
 import { CountElementInListPipe } from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
+import {ClipboardModule} from "@angular/cdk/clipboard";
 
 
 const routes: Routes = [
@@ -91,34 +92,35 @@ const routes: Routes = [
     ExpandedResultContentComponent,
     CountElementInListPipe
   ],
-  imports: [
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    RouterModule.forRoot(routes, {useHash: true}),
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatSliderModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatIconModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatToolbarModule,
-    MatMenuModule,
-    MatButtonToggleModule,
-    MatListModule,
-    MatExpansionModule,
-    MatDialogModule
-  ],
+    imports: [
+        BrowserModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatButtonModule,
+        RouterModule.forRoot(routes, {useHash: true}),
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatSliderModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        FormsModule,
+        MatTableModule,
+        MatCardModule,
+        MatTooltipModule,
+        MatProgressBarModule,
+        MatIconModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatToolbarModule,
+        MatMenuModule,
+        MatButtonToggleModule,
+        MatListModule,
+        MatExpansionModule,
+        MatDialogModule,
+        ClipboardModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

@@ -150,3 +150,11 @@
     </tr>
   </table>
 </div>
+<div class="buttonContainer">
+  <div *ngVar="buildItemIdString(element) as text">
+    <button  mat-stroked-button [cdkCopyToClipboard]="text"
+    matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
+      Copy DIM query to clipboard
+    </button>
+  </div>
+</div>

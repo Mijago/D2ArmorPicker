@@ -23,6 +23,10 @@ export class ExpandedResultContentComponent implements OnInit {
   constructor(private config: ConfigurationService) {
   }
 
+  public buildItemIdString(element: ResultDefinition|null) {
+    return element?.items.map(d => `id:'${d.itemInstanceId}'`).join(" or ")
+  }
+
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
       this.config_assumeMasterworked = c.assumeMasterworked;
