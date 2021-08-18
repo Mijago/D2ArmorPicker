@@ -47,6 +47,11 @@ addEventListener('message', async ({data}) => {
             + ((chest.masterworked ? 1 : 0) << 1)
             + (leg.masterworked ? 1 : 0)
 
+          // elemental affinity is at max 5. This means, we can simply shift by 3 bits to store them in one int.
+          let elementalAffinity = (helmet.energyAffinity << 9)
+            + (gauntlet.energyAffinity << 6)
+            + (chest.energyAffinity << 3)
+            + (leg.energyAffinity)
 
           // IDs are really really long..
           // So I store them in 4 parts
@@ -54,7 +59,8 @@ addEventListener('message', async ({data}) => {
             [helmet.id, gauntlet.id, chest.id, leg.id],
             stats,
             exoticId,
-            masterworkNumber
+            masterworkNumber,
+            elementalAffinity
           ])
         }
       }
@@ -73,6 +79,7 @@ addEventListener('message', async ({data}) => {
       view[i * PERMUTATION_PACKAGE.WIDTH + PERMUTATION_PACKAGE.MOBILITY + n] = permutations[i][1][n]
     view[i * PERMUTATION_PACKAGE.WIDTH + PERMUTATION_PACKAGE.EXOTIC_ID] = permutations[i][2] ?? 0;
     view[i * PERMUTATION_PACKAGE.WIDTH + PERMUTATION_PACKAGE.MASTERWORK_NUMBER] = permutations[i][3];
+    view[i * PERMUTATION_PACKAGE.WIDTH + PERMUTATION_PACKAGE.ELEMENTAL_AFFINITIES] = permutations[i][4];
   }
   console.log(`Sending ${permutations.length} permutations in ${len} bytes.`)
 

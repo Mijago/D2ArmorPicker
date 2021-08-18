@@ -1,0 +1,13 @@
+$icon-with: 22px;
+.element-icon {
+  width: $icon-with;
+}
+
+.disabled {
+  filter: grayscale(1.0);
+}
+
+.element-icon-deletable:hover {
+  filter: brightness(0.8) hue-rotate(350deg) saturate(3) blur(2px) contrast(0.6);
+  cursor: not-allowed;
+}

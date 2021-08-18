@@ -26,6 +26,24 @@
     </td>
   </ng-container>
 
+  <ng-container matColumnDef="cost">
+    <th mat-header-cell *matHeaderCellDef>
+      Element
+    </th>
+    <td mat-cell *matCellDef="let element">
+        <!-- Item affinity -->
+        <img class="element-icon" *ngIf="element.requiredArmorAffinity == 1"
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png"
+             matTooltip='Arc affinity' #tooltip="matTooltip">
+        <img class="element-icon" *ngIf="element.requiredArmorAffinity == 2"
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png"
+             matTooltip='Solar affinity' #tooltip="matTooltip">
+        <img class="element-icon" *ngIf="element.requiredArmorAffinity == 3"
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png"
+             matTooltip='Void affinity' #tooltip="matTooltip">
+    </td>
+  </ng-container>
+
     <!-- Position Column -->
   <ng-container matColumnDef="resilience">
     <th mat-header-cell *matHeaderCellDef>

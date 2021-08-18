@@ -1,12 +1,13 @@
 <div *ngFor="let f of fields">
-    <mat-slide-toggle color="primary" [disabled]="f.disabled"
-                      [checked]="f.value"
-                      (change)="f.cp($event.checked)">
-      {{f.name}}
-      <!-- TODO: Help text -->
-      <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
-                matTooltip='{{f.help}}'
-                #tooltip="matTooltip"> help
-      </mat-icon>
-    </mat-slide-toggle>
+  <mat-slide-toggle color="primary" [disabled]="f.disabled"
+                    [checked]="f.value"
+                    (change)="f.cp($event.checked)">
+    {{f.name}}
+    <!-- TODO: Help text -->
+    <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
+              matTooltip='{{f.help}}'
+              #tooltip="matTooltip"> help
+    </mat-icon>
+  </mat-slide-toggle>
+  <div class="category-spacer" *ngIf="f.endsCategory"></div>
 </div>

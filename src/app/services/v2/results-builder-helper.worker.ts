@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC, RESULTS_PACKAGE} from "../../data/constants";
+import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC, PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../data/constants";
 import {ModInformation} from "../../data/ModInformation";
 import {ArmorStat, SpecialArmorStat, StatModifier} from "../../data/enum/armor-stat";
 import {Configuration} from "../../data/configuration";
@@ -23,17 +23,17 @@ addEventListener('message', ({data}) => {
 
   let results = []
 
-  for (let i = 0; i < allArmorPermutations.length; i += 12) {
+  for (let i = 0; i < allArmorPermutations.length; i += PERMUTATION_PACKAGE.WIDTH) {
     // Skip if we want to filter out a specific exotic
-    const permutation = allArmorPermutations.subarray(i, i + 12)
-    if (config.selectedExoticHash > DID_NOT_SELECT_EXOTIC && permutation[10] != config.selectedExoticHash) {
+    const permutation = allArmorPermutations.subarray(i, i + PERMUTATION_PACKAGE.WIDTH)
+    if (config.selectedExoticHash > DID_NOT_SELECT_EXOTIC && permutation[PERMUTATION_PACKAGE.EXOTIC_ID] != config.selectedExoticHash) {
       continue
     }
-    if (config.selectedExoticHash == FORCE_USE_NO_EXOTIC && permutation[10] != 0) {
+    if (config.selectedExoticHash == FORCE_USE_NO_EXOTIC && permutation[PERMUTATION_PACKAGE.EXOTIC_ID] != 0) {
       continue
     }
     // Ignore this permutation if not every item is masterworked
-    if (config.onlyUseMasterworkedItems && permutation[11] != 0xF) {
+    if (config.onlyUseMasterworkedItems && permutation[PERMUTATION_PACKAGE.MASTERWORK_NUMBER] != 0xF) {
       continue
     }
 
@@ -56,8 +56,10 @@ addEventListener('message', ({data}) => {
       }
     }
 
+    let requiredElements = config.selectedArmorAffinities.slice()
     // Apply mods
     for (const mod of config.enabledMods) {
+      requiredElements.unshift(ModInformation[mod].requiredArmorAffinity)
       for (const bonus of ModInformation[mod].bonus) {
         switch (bonus.stat) {
           case SpecialArmorStat.ClassAbilityRegenerationStat:
@@ -70,6 +72,35 @@ addEventListener('message', ({data}) => {
       }
     }
 
+
+    // check elemental affinities. The setting disables this feature completely
+    if (!config.ignoreArmorAffinitiesOnMasterworkedItems) {
+      // I only want the first 5 entries
+      // And configured mods always take priority.
+      requiredElements = requiredElements.slice(0, 5)
+
+      // find the existing elements
+      let existingElements = []
+      for (let n = 0; n < 4; n++) {
+        let isMwd = (permutation[11] & (1 << n)) > 0
+        if (!isMwd) continue;
+        let element = (permutation[12] >> (n * 3)) & 0x7
+        existingElements.push(element)
+      }
+
+      let slotsForAnyElement = 5 - existingElements.length
+      for (let requiredElement of requiredElements) {
+        const index = existingElements.indexOf(requiredElement);
+        if (index > -1) {
+          existingElements.splice(index, 1) // remove the entry
+        } else {
+          slotsForAnyElement--;
+        }
+      }
+      if (slotsForAnyElement < 0) {
+        continue;
+      }
+    }
 
     // find the difference
     let usedMods = stats
@@ -180,7 +211,7 @@ addEventListener('message', ({data}) => {
     }
 
     results.push([
-      startPosition + i / 12, // Index of the current set in the big permutation array
+      startPosition + i / PERMUTATION_PACKAGE.WIDTH, // Index of the current set in the big permutation array
       ...usedMods // all used mods.
     ])
   }

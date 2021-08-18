@@ -7,6 +7,7 @@ import {ConfigurationService} from "../../../../services/v2/configuration.servic
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
 import {MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS} from "@angular/material/slide-toggle";
+import {DestinyEnergyType} from 'bungie-api-ts/destiny2';
 
 @Component({
   selector: 'app-desired-mods-selection',
@@ -18,7 +19,7 @@ import {MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS} from "@angular/material/slide-toggle";
 })
 export class DesiredModsSelectionComponent implements OnInit {
   dataSource: Modifier[];
-  displayedColumns = ["name", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
+  displayedColumns = ["name", "cost", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
   private selectedClass: CharacterClass = CharacterClass.None;
   data: { data: Modifier[]; name: string }[];
   selectedMods: ModOrAbility[] = [];
@@ -71,7 +72,10 @@ export class DesiredModsSelectionComponent implements OnInit {
       if (pos > -1) {
         c.enabledMods.splice(pos, 1)
       } else {
-        c.enabledMods.push(row.id)
+        // Do not allow more than 5 stat mods
+        const amountStatMods = c.enabledMods.filter(d => ModInformation[d].requiredArmorAffinity != DestinyEnergyType.Any).length;
+        if (row.requiredArmorAffinity == DestinyEnergyType.Any || amountStatMods < 5)
+          c.enabledMods.push(row.id)
       }
     })
   }

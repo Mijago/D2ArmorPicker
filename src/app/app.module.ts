@@ -54,6 +54,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import { ExpandedResultContentComponent } from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
 import { CountElementInListPipe } from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
 import {ClipboardModule} from "@angular/cdk/clipboard";
+import { DesiredElementalAffinitySelectionComponent } from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
 
 
 const routes: Routes = [
@@ -90,7 +91,8 @@ const routes: Routes = [
     LoadAndSaveSettingsComponent,
     ConfirmDialogComponent,
     ExpandedResultContentComponent,
-    CountElementInListPipe
+    CountElementInListPipe,
+    DesiredElementalAffinitySelectionComponent
   ],
     imports: [
         BrowserModule,

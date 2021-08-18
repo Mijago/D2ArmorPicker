@@ -3,6 +3,7 @@ import {ModOrAbility} from "./enum/modOrAbility";
 import {EnumDictionary} from "./types/EnumDictionary";
 import {CharacterClass} from "./enum/character-Class";
 import {MAXIMUM_STAT_MOD_AMOUNT} from "./constants";
+import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 
 export function getDefaultStatDict<T>(value: T): EnumDictionary<ArmorStat, T> {
   return {
@@ -37,9 +38,17 @@ export class Configuration {
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
 
+  selectedArmorAffinities: DestinyEnergyType[] = [];
+  // Ignore armor element affinities.
+  // Note, the tool already ignores affinities of non-masterworked armor.
+  ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
+
+
   static buildEmptyConfiguration(): Configuration {
     return {
       enabledMods: [],
+      selectedArmorAffinities: [],
+      ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
       assumeMasterworked: true,

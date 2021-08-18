@@ -12,6 +12,13 @@ export type Permutation = [
   1<<1 chest
   1<<0 legs
    */
+  number, // byte encoded elemental affinities
+  /*
+  7 << 9 helmet
+  7 << 6 gauntlet
+  7 << 3 chest
+  7 << 0 legs
+  */
 ]
 
 

@@ -89,3 +89,7 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 .mat-column-name {
   min-width: 190px;
 }
+
+.element-icon {
+  width: 22px;
+}

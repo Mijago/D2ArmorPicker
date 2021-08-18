@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import {Configuration} from "../../data/configuration";
-import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC} from "../../data/constants";
+import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC, PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../data/constants";
 import {ModOrAbility} from "../../data/enum/modOrAbility";
 import {ModInformation} from "../../data/ModInformation";
 import {ArmorStat, SpecialArmorStat, StatModifier} from "../../data/enum/armor-stat";
@@ -21,15 +21,15 @@ addEventListener('message', async ({data}) => {
     console.debug("config", config)
     console.debug("mods", config.enabledMods)
     console.debug("permutation data", allArmorPermutations)
-    console.debug("permutation amount", allArmorPermutations.length / 12)
+    console.debug("permutation amount", allArmorPermutations.length / PERMUTATION_PACKAGE.WIDTH)
     console.groupEnd()
 
 
     console.time("split permutations in packages of size 5e5")
     let subs = []
-    for (let n = 0; n < allArmorPermutations.length / 12; n += 5e5) {
+    for (let n = 0; n < allArmorPermutations.length / PERMUTATION_PACKAGE.WIDTH; n += 5e5) {
       subs.push({
-        buffer: Uint32Array.from(allArmorPermutations.subarray(n * 12, (n + 5e5) * 12)).buffer,
+        buffer: Uint32Array.from(allArmorPermutations.subarray(n * PERMUTATION_PACKAGE.WIDTH, (n + 5e5) * PERMUTATION_PACKAGE.WIDTH)).buffer,
         startPosition: n
       })
     }
@@ -77,7 +77,7 @@ addEventListener('message', async ({data}) => {
     }
 
 
-    console.log(`Sending ${view.length / 7} results in ${resultByteLen} bytes.`, view)
+    console.log(`Sending ${view.length / RESULTS_PACKAGE.WIDTH} results in ${resultByteLen} bytes.`, view)
     console.timeEnd("WebWorker: Results Builder")
     console.groupEnd()
 
