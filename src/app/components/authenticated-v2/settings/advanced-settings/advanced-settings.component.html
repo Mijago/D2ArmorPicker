@@ -1,13 +1,22 @@
-<div *ngFor="let f of fields">
-  <mat-slide-toggle color="primary" [disabled]="f.disabled"
-                    [checked]="f.value"
-                    (change)="f.cp($event.checked)">
-    {{f.name}}
-    <!-- TODO: Help text -->
-    <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
-              matTooltip='{{f.help}}'
-              #tooltip="matTooltip"> help
-    </mat-icon>
-  </mat-slide-toggle>
-  <div class="category-spacer" *ngIf="f.endsCategory"></div>
+<div *ngFor="let category of fieldKeys">
+  <span class="category-header">{{category}}</span>
+  <div *ngFor="let f of fields2[category]" class="adv-settings">
+    <mat-slide-toggle color="primary" [disabled]="f.disabled"
+                      [checked]="f.value"
+                      (change)="f.cp($event.checked)">
+      {{f.name}}
+      <!-- TODO: Help text -->
+      <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
+                matTooltip='{{f.help}}'
+                #tooltip="matTooltip"> help
+      </mat-icon>
+      <!-- TODO: Help text -->
+      <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.impactsResultCount"
+                class="report-problem-icon"
+                matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this settings. In this case, simply switch it back to its default state."
+                #tooltip="matTooltip"> report_problem
+      </mat-icon>
+    </mat-slide-toggle>
+  </div>
+  <div class="category-spacer"></div>
 </div>
