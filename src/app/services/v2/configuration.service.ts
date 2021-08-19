@@ -101,12 +101,12 @@ export class ConfigurationService {
   saveCurrentConfiguration(configuration: Configuration) {
     console.debug("write configuration", configuration)
     // deep copy it
-    this.__configuration = Object.assign({}, configuration);
+    this.__configuration = Object.assign(Configuration.buildEmptyConfiguration(), configuration);
     this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);
     this.__configuration.minimumStatTier = Object.assign({}, this.__configuration.minimumStatTier)
 
-    localStorage.setItem("currentConfig", JSON.stringify(configuration));
-    this._configuration.next(Object.assign({}, configuration));
+    localStorage.setItem("currentConfig", JSON.stringify(this.__configuration));
+    this._configuration.next(Object.assign({}, this.__configuration));
   }
 
   loadCurrentConfiguration() {
