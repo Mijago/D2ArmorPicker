@@ -59,7 +59,8 @@ addEventListener('message', ({data}) => {
     let requiredElements = config.selectedArmorAffinities.slice()
     // Apply mods
     for (const mod of config.enabledMods) {
-      requiredElements.unshift(ModInformation[mod].requiredArmorAffinity)
+      if (ModInformation[mod].requiredArmorAffinity != 0)
+        requiredElements.unshift(ModInformation[mod].requiredArmorAffinity)
       for (const bonus of ModInformation[mod].bonus) {
         switch (bonus.stat) {
           case SpecialArmorStat.ClassAbilityRegenerationStat:
