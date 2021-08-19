@@ -1,0 +1,7 @@
+#tierSelectButtonContainer > .tierSelectButton:not(:last-child) {
+  margin-right: 5px;
+}
+
+.dialogStatIcon {
+  height: 35px
+}

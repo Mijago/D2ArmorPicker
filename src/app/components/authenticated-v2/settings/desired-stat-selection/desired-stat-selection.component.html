@@ -15,45 +15,60 @@
 </table>
 
 
+<span id="tierSelectButtonContainer">
+  <span class="tierSelectButton">
+    <button mat-stroked-button id="clearStatButton" (click)="clearStatSelection()">Clear</button>
+  </span>
 
-<span>
-  <button mat-stroked-button id="clearStatButton" (click)="clearStatSelection()">Clear</button>
-</span>
-
-<span>
-  <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu1" aria-label="Select builds with three stats at tier 10."
-          [disabled]="_statCombo3x100.length == 0">
-    <mat-icon>expand_more</mat-icon>
-    Select 3x T10 Builds
-  </button>
-  <mat-menu #menu1="matMenu" menu>
-  <button mat-menu-item *ngFor="let d of _statCombo3x100" (click)="useStatPreset(d)">
-    <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p == 0">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p == 1">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p == 2">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p == 3">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p == 4">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p == 5">
-    </span>
-  </button>
-  </mat-menu>
-</span>
-<span>
-  <button mat-stroked-button [matMenuTriggerFor]="menu2" aria-label="Select builds with four stats at tier 10." [disabled]="_statCombo4x100.length==0">
-    <mat-icon>expand_more</mat-icon>
-    Select 4x T10 Builds
-  </button>
-  <mat-menu #menu2="matMenu">
-  <button mat-menu-item *ngFor="let d of _statCombo4x100" (click)="useStatPreset(d)">
-    <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
-    </span>
-  </button>
-  </mat-menu>
+  <span class="tierSelectButton">
+    <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu1"
+            aria-label="Select builds with three stats at tier 10."
+            [disabled]="_statCombo3x100.length == 0">
+      <mat-icon>expand_more</mat-icon>
+      Select 3x T10 Builds
+    </button>
+    <mat-menu #menu1="matMenu" menu>
+      <button mat-menu-item *ngFor="let d of _statCombo3x100" (click)="useStatPreset(d)">
+        <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
+                 alt="Mobility" class="dialogStatIcon" *ngIf="p == 0">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
+                 alt="Resilience" class="dialogStatIcon" *ngIf="p == 1">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
+                 alt="Recovery" class="dialogStatIcon" *ngIf="p == 2">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
+                 alt="Discipline" class="dialogStatIcon" *ngIf="p == 3">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
+                 alt="Intellect" class="dialogStatIcon" *ngIf="p == 4">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+                 alt="Strength" class="dialogStatIcon" *ngIf="p == 5">
+        </span>
+      </button>
+    </mat-menu>
+  </span>
+  <span class="tierSelectButton">
+    <button mat-stroked-button [matMenuTriggerFor]="menu2" aria-label="Select builds with four stats at tier 10."
+            [disabled]="_statCombo4x100.length==0">
+      <mat-icon>expand_more</mat-icon>
+      Select 4x T10 Builds
+    </button>
+    <mat-menu #menu2="matMenu">
+      <button mat-menu-item *ngFor="let d of _statCombo4x100" (click)="useStatPreset(d)">
+        <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
+                 alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
+                 alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
+                 alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
+                 alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
+                 alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
+            <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+                 alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
+        </span>
+      </button>
+    </mat-menu>
+  </span>
 </span>

@@ -1,18 +1,17 @@
 <mat-card id="card-results">
   <mat-card-title>Results</mat-card-title>
+  <mat-card-subtitle>All the build permutations that are possible with your current configuration.</mat-card-subtitle>
   <mat-card-content>
 
     <div>
       <div *ngIf="this.totalResults > 0">
-        Your selection results in {{this.totalResults}} permutations
-        <span *ngIf="this.parsedResults != this.totalResults">, but only {{this.parsedResults}} were parsed</span>.
+        Your selection results in {{this.totalResults | number}} permutations<span *ngIf="this.parsedResults != this.totalResults">, but only {{this.parsedResults | number}} were parsed</span>.
         <br/>
         Click on a row to expand it and to see the list of the items required for this build.<br/>
         Use the listed stats to identify the armor you have to use.
       </div>
       <table class="result-table" mat-table [dataSource]="tableDataSource" multiTemplateDataRows
-             matSort matSortActive="Mods" matSortDirection="asc"
-      >
+             matSort matSortActive="Mods" matSortDirection="asc">
         <!--- Note that these columns can be defined in any order.
          The actual rendered columns are set as a property on the row definition" -->
         <!-- Name Column -->

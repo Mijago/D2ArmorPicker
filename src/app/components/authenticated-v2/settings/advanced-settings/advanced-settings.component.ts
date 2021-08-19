@@ -56,12 +56,12 @@ export class AdvancedSettingsComponent implements OnInit {
           ],
           "Performance Optimization": [
             {
-              name: "Limit the results table to the first 250.000 results",
+              name: "Limit the results table to the first 250,000 results",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.limitParsedResults = v),
               value: c.limitParsedResults,
               disabled: false,
               impactsResultCount: true,
-              help: "Only parse the first 250.000 results. Deactivate this for more accurate results if you need it, but be aware that it may crash your browser."
+              help: "Only parse the first 250,000 results. Deactivate this for more accurate results if you need it, but be aware that it may crash your browser."
             },
           ],
           "Wasted Stats": [
