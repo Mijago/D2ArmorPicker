@@ -517,12 +517,12 @@
                   <u *ngIf="i.masterworked" matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
                   <span *ngIf="!i.masterworked">{{i.name}}</span>
                 </td>
-                <td>{{i.mobility + 2}}</td>
-                <td>{{i.resilience + 2}}</td>
-                <td>{{i.recovery + 2}}</td>
-                <td>{{i.discipline + 2}}</td>
-                <td>{{i.intellect + 2}}</td>
-                <td>{{i.strength + 2}}</td>
+                <td>{{i.mobility + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
+                <td>{{i.resilience + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
+                <td>{{i.recovery + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
+                <td>{{i.discipline + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
+                <td>{{i.intellect + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
+                <td>{{i.strength + ((filterAssumeMasterworked || i.masterworked) ? 2 : 0)}}</td>
                 <td>
                   <!-- Item Icon -->
                   <img class="item-icon" src="https://bungie.net/{{i.icon}}">
