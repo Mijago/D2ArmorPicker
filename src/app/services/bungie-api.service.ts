@@ -15,6 +15,7 @@ import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
 import {IManifestArmor} from "./IManifestArmor";
 import {IInventoryArmor} from "./IInventoryArmor";
+import {moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Injectable({
   providedIn: 'root'
@@ -263,11 +264,7 @@ export class BungieApiService {
         // remove sunset items
         let instanceData = profile.Response.itemComponents.instances.data || {};
         let instance = instanceData[d.itemInstanceId || ""] || {}
-        return !!instance.energy
-          // the following lines are necessary because these specific exotics do not have an element (yet) in the api
-          || d.itemHash == 3267996858 // no backup plans;
-          || d.itemHash == 1702288800 // radiant dance machines;
-          || d.itemHash == 300502917 // nothing manacles;
+        return !!instance.energy;
       })
       .map(
         d => {

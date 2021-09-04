@@ -35,8 +35,7 @@
   <mat-card-title> Configuration</mat-card-title>
   <mat-card-content>
 
-    <span>Please note: The results are either on the right or below the configuration.</span><br>
-    <span style="color: indianred">Please note: Stasis armor is currently not supported by the Bungie.net API.</span>
+    <span>Please note: The results are either on the right or below the configuration.</span>
 
 <h2>Select the class of your guardian.</h2>
 <mat-form-field appearance="fill">
@@ -539,6 +538,9 @@
                   <img class="element-icon" *ngIf="i.energyAffinity == 3"
                        src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png"
                        matTooltip='Void affinity' #tooltip="matTooltip">
+                  <img class="element-icon" *ngIf="i.energyAffinity == 6"
+                       src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png"
+                       matTooltip='Stasis affinity' #tooltip="matTooltip">
                 </td>
               </tr>
               <tr>
