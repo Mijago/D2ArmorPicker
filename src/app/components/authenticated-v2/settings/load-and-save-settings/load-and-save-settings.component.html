@@ -1,23 +1,50 @@
 <form [formGroup]="settingsNameForm" (submit)="submit()">
-  <table>
+  <table id="settings">
     <tr>
       <td>
         <mat-form-field appearance="outline">
-          <mat-label>Name</mat-label>
+          <mat-label>Name to save the configuration</mat-label>
           <input matInput placeholder="Awesome Discipline Build 4" formControlName="name">
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value">Save current</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value || this.settingsNameForm.get('name')?.value.length < 4">
+          Save current
+        </button>
       </td>
       <td>
-        <button mat-raised-button color="warn" (click)="clearEverything()">Clear everything</button>
+        <button mat-raised-button color="warn" (click)="clearEverything()"
+                matTooltip="Clears the ENTIRE configuration and uses the default settings. Use with caution."
+        >Clear everything
+        </button>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <mat-form-field appearance="outline">
+          <mat-label>Load saved configuration</mat-label>
+          <mat-select [(value)]="selectedEntry">
+            <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
+              <span>{{element.name}}</span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </td>
+      <td>
+        <button mat-raised-button color="primary" (click)="load(selectedEntry)" [disabled]="!selectedEntry"
+                matTooltip="Load the currently selected configuration.">Load
+        </button>
+      </td>
+      <td>
+        <button mat-stroked-button color="warn" (click)="delete(selectedEntry)" [disabled]="!selectedEntry"
+                matTooltip="Delete the currently selected configuration. Can not be undone.">Delete
+        </button>
       </td>
     </tr>
   </table>
 </form>
 
-<table mat-table [dataSource]="storedConfigs">
+<table mat-table [dataSource]="storedConfigs" style="display: none;">
   <!-- Position Column -->
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -104,7 +131,7 @@
       Delete
     </th>
     <td mat-cell *matCellDef="let element">
-      <button mat-stroked-button color="warn" (click)="delete(element)">Delete</button>
+      <button mat-stroked-button color="warn" (click)="delete(element.name)">Delete</button>
     </td>
   </ng-container>
 
@@ -112,7 +139,7 @@
   <ng-container matColumnDef="load">
     <th mat-header-cell *matHeaderCellDef>Load</th>
     <td mat-cell *matCellDef="let element">
-      <button mat-flat-button color="primary" (click)="load(element)">Load</button>
+      <button mat-flat-button color="primary" (click)="load(element.name)">Load</button>
     </td>
   </ng-container>
 

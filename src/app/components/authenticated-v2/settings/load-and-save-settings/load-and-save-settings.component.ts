@@ -10,6 +10,7 @@ import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confir
   styleUrls: ['./load-and-save-settings.component.css']
 })
 export class LoadAndSaveSettingsComponent implements OnInit {
+  selectedEntry: string = "";
   storedConfigs: StoredConfiguration[] = [];
   displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete", "load"];
 
@@ -38,22 +39,24 @@ export class LoadAndSaveSettingsComponent implements OnInit {
         if (result) {
           this.config.saveCurrentConfigurationToName(name);
           this.settingsNameForm.reset();
+          this.selectedEntry = name;
         }
       });
     } else {
       this.config.saveCurrentConfigurationToName(name);
       this.settingsNameForm.reset();
+      this.selectedEntry = name;
     }
   }
 
-  delete(element: StoredConfiguration) {
+  delete(element: string) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
       data: {description: "Do you want to delete this configuration?"} as ConfirmDialogData
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) this.config.deleteStoredConfiguration(element.name);
+      if (result) this.config.deleteStoredConfiguration(element);
     });
   }
 
@@ -68,14 +71,14 @@ export class LoadAndSaveSettingsComponent implements OnInit {
     });
   }
 
-  load(element: StoredConfiguration) {
+  load(element: string) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
       data: {description: "Do you want to load this preset?"} as ConfirmDialogData
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) this.config.saveCurrentConfiguration(element.configuration);
+      if (result) this.config.loadSavedConfiguration(element);
     });
   }
 }

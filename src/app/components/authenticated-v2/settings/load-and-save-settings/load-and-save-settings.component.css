@@ -1,8 +1,3 @@
-.stat-part-title {
-  margin-top: 10px;
-  margin-bottom: 5px;
-}
-
 .modTable {
   width: 100%;
 }
@@ -87,4 +82,9 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 .mat-column-load, .mat-column-delete {
   padding-left: 3px;
   padding-right: 3px;
+}
+
+:host ::ng-deep .mat-form-field-wrapper{
+  margin: 0 !important;
+  padding: 0;
 }
