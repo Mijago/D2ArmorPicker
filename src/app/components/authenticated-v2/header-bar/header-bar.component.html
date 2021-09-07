@@ -1,8 +1,8 @@
 <span *ngVar="(status.status | async) as stat">
-<mat-progress-bar mode="indeterminate" id="loading"
-                  *ngIf="stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations"
-></mat-progress-bar>
-  </span>
+  <mat-progress-bar mode="indeterminate" id="loading"
+                    *ngIf="stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations">
+  </mat-progress-bar>
+</span>
 
 <mat-toolbar id="header" role="heading">
   <span>D2ArmorPicker <small> by Mijago</small></span>

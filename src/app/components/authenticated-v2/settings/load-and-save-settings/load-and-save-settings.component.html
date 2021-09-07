@@ -23,7 +23,7 @@
       <td>
         <mat-form-field appearance="outline">
           <mat-label>Load saved configuration</mat-label>
-          <mat-select [(value)]="selectedEntry">
+          <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length == 0">
             <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
               <span>{{element.name}}</span>
             </mat-option>
@@ -31,12 +31,12 @@
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" (click)="load(selectedEntry)" [disabled]="!selectedEntry"
+        <button mat-raised-button color="primary" (click)="load(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0"
                 matTooltip="Load the currently selected configuration.">Load
         </button>
       </td>
       <td>
-        <button mat-stroked-button color="warn" (click)="delete(selectedEntry)" [disabled]="!selectedEntry"
+        <button mat-stroked-button color="warn" (click)="delete(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0"
                 matTooltip="Delete the currently selected configuration. Can not be undone.">Delete
         </button>
       </td>
