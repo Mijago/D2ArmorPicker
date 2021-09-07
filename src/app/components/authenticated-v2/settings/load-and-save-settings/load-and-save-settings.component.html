@@ -25,7 +25,11 @@
           <mat-label>Load saved configuration</mat-label>
           <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length == 0">
             <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
-              <span>{{element.name}}</span>
+              <span>(<span *ngIf="element.configuration.characterClass == 0">Titan</span>
+                <span *ngIf="element.configuration.characterClass == 1">Hunter</span>
+                <span *ngIf="element.configuration.characterClass == 2">Warlock</span>)
+              </span>
+              <span> {{element.name}}</span>
             </mat-option>
           </mat-select>
         </mat-form-field>
