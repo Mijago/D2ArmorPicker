@@ -4,6 +4,7 @@ import {ResultDefinition} from "../results.component";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierValue} from "../../../../data/modifier";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -20,11 +21,19 @@ export class ExpandedResultContentComponent implements OnInit {
   element: ResultDefinition | null = null;
 
 
-  constructor(private config: ConfigurationService) {
+  constructor(private config: ConfigurationService, private _snackBar: MatSnackBar) {
   }
 
-  public buildItemIdString(element: ResultDefinition|null) {
+  public buildItemIdString(element: ResultDefinition | null) {
     return element?.items.map(d => `id:'${d.itemInstanceId}'`).join(" or ")
+  }
+
+  openSnackBar(message: string) {
+    this._snackBar.open(message,
+      "", {
+        duration: 2500,
+        politeness: "polite"
+      });
   }
 
   ngOnInit(): void {

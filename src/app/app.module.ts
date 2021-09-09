@@ -55,6 +55,7 @@ import { ExpandedResultContentComponent } from './components/authenticated-v2/re
 import { CountElementInListPipe } from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import { DesiredElementalAffinitySelectionComponent } from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 
 
 const routes: Routes = [
@@ -121,7 +122,8 @@ const routes: Routes = [
         MatListModule,
         MatExpansionModule,
         MatDialogModule,
-        ClipboardModule
+        ClipboardModule,
+        MatSnackBarModule
     ],
   providers: [],
   bootstrap: [AppComponent]
