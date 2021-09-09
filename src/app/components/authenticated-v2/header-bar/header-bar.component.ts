@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AuthService} from "../../../services/auth.service";
 import {StatusProviderService} from "../../../services/v2/status-provider.service";
+import {InventoryService} from "../../../services/v2/inventory.service";
 
 @Component({
   selector: 'app-header-bar',
@@ -9,13 +10,15 @@ import {StatusProviderService} from "../../../services/v2/status-provider.servic
 })
 export class HeaderBarComponent implements OnInit {
 
-  constructor(private auth: AuthService, public status: StatusProviderService) { }
+  constructor(private auth: AuthService, public status: StatusProviderService,
+              private inv: InventoryService) {
+  }
 
   ngOnInit(): void {
   }
 
-  refreshAll(b: boolean) {
-    // TODO
+  async refreshAll(b: boolean) {
+    await this.inv.refreshAll(b)
   }
 
   logout() {

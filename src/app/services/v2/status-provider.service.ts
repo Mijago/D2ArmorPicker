@@ -6,6 +6,8 @@ export interface Status {
   calculatingPermutations: boolean;
   calculatingResults: boolean;
   updatingResultsTable: boolean;
+  updatingManifest: boolean;
+  updatingInventory: boolean;
 }
 
 @Injectable({
@@ -17,6 +19,8 @@ export class StatusProviderService {
     calculatingResults: false,
     calculatingPermutations: false,
     updatingResultsTable: false,
+    updatingInventory: false,
+    updatingManifest: false
   }
 
   private _status: BehaviorSubject<Status>;

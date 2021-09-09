@@ -1,13 +1,18 @@
 <span *ngVar="(status.status | async) as stat">
-  <mat-progress-bar mode="indeterminate" id="loading"
-                    *ngIf="stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations">
-  </mat-progress-bar>
-</span>
+<mat-progress-bar mode="indeterminate" id="loading"
+                  *ngIf="stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations || stat.updatingInventory || stat.updatingManifest"
+></mat-progress-bar>
+  </span>
 
 <mat-toolbar id="header" role="heading">
   <span>D2ArmorPicker <small> by Mijago</small></span>
   <span class="header-spacer"></span>
   <div id="buttonContainer">
+    <a mat-stroked-button matTooltip="You like my work? This leads you to buymeacoffee.com, where you can easily support me!"
+       color="accent" href="https://www.buymeacoffee.com/mijago">
+      <mat-icon inline>attach_money</mat-icon>
+      Buy me a coffee!
+    </a>
     <button mat-icon-button class="example-icon" aria-label="Refresh" (click)="refreshAll(true)"
             matTooltip="Reload all items from the API.">
       <mat-icon>refresh</mat-icon>

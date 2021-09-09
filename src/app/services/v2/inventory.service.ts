@@ -2,12 +2,15 @@ import {Injectable} from '@angular/core';
 import {CharacterClass} from "../../data/enum/character-Class";
 import {DatabaseService} from "../database.service";
 import {IManifestArmor} from "../IManifestArmor";
-import {ConfigurationService, StoredConfiguration} from "./configuration.service";
-import {debounce, debounceTime} from "rxjs/operators";
-import {BehaviorSubject, Observable} from "rxjs";
+import {ConfigurationService} from "./configuration.service";
+import {debounceTime} from "rxjs/operators";
+import {BehaviorSubject, interval, Observable} from "rxjs";
 import {Configuration} from "../../data/configuration";
 import {ArmorStat} from "../../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
+import {BungieApiService} from "../bungie-api.service";
+import {environment} from "../../../environments/environment";
+import {AuthService} from "../auth.service";
 
 type info = {
   results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
@@ -39,7 +42,8 @@ export class InventoryService {
 
   private _config: Configuration = Configuration.buildEmptyConfiguration();
 
-  constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService) {
+  constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
+              private api: BungieApiService, private auth: AuthService) {
     this._armorPermutations = new BehaviorSubject(new Uint32Array(0))
     this.armorPermutations = this._armorPermutations.asObservable();
 
@@ -54,9 +58,28 @@ export class InventoryService {
         this.updateResults();
     })
 
+    let dataAlreadyFetched = false;
+    let isUpdating = false;
+
+    if (!environment.production)
+      dataAlreadyFetched = true;
+
     config.configuration
-      .pipe(debounceTime(10))
+      .pipe(
+        debounceTime(10)
+        )
       .subscribe(async c => {
+
+        if (this.auth.refreshTokenExpired || !await this.auth.autoRegenerateTokens()) {
+          await this.auth.logout();
+          return;
+        }
+
+
+        isUpdating = true;
+        await this.refreshAll(!dataAlreadyFetched);
+        dataAlreadyFetched = true;
+
         this._config = c;
         // If character has been changed, first update all permutations for the character
         // The results will automatically be updated
@@ -74,7 +97,14 @@ export class InventoryService {
           if (this.allArmorPermutations.length > 0)
             this.updateResults();
         }
+        isUpdating = false;
       })
+  }
+
+  async refreshAll(force: boolean = false) {
+    await this.updateManifest();
+    await this.updateInventoryItems(force);
+    await this.updateResults();
   }
 
   updateResults() {
@@ -94,14 +124,14 @@ export class InventoryService {
         statCombo3x100: data.statCombo3x100.map((d: number) => {
           let r = []
           for (let n = 0; n < 6; n++)
-            if ((d & (1 << n))>0)
+            if ((d & (1 << n)) > 0)
               r.push(n)
           return r;
         }) || [],
         statCombo4x100: data.statCombo4x100.map((d: number) => {
           let r = [];
           for (let n = 0; n < 6; n++)
-            if ((d & (1 << n))>0)
+            if ((d & (1 << n)) > 0)
               r.push(n)
           return r;
         }, []) || []
@@ -121,4 +151,16 @@ export class InventoryService {
       .toArray();
     return armors.filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot));
   }
+
+  async updateManifest(force: boolean = false) {
+    this.status.modifyStatus(s => s.updatingManifest = true);
+    await this.api.updateManifest(force);
+    this.status.modifyStatus(s => s.updatingManifest = false);
+  }
+  async updateInventoryItems(force: boolean = false) {
+    this.status.modifyStatus(s => s.updatingInventory = true);
+    await this.api.updateArmorItems(force);
+    this.status.modifyStatus(s => s.updatingInventory = false);
+  }
+
 }
