@@ -77,7 +77,7 @@ export class InventoryService {
 
 
         isUpdating = true;
-        await this.refreshAll(!dataAlreadyFetched);
+        await this.refreshAll(!dataAlreadyFetched, false);
         dataAlreadyFetched = true;
 
         this._config = c;
@@ -101,10 +101,11 @@ export class InventoryService {
       })
   }
 
-  async refreshAll(force: boolean = false) {
+  async refreshAll(force: boolean = false, doUpdateResults = true) {
     await this.updateManifest();
     await this.updateInventoryItems(force);
-    await this.updateResults();
+    if (doUpdateResults)
+      await this.updateResults();
   }
 
   updateResults() {
