@@ -5,6 +5,8 @@
                      [checked]="selectedTier == i"
                      (click)="setValue(i)"
                      value="{{i}}">
-    {{i * 10}}
+    <div class="stat-button-content" [matTooltip]="(tooltipTexts || [])[i]" matTooltipClass="allow-cr">
+      {{i * 10}}
+    </div>
   </mat-button-toggle>
 </mat-button-toggle-group>

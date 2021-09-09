@@ -10,6 +10,7 @@ export class StatTierSelectionComponent {
   readonly TierRange = new Array(11);
   @Input() maximumAvailableTier: number = 10;
   @Input() selectedTier: number = 0;
+  @Input() tooltipTexts: string[] = [];
   @Output() selectedTierChange = new EventEmitter<number>();
 
   constructor() {

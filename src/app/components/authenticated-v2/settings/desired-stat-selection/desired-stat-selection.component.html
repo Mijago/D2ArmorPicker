@@ -8,6 +8,7 @@
       <app-stat-tier-selection
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
         [selectedTier]="minimumStatTiers[enum.value]"
+        [tooltipTexts]="ArmorStatTierBonus[enum.value]"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
       ></app-stat-tier-selection>
     </td>

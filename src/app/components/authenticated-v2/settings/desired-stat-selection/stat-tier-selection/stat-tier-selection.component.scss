@@ -2,3 +2,12 @@
   min-width: 40px;
 }
 
+
+:host ::ng-deep .mat-button-toggle-label-content {
+  padding: 0 !important;
+  width: 100%;
+}
+
+.stat-button-content {
+  width: 100%;
+}

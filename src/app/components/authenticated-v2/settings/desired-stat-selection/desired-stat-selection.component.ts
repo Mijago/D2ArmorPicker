@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ArmorStat} from "../../../../data/enum/armor-stat";
+import {ArmorStat, ArmorStatTierBonus} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {getDefaultStatDict} from "../../../../data/configuration";
@@ -23,6 +23,7 @@ export class DesiredStatSelectionComponent implements OnInit {
   readonly ArmorStats = ArmorStat;
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
+  ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = ArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
   _statCombo4x100: [ArmorStat, ArmorStat, ArmorStat, ArmorStat][] = [];
   _statCombo3x100: [ArmorStat, ArmorStat, ArmorStat][] = [];
