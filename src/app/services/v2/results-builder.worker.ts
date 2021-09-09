@@ -36,19 +36,26 @@ addEventListener('message', async ({data}) => {
     console.timeEnd("split permutations in packages of size 5e5")
 
     console.time("Get results from webworker helpers")
-    let results = await Promise.all(subs.map(subArray => {
-      return new Promise(resolve => {
-        const worker = new Worker(new URL('./results-builder-helper.worker', import.meta.url));
-        worker.onmessage = ({data}) => {
-          resolve(data);
-        };
-        worker.postMessage({
-          permutations: subArray.buffer,
-          startPosition: subArray.startPosition,
-          config: config
-        }, [subArray.buffer]);
-      })
-    })) as { buffer: ArrayBuffer, maximumPossibleTiers: number[], statCombo4x100: Set<number>, statCombo3x100: Set<number> }[];
+
+    const amountThreads = 6;
+    let results :  { buffer: ArrayBuffer, maximumPossibleTiers: number[], statCombo4x100: Set<number>, statCombo3x100: Set<number> }[]  = [];
+    for (let n = 0; n < subs.length; n+=amountThreads) {
+      console.log(n, subs.length)
+      let data = subs.slice(n, n+amountThreads)
+      results = results.concat(await Promise.all(data.map(subArray => {
+        return new Promise(resolve => {
+          const worker = new Worker(new URL('./results-builder-helper.worker', import.meta.url));
+          worker.onmessage = ({data}) => {
+            resolve(data);
+          };
+          worker.postMessage({
+            permutations: subArray.buffer,
+            startPosition: subArray.startPosition,
+            config: config
+          }, [subArray.buffer]);
+        })
+      })) as any)
+    }
     console.timeEnd("Get results from webworker helpers")
 
 
