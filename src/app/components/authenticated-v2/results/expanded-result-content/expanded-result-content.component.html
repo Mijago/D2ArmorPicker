@@ -61,12 +61,36 @@
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">
       <td>Total (gear)</td>
-      <td>{{stats[ArmorStat.Mobility]}}</td>
-      <td>{{stats[ArmorStat.Resilience]}}</td>
-      <td>{{stats[ArmorStat.Recovery]}}</td>
-      <td>{{stats[ArmorStat.Discipline]}}</td>
-      <td>{{stats[ArmorStat.Intellect]}}</td>
-      <td>{{stats[ArmorStat.Strength]}}</td>
+      <td>
+        {{stats[ArmorStat.Mobility]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
+             alt="Mobility" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Resilience]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
+             alt="Resilience" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Recovery]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
+             alt="Recovery" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Discipline]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
+             alt="Discipline" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Intellect]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
+             alt="Intellect" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Strength]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+             alt="Strength" class="statIcon">
+      </td>
     </tr>
     <!-- Config Mods -->
     <tr class="result-config">
@@ -100,56 +124,80 @@
     <tr *ngVar="element?.mods as mods">
       <td>Minor Mods</td>
       <td *ngVar="mods | count:StatModifier.MINOR_MOBILITY as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_RESILIENCE as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_RECOVERY as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_DISCIPLINE as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_INTELLECT as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_STRENGTH as count">
-        <span *ngIf="count > 0" class="positive">+5</span>
+        <span *ngIf="count > 0" class="positive">5</span>
       </td>
     </tr>
     <!-- +10 Mods -->
     <tr *ngVar="element?.mods as mods">
       <td>Major Mods</td>
       <td *ngVar="mods | count:StatModifier.MAJOR_MOBILITY as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MAJOR_RESILIENCE as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MAJOR_RECOVERY as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MAJOR_DISCIPLINE as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MAJOR_INTELLECT as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MAJOR_STRENGTH as count">
-        <span *ngIf="count > 0" class="positive">{{count}}×+10</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
     </tr>
 
     <!-- Final sum line -->
     <tr *ngVar="element?.stats as stats" class="result-total-all result-total">
       <td>Total</td>
-      <td>{{stats[ArmorStat.Mobility]}}</td>
-      <td>{{stats[ArmorStat.Resilience]}}</td>
-      <td>{{stats[ArmorStat.Recovery]}}</td>
-      <td>{{stats[ArmorStat.Discipline]}}</td>
-      <td>{{stats[ArmorStat.Intellect]}}</td>
-      <td>{{stats[ArmorStat.Strength]}}</td>
+      <td>
+        {{stats[ArmorStat.Mobility]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
+             alt="Mobility" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Resilience]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
+             alt="Resilience" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Recovery]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
+             alt="Recovery" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Discipline]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
+             alt="Discipline" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Intellect]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
+             alt="Intellect" class="statIcon">
+      </td>
+      <td>
+        {{stats[ArmorStat.Strength]}}
+        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+             alt="Strength" class="statIcon">
+      </td>
     </tr>
   </table>
 </div>

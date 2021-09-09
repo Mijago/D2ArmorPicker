@@ -56,3 +56,15 @@ table tr:not(:last-child) td {
 .buttonContainer {
   margin-bottom: 3px;
 }
+
+.result-total td {
+  position: relative;
+  padding-right: 14px;
+}
+
+.statIcon {
+  position: absolute;
+  height: 14px;
+  margin-left: 2px;
+  top: 3px;
+}
