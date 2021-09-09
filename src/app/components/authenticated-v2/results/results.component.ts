@@ -39,13 +39,13 @@ export interface ResultDefinition {
   statsNoMods: number[];
   items: ResultItem[];
   tiers: number;
+  waste: number;
   modCost: number;
   modCount: number;
   loaded: boolean;
 }
 
 export interface ResultItem {
-  waste: number,
   energy: number,
   icon: string,
   itemInstanceId: string,
@@ -101,6 +101,12 @@ export class ResultsComponent implements OnInit {
       this._config_assumeMasterworked = c.assumeMasterworked;
       this._config_enabledMods = c.enabledMods;
       this._config_limitParsedResults = c.limitParsedResults;
+
+      if (c.showWastedStatsColumn) {
+        this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "waste", "dropdown",]
+      } else {
+        this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
+      }
     })
 
     this.inventory.armorResults.subscribe(async value => {
@@ -130,6 +136,8 @@ export class ResultsComponent implements OnInit {
           return data.stats[ArmorStat.Strength]
         case 'Tiers':
           return data.tiers
+        case 'Waste':
+          return data.waste
         case 'Mods':
           return 100 * data.modCount + data.modCost
       }
@@ -179,6 +187,7 @@ export class ResultsComponent implements OnInit {
           return p + STAT_MOD_VALUES[d][2]
         }, 0),
         tiers: 0,
+        waste: 0,
         loaded: false,
         mods: modList,
         items: [
@@ -244,8 +253,9 @@ export class ResultsComponent implements OnInit {
           data[i].statsNoMods[ArmorStat.Intellect] += instance.intellect;
           data[i].statsNoMods[ArmorStat.Strength] += instance.strength;
 
+          data[i].waste= data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0);
+
           return {
-            waste: data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0),
             energy: instance.energyAffinity,
             icon: instance.icon,
             itemInstanceId: instance.itemInstanceId,

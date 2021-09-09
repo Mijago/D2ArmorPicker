@@ -66,6 +66,14 @@ export class AdvancedSettingsComponent implements OnInit {
           ],
           "Wasted Stats": [
             {
+              name: "Show the wasted stats in an extra column.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.showWastedStatsColumn = v),
+              value: c.showWastedStatsColumn,
+              disabled: false,
+              impactsResultCount: false,
+              help: "Shows an additional column in the table that shows how many stats are wasted in a build."
+            },
+            {
               name: "Try to optimize wasted stats",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.tryLimitWastedStats = v),
               value: c.tryLimitWastedStats,
@@ -80,7 +88,7 @@ export class AdvancedSettingsComponent implements OnInit {
               disabled: !c.tryLimitWastedStats,
               impactsResultCount: true,
               help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results."
-            }
+            },
           ]
         }
         this.fieldKeys = Object.keys(this.fields2)

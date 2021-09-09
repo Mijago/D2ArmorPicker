@@ -34,6 +34,7 @@ export class Configuration {
   limitParsedResults = true;  // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
+  showWastedStatsColumn = false;
 
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
@@ -55,6 +56,7 @@ export class Configuration {
       limitParsedResults: true,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
+      showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,
       selectedExoticHash: 0,
       minimumStatTier: {
