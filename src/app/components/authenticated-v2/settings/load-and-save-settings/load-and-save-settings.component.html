@@ -4,11 +4,12 @@
       <td>
         <mat-form-field appearance="outline">
           <mat-label>Name to save the configuration</mat-label>
-          <input matInput placeholder="Awesome Discipline Build 4" formControlName="name">
+          <input matInput placeholder="Awesome Discipline Build 4" formControlName="name" maxlength="30" minlength="4">
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value || this.settingsNameForm.get('name')?.value.length < 4">
+        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value || this.settingsNameForm.get('name')?.value.length < 4
+|| this.settingsNameForm.get('name')?.value.length > 30">
           Save current
         </button>
       </td>
@@ -19,7 +20,7 @@
         </button>
       </td>
     </tr>
-    <tr>
+    <tr style="display: none">
       <td>
         <mat-form-field appearance="outline">
           <mat-label>Load saved configuration</mat-label>
@@ -47,8 +48,9 @@
     </tr>
   </table>
 </form>
+<br/>
 
-<table mat-table [dataSource]="storedConfigs" style="display: none;">
+<table mat-table [dataSource]="storedConfigs">
   <!-- Position Column -->
   <ng-container matColumnDef="name">
     <th mat-header-cell *matHeaderCellDef>Name</th>
