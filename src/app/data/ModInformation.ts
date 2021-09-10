@@ -37,9 +37,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{stat: ArmorStat.Intellect, value: -10}],
     requiredArmorAffinity: DestinyEnergyType.Void
   },
-  [ModOrAbility.PrecicelyCharged]: {
-    id: ModOrAbility.PrecicelyCharged,
-    name: "Precicely Charged",
+  [ModOrAbility.PreciselyCharged]: {
+    id: ModOrAbility.PreciselyCharged,
+    name: "Precisely Charged",
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     requiredArmorAffinity: DestinyEnergyType.Void

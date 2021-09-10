@@ -5,7 +5,7 @@ export enum ModOrAbility {
     // Negative mods
     ProtectiveLight = 100,
     ExtraReserves,
-    PrecicelyCharged,
+    PreciselyCharged,
     StacksOnStacks,
     PrecisionCharge,
     SurpriseAttack,
