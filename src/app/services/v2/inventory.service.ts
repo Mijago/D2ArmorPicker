@@ -66,7 +66,7 @@ export class InventoryService {
 
     config.configuration
       .pipe(
-        debounceTime(10)
+        debounceTime(500)
         )
       .subscribe(async c => {
 
