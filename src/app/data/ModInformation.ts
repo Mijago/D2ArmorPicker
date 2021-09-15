@@ -48,7 +48,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.StacksOnStacks,
     name: "Stacks on Stacks",
     type: ModifierType.CombatStyleMod,
-    bonus: [{stat: ArmorStat.Discipline, value: -10}],
+    bonus: [{stat: ArmorStat.Recovery, value: -10}],
     requiredArmorAffinity: DestinyEnergyType.Void
   },
   [ModOrAbility.PrecisionCharge]: {
