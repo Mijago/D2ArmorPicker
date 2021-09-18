@@ -19,12 +19,13 @@
         <u *ngIf="i.masterworked" matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
         <span *ngIf="!i.masterworked">{{i.name}}</span>
       </td>
-      <td>{{i.stats[ArmorStat.Mobility] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td>{{i.stats[ArmorStat.Resilience] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td>{{i.stats[ArmorStat.Recovery] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td>{{i.stats[ArmorStat.Discipline] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td>{{i.stats[ArmorStat.Intellect] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td>{{i.stats[ArmorStat.Strength] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!i.stats">An error occured. Please reload the page.</td> <!-- TODO: remove once i collected enough data -->
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Resilience] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Recovery] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Discipline] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Intellect] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Strength] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
       <td>
         <!-- Item Icon -->
         <div class="item-icon-container">
@@ -61,32 +62,33 @@
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">
       <td>Total (gear)</td>
-      <td>
+      <td *ngIf="!stats">An error occured. Please reload the page.</td> <!-- TODO: remove once i collected enough data -->
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Mobility]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
              alt="Mobility" class="statIcon">
       </td>
-      <td>
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Resilience]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
              alt="Resilience" class="statIcon">
       </td>
-      <td>
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Recovery]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
              alt="Recovery" class="statIcon">
       </td>
-      <td>
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Discipline]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
              alt="Discipline" class="statIcon">
       </td>
-      <td>
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Intellect]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
              alt="Intellect" class="statIcon">
       </td>
-      <td>
+      <td *ngIf="!!stats">
         {{stats[ArmorStat.Strength]}}
         <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
              alt="Strength" class="statIcon">

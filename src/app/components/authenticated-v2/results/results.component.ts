@@ -273,6 +273,7 @@ export class ResultsComponent implements OnInit {
     }
 
 
+    console.debug("Table data at the end", data)
     console.timeEnd("Update Table Data")
 
     this.tableDataSource.paginator = this.paginator;
