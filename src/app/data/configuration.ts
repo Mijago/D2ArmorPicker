@@ -19,6 +19,9 @@ export function getDefaultStatDict<T>(value: T): EnumDictionary<ArmorStat, T> {
 export class Configuration {
   characterClass: CharacterClass = CharacterClass.Titan;
 
+  // contains a list of item instances IDs that shall not be used in builds
+  disabledItems: string[] = [];
+
   minimumStatTier: EnumDictionary<ArmorStat, number> = {
     [ArmorStat.Mobility]: 1,
     [ArmorStat.Resilience]: 1,
@@ -48,6 +51,7 @@ export class Configuration {
   static buildEmptyConfiguration(): Configuration {
     return {
       enabledMods: [],
+      disabledItems: [],
       selectedArmorAffinities: [],
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,

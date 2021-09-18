@@ -4,6 +4,7 @@ import {buildDb} from "../../data/database";
 import {Permutation} from "../../data/permutation";
 import {IInventoryArmor} from "../IInventoryArmor";
 import {PERMUTATION_PACKAGE} from "../../data/constants";
+import {Configuration} from "../../data/configuration";
 
 const db = buildDb(async () => {
 })
@@ -12,7 +13,8 @@ const inventoryArmor = db.table("inventoryArmor");
 addEventListener('message', async ({data}) => {
   console.group("WebWorker: Permuation Builder")
   console.time("WebWorker: Permuation Builder")
-  let items = await inventoryArmor.where("clazz").equals(data).toArray() as IInventoryArmor[]
+  const config = data.config as Configuration;
+  let items = await inventoryArmor.where("clazz").equals(data.clazz).toArray() as IInventoryArmor[]
   const helmets = items.filter(i => i.slot == "Helmets")
   const gauntlets = items.filter(i => i.slot == "Arms")
   const chests = items.filter(i => i.slot == "Chest")
@@ -20,11 +22,15 @@ addEventListener('message', async ({data}) => {
 
   let permutations: Permutation[] = [];
   for (let helmet of helmets) {
+    if (config.disabledItems.indexOf(helmet.itemInstanceId) > -1) continue;
     for (let gauntlet of gauntlets) {
+      if (config.disabledItems.indexOf(gauntlet.itemInstanceId) > -1) continue;
       if (helmet.isExotic && gauntlet.isExotic) continue;
       for (let chest of chests) {
+        if (config.disabledItems.indexOf(chest.itemInstanceId) > -1) continue;
         if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
         for (let leg of legs) {
+          if (config.disabledItems.indexOf(leg.itemInstanceId) > -1) continue;
           if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
 
           let exoticId = 0;

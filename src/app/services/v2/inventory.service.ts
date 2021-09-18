@@ -32,6 +32,7 @@ export class InventoryService {
   private allArmorPermutations: Uint32Array = new Uint32Array(0);
   private allArmorResults: Uint16Array = new Uint16Array(0);
   private currentClass: CharacterClass = CharacterClass.None;
+  private currentIgnoredItems : string[] = []
 
 
   private _armorPermutations: BehaviorSubject<Uint32Array>;
@@ -83,8 +84,10 @@ export class InventoryService {
         this._config = c;
         // If character has been changed, first update all permutations for the character
         // The results will automatically be updated
-        if (c.characterClass != this.currentClass) {
+        if (c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length) {
           this.currentClass = c.characterClass;
+          this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
+
           this.status.modifyStatus(s => s.calculatingPermutations = true)
           const worker = new Worker(new URL('./permutation-webworker.worker', import.meta.url));
           worker.onmessage = ({data}) => {
@@ -92,7 +95,10 @@ export class InventoryService {
             this.status.modifyStatus(s => s.calculatingPermutations = false)
             this._armorPermutations.next(this.allArmorPermutations)
           };
-          worker.postMessage(this.currentClass);
+          worker.postMessage({
+            clazz: this.currentClass,
+            config: c
+          });
         } else {
           if (this.allArmorPermutations.length > 0)
             this.updateResults();

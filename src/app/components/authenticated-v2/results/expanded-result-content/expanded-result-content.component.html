@@ -48,6 +48,12 @@
              src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png"
              matTooltip='Stasis affinity' #tooltip="matTooltip">
       </td>
+      <td>
+        <button mat-icon-button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn"
+                matTooltip="Disable this item from the results. It will not be used to generate results anymore, but you can always undo this.">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
     </tr>
     <!-- Class Item -->
     <tr>

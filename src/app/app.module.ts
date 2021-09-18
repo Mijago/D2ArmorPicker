@@ -56,6 +56,7 @@ import { CountElementInListPipe } from './components/authenticated-v2/results/ex
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import { DesiredElementalAffinitySelectionComponent } from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
 import {MatSnackBarModule} from "@angular/material/snack-bar";
+import { IgnoredItemsListComponent } from './components/authenticated-v2/settings/ignored-items-list/ignored-items-list.component';
 
 
 const routes: Routes = [
@@ -93,7 +94,8 @@ const routes: Routes = [
     ConfirmDialogComponent,
     ExpandedResultContentComponent,
     CountElementInListPipe,
-    DesiredElementalAffinitySelectionComponent
+    DesiredElementalAffinitySelectionComponent,
+    IgnoredItemsListComponent
   ],
     imports: [
         BrowserModule,

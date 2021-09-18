@@ -54,4 +54,10 @@ export class ExpandedResultContentComponent implements OnInit {
     })
   }
 
+  disableItem(itemInstanceId: string) {
+    this.config.modifyConfiguration(cb => {
+        cb.disabledItems.push(itemInstanceId)
+    })
+  }
+
 }
