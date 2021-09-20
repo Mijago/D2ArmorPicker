@@ -6,7 +6,7 @@ import {IMappedGearPermutation, MOD_INDICES} from "../../authenticated/main/main
 import {BungieApiService} from "../../../services/bungie-api.service";
 import {CharacterClass} from "../../../data/enum/character-Class";
 import {ConfigurationService} from "../../../services/v2/configuration.service";
-import {ArmorStat, STAT_MOD_VALUES, StatModifier} from "../../../data/enum/armor-stat";
+import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../../../data/enum/armor-stat";
 import {ModInformation} from "../../../data/ModInformation";
 import {ModOrAbility} from "../../../data/enum/modOrAbility";
 import {EnumDictionary} from "../../../data/types/EnumDictionary";
@@ -155,7 +155,8 @@ export class ResultsComponent implements OnInit {
     const constantModifiersFromConfig = [2, 2, 2, 2, 2, 2]
     for (let configEnabledMod of this._config_enabledMods) {
       for (let bonus of ModInformation[configEnabledMod].bonus) {
-        constantModifiersFromConfig[bonus.stat] += bonus.value;
+        let stat = bonus.stat != SpecialArmorStat.ClassAbilityRegenerationStat ? bonus.stat : [1, 0, 2][this.selectedClass];
+        constantModifiersFromConfig[stat] += bonus.value;
       }
     }
 
