@@ -88,17 +88,7 @@ export class InventoryService {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
 
-          this.status.modifyStatus(s => s.calculatingPermutations = true)
-          const worker = new Worker(new URL('./permutation-webworker.worker', import.meta.url));
-          worker.onmessage = ({data}) => {
-            this.allArmorPermutations = new Uint32Array(data)
-            this.status.modifyStatus(s => s.calculatingPermutations = false)
-            this._armorPermutations.next(this.allArmorPermutations)
-          };
-          worker.postMessage({
-            clazz: this.currentClass,
-            config: c
-          });
+          await this.updatePermutations();
         } else {
           if (this.allArmorPermutations.length > 0)
             this.updateResults();
@@ -107,11 +97,25 @@ export class InventoryService {
       })
   }
 
+  async updatePermutations() {
+    this.status.modifyStatus(s => s.calculatingPermutations = true)
+    const worker = new Worker(new URL('./permutation-webworker.worker', import.meta.url));
+    worker.onmessage = ({data}) => {
+      this.allArmorPermutations = new Uint32Array(data)
+      this.status.modifyStatus(s => s.calculatingPermutations = false)
+      this._armorPermutations.next(this.allArmorPermutations)
+    };
+    worker.postMessage({
+      clazz: this.currentClass,
+      config: this._config
+    });
+  }
+
   async refreshAll(force: boolean = false, doUpdateResults = true) {
     await this.updateManifest();
     await this.updateInventoryItems(force);
     if (doUpdateResults)
-      await this.updateResults();
+      await this.updatePermutations();
   }
 
   updateResults() {
