@@ -32,7 +32,7 @@ export class InventoryService {
   private allArmorPermutations: Uint32Array = new Uint32Array(0);
   private allArmorResults: Uint16Array = new Uint16Array(0);
   private currentClass: CharacterClass = CharacterClass.None;
-  private currentIgnoredItems : string[] = []
+  private currentIgnoredItems: string[] = []
 
 
   private _armorPermutations: BehaviorSubject<Uint32Array>;
@@ -62,37 +62,26 @@ export class InventoryService {
     let dataAlreadyFetched = false;
     let isUpdating = false;
 
-    if (!environment.production)
-      dataAlreadyFetched = true;
-
     config.configuration
       .pipe(
         debounceTime(500)
-        )
+      )
       .subscribe(async c => {
-
         if (this.auth.refreshTokenExpired || !await this.auth.autoRegenerateTokens()) {
           await this.auth.logout();
           return;
         }
 
-
-        isUpdating = true;
-        await this.refreshAll(!dataAlreadyFetched, false);
-        dataAlreadyFetched = true;
-
         this._config = c;
-        // If character has been changed, first update all permutations for the character
-        // The results will automatically be updated
         if (c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length) {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
-
-          await this.updatePermutations();
-        } else {
-          if (this.allArmorPermutations.length > 0)
-            this.updateResults();
         }
+
+        isUpdating = true;
+        await this.refreshAll(!dataAlreadyFetched);
+        dataAlreadyFetched = true;
+
         isUpdating = false;
       })
   }
@@ -111,11 +100,13 @@ export class InventoryService {
     });
   }
 
-  async refreshAll(force: boolean = false, doUpdateResults = true) {
-    await this.updateManifest();
-    await this.updateInventoryItems(force);
-    if (doUpdateResults)
+  async refreshAll(force: boolean = false) {
+    let manifestUpdated = await this.updateManifest();
+    let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
+    if (armorUpdated)
       await this.updatePermutations();
+    else
+      this.updateResults()
   }
 
   updateResults() {
@@ -163,15 +154,18 @@ export class InventoryService {
     return armors.filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot));
   }
 
-  async updateManifest(force: boolean = false) {
+  async updateManifest(force: boolean = false): Promise<boolean> {
     this.status.modifyStatus(s => s.updatingManifest = true);
-    await this.api.updateManifest(force);
+    let r = await this.api.updateManifest(force);
     this.status.modifyStatus(s => s.updatingManifest = false);
+    return !!r;
   }
-  async updateInventoryItems(force: boolean = false) {
+
+  async updateInventoryItems(force: boolean = false): Promise<boolean> {
     this.status.modifyStatus(s => s.updatingInventory = true);
-    await this.api.updateArmorItems(force);
+    let r = await this.api.updateArmorItems(force);
     this.status.modifyStatus(s => s.updatingInventory = false);
+    return !!r;
   }
 
 }
