@@ -73,13 +73,14 @@ export class InventoryService {
         }
 
         this._config = c;
-        if (c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length) {
+        let forceUpdate = c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length
+        if (forceUpdate) {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
         }
 
         isUpdating = true;
-        await this.refreshAll(!dataAlreadyFetched);
+        await this.refreshAll(!dataAlreadyFetched, forceUpdate);
         dataAlreadyFetched = true;
 
         isUpdating = false;
@@ -100,10 +101,10 @@ export class InventoryService {
     });
   }
 
-  async refreshAll(force: boolean = false) {
+  async refreshAll(force: boolean = false, forceUpdatePermutations = false) {
     let manifestUpdated = await this.updateManifest();
     let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
-    if (armorUpdated)
+    if (armorUpdated || forceUpdatePermutations)
       await this.updatePermutations();
     else
       this.updateResults()
