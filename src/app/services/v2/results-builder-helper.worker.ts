@@ -56,11 +56,8 @@ addEventListener('message', ({data}) => {
       }
     }
 
-    let requiredElements = config.selectedArmorAffinities.slice()
     // Apply mods
     for (const mod of config.enabledMods) {
-      if (ModInformation[mod].requiredArmorAffinity != 0)
-        requiredElements.unshift(ModInformation[mod].requiredArmorAffinity)
       for (const bonus of ModInformation[mod].bonus) {
         switch (bonus.stat) {
           case SpecialArmorStat.ClassAbilityRegenerationStat:
@@ -70,36 +67,6 @@ addEventListener('message', ({data}) => {
             stats[bonus.stat] += bonus.value;
             break;
         }
-      }
-    }
-
-
-    // check elemental affinities. The setting disables this feature completely
-    if (!config.ignoreArmorAffinitiesOnMasterworkedItems) {
-      // I only want the first 5 entries
-      // And configured mods always take priority.
-      requiredElements = requiredElements.slice(0, 5)
-
-      // find the existing elements
-      let existingElements = []
-      for (let n = 0; n < 4; n++) {
-        let isMwd = (permutation[11] & (1 << n)) > 0
-        if (!isMwd) continue;
-        let element = (permutation[12] >> (n * 3)) & 0x7
-        existingElements.push(element)
-      }
-
-      let slotsForAnyElement = 5 - existingElements.length
-      for (let requiredElement of requiredElements) {
-        const index = existingElements.indexOf(requiredElement);
-        if (index > -1) {
-          existingElements.splice(index, 1) // remove the entry
-        } else {
-          slotsForAnyElement--;
-        }
-      }
-      if (slotsForAnyElement < 0) {
-        continue;
       }
     }
 

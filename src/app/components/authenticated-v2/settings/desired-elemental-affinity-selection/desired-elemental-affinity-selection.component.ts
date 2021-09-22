@@ -2,6 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ConfigurationService} from "../../../../services/v2/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
+import {EnumDictionary} from "../../../../data/types/EnumDictionary";
+import {ArmorSlot} from "../../../../data/permutation";
 
 @Component({
   selector: 'app-desired-elemental-affinity-selection',
@@ -9,36 +11,36 @@ import {ModInformation} from "../../../../data/ModInformation";
   styleUrls: ['./desired-elemental-affinity-selection.component.scss']
 })
 export class DesiredElementalAffinitySelectionComponent implements OnInit {
+  ArmorSlot = ArmorSlot;
 
   selectedArmorAffinities: DestinyEnergyType[] = [];
   configSelectedArmorAffinities: DestinyEnergyType[] = [];
 
-  freeSlots: number = 5;
+  configFixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
+    [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+  };
 
   constructor(private config: ConfigurationService) {
   }
 
-  removeElement(index: number) {
+  setArmorElement(slot: ArmorSlot | any, element: DestinyEnergyType | number) {
     this.config.modifyConfiguration(c => {
-      c.selectedArmorAffinities.splice(index, 1)
+      c.fixedArmorAffinities[slot as ArmorSlot] = element;
     })
-  }
-
-  addElement(e: DestinyEnergyType) {
-    if (this.freeSlots > 0)
-      this.config.modifyConfiguration(c => {
-        c.selectedArmorAffinities.push(e)
-      })
   }
 
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
-      this.selectedArmorAffinities = c.selectedArmorAffinities;
+      this.configFixedArmorAffinities = c.fixedArmorAffinities
+
+      // TODO: add note that you need those
       this.configSelectedArmorAffinities = c.enabledMods
         .map(d => ModInformation[d].requiredArmorAffinity)
         .filter(d => d != DestinyEnergyType.Any);
-
-      this.freeSlots = Math.max(0, 5 - this.selectedArmorAffinities.length - this.configSelectedArmorAffinities.length)
     })
   }
 

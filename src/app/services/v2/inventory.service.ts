@@ -11,6 +11,9 @@ import {StatusProviderService} from "./status-provider.service";
 import {BungieApiService} from "../bungie-api.service";
 import {environment} from "../../../environments/environment";
 import {AuthService} from "../auth.service";
+import {EnumDictionary} from "../../data/types/EnumDictionary";
+import {ArmorSlot} from "../../data/permutation";
+import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 
 type info = {
   results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
@@ -33,6 +36,7 @@ export class InventoryService {
   private allArmorResults: Uint16Array = new Uint16Array(0);
   private currentClass: CharacterClass = CharacterClass.None;
   private currentIgnoredItems: string[] = []
+  private checkFixedArmorAffinities: null | EnumDictionary<ArmorSlot, DestinyEnergyType> = null;
 
 
   private _armorPermutations: BehaviorSubject<Uint32Array>;
@@ -73,14 +77,27 @@ export class InventoryService {
         }
 
         this._config = c;
-        let forceUpdate = c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length
-        if (forceUpdate) {
+        let forceUpdatePermutations = c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length
+        if (forceUpdatePermutations) {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
         }
 
+        if (this.checkFixedArmorAffinities != null)
+          for (let n = 0; !forceUpdatePermutations && (n < 5); n++) {
+            if (this.checkFixedArmorAffinities[n as ArmorSlot] != c.fixedArmorAffinities[n as ArmorSlot])
+              forceUpdatePermutations = true;
+          }
+        this.checkFixedArmorAffinities = {
+          [ArmorSlot.ArmorSlotHelmet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet],
+          [ArmorSlot.ArmorSlotGauntlet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotGauntlet],
+          [ArmorSlot.ArmorSlotChest]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotChest],
+          [ArmorSlot.ArmorSlotLegs]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs],
+          [ArmorSlot.ArmorSlotClass]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotClass],
+        };
+
         isUpdating = true;
-        await this.refreshAll(!dataAlreadyFetched, forceUpdate);
+        await this.refreshAll(!dataAlreadyFetched, forceUpdatePermutations);
         dataAlreadyFetched = true;
 
         isUpdating = false;

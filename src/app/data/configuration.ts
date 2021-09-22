@@ -4,6 +4,7 @@ import {EnumDictionary} from "./types/EnumDictionary";
 import {CharacterClass} from "./enum/character-Class";
 import {MAXIMUM_STAT_MOD_AMOUNT} from "./constants";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {ArmorSlot} from "./permutation";
 
 export function getDefaultStatDict<T>(value: T): EnumDictionary<ArmorStat, T> {
   return {
@@ -42,7 +43,14 @@ export class Configuration {
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
 
-  selectedArmorAffinities: DestinyEnergyType[] = [];
+  // Armor affinity for each slot
+  fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
+    [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+  };
   // Ignore armor element affinities.
   // Note, the tool already ignores affinities of non-masterworked armor.
   ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
@@ -52,7 +60,6 @@ export class Configuration {
     return {
       enabledMods: [],
       disabledItems: [],
-      selectedArmorAffinities: [],
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
@@ -63,6 +70,13 @@ export class Configuration {
       showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,
       selectedExoticHash: 0,
+      fixedArmorAffinities: {
+        [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
+        [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
+        [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
+        [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
+        [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+      },
       minimumStatTier: {
         [ArmorStat.Mobility]: 1,
         [ArmorStat.Resilience]: 1,

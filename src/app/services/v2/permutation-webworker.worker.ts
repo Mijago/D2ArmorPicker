@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import {buildDb} from "../../data/database";
-import {Permutation} from "../../data/permutation";
+import {ArmorSlot, Permutation} from "../../data/permutation";
 import {IInventoryArmor} from "../IInventoryArmor";
 import {PERMUTATION_PACKAGE} from "../../data/constants";
 import {Configuration} from "../../data/configuration";
@@ -22,14 +22,25 @@ addEventListener('message', async ({data}) => {
 
   let permutations: Permutation[] = [];
   for (let helmet of helmets) {
+    if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet] != 0
+      && helmet.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet] != helmet.energyAffinity) continue;
     if (config.disabledItems.indexOf(helmet.itemInstanceId) > -1) continue;
+
     for (let gauntlet of gauntlets) {
+      if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotGauntlet] != 0
+        && gauntlet.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotGauntlet] != gauntlet.energyAffinity) continue;
       if (config.disabledItems.indexOf(gauntlet.itemInstanceId) > -1) continue;
       if (helmet.isExotic && gauntlet.isExotic) continue;
+
       for (let chest of chests) {
+        if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotChest] != 0
+          && chest.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotChest] != chest.energyAffinity) continue;
         if (config.disabledItems.indexOf(chest.itemInstanceId) > -1) continue;
         if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
+
         for (let leg of legs) {
+          if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs] != 0
+             && leg.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs] != leg.energyAffinity) continue;
           if (config.disabledItems.indexOf(leg.itemInstanceId) > -1) continue;
           if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
 
