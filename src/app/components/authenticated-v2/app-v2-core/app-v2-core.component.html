@@ -2,14 +2,13 @@
   <span
     class="{{(stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations || stat.updatingManifest || stat.updatingInventory) ? 'loading' : ''}}">
     <app-header-bar></app-header-bar>
-    <app-settings></app-settings>
-    <app-results></app-results>
+    <router-outlet></router-outlet>
   </span>
 
-  <mat-card class="info" *ngIf="stat.updatingManifest">Updating the cached manifest. Please wait. <br/>If this takes too long, please logout and login again.</mat-card>
-  <mat-card class="info" *ngIf="stat.updatingInventory">Updating the cached inventory. Please wait.</mat-card>
-  <mat-card class="info" *ngIf="stat.calculatingPermutations">Updating armor permutations. Please wait.</mat-card>
-  <mat-card class="info" *ngIf="stat.calculatingResults">Updating possible results. Please wait.</mat-card>
-  <mat-card class="info" *ngIf="stat.updatingResultsTable">Updating result table. Please wait.</mat-card>
+  <mat-card *ngIf="stat.updatingManifest" class="info">Updating the cached manifest. Please wait. <br/>If this takes too long, please logout and login again.</mat-card>
+  <mat-card *ngIf="stat.updatingInventory" class="info">Updating the cached inventory. Please wait.</mat-card>
+  <mat-card *ngIf="stat.calculatingPermutations" class="info">Updating armor permutations. Please wait.</mat-card>
+  <mat-card *ngIf="stat.calculatingResults" class="info">Updating possible results. Please wait.</mat-card>
+  <mat-card *ngIf="stat.updatingResultsTable" class="info">Updating result table. Please wait.</mat-card>
 
 </span>

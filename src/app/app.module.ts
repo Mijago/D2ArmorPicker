@@ -51,16 +51,31 @@ import {MatListModule} from "@angular/material/list";
 import {MatExpansionModule} from "@angular/material/expansion";
 import {ConfirmDialogComponent} from './components/authenticated-v2/components/confirm-dialog/confirm-dialog.component';
 import {MatDialogModule} from "@angular/material/dialog";
-import { ExpandedResultContentComponent } from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
-import { CountElementInListPipe } from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
+import {ExpandedResultContentComponent} from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
+import {CountElementInListPipe} from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
 import {ClipboardModule} from "@angular/cdk/clipboard";
-import { DesiredElementalAffinitySelectionComponent } from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
+import {DesiredElementalAffinitySelectionComponent} from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
 import {MatSnackBarModule} from "@angular/material/snack-bar";
-import { IgnoredItemsListComponent } from './components/authenticated-v2/settings/ignored-items-list/ignored-items-list.component';
+import {IgnoredItemsListComponent} from './components/authenticated-v2/settings/ignored-items-list/ignored-items-list.component';
+import { HelpPageComponent } from './components/authenticated-v2/subpages/help-page/help-page.component';
+import { ArmorPickerPageComponent } from './components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component';
+import {FlexLayoutModule} from "@angular/flex-layout";
 
 
 const routes: Routes = [
-  {path: 'v2', component: AppV2CoreComponent, canActivate: [AuthenticatedGuard]},
+  {
+    path: 'v2', component: AppV2CoreComponent, canActivate: [AuthenticatedGuard],
+    children: [
+      {
+        path: '',
+        component: ArmorPickerPageComponent
+      },
+      {
+        path: 'help',
+        component: HelpPageComponent
+      }
+    ]
+  },
   {path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
   {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
@@ -95,38 +110,41 @@ const routes: Routes = [
     ExpandedResultContentComponent,
     CountElementInListPipe,
     DesiredElementalAffinitySelectionComponent,
-    IgnoredItemsListComponent
+    IgnoredItemsListComponent,
+    HelpPageComponent,
+    ArmorPickerPageComponent
   ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
-        BrowserAnimationsModule,
-        MatButtonModule,
-        RouterModule.forRoot(routes, {useHash: true}),
-        MatFormFieldModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatSliderModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatSlideToggleModule,
-        FormsModule,
-        MatTableModule,
-        MatCardModule,
-        MatTooltipModule,
-        MatProgressBarModule,
-        MatIconModule,
-        MatSortModule,
-        MatPaginatorModule,
-        MatToolbarModule,
-        MatMenuModule,
-        MatButtonToggleModule,
-        MatListModule,
-        MatExpansionModule,
-        MatDialogModule,
-        ClipboardModule,
-        MatSnackBarModule
-    ],
+  imports: [
+    FlexLayoutModule,
+    BrowserModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    RouterModule.forRoot(routes, {useHash: true}),
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatSliderModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    FormsModule,
+    MatTableModule,
+    MatCardModule,
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatToolbarModule,
+    MatMenuModule,
+    MatButtonToggleModule,
+    MatListModule,
+    MatExpansionModule,
+    MatDialogModule,
+    ClipboardModule,
+    MatSnackBarModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

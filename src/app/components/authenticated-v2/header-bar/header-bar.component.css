@@ -14,3 +14,7 @@
   width: 100%;
   z-index: 1000;
 }
+
+.d2ap-router-link {
+  cursor: pointer;
+}
