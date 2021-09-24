@@ -108,5 +108,19 @@
     </mat-card-content>
   </mat-card>
 
+  <mat-card>
+    <mat-card-title>Known Issues</mat-card-title>
+    <mat-card-content>
+      <ul>
+        <li>
+          If an armor has less than 10 total in one stat and has a negative modifier (goes below 0), the API caps the item stat at 0, leading to the tool thinking it's at 10 (or 8, if masterworked).
+        </li>
+        <li>
+          The point above is also true for values above 42.
+        </li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
   <a class="returnbutton" color="primary" mat-raised-button routerLink="/v2/"> Return to D2ArmorPicker </a>
 </div>

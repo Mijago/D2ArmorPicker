@@ -5,6 +5,7 @@ export interface IInventoryArmor extends IManifestArmor {
   id: number;
   itemInstanceId: string;
   masterworked: boolean;
+  mayBeBugged: boolean; // if there was an error in the parsing
   mobility: number;
   resilience: number;
   recovery: number;

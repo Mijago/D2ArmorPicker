@@ -327,7 +327,10 @@ export class BungieApiService {
 
           for (let perk of perks) {
             let f = fields[perk.perkHash ?? 0];
+
+            // Mark item as it may be bugged..
             if (!!f) {
+              if ((r as any)[f[0]] <= 0) (r as any).mayBeBugged = true;
               (r as any)[f[0]] += f[1]
             }
           }

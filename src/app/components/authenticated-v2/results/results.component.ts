@@ -51,6 +51,7 @@ export interface ResultItem {
   itemInstanceId: string,
   name: string,
   masterworked: boolean,
+  mayBeBugged: boolean,
   stats: number[],
   statsNoMods: number[]
 }
@@ -262,6 +263,7 @@ export class ResultsComponent implements OnInit {
             itemInstanceId: instance.itemInstanceId,
             name: instance.name,
             masterworked: instance.masterworked,
+            mayBeBugged: instance.mayBeBugged,
             stats: [
               instance.mobility, instance.resilience, instance.recovery,
               instance.discipline, instance.intellect, instance.strength
