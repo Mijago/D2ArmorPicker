@@ -37,3 +37,7 @@ tr.example-detail-row {
   overflow: hidden;
   display: flex;
 }
+
+.report-problem-icon {
+  color: lightcoral;
+}

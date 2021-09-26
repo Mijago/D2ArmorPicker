@@ -1,4 +1,10 @@
 <div>
+
+  <mat-toolbar *ngIf="mayAnyItemBeBugged" color="warn" class="invalid-item-box mat-elevation-z4">
+      Warning: The stats of one or more items used for this build may be invalid.<br>
+    Please remove all negative/positive stat modifiers from the marked items.
+  </mat-toolbar>
+
   <table class="specificStatTable">
     <thead>
     <tr>

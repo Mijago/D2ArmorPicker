@@ -284,6 +284,9 @@ export class ResultsComponent implements OnInit {
     this.tableDataSource.data = data;
   }
 
+  checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
+    return (element?.items.filter(d => d.mayBeBugged).length || 0) > 0
+  }
 
   async movePermutationItems(characterId: string, element: IMappedGearPermutation) {
     for (let item of element.permutation.items) {

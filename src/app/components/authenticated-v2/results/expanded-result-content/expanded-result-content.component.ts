@@ -60,4 +60,8 @@ export class ExpandedResultContentComponent implements OnInit {
     })
   }
 
+  get mayAnyItemBeBugged() {
+    return (this.element?.items.filter(d => d.mayBeBugged).length || 0) > 0
+  }
+
 }

@@ -86,3 +86,14 @@ table tr:not(:last-child) td {
 .report-problem-icon {
   color: lightcoral;
 }
+
+
+.invalid-item-box {
+  text-align: center;
+  margin-right: auto;
+  margin-left: auto;
+  width: fit-content;
+  height: fit-content;
+  font-size: 15px;
+  line-height: 20px;
+}

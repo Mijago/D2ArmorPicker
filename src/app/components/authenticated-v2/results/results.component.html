@@ -124,6 +124,13 @@
             <mat-icon *ngIf="expandedElement === element" matTooltip="Click to hide details for this build.">
               expand_less
             </mat-icon>
+
+            <mat-icon inline aria-hidden="false" aria-label="Error"
+                      *ngIf="checkIfAnyItemsMayBeInvalid(element)"
+                      class="report-problem-icon"
+                      matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items."
+                      #tooltip="matTooltip"> report_problem </mat-icon>
+
           </td>
         </ng-container>
 
