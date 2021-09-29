@@ -169,7 +169,13 @@ export class InventoryService {
     const armors = await this.db.manifestArmor
       .where("isExotic").equals(1)
       .toArray();
-    return armors.filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot));
+    return armors
+      // filter relevant items
+      .filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot))
+      // Remove duplicates, in case the manifest has been inserted twice
+      .filter((thing, index, self) =>
+        index === self.findIndex((t) => (t.hash === thing.hash))
+      )
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
