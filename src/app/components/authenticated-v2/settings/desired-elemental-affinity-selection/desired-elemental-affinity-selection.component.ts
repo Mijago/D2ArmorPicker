@@ -28,9 +28,10 @@ export class DesiredElementalAffinitySelectionComponent implements OnInit {
   }
 
   setArmorElement(slot: ArmorSlot | any, element: DestinyEnergyType | number) {
-    this.config.modifyConfiguration(c => {
-      c.fixedArmorAffinities[slot as ArmorSlot] = element;
-    })
+    if (this.configFixedArmorAffinities[slot as ArmorSlot] != element)
+      this.config.modifyConfiguration(c => {
+        c.fixedArmorAffinities[slot as ArmorSlot] = element;
+      })
   }
 
   ngOnInit(): void {
