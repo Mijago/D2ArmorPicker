@@ -50,6 +50,7 @@ export interface ResultItem {
   icon: string,
   itemInstanceId: string,
   name: string,
+  exotic: boolean,
   masterworked: boolean,
   mayBeBugged: boolean,
   stats: number[],
@@ -74,7 +75,9 @@ export class ResultsComponent implements OnInit {
 
   private _results: Uint16Array = new Uint16Array();
   private _permutations: Uint32Array = new Uint32Array();
-  private _config_assumeMasterworked: Boolean = false;
+  private _config_assumeLegendariesMasterworked: Boolean = false;
+  private _config_assumeExoticsMasterworked: Boolean = false;
+  private _config_assumeClassItemMasterworked: Boolean = false;
   private _config_enabledMods: ModOrAbility[] = [];
   private _config_limitParsedResults: Boolean = false;
   private _items: Map<number, IInventoryArmor> = new Map<number, IInventoryArmor>();
@@ -99,7 +102,9 @@ export class ResultsComponent implements OnInit {
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
       this.selectedClass = c.characterClass;
-      this._config_assumeMasterworked = c.assumeMasterworked;
+      this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+      this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+      this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_enabledMods = c.enabledMods;
       this._config_limitParsedResults = c.limitParsedResults;
 
@@ -153,7 +158,11 @@ export class ResultsComponent implements OnInit {
     let data: any[] = []
     let itemsToGrab = new Set<number>();
 
-    const constantModifiersFromConfig = [2, 2, 2, 2, 2, 2]
+    const constantModifiersFromConfig = [0, 0, 0, 0, 0, 0]
+    // add a constant 2 if we assume that the class item is masterworked
+    if (this._config_assumeClassItemMasterworked)
+      for (let n = 0; n < 6; n++) constantModifiersFromConfig[n] += 2;
+
     for (let configEnabledMod of this._config_enabledMods) {
       for (let bonus of ModInformation[configEnabledMod].bonus) {
         let stat = bonus.stat != SpecialArmorStat.ClassAbilityRegenerationStat ? bonus.stat : [1, 0, 2][this.selectedClass];
@@ -181,7 +190,7 @@ export class ResultsComponent implements OnInit {
 
       let items = ({
         stats: Array.from(constantModifiersFromConfig),
-        statsNoMods: [2, 2, 2, 2, 2, 2],
+        statsNoMods: [0, 0, 0, 0, 0, 0],
         modCount: modList.filter(d => d != StatModifier.NONE).length,
         modCost: modList.reduce((p, d: StatModifier) => {
           if (STAT_MOD_VALUES[d] == undefined)
@@ -199,6 +208,9 @@ export class ResultsComponent implements OnInit {
           this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.LEG_ID],
         ] as any
       }) as ResultDefinition
+
+      if (this._config_assumeClassItemMasterworked)
+        for (let n = 0; n < 6; n++) items.statsNoMods[n] += 2;
 
       for (let modId of modList) {
         let smd = STAT_MOD_VALUES[modId as StatModifier]
@@ -234,7 +246,10 @@ export class ResultsComponent implements OnInit {
             };
           }
 
-          if (instance?.masterworked || this._config_assumeMasterworked)
+          if (instance?.masterworked
+            || (!instance?.isExotic && this._config_assumeLegendariesMasterworked)
+            || (instance?.isExotic && this._config_assumeExoticsMasterworked)
+          )
             for (let n = 0; n < 6; n++) {
               data[i].stats[n] += 2;
               data[i].statsNoMods[n] += 2;
@@ -255,13 +270,14 @@ export class ResultsComponent implements OnInit {
           data[i].statsNoMods[ArmorStat.Intellect] += instance.intellect;
           data[i].statsNoMods[ArmorStat.Strength] += instance.strength;
 
-          data[i].waste= data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0);
+          data[i].waste = data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0);
 
           return {
             energy: instance.energyAffinity,
             icon: instance.icon,
             itemInstanceId: instance.itemInstanceId,
             name: instance.name,
+            exotic: !!instance.isExotic,
             masterworked: instance.masterworked,
             mayBeBugged: instance.mayBeBugged,
             stats: [

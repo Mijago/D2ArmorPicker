@@ -24,7 +24,7 @@ addEventListener('message', ({data}) => {
   let results = []
 
   for (let i = 0; i < allArmorPermutations.length; i += PERMUTATION_PACKAGE.WIDTH) {
-    // Skip if we want to filter out a specific exotic
+    // Skip if we want to filter out a specific EXOTIC
     const permutation = allArmorPermutations.subarray(i, i + PERMUTATION_PACKAGE.WIDTH)
     if (config.selectedExoticHash > DID_NOT_SELECT_EXOTIC && permutation[PERMUTATION_PACKAGE.EXOTIC_ID] != config.selectedExoticHash) {
       continue
@@ -37,23 +37,20 @@ addEventListener('message', ({data}) => {
       continue
     }
 
-    let stats = [
-      permutation[4] + 2,
-      permutation[5] + 2,
-      permutation[6] + 2,
-      permutation[7] + 2,
-      permutation[8] + 2,
-      permutation[9] + 2,
-    ]
+    let stats = [permutation[4], permutation[5], permutation[6], permutation[7], permutation[8], permutation[9]]
 
-    if (config.assumeMasterworked) {
-      for (let n = 0; n < 6; n++) stats[n] += 8;
-    } else {
-      // add each item individually
-      for (let n = 0; n < 4; n++) {
-        if ((permutation[11] & (1 << n)) > 0)
-          for (let n = 0; n < 6; n++) stats[n] += 2;
-      }
+    // add +2 to every stat if we assume that the class item is masterworked
+    if (config.assumeClassItemMasterworked) for (let n = 0; n < 6; n++) stats[n] += 2;
+
+    // add +8 if there is no exotic and we assume masterworked items
+    // add each item individually
+    for (let n = 0; n < 4; n++) {
+      const isExotic = permutation[PERMUTATION_PACKAGE.EXOTIC_ID] == permutation[PERMUTATION_PACKAGE.HELMET_ID + n]
+      // Add +2 if masterworked OR if we just assume they are masterworked
+      if ((permutation[11] & (1 << n)) > 0
+        || (!isExotic && config.assumeLegendariesMasterworked)
+        || (isExotic && config.assumeExoticsMasterworked))
+        for (let n = 0; n < 6; n++) stats[n] += 2;
     }
 
     // Apply mods

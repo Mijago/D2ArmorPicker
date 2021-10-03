@@ -26,12 +26,14 @@
         <span *ngIf="!i.masterworked">{{i.name}}</span>
       </td>
       <td *ngIf="!i.stats">An error occured. Please reload the page.</td> <!-- TODO: remove once i collected enough data -->
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Resilience] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Recovery] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Discipline] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Intellect] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
-      <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Strength] + ((i.masterworked || config_assumeMasterworked) ? 2 : 0)}}</td>
+      <ng-container *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + bonus}}</td>
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Resilience] + bonus}}</td>
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Recovery] + bonus}}</td>
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Discipline] + bonus}}</td>
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Intellect] + bonus}}</td>
+        <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Strength] + bonus}}</td>
+      </ng-container>
       <td>
         <!-- Item Icon -->
         <div class="item-icon-container">
@@ -68,7 +70,7 @@
       </td>
     </tr>
     <!-- Class Item -->
-    <tr>
+    <tr *ngIf="config_assumeClassItemMasterworked">
       <td><u matTooltip='Class item should be masterworked.' #tooltip="matTooltip">Any Class Item</u></td>
       <td>{{2}}</td>
       <td>{{2}}</td>
@@ -76,6 +78,10 @@
       <td>{{2}}</td>
       <td>{{2}}</td>
       <td>{{2}}</td>
+    </tr>
+    <tr *ngIf="!config_assumeClassItemMasterworked">
+      <td>Any Class Item</td>
+      <td colspan="6" class="text-centered">You chose to use non-masterworked class items.</td>
     </tr>
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">

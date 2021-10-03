@@ -33,7 +33,9 @@ export class Configuration {
   }
   maximumStatMods: number = 5;
 
-  assumeMasterworked = true;
+  assumeLegendariesMasterworked = true;
+  assumeExoticsMasterworked = true;
+  assumeClassItemMasterworked = true;
   onlyUseMasterworkedItems = false;
   limitParsedResults = true;  // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
@@ -63,7 +65,9 @@ export class Configuration {
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
-      assumeMasterworked: true,
+      assumeLegendariesMasterworked: true,
+      assumeExoticsMasterworked: true,
+      assumeClassItemMasterworked: true,
       limitParsedResults: true,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,

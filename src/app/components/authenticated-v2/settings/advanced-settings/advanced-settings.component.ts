@@ -28,12 +28,28 @@ export class AdvancedSettingsComponent implements OnInit {
         this.fields2 = {
           "Masterwork": [
             {
-              name: "Assume all items are masterworked",
-              cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeMasterworked = v),
-              value: c.assumeMasterworked,
+              name: "Assume all legendary items are masterworked",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeLegendariesMasterworked = v),
+              value: c.assumeLegendariesMasterworked,
               disabled: false,
               impactsResultCount: false,
               help: undefined
+            },
+            {
+              name: "Assume all exotic items are masterworked",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeExoticsMasterworked = v),
+              value: c.assumeExoticsMasterworked,
+              disabled: false,
+              impactsResultCount: false,
+              help: "If this setting is enabled, the tool will treat non-masterworked exotic armor as if it were masterworked-."
+            },
+            {
+              name: "Assume that class items are masterworked",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeClassItemMasterworked = v),
+              value: c.assumeClassItemMasterworked,
+              disabled: false,
+              impactsResultCount: false,
+              help: "If this setting is enabled, a plain +2 is added to every stat. This means that your Class Item must be masterworked."
             },
             {
               name: "Only use already masterworked items",

@@ -14,7 +14,9 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 export class ExpandedResultContentComponent implements OnInit {
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
-  public config_assumeMasterworked = false;
+  public config_assumeLegendariesMasterworked = false;
+  public config_assumeExoticsMasterworked = false;
+  public config_assumeClassItemMasterworked = false;
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
@@ -38,7 +40,9 @@ export class ExpandedResultContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
-      this.config_assumeMasterworked = c.assumeMasterworked;
+      this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+      this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+      this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this.configValues = c.enabledMods
         .reduce((p, v) => {
           p = p.concat(ModInformation[v].bonus)
