@@ -123,7 +123,7 @@ export const ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = {
   ]
   ,
   [ArmorStat.Strength]: [
-    "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t1:43 / 1:37\r\n Hunter:\t\t2:00 / 1:85\r\n Warlock:\t1:43 / 1:58",
+    "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t1:43 / 1:37\r\n Hunter:\t\t2:00 / 1:58\r\n Warlock:\t1:43 / 1:58",
     "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t1:33 / 1:30\r\n Hunter:\t\t1:49 / 1:49\r\n Warlock:\t1:33 / 1:49",
     "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t1:25 / 1:24\r\n Hunter:\t\t1:40 / 1:42\r\n Warlock:\t1:25 / 1:42",
     "Melee Cooldown (Normal / Stasis) in M:SS\r\n Titan:\t\t1:22 / 1:19\r\n Hunter:\t\t1:36 / 1:35\r\n Warlock:\t1:22 / 1:35",
