@@ -243,6 +243,8 @@ export class ResultsComponent implements OnInit {
         this._items.set(keys[keyid], items[keyid] as IInventoryArmor);
     }
 
+    // Use an item buffer to not fetch the items multiple times. Should further improve memory issues.
+    let itemBuffer = new Map<string, ResultItem>();
     // now fetch the item names
     for (let i = 0; i < data.length; i++) {
       data[i].items = data[i].items.map((e: number) => {
@@ -281,20 +283,26 @@ export class ResultsComponent implements OnInit {
 
           data[i].waste = data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0);
 
-          return {
-            energy: instance.energyAffinity,
-            icon: instance.icon,
-            itemInstanceId: instance.itemInstanceId,
-            name: instance.name,
-            exotic: !!instance.isExotic,
-            masterworked: instance.masterworked,
-            mayBeBugged: instance.mayBeBugged,
-            transferState: ResultItemMoveState.TRANSFER_NONE,
-            stats: [
-              instance.mobility, instance.resilience, instance.recovery,
-              instance.discipline, instance.intellect, instance.strength
-            ]
-          } as ResultItem
+          if (itemBuffer.has(instance.itemInstanceId))
+            return itemBuffer.get(instance.itemInstanceId);
+          else {
+            let result = {
+              energy: instance.energyAffinity,
+              icon: instance.icon,
+              itemInstanceId: instance.itemInstanceId,
+              name: instance.name,
+              exotic: !!instance.isExotic,
+              masterworked: instance.masterworked,
+              mayBeBugged: instance.mayBeBugged,
+              transferState: ResultItemMoveState.TRANSFER_NONE,
+              stats: [
+                instance.mobility, instance.resilience, instance.recovery,
+                instance.discipline, instance.intellect, instance.strength
+              ]
+            } as ResultItem;
+            itemBuffer.set(instance.itemInstanceId, result)
+            return result;
+          }
         }
       )
       data[i].tiers = getSkillTier(data[i].stats)
