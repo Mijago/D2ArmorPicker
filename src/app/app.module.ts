@@ -60,6 +60,7 @@ import {IgnoredItemsListComponent} from './components/authenticated-v2/settings/
 import { HelpPageComponent } from './components/authenticated-v2/subpages/help-page/help-page.component';
 import { ArmorPickerPageComponent } from './components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component';
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 
 
 const routes: Routes = [
@@ -114,37 +115,38 @@ const routes: Routes = [
     HelpPageComponent,
     ArmorPickerPageComponent
   ],
-  imports: [
-    FlexLayoutModule,
-    BrowserModule,
-    HttpClientModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
-    RouterModule.forRoot(routes, {useHash: true}),
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatSliderModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatIconModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatToolbarModule,
-    MatMenuModule,
-    MatButtonToggleModule,
-    MatListModule,
-    MatExpansionModule,
-    MatDialogModule,
-    ClipboardModule,
-    MatSnackBarModule
-  ],
+    imports: [
+        FlexLayoutModule,
+        BrowserModule,
+        HttpClientModule,
+        BrowserAnimationsModule,
+        MatButtonModule,
+        RouterModule.forRoot(routes, {useHash: true}),
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatSliderModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatSlideToggleModule,
+        FormsModule,
+        MatTableModule,
+        MatCardModule,
+        MatTooltipModule,
+        MatProgressBarModule,
+        MatIconModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatToolbarModule,
+        MatMenuModule,
+        MatButtonToggleModule,
+        MatListModule,
+        MatExpansionModule,
+        MatDialogModule,
+        ClipboardModule,
+        MatSnackBarModule,
+        MatProgressSpinnerModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

@@ -45,6 +45,14 @@ export interface ResultDefinition {
   loaded: boolean;
 }
 
+export enum ResultItemMoveState {
+  TRANSFER_NONE,
+  WAITING_FOR_TRANSFER,
+  TRANSFERRING,
+  TRANSFERRED,
+  ERROR_DURING_TRANSFER
+}
+
 export interface ResultItem {
   energy: number,
   icon: string,
@@ -54,6 +62,7 @@ export interface ResultItem {
   masterworked: boolean,
   mayBeBugged: boolean,
   stats: number[],
+  transferState: ResultItemMoveState,
   statsNoMods: number[]
 }
 
@@ -280,6 +289,7 @@ export class ResultsComponent implements OnInit {
             exotic: !!instance.isExotic,
             masterworked: instance.masterworked,
             mayBeBugged: instance.mayBeBugged,
+            transferState: ResultItemMoveState.TRANSFER_NONE,
             stats: [
               instance.mobility, instance.resilience, instance.recovery,
               instance.discipline, instance.intellect, instance.strength

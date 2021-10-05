@@ -89,11 +89,11 @@ export class BungieApiService {
     }) || [];
   }
 
-  async transferItem(itemInstanceId: string, targetCharacter: string) {
+  async transferItem(itemInstanceId: string, targetCharacter: string): Promise<boolean> {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
       await this.authService.logout();
-      return;
+      return false;
     }
 
     let r1 = await getItem(d => this.$http(d), {
@@ -105,8 +105,8 @@ export class BungieApiService {
       ]
     })
 
-    if (!r1) return;
-    if (r1.Response.characterId == targetCharacter) return;
+    if (!r1) return false;
+    if (r1.Response.characterId == targetCharacter) return true;
     if (r1.Response.item.data?.location != 2) {
       await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
       r1 = await getItem(d => this.$http(d), {
@@ -128,7 +128,8 @@ export class BungieApiService {
       "transferToVault": false
     }
 
-    await transferItem(d => this.$httpPost(d), payload);
+    let transferResult = await transferItem(d => this.$httpPost(d), payload);
+    return !!transferResult;
   }
 
 

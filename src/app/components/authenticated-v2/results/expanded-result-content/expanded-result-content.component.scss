@@ -2,6 +2,11 @@ $icon-with: 22px;
 .element-icon {
   width: $icon-with;
 }
+.item-loading-spinner {
+  width: $icon-with;
+  height: $icon-with;
+  margin-bottom: 6px;
+}
 
 .item-icon {
   width: $icon-with;
@@ -56,6 +61,9 @@ table tr:not(:last-child) td {
 
 .buttonContainer {
   margin-bottom: 3px;
+  button:not(:last-of-type) {
+    margin-right: 6px;
+  }
 }
 
 .result-total td {
@@ -82,6 +90,9 @@ table tr:not(:last-child) td {
   }
 }
 
+.item-moved-icon {
+  color: aquamarine;
+}
 
 .report-problem-icon {
   color: lightcoral;
