@@ -17,7 +17,7 @@ export enum PERMUTATION_PACKAGE {
   INTELLECT,
   STRENGTH,
   EXOTIC_ID,
-  MASTERWORK_NUMBER,
+  MASTERWORK_NUMBER, // << 4 contains the id (1,2,3,4) of the exotic, if any. 0 means no exotic
   ELEMENTAL_AFFINITIES,
   WIDTH,
 }

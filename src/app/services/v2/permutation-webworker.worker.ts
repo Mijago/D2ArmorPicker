@@ -40,15 +40,25 @@ addEventListener('message', async ({data}) => {
 
         for (let leg of legs) {
           if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs] != 0
-             && leg.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs] != leg.energyAffinity) continue;
+            && leg.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs] != leg.energyAffinity) continue;
           if (config.disabledItems.indexOf(leg.itemInstanceId) > -1) continue;
           if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
 
           let exoticId = 0;
-          if (helmet.isExotic) exoticId = helmet.hash;
-          else if (gauntlet.isExotic) exoticId = gauntlet.hash;
-          else if (chest.isExotic) exoticId = chest.hash;
-          else if (leg.isExotic) exoticId = leg.hash;
+          let exoticPosition = 0; // none
+          if (helmet.isExotic) {
+            exoticId = helmet.hash;
+            exoticPosition = 1;
+          } else if (gauntlet.isExotic) {
+            exoticId = gauntlet.hash;
+            exoticPosition = 2;
+          } else if (chest.isExotic) {
+            exoticId = chest.hash;
+            exoticPosition = 3;
+          } else if (leg.isExotic) {
+            exoticId = leg.hash;
+            exoticPosition = 4;
+          }
 
           const stats: [number, number, number, number, number, number] = [
             helmet.mobility + gauntlet.mobility + chest.mobility + leg.mobility,
@@ -63,6 +73,7 @@ addEventListener('message', async ({data}) => {
             + ((gauntlet.masterworked ? 1 : 0) << 2)
             + ((chest.masterworked ? 1 : 0) << 1)
             + (leg.masterworked ? 1 : 0)
+            + (exoticPosition << 4) // Add exotic position. This can be used to determine whether an item is exotic
 
           // elemental affinity is at max 5. This means, we can simply shift by 3 bits to store them in one int.
           let elementalAffinity = (helmet.energyAffinity << 9)

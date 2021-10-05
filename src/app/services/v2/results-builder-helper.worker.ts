@@ -33,7 +33,7 @@ addEventListener('message', ({data}) => {
       continue
     }
     // Ignore this permutation if not every item is masterworked
-    if (config.onlyUseMasterworkedItems && permutation[PERMUTATION_PACKAGE.MASTERWORK_NUMBER] != 0xF) {
+    if (config.onlyUseMasterworkedItems && (permutation[PERMUTATION_PACKAGE.MASTERWORK_NUMBER] & 0xF) != 0xF) {
       continue
     }
 
@@ -42,12 +42,13 @@ addEventListener('message', ({data}) => {
     // add +2 to every stat if we assume that the class item is masterworked
     if (config.assumeClassItemMasterworked) for (let n = 0; n < 6; n++) stats[n] += 2;
 
-    // add +8 if there is no exotic and we assume masterworked items
+    let exoticPosition = (permutation[PERMUTATION_PACKAGE.MASTERWORK_NUMBER] & 0xF0) >> 4
+
     // add each item individually
     for (let n = 0; n < 4; n++) {
-      const isExotic = permutation[PERMUTATION_PACKAGE.EXOTIC_ID] == permutation[PERMUTATION_PACKAGE.HELMET_ID + n]
+      const isExotic = exoticPosition == 4 - n
       // Add +2 if masterworked OR if we just assume they are masterworked
-      if ((permutation[11] & (1 << n)) > 0
+      if (((permutation[PERMUTATION_PACKAGE.MASTERWORK_NUMBER] & (1 << n)) > 0)
         || (!isExotic && config.assumeLegendariesMasterworked)
         || (isExotic && config.assumeExoticsMasterworked))
         for (let n = 0; n < 6; n++) stats[n] += 2;

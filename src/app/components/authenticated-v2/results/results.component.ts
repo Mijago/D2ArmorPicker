@@ -259,7 +259,7 @@ export class ResultsComponent implements OnInit {
 
           if (instance?.masterworked
             || (!instance?.isExotic && this._config_assumeLegendariesMasterworked)
-            || (instance?.isExotic && this._config_assumeExoticsMasterworked)
+            || (!!instance?.isExotic && this._config_assumeExoticsMasterworked)
           )
             for (let n = 0; n < 6; n++) {
               data[i].stats[n] += 2;
