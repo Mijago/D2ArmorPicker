@@ -69,7 +69,7 @@ export class Configuration {
       assumeExoticsMasterworked: true,
       assumeClassItemMasterworked: true,
       limitParsedResults: true,
-      tryLimitWastedStats: false,
+      tryLimitWastedStats: true,
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,

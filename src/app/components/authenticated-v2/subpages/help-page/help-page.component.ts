@@ -18,6 +18,7 @@ export class HelpPageComponent implements OnInit {
       entries: [
         "Added this changelog to the help page",
         "Added 'Move to Inventory' button (beta)",
+        "'Try to optimize wasted stats' is now active per default",
         "Introduced an item buffer in the results component to further reduce memory usage",
         "Split up 'Assume items are masterworked' into three settings: Class Items, Legendaries, Exotics",
       ]
