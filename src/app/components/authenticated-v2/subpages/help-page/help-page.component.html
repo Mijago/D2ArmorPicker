@@ -112,13 +112,29 @@
     <mat-card-title>Known Issues</mat-card-title>
     <mat-card-content>
       <ul>
-        <li>
-          If an armor has less than 10 total in one stat and has a negative modifier (goes below 0), the API caps the item stat at 0, leading to the tool thinking it's at 10 (or 8, if masterworked).
-        </li>
-        <li>
-          The point above is also true for values above 42.
-        </li>
+        <li *ngFor="let text of knownIssues">{{text}}</li>
       </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>Changelog</mat-card-title>
+    <mat-card-content>
+      <table class="changelog-table">
+        <tr>
+          <th>Date</th>
+          <th>Version</th>
+          <th>Description</th>
+        </tr>
+        <tr *ngFor="let log of changelog">
+          <td>{{log.date}}</td>
+          <td>{{log.version}}</td>
+          <td>
+            <ul>
+              <li *ngFor="let entry of log.entries">{{entry}}</li>
+            </ul>
+          </td>
+      </table>
     </mat-card-content>
   </mat-card>
 

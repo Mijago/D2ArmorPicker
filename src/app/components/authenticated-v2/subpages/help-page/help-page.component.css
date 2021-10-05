@@ -32,3 +32,14 @@ mat-card {
   margin-bottom: 15px;
   width: 100%;
 }
+
+.changelog-table th:first-of-type {
+  min-width: 80px;
+}
+.changelog-table th:nth-of-type(2) {
+  min-width: 40px;
+}
+
+.changelog-table td {
+  border-top: #6e6e6e solid 1px;
+}
