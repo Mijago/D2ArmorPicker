@@ -62,6 +62,13 @@ export class ExpandedResultContentComponent implements OnInit {
     })
   }
 
+  disableAllItems() {
+    this.config.modifyConfiguration(cb => {
+      for (let item of this.element?.items as ResultItem[])
+        cb.disabledItems.push(item.itemInstanceId)
+    })
+  }
+
   disableItem(itemInstanceId: string) {
     this.config.modifyConfiguration(cb => {
       cb.disabledItems.push(itemInstanceId)

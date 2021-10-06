@@ -9,6 +9,7 @@ export class HelpPageComponent implements OnInit {
   knownIssues: string[] = [
     "If an armor has less than 10 total in one stat and has a negative modifier (goes below 0), the API caps the item stat at 0, leading to the tool thinking it's at 10 (or 8, if masterworked).",
     "The point above is also true for values above 42.",
+    "V2 does not load on Apple devices. No ETA on a fix as I do not own any Apple device and thus can not debug it."
   ]
 
   changelog = [

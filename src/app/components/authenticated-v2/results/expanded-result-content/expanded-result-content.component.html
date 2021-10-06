@@ -100,10 +100,26 @@
       <td>{{2}}</td>
       <td>{{2}}</td>
       <td>{{2}}</td>
+      <td></td>
+      <td></td>
+      <td>
+        <button mat-icon-button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon"
+                matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
     </tr>
     <tr *ngIf="!config_assumeClassItemMasterworked">
       <td>Any Class Item</td>
       <td colspan="6" class="text-centered">You chose to use non-masterworked class items.</td>
+      <td></td>
+      <td></td>
+      <td>
+        <button mat-icon-button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon"
+                matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
     </tr>
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">
