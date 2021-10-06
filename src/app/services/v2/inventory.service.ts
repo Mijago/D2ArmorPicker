@@ -37,6 +37,7 @@ export class InventoryService {
   private currentClass: CharacterClass = CharacterClass.None;
   private currentIgnoredItems: string[] = []
   private checkFixedArmorAffinities: null | EnumDictionary<ArmorSlot, DestinyEnergyType> = null;
+  private ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
 
   private _armorPermutations: BehaviorSubject<Uint32Array>;
@@ -77,7 +78,9 @@ export class InventoryService {
         }
 
         this._config = c;
-        let forceUpdatePermutations = c.characterClass != this.currentClass || this.currentIgnoredItems.length != c.disabledItems.length
+        let forceUpdatePermutations = c.characterClass != this.currentClass
+          || this.currentIgnoredItems.length != c.disabledItems.length
+          || this.ignoreArmorAffinitiesOnMasterworkedItems != c.ignoreArmorAffinitiesOnMasterworkedItems
         if (forceUpdatePermutations) {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
@@ -88,6 +91,8 @@ export class InventoryService {
             if (this.checkFixedArmorAffinities[n as ArmorSlot] != c.fixedArmorAffinities[n as ArmorSlot])
               forceUpdatePermutations = true;
           }
+
+        this.ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
         this.checkFixedArmorAffinities = {
           [ArmorSlot.ArmorSlotHelmet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet],
           [ArmorSlot.ArmorSlotGauntlet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotGauntlet],
