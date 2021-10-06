@@ -7,6 +7,10 @@ import {ModifierValue} from "../../../../data/modifier";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {BungieApiService} from "../../../../services/bungie-api.service";
 import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
+import {ModOrAbility} from "../../../../data/enum/modOrAbility";
+import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {ArmorSlot} from "../../../../data/permutation";
+import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -20,6 +24,15 @@ export class ExpandedResultContentComponent implements OnInit {
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
   public config_assumeClassItemMasterworked = false;
+  public config_ignoreArmorAffinitiesOnMasterworkedItems = false;
+  public config_enabledMods: ModOrAbility[] = [];
+  public config_fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
+    [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+  };
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
@@ -47,6 +60,9 @@ export class ExpandedResultContentComponent implements OnInit {
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
+      this.config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
+      this.config_fixedArmorAffinities = c.fixedArmorAffinities;
+      this.config_enabledMods = c.enabledMods;
       this.configValues = c.enabledMods
         .reduce((p, v) => {
           p = p.concat(ModInformation[v].bonus)
@@ -105,5 +121,26 @@ export class ExpandedResultContentComponent implements OnInit {
     } else {
       this.openSnackBar("Some of the items could not be moved. Make sure that there is enough space in the specific slot. This tool will not move items out of your inventory.")
     }
+  }
+
+  getCountOfItemsWithWrongElement() {
+    let count = 0;
+    for (let t = 0; t < 4; t++) {
+      const fixed = this.config_fixedArmorAffinities[t as ArmorSlot];
+      if (fixed == 0) continue;
+      if (this.element?.items[t].energy != fixed)
+        count++;
+    }
+    return count;
+  }
+
+  getItemsThatMustBeMasterworked() {
+    return this.element?.items.filter(item => {
+      if (item.masterworked) return false;
+      if (item.exotic && !this.config_assumeExoticsMasterworked) return false;
+      if (!item.exotic && !this.config_assumeLegendariesMasterworked) return false;
+
+      return true;
+    })
   }
 }

@@ -1,7 +1,7 @@
 <div>
 
-  <mat-toolbar *ngIf="mayAnyItemBeBugged" color="warn" class="invalid-item-box mat-elevation-z4">
-      Warning: The stats of one or more items used for this build may be invalid.<br>
+  <mat-toolbar *ngIf="mayAnyItemBeBugged" class="invalid-item-box mat-elevation-z4" color="warn">
+    Warning: The stats of one or more items used for this build may be invalid.<br>
     Please remove all negative/positive stat modifiers from the marked items.
   </mat-toolbar>
 
@@ -22,11 +22,13 @@
     <!-- Items -->
     <tr *ngFor="let i of element?.items">
       <td>
-        <u *ngIf="i.masterworked" matTooltip='This item is already masterworked.' #tooltip="matTooltip">{{i.name}}</u>
+        <u #tooltip="matTooltip" *ngIf="i.masterworked" matTooltip='This item is already masterworked.'>{{i.name}}</u>
         <span *ngIf="!i.masterworked">{{i.name}}</span>
       </td>
-      <td *ngIf="!i.stats">An error occured. Please reload the page.</td> <!-- TODO: remove once i collected enough data -->
-      <ng-container *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
+      <td *ngIf="!i.stats">An error occured. Please reload the page.</td>
+      <!-- TODO: remove once i collected enough data -->
+      <ng-container
+        *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
         <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + bonus}}</td>
         <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Resilience] + bonus}}</td>
         <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Recovery] + bonus}}</td>
@@ -37,27 +39,31 @@
       <td>
         <!-- Item Icon -->
         <div class="item-icon-container">
-          <div class="item-icon-masterwork-overlay" *ngIf="i.masterworked"></div>
+          <div *ngIf="i.masterworked" class="item-icon-masterwork-overlay"></div>
           <img class="item-icon" src="https://bungie.net/{{i.icon}}">
         </div>
       </td>
       <td>
         <!-- Item affinity -->
-        <img class="element-icon" *ngIf="i.energy == 1"
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png"
-             matTooltip='Arc affinity' #tooltip="matTooltip">
-        <img class="element-icon" *ngIf="i.energy == 2"
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png"
-             matTooltip='Solar affinity' #tooltip="matTooltip">
-        <img class="element-icon" *ngIf="i.energy == 3"
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png"
-             matTooltip='Void affinity' #tooltip="matTooltip">
-        <img class="element-icon" *ngIf="i.energy == 6"
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png"
-             matTooltip='Stasis affinity' #tooltip="matTooltip">
+        <img #tooltip="matTooltip" *ngIf="i.energy == 1"
+             class="element-icon"
+             matTooltip='Arc affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
+        <img #tooltip="matTooltip" *ngIf="i.energy == 2"
+             class="element-icon"
+             matTooltip='Solar affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
+        <img #tooltip="matTooltip" *ngIf="i.energy == 3"
+             class="element-icon"
+             matTooltip='Void affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
+        <img #tooltip="matTooltip" *ngIf="i.energy == 6"
+             class="element-icon"
+             matTooltip='Stasis affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
       </td>
       <td>
-        <button mat-icon-button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn"
+        <button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn" mat-icon-button
                 matTooltip="Disable this item from the results. It will not be used to generate results anymore, but you can always undo this.">
           <mat-icon>block</mat-icon>
         </button>
@@ -65,35 +71,40 @@
       <!-- Moving to inventory -->
       <td *ngIf="i.transferState == 1 || i.transferState == 2">
         <mat-progress-spinner
-          diameter="22"
           class="item-loading-spinner"
           color="primary"
+          diameter="22"
           mode="indeterminate">
         </mat-progress-spinner>
       </td>
       <td *ngIf="i.transferState == 3">
-        <mat-icon inline aria-hidden="false" aria-label="Success"
+        <mat-icon #tooltip="matTooltip" aria-hidden="false" aria-label="Success"
                   class="item-moved-icon"
-                  matTooltip="Item successfully moved to inventory."
-                  #tooltip="matTooltip"> check_circle_outline </mat-icon>
+                  inline
+                  matTooltip="Item successfully moved to inventory."> check_circle_outline
+        </mat-icon>
       </td>
       <td *ngIf="i.transferState == 4">
-        <mat-icon inline aria-hidden="false" aria-label="Error"
+        <mat-icon #tooltip="matTooltip" aria-hidden="false" aria-label="Error"
                   class="report-problem-icon"
-                  matTooltip="This item could not be moved. Make sure that there is enough space on your character. This tool will not move items out of your inventory."
-                  #tooltip="matTooltip"> error_outline </mat-icon>
+                  inline
+                  matTooltip="This item could not be moved. Make sure that there is enough space on your character. This tool will not move items out of your inventory.">
+          error_outline
+        </mat-icon>
       </td>
       <!-- // Moving to inventory -->
       <td *ngIf="i.mayBeBugged">
-        <mat-icon inline aria-hidden="false" aria-label="Error"
+        <mat-icon #tooltip="matTooltip" aria-hidden="false" aria-label="Error"
                   class="report-problem-icon"
-                  matTooltip="The stats of this item may be incorrect. Make sure that you remove every positive or negative stat modifier from this item."
-                  #tooltip="matTooltip"> report_problem </mat-icon>
+                  inline
+                  matTooltip="The stats of this item may be incorrect. Make sure that you remove every positive or negative stat modifier from this item.">
+          report_problem
+        </mat-icon>
       </td>
     </tr>
     <!-- Class Item -->
     <tr *ngIf="config_assumeClassItemMasterworked">
-      <td><u matTooltip='Class item should be masterworked.' #tooltip="matTooltip">Any Class Item</u></td>
+      <td><u #tooltip="matTooltip" matTooltip='Class item should be masterworked.'>Any Class Item</u></td>
       <td>{{2}}</td>
       <td>{{2}}</td>
       <td>{{2}}</td>
@@ -103,7 +114,7 @@
       <td></td>
       <td></td>
       <td>
-        <button mat-icon-button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon"
+        <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
                 matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
           <mat-icon>block</mat-icon>
         </button>
@@ -111,11 +122,11 @@
     </tr>
     <tr *ngIf="!config_assumeClassItemMasterworked">
       <td>Any Class Item</td>
-      <td colspan="6" class="text-centered">You chose to use non-masterworked class items.</td>
+      <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>
       <td></td>
       <td>
-        <button mat-icon-button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon"
+        <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
                 matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
           <mat-icon>block</mat-icon>
         </button>
@@ -124,36 +135,43 @@
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">
       <td>Total (gear)</td>
-      <td *ngIf="!stats">An error occured. Please reload the page.</td> <!-- TODO: remove once i collected enough data -->
+      <td *ngIf="!stats">An error occured. Please reload the page.</td>
+      <!-- TODO: remove once i collected enough data -->
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Mobility]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
-             alt="Mobility" class="statIcon">
+        <img alt="Mobility"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png">
       </td>
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Resilience]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
-             alt="Resilience" class="statIcon">
+        <img alt="Resilience"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png">
       </td>
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Recovery]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
-             alt="Recovery" class="statIcon">
+        <img alt="Recovery"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png">
       </td>
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Discipline]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
-             alt="Discipline" class="statIcon">
+        <img alt="Discipline"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png">
       </td>
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Intellect]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
-             alt="Intellect" class="statIcon">
+        <img alt="Intellect"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png">
       </td>
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Strength]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
-             alt="Strength" class="statIcon">
+        <img alt="Strength"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png">
       </td>
     </tr>
     <!-- Config Mods -->
@@ -234,48 +252,187 @@
       <td>Total</td>
       <td>
         {{stats[ArmorStat.Mobility]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png"
-             alt="Mobility" class="statIcon">
+        <img alt="Mobility"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png">
       </td>
       <td>
         {{stats[ArmorStat.Resilience]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png"
-             alt="Resilience" class="statIcon">
+        <img alt="Resilience"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png">
       </td>
       <td>
         {{stats[ArmorStat.Recovery]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png"
-             alt="Recovery" class="statIcon">
+        <img alt="Recovery"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png">
       </td>
       <td>
         {{stats[ArmorStat.Discipline]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
-             alt="Discipline" class="statIcon">
+        <img alt="Discipline"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png">
       </td>
       <td>
         {{stats[ArmorStat.Intellect]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
-             alt="Intellect" class="statIcon">
+        <img alt="Intellect"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png">
       </td>
       <td>
         {{stats[ArmorStat.Strength]}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
-             alt="Strength" class="statIcon">
+        <img alt="Strength"
+             class="statIcon"
+             src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png">
       </td>
     </tr>
   </table>
 </div>
 <div class="buttonContainer">
   <ng-container *ngVar="buildItemIdString(element) as text">
-    <button mat-stroked-button [cdkCopyToClipboard]="text"
-            (click)="openSnackBar('Copied the DIM search query to your clipboard.')"
+    <button (click)="openSnackBar('Copied the DIM search query to your clipboard.')" [cdkCopyToClipboard]="text"
+            mat-stroked-button
             matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
       Copy DIM query to clipboard
     </button>
   </ng-container>
-  <button mat-stroked-button
-          (click)="moveItems()"
-          matTooltip="Move this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
+  <button (click)="moveItems()"
+          mat-stroked-button
+          matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
     Move items to inventory (beta)
   </button>
+</div>
+
+<div>
+  What to do now?<br>
+  <ol>
+    <li>
+      Move all related items into your inventory <span *ngIf="config_assumeClassItemMasterworked"> and use a masterworked class item</span>.
+    </li>
+    <!-- Masterwork and elements -->
+    <li *ngIf="getCountOfItemsWithWrongElement() > 0">
+      Change the element of these items:
+      <ul>
+        <ng-container *ngFor="let item of element?.items; let idx = index">
+          <li *ngIf="$any(config_fixedArmorAffinities)[idx] != 0 && (item.energy != $any(config_fixedArmorAffinities)[idx])">
+            {{item.name}} must be
+
+            <span *ngIf="$any(config_fixedArmorAffinities)[idx] == 1">Arc </span>
+            <span *ngIf="$any(config_fixedArmorAffinities)[idx] == 2">Solar </span>
+            <span *ngIf="$any(config_fixedArmorAffinities)[idx] == 3">Void </span>
+            <span *ngIf="$any(config_fixedArmorAffinities)[idx] == 6">Stasis </span>
+            <!-- Item affinity -->
+            <img #tooltip="matTooltip" *ngIf="$any(config_fixedArmorAffinities)[idx] == 1"
+                 class="element-icon-mini"
+                 matTooltip='Arc affinity'
+                 src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
+            <img #tooltip="matTooltip" *ngIf="$any(config_fixedArmorAffinities)[idx] == 2"
+                 class="element-icon-mini"
+                 matTooltip='Solar affinity'
+                 src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
+            <img #tooltip="matTooltip" *ngIf="$any(config_fixedArmorAffinities)[idx] == 3"
+                 class="element-icon-mini"
+                 matTooltip='Void affinity'
+                 src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
+            <img #tooltip="matTooltip" *ngIf="$any(config_fixedArmorAffinities)[idx] == 6"
+                 class="element-icon-mini"
+                 matTooltip='Stasis affinity'
+                 src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+
+          </li>
+        </ng-container>
+      </ul>
+    </li>
+    <ng-container *ngVar="getItemsThatMustBeMasterworked() as mwItems">
+      <li *ngIf="mwItems.length > 0">
+        Masterwork these items:
+        <ul>
+          <li *ngFor="let item of mwItems">
+            {{item.name}}
+          </li>
+        </ul>
+      </li>
+    </ng-container>
+
+    <!-- Mods -->
+    <li *ngIf="($any(element?.mods) | count:StatModifier.NONE) < 5">Equip the following stat mods:
+      <ul *ngVar="element?.mods as mods">
+        <!-- MOBILITY -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_MOBILITY as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_MOBILITY as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Mobility Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /MOBILITY -->
+        <!-- RESILIENCE -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_RESILIENCE as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_RESILIENCE as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Resilience Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /RESILIENCE -->
+        <!-- RECOVERY -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_RECOVERY as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_RECOVERY as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Recovery Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /RECOVERY -->
+        <!-- DISCIPLINE -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_DISCIPLINE as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_DISCIPLINE as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Discipline Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /DISCIPLINE -->
+        <!-- INTELLECT -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_INTELLECT as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_INTELLECT as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Intellect Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /INTELLECT -->
+        <!-- STRENGTH -->
+        <ng-container *ngVar="mods | count:StatModifier.MINOR_STRENGTH as minorCount">
+          <ng-container *ngVar="mods | count:StatModifier.MAJOR_STRENGTH as majorCount">
+            <li *ngIf="(minorCount+majorCount) > 0" class="positive">
+              <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
+              <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
+              <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
+              Strength Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+            </li>
+          </ng-container>
+        </ng-container>
+        <!-- /STRENGTH -->
+      </ul>
+
+    </li>
+    <li *ngIf="config_enabledMods.length > 0">Equip any mods and fragments that you enabled in the configuration.</li>
+  </ol>
 </div>

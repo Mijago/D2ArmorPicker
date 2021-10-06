@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.9",
+      date: "Oct 6, 2021",
+      entries: [
+        "Added a detailed description of the steps required to build a selected result."
+      ]
+    },
+    {
       version: "2.0.8",
       date: "Oct 5, 2021",
       entries: [
