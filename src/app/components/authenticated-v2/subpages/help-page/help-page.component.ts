@@ -17,19 +17,20 @@ export class HelpPageComponent implements OnInit {
       version: "2.0.9",
       date: "Oct 6, 2021",
       entries: [
-        "Added a detailed description of the steps required to build a selected result.",
-        "Added a button to disable all four armor pieces at once."
+        "+ Added a detailed description of the steps required to build a selected result.",
+        "+ Added a button to disable all four armor pieces at once.",
+        "~ Fixed an issue where the permutations were not updated after 'Ignore armor elemental affinities on masterworked armor' was changed."
       ]
     },
     {
       version: "2.0.8",
       date: "Oct 5, 2021",
       entries: [
-        "Added this changelog to the help page",
-        "Added 'Move to Inventory' button (beta)",
-        "'Try to optimize wasted stats' is now active per default",
-        "Introduced an item buffer in the results component to further reduce memory usage",
-        "Split up 'Assume items are masterworked' into three settings: Class Items, Legendaries, Exotics",
+        "+ Added this changelog to the help page.",
+        "+ Added 'Move to Inventory' button (beta).",
+        "+ Split up 'Assume items are masterworked' into three settings: Class Items, Legendaries, Exotics",
+        "~'Try to optimize wasted stats' is now active per default.",
+        "~ Introduced an item buffer in the results component to further reduce memory usage.",
       ]
     },
   ]
