@@ -35,7 +35,20 @@
   <mat-card-title> Configuration</mat-card-title>
   <mat-card-content>
 
-    <span>Please note: The results are either on the right or below the configuration.</span>
+    <span>Please note: The results are either on the right or below the configuration.</span><br>
+    <div>
+      <div class="mat-elevation-z10" style="width: fit-content; padding: 9px">
+        <a mat-raised-button color="accent" href="/D2ArmorPicker/#/v2"
+           [disabled]="updatingManifest || updatingArmor">You can test the second version of D2ArmorPicker here!</a><br/>
+        <span>
+        V2 is more performant and is built not to crash on memory.<br>
+        Even if you have up to 400 armor pieces for a single class.<br>
+        I hope I can publish it as the default version of this tool soon.<br/>
+          Have fun, Guardians! Your Mijago <a href="https://twitter.com/MijagoCoding/" target="_blank"><img src="assets/logo-twitter.png" class="logo-twitter" alt="Me on twitter"></a>.
+      </span>
+      </div>
+    </div>
+
 
 <h2>Select the class of your guardian.</h2>
 <mat-form-field appearance="fill">
