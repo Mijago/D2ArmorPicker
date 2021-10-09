@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "INSTALL": "ng add @angular/material",
-    "start": "ng serve",
+    "start": "ng serve --ssl",
     "build": "ng build",
     "deploy": "ng deploy D2ArmorPicker --base-href=/D2ArmorPicker/",
     "watch": "ng build --watch --configuration development",
