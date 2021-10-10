@@ -1,5 +1,5 @@
 export const environment = {
-  version: "2.0.9",
+  version: "2.0.10",
   production: true,
   apiKey: "9415df8eff46408aa9c0d51e4d69b94f",
   clientId: "37252",

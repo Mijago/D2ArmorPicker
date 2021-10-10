@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.10",
+      date: "Oct 10, 2021",
+      entries: [
+        "+ Added 'Equip Items' button to the detailed item overview."
+      ]
+    },
+    {
       version: "2.0.9",
       date: "Oct 6, 2021",
       entries: [
