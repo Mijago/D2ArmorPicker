@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {
   getDestinyManifest,
   getDestinyManifestSlice,
-  getProfile, getItem,
+  getProfile, getItem, equipItem,
   HttpClientConfig,
   transferItem
 } from 'bungie-api-ts/destiny2';
@@ -15,7 +15,6 @@ import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
 import {IManifestArmor} from "./IManifestArmor";
 import {IInventoryArmor} from "./IInventoryArmor";
-import {moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Injectable({
   providedIn: 'root'
@@ -89,7 +88,7 @@ export class BungieApiService {
     }) || [];
   }
 
-  async transferItem(itemInstanceId: string, targetCharacter: string): Promise<boolean> {
+  async transferItem(itemInstanceId: string, targetCharacter: string, equip = false): Promise<boolean> {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
       await this.authService.logout();
@@ -105,31 +104,45 @@ export class BungieApiService {
       ]
     })
 
+    let transferResult = false;
+
     if (!r1) return false;
-    if (r1.Response.characterId == targetCharacter) return true;
-    if (r1.Response.item.data?.location != 2) {
-      await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
-      r1 = await getItem(d => this.$http(d), {
-        membershipType: destinyMembership.membershipType,
-        destinyMembershipId: destinyMembership.membershipId,
-        itemInstanceId: itemInstanceId,
-        components: [
-          DestinyComponentType.ItemCommonData
-        ]
-      })
+    if (r1.Response.characterId != targetCharacter) {
+      if (r1.Response.item.data?.location != 2) {
+        await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
+        r1 = await getItem(d => this.$http(d), {
+          membershipType: destinyMembership.membershipType,
+          destinyMembershipId: destinyMembership.membershipId,
+          itemInstanceId: itemInstanceId,
+          components: [
+            DestinyComponentType.ItemCommonData
+          ]
+        })
+      }
+
+      const payload = {
+        "characterId": targetCharacter,
+        "membershipType": 3,
+        "itemId": r1?.Response.item.data?.itemInstanceId || "",
+        "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+        "stackSize": 1,
+        "transferToVault": false
+      }
+
+      transferResult = !!await transferItem(d => this.$httpPost(d), payload);
+    }
+    if (equip) {
+      let equipPayload = {
+        "characterId": targetCharacter,
+        "membershipType": 3,
+        "stackSize": 1,
+        "itemId": r1?.Response.item.data?.itemInstanceId || "",
+        "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+      }
+      transferResult = !!await equipItem(d => this.$httpPost(d), equipPayload)
     }
 
-    const payload = {
-      "characterId": targetCharacter,
-      "membershipType": 3,
-      "itemId": r1?.Response.item.data?.itemInstanceId || "",
-      "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
-      "stackSize": 1,
-      "transferToVault": false
-    }
-
-    let transferResult = await transferItem(d => this.$httpPost(d), payload);
-    return !!transferResult;
+    return transferResult;
   }
 
 

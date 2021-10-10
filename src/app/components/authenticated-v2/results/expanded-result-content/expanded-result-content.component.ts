@@ -95,24 +95,33 @@ export class ExpandedResultContentComponent implements OnInit {
     return (this.element?.items.filter((d: ResultItem) => d.mayBeBugged).length || 0) > 0
   }
 
-  async moveItems() {
-    for (let item of (this.element?.items || [])) {
-      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
-    }
 
+  async getCharacterId() {
     // get character Id
     let characters = await this.bungieApi.getCharacters();
     characters = characters.filter(c => c.clazz == this.config_characterClass)
     if (characters.length == 0) {
       this.openSnackBar("Error: Could not find a character to move the items to.");
-      return;
+      return null;
+    }
+    return characters[0].characterId;
+  }
+
+  async moveItems(equip=false) {
+    for (let item of (this.element?.items || [])) {
+      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
     }
 
+    let characterId = await this.getCharacterId()
+    if (!characterId) return;
+
+    let itemIdx = [0,1,2,3].sort((a, b) => this.element?.items[a].exotic ? 1 : -1)
+
     let allSuccessful = true;
-    let characterId = characters[0].characterId
-    for (let item of (this.element?.items || [])) {
+    for (let idx of itemIdx) {
+      let item = this.element?.items[idx] as ResultItem
       item.transferState = ResultItemMoveState.TRANSFERRING
-      let success = await this.bungieApi.transferItem(item.itemInstanceId, characterId);
+      let success = await this.bungieApi.transferItem(item.itemInstanceId, characterId, equip);
       item.transferState = success ? ResultItemMoveState.TRANSFERRED : ResultItemMoveState.ERROR_DURING_TRANSFER
       if (!success) allSuccessful = false;
     }
