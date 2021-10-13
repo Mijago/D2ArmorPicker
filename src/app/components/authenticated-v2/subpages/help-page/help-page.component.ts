@@ -17,7 +17,8 @@ export class HelpPageComponent implements OnInit {
       version: "2.0.11",
       date: "Oct 13, 2021",
       entries: [
-        "+ HALLOWEEN SPECIAL! Added (temporary) filter for halloween masks! This will be removed after the event."
+        "+ HALLOWEEN SPECIAL! Added (temporary) filter for halloween masks! This will be removed after the event.",
+        "~ Fix: Clear the results if you switch character and no possible permutations can be found."
       ]
     },
     {

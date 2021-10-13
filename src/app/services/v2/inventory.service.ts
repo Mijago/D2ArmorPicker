@@ -63,6 +63,16 @@ export class InventoryService {
     this.armorPermutations.subscribe(p => {
       if (this.allArmorPermutations.length > 0)
         this.updateResults();
+      else {
+        this.allArmorResults = new Uint16Array()
+        this._armorResults.next({
+          results: this.allArmorResults,
+          permutations: this.allArmorPermutations,
+          maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+          statCombo3x100: [],
+          statCombo4x100: []
+        })
+      }
     })
 
     let dataAlreadyFetched = false;
