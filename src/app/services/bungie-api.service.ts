@@ -302,6 +302,11 @@ export class BungieApiService {
           }, res[d.itemHash]) as IInventoryArmor
           (r.id as any) = undefined;
 
+          // HALLOWEEN SPECIAL
+          if (d.itemHash == 2545426109 || d.itemHash == 199733460 || d.itemHash == 3224066584)
+            r.slot = "Helmets";
+          // /HALLOWEEN SPECIAL
+
 
           // TODO: Negative values are capped at 0, thus i get always ~8 strength
           if (r.masterworked) {

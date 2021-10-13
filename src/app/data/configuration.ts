@@ -45,6 +45,9 @@ export class Configuration {
   enabledMods: ModOrAbility[] = [];
   selectedExoticHash: number = 0;
 
+  // Halloween Special!
+  eventHalloweenOnlyUseMask: boolean = false;
+
   // Armor affinity for each slot
   fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
     [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
@@ -72,6 +75,7 @@ export class Configuration {
       tryLimitWastedStats: true,
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
+      eventHalloweenOnlyUseMask: false,
       characterClass: CharacterClass.Titan,
       selectedExoticHash: 0,
       fixedArmorAffinities: {

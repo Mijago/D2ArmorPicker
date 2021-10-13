@@ -24,6 +24,17 @@ addEventListener('message', async ({data}) => {
   for (let helmet of helmets) {
     if (!config.ignoreArmorAffinitiesOnMasterworkedItems && config.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet] != 0
       && helmet.masterworked && config.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet] != helmet.energyAffinity) continue;
+
+    // HALLOWEEN SPECIAL
+    if (config.eventHalloweenOnlyUseMask) {
+      if (
+        helmet.hash != 2545426109 // warlock
+        && helmet.hash != 199733460 // Titan
+        && helmet.hash != 3224066584 // Hunter
+      ) continue;
+    }
+    // /HALLOWEEN SPECIAL
+
     if (config.disabledItems.indexOf(helmet.itemInstanceId) > -1) continue;
 
     for (let gauntlet of gauntlets) {

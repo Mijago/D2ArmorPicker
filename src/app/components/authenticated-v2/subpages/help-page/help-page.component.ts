@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.11",
+      date: "Oct 13, 2021",
+      entries: [
+        "+ HALLOWEEN SPECIAL! Added (temporary) filter for halloween masks! This will be removed after the event."
+      ]
+    },
+    {
       version: "2.0.10",
       date: "Oct 10, 2021",
       entries: [

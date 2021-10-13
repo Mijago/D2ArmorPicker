@@ -47,6 +47,7 @@ export class InventoryService {
   public readonly armorResults: Observable<info>;
 
   private _config: Configuration = Configuration.buildEmptyConfiguration();
+  private eventHalloweenOnlyUseMask: boolean = false;
 
   constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
               private api: BungieApiService, private auth: AuthService) {
@@ -81,6 +82,8 @@ export class InventoryService {
         let forceUpdatePermutations = c.characterClass != this.currentClass
           || this.currentIgnoredItems.length != c.disabledItems.length
           || this.ignoreArmorAffinitiesOnMasterworkedItems != c.ignoreArmorAffinitiesOnMasterworkedItems
+          || this.eventHalloweenOnlyUseMask != c.eventHalloweenOnlyUseMask // HALLOWEEN SPECIAL
+
         if (forceUpdatePermutations) {
           this.currentClass = c.characterClass;
           this.currentIgnoredItems = ([] as string[]).concat(c.disabledItems)
@@ -92,6 +95,9 @@ export class InventoryService {
               forceUpdatePermutations = true;
           }
 
+        // HALLOWEEN SPECIAL
+        this.eventHalloweenOnlyUseMask = c.eventHalloweenOnlyUseMask
+        // /HALLOWEEN SPECIAL
         this.ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
         this.checkFixedArmorAffinities = {
           [ArmorSlot.ArmorSlotHelmet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet],
