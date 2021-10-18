@@ -2,6 +2,7 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {IInventoryArmor} from "../../../../services/IInventoryArmor";
 import {DatabaseService} from "../../../../services/database.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {InventoryService} from "../../../../services/v2/inventory.service";
 
 
 var clusterData = [{
@@ -168,11 +169,14 @@ export class ArmorClusterPageComponent implements AfterViewInit {
   clusters: IInventoryArmor[][] = [];
 
 
-  constructor(private db: DatabaseService, private _snackBar: MatSnackBar) {
+  constructor(private db: DatabaseService, private _snackBar: MatSnackBar, private inventory: InventoryService) {
   }
 
   async ngAfterViewInit(): Promise<void> {
-    await this.Update();
+    this.inventory.inventory.subscribe(async () => {
+      await this.Update();
+      this.openSnackBar("Clusters were updated.")
+    })
   }
 
 

@@ -14,7 +14,7 @@ import {AuthService} from "../auth.service";
 import {EnumDictionary} from "../../data/types/EnumDictionary";
 import {ArmorSlot} from "../../data/permutation";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {Router} from "@angular/router";
+import {NavigationEnd, Router} from "@angular/router";
 
 type info = {
   results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
@@ -41,6 +41,9 @@ export class InventoryService {
   private ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
 
+  private _inventory: BehaviorSubject<null>;
+  public readonly inventory: Observable<null>;
+
   private _armorPermutations: BehaviorSubject<Uint32Array>;
   public readonly armorPermutations: Observable<Uint32Array>;
 
@@ -49,9 +52,13 @@ export class InventoryService {
 
   private _config: Configuration = Configuration.buildEmptyConfiguration();
   private eventHalloweenOnlyUseMask: boolean = false;
+  private updatingResults: boolean = false;
 
   constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
               private api: BungieApiService, private auth: AuthService, private router: Router) {
+    this._inventory = new BehaviorSubject(null)
+    this.inventory = this._inventory.asObservable();
+
     this._armorPermutations = new BehaviorSubject(new Uint32Array(0))
     this.armorPermutations = this._armorPermutations.asObservable();
 
@@ -65,19 +72,20 @@ export class InventoryService {
       if (this.allArmorPermutations.length > 0)
         this.updateResults();
       else {
-        this.allArmorResults = new Uint16Array()
-        this._armorResults.next({
-          results: this.allArmorResults,
-          permutations: this.allArmorPermutations,
-          maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-          statCombo3x100: [],
-          statCombo4x100: []
-        })
+        this.clearResults();
       }
     })
 
     let dataAlreadyFetched = false;
     let isUpdating = false;
+
+    router.events.subscribe(async val => {
+      if (val instanceof NavigationEnd) {
+        this.clearResults()
+        await this.refreshAll(!dataAlreadyFetched, true);
+        dataAlreadyFetched = true;
+      }
+    })
 
     config.configuration
       .pipe(
@@ -126,7 +134,19 @@ export class InventoryService {
       })
   }
 
+  private clearResults() {
+    this.allArmorResults = new Uint16Array()
+    this._armorResults.next({
+      results: this.allArmorResults,
+      permutations: this.allArmorPermutations,
+      maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+      statCombo3x100: [],
+      statCombo4x100: []
+    })
+  }
+
   shouldCalculateResults(): boolean {
+    console.log("this.router.url", this.router.url)
     return this.router.url == "/v2"
   }
 
@@ -145,8 +165,12 @@ export class InventoryService {
   }
 
   async refreshAll(force: boolean = false, forceUpdatePermutations = false) {
+
     let manifestUpdated = await this.updateManifest();
     let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
+
+    // trigger armor update behaviour
+    if (armorUpdated) this._inventory.next(null);
 
     // Do not update results in Help and Cluster pages
     if (this.shouldCalculateResults()) {
@@ -155,43 +179,55 @@ export class InventoryService {
       else
         this.updateResults()
     }
+
   }
 
   updateResults() {
-    console.debug("call updateResults")
-    this.status.modifyStatus(s => s.calculatingResults = true)
-    const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
-    worker.onmessage = ({data}) => {
-      this.allArmorResults = new Uint16Array(data.view)
-      this.allArmorPermutations = new Uint32Array(data.allArmorPermutations)
+    if (this.updatingResults) {
+      console.warn("Called updateResults, but aborting, as it is already running.")
+      return;
+    }
+    try {
+      this.updatingResults = true;
+      console.debug("call updateResults")
+      this.status.modifyStatus(s => s.calculatingResults = true)
+      const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
+      worker.onmessage = ({data}) => {
+        this.allArmorResults = new Uint16Array(data.view)
+        this.allArmorPermutations = new Uint32Array(data.allArmorPermutations)
 
-      this.status.modifyStatus(s => s.calculatingResults = false)
+        this.status.modifyStatus(s => s.calculatingResults = false)
 
-      this._armorResults.next({
-        results: this.allArmorResults,
-        permutations: this.allArmorPermutations,
-        maximumPossibleTiers: data.maximumPossibleTiers,
-        statCombo3x100: data.statCombo3x100.map((d: number) => {
-          let r = []
-          for (let n = 0; n < 6; n++)
-            if ((d & (1 << n)) > 0)
-              r.push(n)
-          return r;
-        }) || [],
-        statCombo4x100: data.statCombo4x100.map((d: number) => {
-          let r = [];
-          for (let n = 0; n < 6; n++)
-            if ((d & (1 << n)) > 0)
-              r.push(n)
-          return r;
-        }, []) || []
-      })
-    };
-    worker.postMessage({
-      currentClass: this.currentClass,
-      config: this._config,
-      permutations: this.allArmorPermutations.buffer
-    }, [this.allArmorPermutations.buffer]);
+        this._armorResults.next({
+          results: this.allArmorResults,
+          permutations: this.allArmorPermutations,
+          maximumPossibleTiers: data.maximumPossibleTiers,
+          statCombo3x100: data.statCombo3x100.map((d: number) => {
+            let r = []
+            for (let n = 0; n < 6; n++)
+              if ((d & (1 << n)) > 0)
+                r.push(n)
+            return r;
+          }) || [],
+          statCombo4x100: data.statCombo4x100.map((d: number) => {
+            let r = [];
+            for (let n = 0; n < 6; n++)
+              if ((d & (1 << n)) > 0)
+                r.push(n)
+            return r;
+          }, []) || []
+        })
+      };
+      worker.postMessage({
+        currentClass: this.currentClass,
+        config: this._config,
+        permutations: this.allArmorPermutations.buffer
+      }, [this.allArmorPermutations.buffer]);
+
+    } finally  {
+      this.updatingResults = false;
+    }
+
 
   }
 
