@@ -61,6 +61,7 @@ import { HelpPageComponent } from './components/authenticated-v2/subpages/help-p
 import { ArmorPickerPageComponent } from './components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import { ArmorClusterPageComponent } from './components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component';
 
 
 const routes: Routes = [
@@ -74,6 +75,10 @@ const routes: Routes = [
       {
         path: 'help',
         component: HelpPageComponent
+      },
+      {
+        path: 'cluster',
+        component: ArmorClusterPageComponent
       }
     ]
   },
@@ -113,7 +118,8 @@ const routes: Routes = [
     DesiredElementalAffinitySelectionComponent,
     IgnoredItemsListComponent,
     HelpPageComponent,
-    ArmorPickerPageComponent
+    ArmorPickerPageComponent,
+    ArmorClusterPageComponent
   ],
     imports: [
         FlexLayoutModule,

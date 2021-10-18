@@ -1,0 +1,13 @@
+#cluster-container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+mat-card {
+  margin-bottom: 8px;
+}
+
+.searchQueryField {
+  width: 100%;
+}
