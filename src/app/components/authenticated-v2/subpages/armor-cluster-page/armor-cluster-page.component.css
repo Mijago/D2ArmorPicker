@@ -16,3 +16,18 @@ mat-card {
   margin-bottom: 15px;
   width: 100%;
 }
+
+.stat-range {
+  height: 40px;
+  width: 10px;
+  background-color: white;
+  margin-bottom: 1px;
+  float: left;
+  margin-right: 3px;
+}
+
+.stat-range-bar {
+  width: 100%;
+  float: left;
+  background-color: gray;
+}
