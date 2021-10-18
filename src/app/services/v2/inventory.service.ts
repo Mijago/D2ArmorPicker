@@ -14,6 +14,7 @@ import {AuthService} from "../auth.service";
 import {EnumDictionary} from "../../data/types/EnumDictionary";
 import {ArmorSlot} from "../../data/permutation";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {Router} from "@angular/router";
 
 type info = {
   results: Uint16Array, permutations: Uint32Array, maximumPossibleTiers: number[],
@@ -50,7 +51,7 @@ export class InventoryService {
   private eventHalloweenOnlyUseMask: boolean = false;
 
   constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
-              private api: BungieApiService, private auth: AuthService) {
+              private api: BungieApiService, private auth: AuthService, private router: Router) {
     this._armorPermutations = new BehaviorSubject(new Uint32Array(0))
     this.armorPermutations = this._armorPermutations.asObservable();
 
@@ -125,6 +126,10 @@ export class InventoryService {
       })
   }
 
+  shouldCalculateResults(): boolean {
+    return this.router.url == "/v2"
+  }
+
   async updatePermutations() {
     this.status.modifyStatus(s => s.calculatingPermutations = true)
     const worker = new Worker(new URL('./permutation-webworker.worker', import.meta.url));
@@ -142,10 +147,14 @@ export class InventoryService {
   async refreshAll(force: boolean = false, forceUpdatePermutations = false) {
     let manifestUpdated = await this.updateManifest();
     let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
-    if (armorUpdated || forceUpdatePermutations)
-      await this.updatePermutations();
-    else
-      this.updateResults()
+
+    // Do not update results in Help and Cluster pages
+    if (this.shouldCalculateResults()) {
+      if (armorUpdated || forceUpdatePermutations)
+        await this.updatePermutations();
+      else
+        this.updateResults()
+    }
   }
 
   updateResults() {
