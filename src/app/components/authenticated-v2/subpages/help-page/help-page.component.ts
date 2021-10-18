@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.12",
+      date: "Oct 18, 2021",
+      entries: [
+        "+ Added a experimental armor clustering feature."
+      ]
+    },
+    {
       version: "2.0.11",
       date: "Oct 13, 2021",
       entries: [

@@ -11,3 +11,8 @@ mat-card {
 .searchQueryField {
   width: 100%;
 }
+.returnbutton {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  width: 100%;
+}
