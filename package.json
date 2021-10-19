@@ -6,7 +6,7 @@
     "INSTALL": "ng add @angular/material",
     "start": "ng serve --ssl",
     "build": "ng build",
-    "deploy": "ng deploy D2ArmorPicker --base-href=/D2ArmorPicker/",
+    "deploy": "ng deploy D2ArmorPicker --base-href=/ --cname=d2armorpicker.com",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
