@@ -168,6 +168,10 @@ export class ArmorClusterPageComponent implements AfterViewInit {
   items: Array<IInventoryArmor> = [];
   clusters: IInventoryArmor[][] = [];
 
+  exoticFilter: number = 0;
+  masterworkFilter: number = 0;
+  classFilter: number = -1;
+
 
   constructor(private db: DatabaseService, private _snackBar: MatSnackBar, private inventory: InventoryService) {
   }
@@ -188,6 +192,15 @@ export class ArmorClusterPageComponent implements AfterViewInit {
     }
 
     for (let item of items) {
+      if (item.slot == "Class Items") continue;
+      if (item.slot == "none") continue; // ignores stasis and halloween masks.
+
+      if (this.classFilter != -1 && item.clazz != this.classFilter) continue
+      if (this.exoticFilter == -1 && item.isExotic) continue;
+      if (this.exoticFilter == 1 && !item.isExotic) continue;
+      if (this.masterworkFilter == -1 && item.masterworked) continue;
+      if (this.masterworkFilter == 1 && !item.masterworked) continue;
+
       var clusterId = this.getClusterid(item);
       clusters[clusterId].push(item);
     }
@@ -210,7 +223,7 @@ export class ArmorClusterPageComponent implements AfterViewInit {
     const vectorDistance = (x: number[], y: number[]) => Math.sqrt(x.reduce((acc, val, i) => acc + Math.pow(val - y[i], 2), 0));
     var currentDist = Number.MAX_VALUE;
     var currentId = -1;
-    for (let clusterDatum of clusterData) {
+    for (let clusterDatum of this.clusterInformation) {
       var dist = vectorDistance(clusterDatum.mean, [
         item.mobility + item.resilience + item.recovery + item.discipline + item.intellect + item.strength,
         item.mobility,

@@ -11,6 +11,7 @@ mat-card {
 .searchQueryField {
   width: 100%;
 }
+
 .returnbutton {
   margin-top: 5px;
   margin-bottom: 15px;
@@ -30,4 +31,35 @@ mat-card {
   width: 100%;
   float: left;
   background-color: gray;
+}
+
+.settings-container {
+  display: flex;
+  justify-content: space-between;
+}
+.settings-container:not(:last-of-type) {
+  padding-bottom: 2px;
+  border-bottom: 1px whitesmoke solid;
+  margin-bottom: 2px;
+}
+
+.red {
+  color: red;
+}
+
+.red.mat-button-toggle-checked {
+  background-color: red;
+  color: white;
+}
+
+.green {
+  color: green;
+}
+
+.green.mat-button-toggle-checked {
+  background-color: green;
+  color: white;
+}
+.svgClassIcon {
+  width: 24px;
 }
