@@ -111,7 +111,8 @@
 
         <div>
           <ng-container *ngFor="let entry of clusterInformation[idx].mean;let idx1 = index">
-            <div *ngIf="idx1 > 0" class="stat-range">
+            <div *ngIf="idx1 > 0" [matTooltip]="['','Mobility', 'Resilience','Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]"
+                 class="stat-range">
               <div class="stat-range-bar" style="height:{{100-(clusterInformation[idx].mean[idx1])/32*100}}%"></div>
             </div>
           </ng-container>
