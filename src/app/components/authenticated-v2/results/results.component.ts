@@ -281,7 +281,7 @@ export class ResultsComponent implements OnInit {
           data[i].statsNoMods[ArmorStat.Intellect] += instance.intellect;
           data[i].statsNoMods[ArmorStat.Strength] += instance.strength;
 
-          data[i].waste = data[i].stats.reduce((p: number, v: number) => p + (v % 10), 0);
+          data[i].waste = data[i].stats.reduce((p: number, v: number) => p + (v > 100 ? v - 100 : (v % 10)), 0);
 
           if (itemBuffer.has(instance.itemInstanceId))
             return itemBuffer.get(instance.itemInstanceId);
