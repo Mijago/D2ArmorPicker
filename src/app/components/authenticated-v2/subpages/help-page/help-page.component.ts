@@ -22,7 +22,7 @@ export class HelpPageComponent implements OnInit {
     },
     {
       version: "2.0.13",
-      date: "Oct 18, 2021",
+      date: "Oct 20, 2021",
       entries: [
         "+ Added a chart to the armor clustering page, showing each clusters average stats.",
         "~ Stats over 100 are now seen as wasted."
