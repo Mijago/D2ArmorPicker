@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.14",
+      date: "Oct 21, 2021",
+      entries: [
+        "~ Updated URLs to the mobility, resilience and recovery images, as Bungie decided to change their URLs in today's hotfix."
+      ]
+    },
+    {
       version: "2.0.13",
       date: "Oct 18, 2021",
       entries: [
