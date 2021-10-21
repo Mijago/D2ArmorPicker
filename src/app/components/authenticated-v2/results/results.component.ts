@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {InventoryService} from "../../../services/v2/inventory.service";
+import {IArmorResult, InventoryService} from "../../../services/v2/inventory.service";
 import {DatabaseService} from "../../../services/database.service";
 import {MatTableDataSource} from "@angular/material/table";
 import {IMappedGearPermutation, MOD_INDICES} from "../../authenticated/main/main.component";
@@ -82,8 +82,7 @@ export class ResultsComponent implements OnInit {
   ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
 
-  private _results: Uint16Array = new Uint16Array();
-  private _permutations: Uint32Array = new Uint32Array();
+  private _results: ResultDefinition[] = [];
   private _config_assumeLegendariesMasterworked: Boolean = false;
   private _config_assumeExoticsMasterworked: Boolean = false;
   private _config_assumeClassItemMasterworked: Boolean = false;
@@ -126,7 +125,8 @@ export class ResultsComponent implements OnInit {
 
     this.inventory.armorResults.subscribe(async value => {
       this._results = value.results;
-      this._permutations = value.permutations;
+      this.totalResults = value.totalResults;
+      this.parsedResults = this._results.length;
 
       this.status.modifyStatus(s => s.updatingResultsTable = true)
       await this.updateData();
@@ -163,159 +163,10 @@ export class ResultsComponent implements OnInit {
 
   async updateData() {
     console.time("Update Table Data")
-    this.tableDataSource.data = []
-    let data: any[] = []
-    let itemsToGrab = new Set<number>();
-
-    const constantModifiersFromConfig = [0, 0, 0, 0, 0, 0]
-    // add a constant 2 if we assume that the class item is masterworked
-    if (this._config_assumeClassItemMasterworked)
-      for (let n = 0; n < 6; n++) constantModifiersFromConfig[n] += 2;
-
-    for (let configEnabledMod of this._config_enabledMods) {
-      for (let bonus of ModInformation[configEnabledMod].bonus) {
-        let stat = bonus.stat != SpecialArmorStat.ClassAbilityRegenerationStat ? bonus.stat : [1, 0, 2][this.selectedClass];
-        constantModifiersFromConfig[stat] += bonus.value;
-      }
-    }
-
-    let limit = this._results.length;
-    if (limit > (2.5e5 * RESULTS_PACKAGE.WIDTH) && this._config_limitParsedResults) {
-      limit = 2.5e5 * RESULTS_PACKAGE.WIDTH;
-    }
-    this.totalResults = this._results.length / RESULTS_PACKAGE.WIDTH;
-    this.parsedResults = limit / RESULTS_PACKAGE.WIDTH;
-
-    for (let i = 0; i < limit; i += RESULTS_PACKAGE.WIDTH) {
-      // console.time("l" + i + " total")
-      const entryPermutationPosition = PERMUTATION_PACKAGE.WIDTH * (this._results[i] + (this._results[i + 1] << 16));
-      let modList = [
-        this._results[i + RESULTS_PACKAGE.USED_MOD1],
-        this._results[i + RESULTS_PACKAGE.USED_MOD2],
-        this._results[i + RESULTS_PACKAGE.USED_MOD3],
-        this._results[i + RESULTS_PACKAGE.USED_MOD4],
-        this._results[i + RESULTS_PACKAGE.USED_MOD5],
-      ]
-
-      let items = ({
-        stats: Array.from(constantModifiersFromConfig),
-        statsNoMods: [0, 0, 0, 0, 0, 0],
-        modCount: modList.filter(d => d != StatModifier.NONE).length,
-        modCost: modList.reduce((p, d: StatModifier) => {
-          if (STAT_MOD_VALUES[d] == undefined)
-            console.log(p, d, STAT_MOD_VALUES[d], modList, this._results.subarray(i - 10, i + 20))
-          return p + STAT_MOD_VALUES[d][2]
-        }, 0),
-        tiers: 0,
-        waste: 0,
-        loaded: false,
-        mods: modList,
-        items: [
-          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.HELMET_ID],
-          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.GAUNTLET_ID],
-          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.CHEST_ID],
-          this._permutations[entryPermutationPosition + PERMUTATION_PACKAGE.LEG_ID],
-        ] as any
-      }) as ResultDefinition
-
-      if (this._config_assumeClassItemMasterworked)
-        for (let n = 0; n < 6; n++) items.statsNoMods[n] += 2;
-
-      for (let modId of modList) {
-        let smd = STAT_MOD_VALUES[modId as StatModifier]
-        if (!!smd && smd[1] != 0) {
-          items.stats[smd[0]] += smd[1]
-        }
-      }
-
-      for (let n = 0; n < 4; n++) {
-        if (!this._items.has(items.items[n] as unknown as number))
-          itemsToGrab.add(items.items[n] as unknown as number)
-      }
-      data.push(items)
-      //console.timeEnd("l" + i + " total")
-    }
-
-    const keys = Array.from(itemsToGrab);
-    let items = await this.db.inventoryArmor.bulkGet(keys)
-    for (let keyid in keys) {
-      if (items[keyid] != undefined)
-        this._items.set(keys[keyid], items[keyid] as IInventoryArmor);
-    }
-
-    // Use an item buffer to not fetch the items multiple times. Should further improve memory issues.
-    let itemBuffer = new Map<string, ResultItem>();
-    // now fetch the item names
-    for (let i = 0; i < data.length; i++) {
-      data[i].items = data[i].items.map((e: number) => {
-          let instance = this._items.get(e);
-          if (!instance) return e;
-          if (instance?.isExotic) {
-            data[i].exotic = {
-              icon: instance.icon,
-              name: instance.name
-            };
-          }
-
-          if (instance?.masterworked
-            || (!instance?.isExotic && this._config_assumeLegendariesMasterworked)
-            || (!!instance?.isExotic && this._config_assumeExoticsMasterworked)
-          )
-            for (let n = 0; n < 6; n++) {
-              data[i].stats[n] += 2;
-              data[i].statsNoMods[n] += 2;
-            }
-
-
-          data[i].stats[ArmorStat.Mobility] += instance.mobility;
-          data[i].stats[ArmorStat.Resilience] += instance.resilience;
-          data[i].stats[ArmorStat.Recovery] += instance.recovery;
-          data[i].stats[ArmorStat.Discipline] += instance.discipline;
-          data[i].stats[ArmorStat.Intellect] += instance.intellect;
-          data[i].stats[ArmorStat.Strength] += instance.strength;
-
-          data[i].statsNoMods[ArmorStat.Mobility] += instance.mobility;
-          data[i].statsNoMods[ArmorStat.Resilience] += instance.resilience;
-          data[i].statsNoMods[ArmorStat.Recovery] += instance.recovery;
-          data[i].statsNoMods[ArmorStat.Discipline] += instance.discipline;
-          data[i].statsNoMods[ArmorStat.Intellect] += instance.intellect;
-          data[i].statsNoMods[ArmorStat.Strength] += instance.strength;
-
-          data[i].waste = data[i].stats.reduce((p: number, v: number) => p + (v > 100 ? v - 100 : (v % 10)), 0);
-
-          if (itemBuffer.has(instance.itemInstanceId))
-            return itemBuffer.get(instance.itemInstanceId);
-          else {
-            let result = {
-              energy: instance.energyAffinity,
-              icon: instance.icon,
-              itemInstanceId: instance.itemInstanceId,
-              name: instance.name,
-              exotic: !!instance.isExotic,
-              masterworked: instance.masterworked,
-              mayBeBugged: instance.mayBeBugged,
-              transferState: ResultItemMoveState.TRANSFER_NONE,
-              stats: [
-                instance.mobility, instance.resilience, instance.recovery,
-                instance.discipline, instance.intellect, instance.strength
-              ]
-            } as ResultItem;
-            itemBuffer.set(instance.itemInstanceId, result)
-            return result;
-          }
-        }
-      )
-      data[i].tiers = getSkillTier(data[i].stats)
-      data[i].loaded = true;
-    }
-
-
-    console.debug("Table data at the end", data)
-    console.timeEnd("Update Table Data")
-
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
-    this.tableDataSource.data = data;
+    this.tableDataSource.data = this._results;
+    console.timeEnd("Update Table Data")
   }
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {

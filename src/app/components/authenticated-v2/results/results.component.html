@@ -5,8 +5,15 @@
 
     <div>
       <div *ngIf="this.totalResults > 0">
-        Your selection results in {{this.totalResults | number}} permutations<span *ngIf="this.parsedResults != this.totalResults">, but only {{this.parsedResults | number}} were parsed</span>.
+        Your selection results in {{this.totalResults | number}} permutations.
         <br/>
+        <ng-container *ngIf="this.parsedResults != this.totalResults">
+          <b>Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.</b><br>
+          If you need all entries, disable the limitation in the advanced settings.<br>
+          But beware, this drastically slows things down. I warned you.
+          <br>
+          <br>
+        </ng-container>
         Click on a row to expand it and to see the list of the items required for this build.<br/>
         Use the listed stats to identify the armor you have to use.
       </div>
@@ -72,7 +79,7 @@
         <ng-container matColumnDef="mods">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="Mods"> Used Mods</th>
           <td mat-cell *matCellDef="let element">
-            <span *ngIf="element.mods[12] == 0">None</span>
+            <span *ngIf="element.modCount == 0">None</span>
             <!-- TODO amount -->
             <app-table-mod-display class="modPreview"
                                    url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"
@@ -160,7 +167,6 @@
         <tr mat-header-row *matHeaderRowDef="shownColumns"></tr>
         <tr mat-row *matRowDef="let element; columns: shownColumns;"
             class="example-element-row"
-            [class.loading]="!element.loaded"
             [class.example-expanded-row]="expandedElement === element"
             (click)="expandedElement = expandedElement === element ? null : element">
         </tr>

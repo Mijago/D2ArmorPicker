@@ -25,8 +25,8 @@ export class DesiredStatSelectionComponent implements OnInit {
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
   ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = ArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
-  _statCombo4x100: [ArmorStat, ArmorStat, ArmorStat, ArmorStat][] = [];
-  _statCombo3x100: [ArmorStat, ArmorStat, ArmorStat][] = [];
+  _statCombo4x100: ArmorStat[][] = [];
+  _statCombo3x100: ArmorStat[][] = [];
 
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
