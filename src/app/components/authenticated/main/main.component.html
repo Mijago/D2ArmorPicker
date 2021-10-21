@@ -146,9 +146,9 @@
   <mat-menu #menu1="matMenu" menu>
   <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:3" (click)="useStatPreset(d)">
     <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
         <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
         <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
         <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
@@ -164,9 +164,9 @@
   <mat-menu #menu2="matMenu">
   <button mat-menu-item *ngFor="let d of maximumPossibleAmountSets | filterPossibleAmountSet:4" (click)="useStatPreset(d)">
     <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" alt="Mobility" class="dialogStatIcon" *ngIf="p && i == 0">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" alt="Resilience" class="dialogStatIcon" *ngIf="p && i == 1">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" alt="Recovery" class="dialogStatIcon" *ngIf="p && i == 2">
         <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="dialogStatIcon" *ngIf="p && i == 3">
         <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" alt="Intellect" class="dialogStatIcon" *ngIf="p && i == 4">
         <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" alt="Strength" class="dialogStatIcon" *ngIf="p && i == 5">
@@ -395,7 +395,7 @@
     <ng-container matColumnDef="mobility">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility">Mobility</th>
       <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.mobility}}
-      <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIcon">
+      <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" alt="Mobility" class="statIcon">
       </td>
     </ng-container>
 
@@ -403,7 +403,7 @@
     <ng-container matColumnDef="resilience">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Resilience"> Resilience</th>
       <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.resilience}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIcon">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" alt="Resilience" class="statIcon">
       </td>
     </ng-container>
 
@@ -411,7 +411,7 @@
     <ng-container matColumnDef="recovery">
       <th mat-header-cell *matHeaderCellDef mat-sort-header="Recovery"> Recovery</th>
       <td mat-cell *matCellDef="let element " class="statColumn">{{element.totalStatsWithMods.recovery}}
-        <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIcon">
+        <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" alt="Recovery" class="statIcon">
       </td>
     </ng-container>
 
@@ -619,17 +619,17 @@
                 <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).mobility
                 + (enablePowerfulFriends ? 20 : 0)
                 - (enableStasisWhisperOfHunger ? 10 : 0) - ((selectedClass==1 && enableModChargeHarvester) ? 10 : 0)}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" alt="Mobility" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).resilience
                 + (this.enableStasisWhisperOfShards ? 10 : 0) + (this.enableStasisWhisperOfConduction ? 10 : 0)
                 - ((selectedClass == 0 && enableModChargeHarvester) ? 10 : 0)}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" alt="Resilience" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).recovery
                 + (this.enableStasisWhisperOfChains ? 10 : 0)
                 - (this.enableModStacksOnStacks ? 10 : 0) - (this.enableStasisWhisperOfHunger ? 10 : 0) - ((selectedClass == 2 && enableModChargeHarvester) ? 10 : 0)}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" alt="Recovery" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.permutation.getStats(filterAssumeMasterworked).discipline
                 - (enableModPrecicelyCharged ? 10 : 0) - (enableModEnergyConverter ? 10 : 0)
@@ -707,13 +707,13 @@
               <tr class="statTotalRow" *ngIf="element.mods[12] > 0">
                 <td>Total with mods</td>
                 <td class="statMiniColumn">{{element.totalStatsWithMods.mobility}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/c9aa8439fc71c9ee336ba713535569ad.png" alt="Mobility" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" alt="Mobility" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.totalStatsWithMods.resilience}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/9f5f65d08b24defb660cebdfd7bae727.png" alt="Resilience" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" alt="Resilience" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.totalStatsWithMods.recovery}}
-                  <img src="https://www.bungie.net/common/destiny2_content/icons/47e16a27c8387243dcf9b5d94e26ccc4.png" alt="Recovery" class="statIconMini">
+                  <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" alt="Recovery" class="statIconMini">
                 </td>
                 <td class="statMiniColumn">{{element.totalStatsWithMods.discipline}}
                   <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" alt="Discipline" class="statIconMini">
