@@ -6,25 +6,6 @@ import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC, PERMUTATION_PACKAGE, RESULTS
 import {ModInformation} from "../../data/ModInformation";
 import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../../data/enum/armor-stat";
 
-
-function getSkillTier(stats: number[]) {
-  return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Resilience]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Recovery]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Discipline]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Intellect]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Strength]) / 10)
-}
-
-function getWaste(stats: number[]) {
-  return (stats[ArmorStat.Mobility] > 100 ? stats[ArmorStat.Mobility] - 100 : stats[ArmorStat.Mobility] % 10)
-    + (stats[ArmorStat.Resilience] > 100 ? stats[ArmorStat.Resilience] - 100 : stats[ArmorStat.Resilience] % 10)
-    + (stats[ArmorStat.Recovery] > 100 ? stats[ArmorStat.Recovery] - 100 : stats[ArmorStat.Recovery] % 10)
-    + (stats[ArmorStat.Discipline] > 100 ? stats[ArmorStat.Discipline] - 100 : stats[ArmorStat.Discipline] % 10)
-    + (stats[ArmorStat.Intellect] > 100 ? stats[ArmorStat.Intellect] - 100 : stats[ArmorStat.Intellect] % 10)
-    + (stats[ArmorStat.Strength] > 100 ? stats[ArmorStat.Strength] - 100 : stats[ArmorStat.Strength] % 10)
-}
-
 const slotToEnum: { [id: string]: ArmorSlot; } = {
   "Helmets": ArmorSlot.ArmorSlotHelmet,
   "Arms": ArmorSlot.ArmorSlotGauntlet,
@@ -320,4 +301,23 @@ function handlePermutation(
     })
   }
 
+}
+
+
+function getSkillTier(stats: number[]) {
+  return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
+    + Math.floor(Math.min(100, stats[ArmorStat.Resilience]) / 10)
+    + Math.floor(Math.min(100, stats[ArmorStat.Recovery]) / 10)
+    + Math.floor(Math.min(100, stats[ArmorStat.Discipline]) / 10)
+    + Math.floor(Math.min(100, stats[ArmorStat.Intellect]) / 10)
+    + Math.floor(Math.min(100, stats[ArmorStat.Strength]) / 10)
+}
+
+function getWaste(stats: number[]) {
+  return (stats[ArmorStat.Mobility] > 100 ? stats[ArmorStat.Mobility] - 100 : stats[ArmorStat.Mobility] % 10)
+    + (stats[ArmorStat.Resilience] > 100 ? stats[ArmorStat.Resilience] - 100 : stats[ArmorStat.Resilience] % 10)
+    + (stats[ArmorStat.Recovery] > 100 ? stats[ArmorStat.Recovery] - 100 : stats[ArmorStat.Recovery] % 10)
+    + (stats[ArmorStat.Discipline] > 100 ? stats[ArmorStat.Discipline] - 100 : stats[ArmorStat.Discipline] % 10)
+    + (stats[ArmorStat.Intellect] > 100 ? stats[ArmorStat.Intellect] - 100 : stats[ArmorStat.Intellect] % 10)
+    + (stats[ArmorStat.Strength] > 100 ? stats[ArmorStat.Strength] - 100 : stats[ArmorStat.Strength] % 10)
 }
