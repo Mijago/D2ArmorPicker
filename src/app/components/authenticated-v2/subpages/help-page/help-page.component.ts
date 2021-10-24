@@ -14,6 +14,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.0.15",
+      date: "Oct 24, 2021",
+      entries: [
+        "~ Updated the visual display of the cluster page. It displays the stats in a better way now."
+      ]
+    },
+    {
       version: "2.0.14",
       date: "Oct 21, 2021",
       entries: [
