@@ -15,7 +15,7 @@ export class LoginComponent implements OnInit {
   }
 
   startLogin() {
-    window.location.href= `https://www.bungie.net/en/OAuth/Authorize?client_id=${environment.clientId}&response_type=code`
+    window.location.href= `https://www.bungie.net/en/OAuth/Authorize?client_id=${environment.clientId}&response_type=code&reauth=true`
   }
 
 }

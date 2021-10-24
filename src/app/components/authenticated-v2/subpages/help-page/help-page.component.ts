@@ -17,7 +17,8 @@ export class HelpPageComponent implements OnInit {
       version: "2.0.15",
       date: "Oct 24, 2021",
       entries: [
-        "~ Updated the visual display of the cluster page. It displays the stats in a better way now."
+        "~ Updated the visual display of the cluster page. It displays the stats in a better way now.",
+        "~ Fixed an issue with login, where you were automatically logged in again and could not switch accounts."
       ]
     },
     {
