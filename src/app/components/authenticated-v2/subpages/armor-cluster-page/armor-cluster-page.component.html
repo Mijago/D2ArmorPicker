@@ -67,11 +67,11 @@
         <span>
           <mat-button-toggle-group (valueChange)="Update()" [(value)]="classFilter">
             <mat-button-toggle matTooltip="Titan" value="0">
-                <svg aria-hidden="true" class="svgClassIcon" focusable="false" viewBox="0 0 32 32"
-                     xmlns="http://www.w3.org/2000/svg"><path
-                  d="m14.839 15.979-13.178-7.609v15.218zm2.322 0 13.178 7.609v-15.218zm5.485-12.175-6.589-3.804-13.178 7.609 13.178 7.609 13.179-7.609zm0 16.784-6.589-3.805-13.178 7.609 13.178 7.608 13.179-7.608-6.59-3.805z"
-                  fill="currentColor"></path></svg>
-              </mat-button-toggle>
+              <svg aria-hidden="true" class="svgClassIcon" focusable="false" viewBox="0 0 32 32"
+                   xmlns="http://www.w3.org/2000/svg"><path
+                d="m14.839 15.979-13.178-7.609v15.218zm2.322 0 13.178 7.609v-15.218zm5.485-12.175-6.589-3.804-13.178 7.609 13.178 7.609 13.179-7.609zm0 16.784-6.589-3.805-13.178 7.609 13.178 7.608 13.179-7.608-6.59-3.805z"
+                fill="currentColor"></path></svg>
+            </mat-button-toggle>
             <mat-button-toggle matTooltip="Hunter" value="1">
                 <svg aria-hidden="true" class="svgClassIcon" focusable="false" viewBox="0 0 32 32"
                      xmlns="http://www.w3.org/2000/svg"><path
@@ -92,46 +92,58 @@
     </mat-card-content>
   </mat-card>
 
-  <ng-container *ngFor="let cluster of clusters; let idx = index">
-    <mat-card *ngIf="cluster.length > 0">
-      <mat-card-title>
-        Cluster {{idx + 1}}
-      </mat-card-title>
-      <mat-card-content>
-        <div>Cluster {{idx + 1}} contains a total of <b>{{cluster.length}} item(s)</b>.</div>
-        <div>Average stats of this cluster:
-          Total {{clusterInformation[idx].mean[0] | number: '1.0-0'}} with stats
-          {{clusterInformation[idx].mean[1] | number: '1.0-0'}} /
-          {{clusterInformation[idx].mean[2] | number: '1.0-0'}} /
-          {{clusterInformation[idx].mean[3] | number: '1.0-0'}} /
-          {{clusterInformation[idx].mean[4] | number: '1.0-0'}} /
-          {{clusterInformation[idx].mean[5] | number: '1.0-0'}} /
-          {{clusterInformation[idx].mean[6] | number: '1.0-0'}}
-        </div>
+  <div class="cluster-container"
+       fxFlexFill="1" fxLayout="row"
+       fxLayout.xs="column"
+       fxLayoutGap="5px"
+  >
+    <ng-container *ngFor="let cluster of clusters; let idx = index">
+      <mat-card *ngIf="cluster.length > 0" class="cluster-item">
+        <mat-card-title>
+          Cluster {{idx + 1}}
+        </mat-card-title>
+        <mat-card-subtitle>
+          Contains {{cluster.length}} item{{cluster.length > 1 ? "s" : ""}}
+        </mat-card-subtitle>
+        <mat-card-content>
+          <div>
+            <table width="100%">
+              <ng-container *ngFor="let entry of clusterInformation[idx].mean;let idx1 = index">
+                <tr *ngIf="idx1 > 0"
+                    [matTooltip]="['','Mobility', 'Resilience','Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]">
+                  <td>
+                    {{['', 'Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]}}
+                  </td>
+                  <td width="100%">
+                    <div class="stat-range">
+                      <div class="stat-range-bar" style="width:{{(clusterInformation[idx].mean[idx1])/32*100}}%"></div>
+                      <span class="avg-stat-value">
+                        {{clusterInformation[idx].mean[idx1] |number:'1.0-0'}}
+                      </span>
+                    </div>
 
-        <div>
-          <ng-container *ngFor="let entry of clusterInformation[idx].mean;let idx1 = index">
-            <div *ngIf="idx1 > 0" [matTooltip]="['','Mobility', 'Resilience','Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]"
-                 class="stat-range">
-              <div class="stat-range-bar" style="height:{{100-(clusterInformation[idx].mean[idx1])/32*100}}%"></div>
-            </div>
-          </ng-container>
-        </div>
-        <button (click)="openSnackBar('Copied the DIM search query to your clipboard.')"
-                [cdkCopyToClipboard]="getDIMStringForCluster(cluster)"
-                color="primary"
-                mat-raised-button
-                matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
-          Copy DIM query to clipboard
-        </button>
-        <mat-form-field appearance="fill" class="searchQueryField">
-          <mat-label>DIM Search Query</mat-label>
-          <input [value]="getDIMStringForCluster(cluster)" matInput readonly type="text">
-        </mat-form-field>
-      </mat-card-content>
-    </mat-card>
-  </ng-container>
+                  </td>
+
+                </tr>
+              </ng-container>
+            </table>
+          </div>
+          <mat-form-field appearance="fill" class="searchQueryField">
+            <mat-label>DIM Search Query</mat-label>
+            <input [value]="getDIMStringForCluster(cluster)" matInput readonly type="text">
+          </mat-form-field>
+          <button (click)="openSnackBar('Copied the DIM search query to your clipboard.')"
+                  [cdkCopyToClipboard]="getDIMStringForCluster(cluster)"
+                  class="copyButton"
+                  color="primary"
+                  mat-raised-button
+                  matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
+            Copy DIM query to clipboard
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </div>
 
   <a class="returnbutton" color="primary" mat-raised-button routerLink="/v2/"> Return to D2ArmorPicker </a>
-
 </div>

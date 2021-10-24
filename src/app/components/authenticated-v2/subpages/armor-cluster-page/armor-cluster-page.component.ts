@@ -3,6 +3,7 @@ import {IInventoryArmor} from "../../../../services/IInventoryArmor";
 import {DatabaseService} from "../../../../services/database.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {InventoryService} from "../../../../services/v2/inventory.service";
+import {debounceTime} from "rxjs/operators";
 
 
 var clusterData = [{
@@ -174,13 +175,18 @@ export class ArmorClusterPageComponent implements AfterViewInit {
 
 
   constructor(private db: DatabaseService, private _snackBar: MatSnackBar, private inventory: InventoryService) {
+    this.clusterInformation = clusterData.sort((a, b) => {
+      return b.mean[3] - a.mean[3]
+    })
   }
 
   async ngAfterViewInit(): Promise<void> {
-    this.inventory.inventory.subscribe(async () => {
-      await this.Update();
-      this.openSnackBar("Clusters were updated.")
-    })
+    this.inventory.inventory
+      .pipe(debounceTime(200))
+      .subscribe(async () => {
+        await this.Update();
+        this.openSnackBar("Clusters were updated.")
+      })
   }
 
 
@@ -219,12 +225,16 @@ export class ArmorClusterPageComponent implements AfterViewInit {
     return cluster.map(d => `id:'${d.itemInstanceId}'`).join(" or ")
   }
 
+  vectorDistance(x: number[], y: number[]) {
+    return Math.sqrt(x.reduce((acc, val, i) => acc + Math.pow(val - y[i], 2), 0));
+  }
+
   public getClusterid(item: IInventoryArmor): number {
-    const vectorDistance = (x: number[], y: number[]) => Math.sqrt(x.reduce((acc, val, i) => acc + Math.pow(val - y[i], 2), 0));
     var currentDist = Number.MAX_VALUE;
     var currentId = -1;
-    for (let clusterDatum of this.clusterInformation) {
-      var dist = vectorDistance(clusterDatum.mean, [
+    for (let i = 0; i < this.clusterInformation.length; i++) {
+      const clusterDatum = this.clusterInformation[i]
+      var dist = this.vectorDistance(clusterDatum.mean, [
         item.mobility + item.resilience + item.recovery + item.discipline + item.intellect + item.strength,
         item.mobility,
         item.resilience,
@@ -235,9 +245,10 @@ export class ArmorClusterPageComponent implements AfterViewInit {
       ])
       if (dist < currentDist) {
         currentDist = dist;
-        currentId = clusterDatum.id;
+        currentId = i;
       }
     }
+
     return currentId;
   }
 
