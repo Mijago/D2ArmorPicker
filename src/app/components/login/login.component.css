@@ -1,9 +1,9 @@
 mat-card {
-  position: absolute;
   max-width: 600px;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-50%) translateY(-50%);
+  margin-bottom: 4px;
+  margin-left: auto;
+  margin-right: auto;
+
 }
 
 button {
@@ -18,4 +18,15 @@ a {
 .example-header-image {
   background-image: url('../../../assets/superGreatLogo.png');
   background-size: cover;
+}
+
+.image-example {
+  max-width: 100%;
+}
+
+.armor-image-container {
+  overflow: auto;
+}
+.armor-image-container > img {
+  max-height: 300px;
 }
