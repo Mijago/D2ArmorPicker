@@ -8,11 +8,22 @@ import {Component, OnInit} from '@angular/core';
 export class HelpPageComponent implements OnInit {
   knownIssues: string[] = [
     "If an armor has less than 10 total in one stat and has a negative modifier (goes below 0), the API caps the item stat at 0, leading to the tool thinking it's at 10 (or 8, if masterworked).",
-    "The point above is also true for values above 42.",
-    "V2 does not load on Apple devices. No ETA on a fix as I do not own any Apple device and thus can not debug it."
+    "The point above is also true for values above 42."
   ]
 
   changelog = [
+    {
+      version: "2.0.16",
+      date: "Oct 26, 2021",
+      entries: [
+        "~ Completely rewrote the core logic in order to fix the memory issues. " +
+        "The tool will now no longer crash when you have many armor items, but it's slightly slower than the previous approach. " +
+        "I tested it with 600 items - it works and does not crash, but takes up to a minute. " +
+        "Make sure to never get that much armor and to lock an exotic right away.",
+        "~ The rewrite also fixed the issue where the tool did not work in Safari, or more generally, on Mac and iPhone.",
+        "~ The rewrite also fixed an issue where items could not be found when an result update was triggered while the inventory was updated."
+      ]
+    },
     {
       version: "2.0.15",
       date: "Oct 24, 2021",
