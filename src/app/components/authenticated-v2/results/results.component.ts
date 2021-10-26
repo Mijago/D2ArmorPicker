@@ -88,7 +88,6 @@ export class ResultsComponent implements OnInit {
   private _config_assumeClassItemMasterworked: Boolean = false;
   private _config_enabledMods: ModOrAbility[] = [];
   private _config_limitParsedResults: Boolean = false;
-  private _items: Map<number, IInventoryArmor> = new Map<number, IInventoryArmor>();
 
   tableDataSource = new MatTableDataSource<ResultDefinition>()
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -98,6 +97,8 @@ export class ResultsComponent implements OnInit {
 
   // info values
   selectedClass: CharacterClass = CharacterClass.None;
+  totalTime: number = 0;
+  itemCount: number = 0;
   totalResults: number = 0;
   parsedResults: number = 0;
 
@@ -125,6 +126,8 @@ export class ResultsComponent implements OnInit {
 
     this.inventory.armorResults.subscribe(async value => {
       this._results = value.results;
+      this.itemCount = value.itemCount;
+      this.totalTime = value.totalTime;
       this.totalResults = value.totalResults;
       this.parsedResults = this._results.length;
 

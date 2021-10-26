@@ -36,7 +36,9 @@ type info = {
   totalResults: number,
   maximumPossibleTiers: number[],
   statCombo3x100: ArmorStat[][],
-  statCombo4x100: ArmorStat[][]
+  statCombo4x100: ArmorStat[][],
+  itemCount: number,
+  totalTime: number,
 };
 
 const slotToEnum: { [id: string]: ArmorSlot; } = {
@@ -132,6 +134,8 @@ export class InventoryService {
     this._armorResults.next({
       results: this.allArmorResults,
       totalResults: 0,
+      totalTime: 0,
+      itemCount: 0,
       maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
       statCombo3x100: [],
       statCombo4x100: []
@@ -187,7 +191,9 @@ export class InventoryService {
 
           this._armorResults.next({
             results: endResults,
-            totalResults: data.total, // Total amount of results, differs from the real amount if the memory save setting is active
+            totalResults: data.stats.permutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
+            itemCount: data.stats.itemCount,
+            totalTime: data.stats.totalTime,
             maximumPossibleTiers: data.runtime.maximumPossibleTiers,
             statCombo3x100: Array.from(data.runtime.statCombo3x100 as Set<number>).map((d: number) => {
               let r: ArmorStat[] = []

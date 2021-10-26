@@ -87,7 +87,7 @@ export class AdvancedSettingsComponent implements OnInit {
               value: c.limitParsedResults,
               disabled: false,
               impactsResultCount: true,
-              help: "Only parse the first 50,000 results. Deactivate this for more accurate results if you need it, but be aware that it may crash your browser."
+              help: "Only parse the first 50,000 results. Deactivate this for more accurate results if you need it, but be aware that it may crash your browser. The results will still be limited to 1,000,000 entries."
             },
           ],
           "Wasted Stats": [

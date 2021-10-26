@@ -5,15 +5,22 @@
 
     <div>
       <div *ngIf="this.totalResults > 0">
-        Your selection results in {{this.totalResults | number}} permutations.
+        Your selection used {{this.itemCount| number}} items to generate {{this.totalResults | number}} permutations in {{this.totalTime | number}}ms.
+        <br/>
+        Note: You can drastically increase the speed by selecting an exotic first.
         <br/>
         <ng-container *ngIf="this.parsedResults != this.totalResults">
-          <b>Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.</b><br>
-          If you need all entries, disable the limitation in the advanced settings.<br>
-          But beware, this drastically slows things down. I warned you.
           <br>
-          <br>
+          <ng-container *ngIf="this.parsedResults == 5e4">
+            <b>Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.</b><br>
+            If you need more entries, disable the limitation in the advanced settings.<br>
+          </ng-container>
+          <ng-container *ngIf="this.parsedResults == 1e6">
+            <b>Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.</b><br>
+            You should narrow down your settings a bit.
+          </ng-container>
         </ng-container>
+        <br/>
         Click on a row to expand it and to see the list of the items required for this build.<br/>
         Use the listed stats to identify the armor you have to use.
       </div>

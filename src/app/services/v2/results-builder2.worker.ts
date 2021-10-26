@@ -18,6 +18,7 @@ const db = buildDb(async () => {
 const inventoryArmor = db.table("inventoryArmor");
 
 addEventListener('message', async ({data}) => {
+  const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2")
   console.time("total")
   const config = data.config as Configuration;
@@ -92,7 +93,8 @@ addEventListener('message', async ({data}) => {
            *  - disabled items were already removed (config.disabledItems)
            */
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
-            config.limitParsedResults && listedResults >= 5e4);
+            (config.limitParsedResults && listedResults >= 5e4) || listedResults >= 1e6
+          );
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
           if (result != null) {
@@ -103,7 +105,7 @@ addEventListener('message', async ({data}) => {
             }
           }
           //}
-          if (results.length >= 1000) {
+          if (results.length >= 5000) {
             postMessage({runtime, results, done: false, total: 0});
             results = []
           }
@@ -117,7 +119,16 @@ addEventListener('message', async ({data}) => {
   //for (let n = 0; n < 6; n++)
   //  runtime.maximumPossibleTiers[n] = Math.floor(Math.min(100, runtime.maximumPossibleTiers[n]) / 10)
 
-  postMessage({runtime, results, done: true, total: totalResults});
+  postMessage({
+    runtime,
+    results,
+    done: true,
+    stats: {
+      permutationCount: totalResults,
+      itemCount: items.length,
+      totalTime: Date.now() - startTime
+    }
+  });
 })
 
 /**
