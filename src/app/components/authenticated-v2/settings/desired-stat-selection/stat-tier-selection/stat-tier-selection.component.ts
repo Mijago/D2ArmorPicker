@@ -1,5 +1,5 @@
 import {EventEmitter} from '@angular/core';
-import {Component, Input, OnInit, Output} from '@angular/core';
+import {Component, Input, Output} from '@angular/core';
 
 @Component({
   selector: 'app-stat-tier-selection',

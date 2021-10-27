@@ -1,10 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {ArmorStat, ArmorStatTierBonus} from "../../../../data/enum/armor-stat";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {getDefaultStatDict} from "../../../../data/configuration";
-import {InventoryService} from "../../../../services/v2/inventory.service";
-import {MaxStatData} from "../../../authenticated/main/main.component";
+import {InventoryService} from "../../../../services/inventory.service";
 
 function calcScore(d: number[]) {
   let score = 0;
@@ -20,7 +19,6 @@ function calcScore(d: number[]) {
   styleUrls: ['./desired-stat-selection.component.css']
 })
 export class DesiredStatSelectionComponent implements OnInit {
-  readonly ArmorStats = ArmorStat;
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
   ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = ArmorStatTierBonus;

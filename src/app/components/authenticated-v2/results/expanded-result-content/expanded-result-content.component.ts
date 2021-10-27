@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ArmorStat, SpecialArmorStat, StatModifier} from 'src/app/data/enum/armor-stat';
 import {ResultDefinition, ResultItem, ResultItemMoveState} from "../results.component";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierValue} from "../../../../data/modifier";
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -9,7 +9,7 @@ import {BungieApiService} from "../../../../services/bungie-api.service";
 import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {ArmorSlot} from "../../../../data/permutation";
+import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 
 @Component({

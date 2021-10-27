@@ -1,10 +1,10 @@
-import {Configuration} from "../../data/configuration";
-import {IInventoryArmor} from "../IInventoryArmor";
-import {buildDb} from "../../data/database";
-import {ArmorSlot} from "../../data/permutation";
-import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC, PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../data/constants";
-import {ModInformation} from "../../data/ModInformation";
-import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../../data/enum/armor-stat";
+import {Configuration} from "../data/configuration";
+import {IInventoryArmor} from "./IInventoryArmor";
+import {buildDb} from "../data/database";
+import {ArmorSlot} from "../data/enum/armor-slot";
+import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC} from "../data/constants";
+import {ModInformation} from "../data/ModInformation";
+import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 
 const slotToEnum: { [id: string]: ArmorSlot; } = {
   "Helmets": ArmorSlot.ArmorSlotHelmet,
@@ -106,6 +106,7 @@ addEventListener('message', async ({data}) => {
           }
           //}
           if (results.length >= 5000) {
+            // @ts-ignore
             postMessage({runtime, results, done: false, total: 0});
             results = []
           }
@@ -119,6 +120,7 @@ addEventListener('message', async ({data}) => {
   //for (let n = 0; n < 6; n++)
   //  runtime.maximumPossibleTiers[n] = Math.floor(Math.min(100, runtime.maximumPossibleTiers[n]) / 10)
 
+  // @ts-ignore
   postMessage({
     runtime,
     results,
@@ -293,7 +295,6 @@ function handlePermutation(
     statsNoMods: statsWithoutMods,
     tiers: getSkillTier(stats),
     waste: waste1,
-    // tiersNoMods: getSkillTier(statsWithoutMods),
     items: items.map((instance: IInventoryArmor) => {
       return {
         energy: instance.energyAffinity,

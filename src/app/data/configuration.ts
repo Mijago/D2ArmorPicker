@@ -4,7 +4,7 @@ import {EnumDictionary} from "./types/EnumDictionary";
 import {CharacterClass} from "./enum/character-Class";
 import {MAXIMUM_STAT_MOD_AMOUNT} from "./constants";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {ArmorSlot} from "./permutation";
+import {ArmorSlot} from "./enum/armor-slot";
 
 export function getDefaultStatDict<T>(value: T): EnumDictionary<ArmorStat, T> {
   return {

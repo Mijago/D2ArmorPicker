@@ -3,7 +3,7 @@ import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierType} from "../../../../data/enum/modifierType";
 import {Modifier, ModifierValue} from "../../../../data/modifier";
 import {ArmorStat, SpecialArmorStat} from "../../../../data/enum/armor-stat";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
 import {MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS} from "@angular/material/slide-toggle";

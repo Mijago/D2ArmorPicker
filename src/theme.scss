@@ -19,10 +19,6 @@ $my-theme:  mat.define-dark-theme((
   $primary: map-get($my-theme, primary);
   $accent: map-get($my-theme, accent);
 
-  .mat-button-toggle {
-    //background-color: mat-color($primary);
-    //color: mat-color($primary, default-contrast);
-  }
 
   .mat-button-toggle-checked {
     background-color: mat-color($primary);

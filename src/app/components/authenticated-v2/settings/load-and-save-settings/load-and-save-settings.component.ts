@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {ConfigurationService, StoredConfiguration} from "../../../../services/v2/configuration.service";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
+import {ConfigurationService, StoredConfiguration} from "../../../../services/configuration.service";
+import {FormBuilder, FormGroup} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confirm-dialog/confirm-dialog.component";
 

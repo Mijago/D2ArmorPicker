@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 
 interface AdvancedSettingField {
   name: string;

@@ -1,8 +1,8 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component} from '@angular/core';
 import {IInventoryArmor} from "../../../../services/IInventoryArmor";
 import {DatabaseService} from "../../../../services/database.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {InventoryService} from "../../../../services/v2/inventory.service";
+import {InventoryService} from "../../../../services/inventory.service";
 import {debounceTime} from "rxjs/operators";
 
 

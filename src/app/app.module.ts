@@ -9,29 +9,23 @@ import {HttpClientModule} from "@angular/common/http";
 import {RouterModule, Routes} from "@angular/router";
 import {HandleBungieLoginComponent} from './components/handle-bungie-login/handle-bungie-login.component';
 import {AuthenticatedGuard} from "./guards/authenticated.guard";
-import {MainComponent} from './components/authenticated/main/main.component';
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatSelectModule} from "@angular/material/select";
 import {MatOptionModule} from "@angular/material/core";
 import {MatSliderModule} from "@angular/material/slider";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatInputModule} from "@angular/material/input";
-import {StatMinimumSelectionComponent} from './components/authenticated/stat-minimum-selection/stat-minimum-selection.component';
 import {MatSlideToggleModule} from "@angular/material/slide-toggle";
-import {StatModAmountComponent} from './components/authenticated/stat-mod-amount/stat-mod-amount.component';
 import {MatTableModule} from "@angular/material/table";
 import {MatCardModule} from "@angular/material/card";
 import {MatTooltipModule} from "@angular/material/tooltip";
-import {ExoticItemDisplayComponent} from './components/authenticated/exotic-item-display/exotic-item-display.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatIconModule} from "@angular/material/icon";
 import {MatSortModule} from "@angular/material/sort";
-import {TableModDisplayComponent} from './components/authenticated/table-mod-display/table-mod-display.component';
 import {MatPaginatorModule} from "@angular/material/paginator";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {NotAuthenticatedGuard} from "./guards/not-authenticated.guard";
 import {MatMenuModule} from "@angular/material/menu";
-import {FilterPossibleAmountSetPipe} from './components/authenticated/main/filter-possible-amount-set.pipe';
 import {AppV2CoreComponent} from './components/authenticated-v2/app-v2-core/app-v2-core.component';
 import {SettingsComponent} from './components/authenticated-v2/settings/settings.component';
 import {ResultsComponent} from './components/authenticated-v2/results/results.component';
@@ -62,11 +56,12 @@ import { ArmorPickerPageComponent } from './components/authenticated-v2/subpages
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import { ArmorClusterPageComponent } from './components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component';
+import {TableModDisplayComponent} from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
 
 
 const routes: Routes = [
   {
-    path: 'v2', component: AppV2CoreComponent, canActivate: [AuthenticatedGuard],
+    path: '', component: AppV2CoreComponent, canActivate: [AuthenticatedGuard],
     children: [
       {
         path: '',
@@ -82,7 +77,7 @@ const routes: Routes = [
       }
     ]
   },
-  {path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
+  //{path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
   {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
 ];
@@ -92,12 +87,6 @@ const routes: Routes = [
     AppComponent,
     LoginComponent,
     HandleBungieLoginComponent,
-    MainComponent,
-    StatMinimumSelectionComponent,
-    StatModAmountComponent,
-    ExoticItemDisplayComponent,
-    TableModDisplayComponent,
-    FilterPossibleAmountSetPipe,
     AppV2CoreComponent,
     SettingsComponent,
     ResultsComponent,
@@ -119,7 +108,8 @@ const routes: Routes = [
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
-    ArmorClusterPageComponent
+    ArmorClusterPageComponent,
+    TableModDisplayComponent
   ],
     imports: [
         FlexLayoutModule,

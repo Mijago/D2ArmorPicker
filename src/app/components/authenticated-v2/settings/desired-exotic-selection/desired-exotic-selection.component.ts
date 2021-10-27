@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {InventoryService} from "../../../../services/v2/inventory.service";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {InventoryService} from "../../../../services/inventory.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {IManifestArmor} from "../../../../services/IManifestArmor";

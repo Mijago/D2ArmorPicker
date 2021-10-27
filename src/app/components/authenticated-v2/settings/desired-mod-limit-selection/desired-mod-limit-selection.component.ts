@@ -1,5 +1,5 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {Component, OnInit} from '@angular/core';
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../data/constants";
 
 @Component({

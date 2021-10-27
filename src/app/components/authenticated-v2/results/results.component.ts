@@ -1,32 +1,17 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {IArmorResult, InventoryService} from "../../../services/v2/inventory.service";
+import {InventoryService} from "../../../services/inventory.service";
 import {DatabaseService} from "../../../services/database.service";
 import {MatTableDataSource} from "@angular/material/table";
-import {IMappedGearPermutation, MOD_INDICES} from "../../authenticated/main/main.component";
 import {BungieApiService} from "../../../services/bungie-api.service";
 import {CharacterClass} from "../../../data/enum/character-Class";
-import {ConfigurationService} from "../../../services/v2/configuration.service";
-import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../../../data/enum/armor-stat";
-import {ModInformation} from "../../../data/ModInformation";
+import {ConfigurationService} from "../../../services/configuration.service";
+import {ArmorStat, StatModifier} from "../../../data/enum/armor-stat";
 import {ModOrAbility} from "../../../data/enum/modOrAbility";
-import {EnumDictionary} from "../../../data/types/EnumDictionary";
-import {Modifier} from "../../../data/modifier";
-import {IInventoryArmor} from "../../../services/IInventoryArmor";
-import {Stats} from "../../../data/permutation";
 import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
-import {PERMUTATION_PACKAGE, RESULTS_PACKAGE} from "../../../data/constants";
-import {StatusProviderService} from "../../../services/v2/status-provider.service";
+import {StatusProviderService} from "../../../services/status-provider.service";
 import {animate, state, style, transition, trigger} from "@angular/animations";
 
-export function getSkillTier(stats: number[]) {
-  return Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Resilience]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Recovery]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Discipline]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Intellect]) / 10)
-    + Math.floor(Math.min(100, stats[ArmorStat.Strength]) / 10)
-}
 
 
 export interface ResultDefinition {
@@ -175,20 +160,4 @@ export class ResultsComponent implements OnInit {
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
     return (element?.items.filter(d => d.mayBeBugged).length || 0) > 0
   }
-
-  async movePermutationItems(characterId: string, element: IMappedGearPermutation) {
-    for (let item of element.permutation.items) {
-      (item as any)["parseStatus"] = 1;
-    }
-
-    for (let item of element.permutation.items) {
-      (item as any)["parseStatus"] = 1;
-      await this.bungieApi.transferItem(item.itemInstanceId, characterId);
-      (item as any)["parseStatus"] = 2;
-    }
-    for (let item of element.permutation.items) {
-      delete (item as any)["parseStatus"];
-    }
-  }
-
 }

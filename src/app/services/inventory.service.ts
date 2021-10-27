@@ -1,35 +1,20 @@
 import {Injectable} from '@angular/core';
-import {CharacterClass} from "../../data/enum/character-Class";
-import {DatabaseService} from "../database.service";
-import {IManifestArmor} from "../IManifestArmor";
+import {CharacterClass} from "../data/enum/character-Class";
+import {DatabaseService} from "./database.service";
+import {IManifestArmor} from "./IManifestArmor";
 import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
-import {BehaviorSubject, interval, Observable} from "rxjs";
-import {Configuration} from "../../data/configuration";
-import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../../data/enum/armor-stat";
+import {BehaviorSubject, Observable} from "rxjs";
+import {Configuration} from "../data/configuration";
+import {ArmorStat, StatModifier} from "../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
-import {BungieApiService} from "../bungie-api.service";
-import {environment} from "../../../environments/environment";
-import {AuthService} from "../auth.service";
-import {EnumDictionary} from "../../data/types/EnumDictionary";
-import {ArmorSlot} from "../../data/permutation";
+import {BungieApiService} from "./bungie-api.service";
+import {AuthService} from "./auth.service";
+import {EnumDictionary} from "../data/types/EnumDictionary";
+import {ArmorSlot} from "../data/enum/armor-slot";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {NavigationEnd, Router} from "@angular/router";
-import {ResultDefinition} from "../../components/authenticated-v2/results/results.component";
-import {IInventoryArmor} from "../IInventoryArmor";
-import {ModInformation} from "../../data/ModInformation";
-import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC} from "../../data/constants";
-
-
-export interface IArmorResult {
-  helmetId: number;
-  gauntletId: number;
-  chestId: number;
-  legsId: number
-  exoticHash: number | null;
-  stats: [number, number, number, number, number, number];
-  usedMods: StatModifier[];
-}
+import {ResultDefinition} from "../components/authenticated-v2/results/results.component";
 
 type info = {
   results: ResultDefinition[],
@@ -40,13 +25,6 @@ type info = {
   itemCount: number,
   totalTime: number,
 };
-
-const slotToEnum: { [id: string]: ArmorSlot; } = {
-  "Helmets": ArmorSlot.ArmorSlotHelmet,
-  "Arms": ArmorSlot.ArmorSlotGauntlet,
-  "Chest": ArmorSlot.ArmorSlotChest,
-  "Legs": ArmorSlot.ArmorSlotLegs,
-}
 
 @Injectable({
   providedIn: 'root'
@@ -144,7 +122,7 @@ export class InventoryService {
 
   shouldCalculateResults(): boolean {
     console.log("this.router.url", this.router.url)
-    return this.router.url == "/v2"
+    return this.router.url == "/"
   }
 
   async refreshAll(force: boolean = false) {
@@ -174,7 +152,7 @@ export class InventoryService {
       this.updatingResults = true;
       this.status.modifyStatus(s => s.calculatingResults = true)
       let results: any[] = []
-      const worker = new Worker(new URL('./results-builder2.worker', import.meta.url));
+      const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
       worker.onmessage = ({data}) => {
         results.push(data.results)
         if (data.done == true) {

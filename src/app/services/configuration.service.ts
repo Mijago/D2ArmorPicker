@@ -1,9 +1,7 @@
 import {Injectable} from '@angular/core';
-import {Configuration} from "../../data/configuration";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
-import {ModOrAbility} from "../../data/enum/modOrAbility";
-
-const CURRENT_CONFIGURATION = "CURRENT_CONFIGURATION"
+import {Configuration} from "../data/configuration";
+import {BehaviorSubject, Observable} from "rxjs";
+import {ModOrAbility} from "../data/enum/modOrAbility";
 
 export interface StoredConfiguration {
   version: number; // TODO

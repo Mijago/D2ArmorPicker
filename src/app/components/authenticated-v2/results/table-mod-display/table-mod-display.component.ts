@@ -1,5 +1,4 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ISelectedExotic} from "../main/main.component";
 
 @Component({
   selector: 'app-table-mod-display',

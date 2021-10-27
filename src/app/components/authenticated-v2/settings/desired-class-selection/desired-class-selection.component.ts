@@ -1,6 +1,6 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {CharacterClass} from "../../../../data/enum/character-Class";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {DID_NOT_SELECT_EXOTIC} from "../../../../data/constants";
 
 @Component({

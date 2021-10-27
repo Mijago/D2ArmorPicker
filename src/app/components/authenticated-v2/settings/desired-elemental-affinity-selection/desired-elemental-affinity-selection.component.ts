@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {ConfigurationService} from "../../../../services/v2/configuration.service";
+import {ConfigurationService} from "../../../../services/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
-import {ArmorSlot} from "../../../../data/permutation";
+import {ArmorSlot} from "../../../../data/enum/armor-slot";
 
 @Component({
   selector: 'app-desired-elemental-affinity-selection',
@@ -11,9 +11,6 @@ import {ArmorSlot} from "../../../../data/permutation";
   styleUrls: ['./desired-elemental-affinity-selection.component.scss']
 })
 export class DesiredElementalAffinitySelectionComponent implements OnInit {
-  ArmorSlot = ArmorSlot;
-
-  selectedArmorAffinities: DestinyEnergyType[] = [];
   configSelectedArmorAffinities: DestinyEnergyType[] = [];
 
   configFixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {

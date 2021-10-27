@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import {AuthService} from "../../services/auth.service";
+import {Component, OnInit} from '@angular/core';
 import {environment} from "../../../environments/environment";
 
 @Component({
@@ -9,13 +8,14 @@ import {environment} from "../../../environments/environment";
 })
 export class LoginComponent implements OnInit {
 
-  constructor() { }
+  constructor() {
+  }
 
   ngOnInit(): void {
   }
 
   startLogin() {
-    window.location.href= `https://www.bungie.net/en/OAuth/Authorize?client_id=${environment.clientId}&response_type=code&reauth=true`
+    window.location.href = `https://www.bungie.net/en/OAuth/Authorize?client_id=${environment.clientId}&response_type=code&reauth=true`
   }
 
 }

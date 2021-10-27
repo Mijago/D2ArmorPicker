@@ -1,6 +1,5 @@
-import {AfterViewInit, Component} from '@angular/core';
-import {StatusProviderService} from "../../../services/v2/status-provider.service";
-import {InventoryService} from "../../../services/v2/inventory.service";
+import {Component} from '@angular/core';
+import {StatusProviderService} from "../../../services/status-provider.service";
 
 @Component({
   selector: 'app-app-v2-core',

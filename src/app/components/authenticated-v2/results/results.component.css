@@ -21,10 +21,6 @@
   margin-right: 3px;
 }
 
-.mat-row.loading {
-  filter: blur(4px);
-}
-
 tr.example-element-row td {
   border-bottom-width: 0;
 }
