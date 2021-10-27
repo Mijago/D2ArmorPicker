@@ -51,12 +51,13 @@ import {ClipboardModule} from "@angular/cdk/clipboard";
 import {DesiredElementalAffinitySelectionComponent} from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {IgnoredItemsListComponent} from './components/authenticated-v2/settings/ignored-items-list/ignored-items-list.component';
-import { HelpPageComponent } from './components/authenticated-v2/subpages/help-page/help-page.component';
-import { ArmorPickerPageComponent } from './components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component';
+import {HelpPageComponent} from './components/authenticated-v2/subpages/help-page/help-page.component';
+import {ArmorPickerPageComponent} from './components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
-import { ArmorClusterPageComponent } from './components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component';
+import {ArmorClusterPageComponent} from './components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component';
 import {TableModDisplayComponent} from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
+import {MatTabsModule} from "@angular/material/tabs";
 
 
 const routes: Routes = [
@@ -111,38 +112,39 @@ const routes: Routes = [
     ArmorClusterPageComponent,
     TableModDisplayComponent
   ],
-    imports: [
-        FlexLayoutModule,
-        BrowserModule,
-        HttpClientModule,
-        BrowserAnimationsModule,
-        MatButtonModule,
-        RouterModule.forRoot(routes, {useHash: true}),
-        MatFormFieldModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatSliderModule,
-        ReactiveFormsModule,
-        MatInputModule,
-        MatSlideToggleModule,
-        FormsModule,
-        MatTableModule,
-        MatCardModule,
-        MatTooltipModule,
-        MatProgressBarModule,
-        MatIconModule,
-        MatSortModule,
-        MatPaginatorModule,
-        MatToolbarModule,
-        MatMenuModule,
-        MatButtonToggleModule,
-        MatListModule,
-        MatExpansionModule,
-        MatDialogModule,
-        ClipboardModule,
-        MatSnackBarModule,
-        MatProgressSpinnerModule
-    ],
+  imports: [
+    FlexLayoutModule,
+    BrowserModule,
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatButtonModule,
+    RouterModule.forRoot(routes, {useHash: true}),
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatSliderModule,
+    ReactiveFormsModule,
+    MatInputModule,
+    MatSlideToggleModule,
+    FormsModule,
+    MatTableModule,
+    MatCardModule,
+    MatTooltipModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatToolbarModule,
+    MatMenuModule,
+    MatButtonToggleModule,
+    MatListModule,
+    MatExpansionModule,
+    MatDialogModule,
+    ClipboardModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatTabsModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

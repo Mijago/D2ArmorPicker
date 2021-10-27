@@ -6,6 +6,19 @@
 
 <mat-toolbar id="header" role="heading">
   <span routerLink="/" class="d2ap-router-link">D2ArmorPicker <small> by Mijago</small></span> <a href="https://twitter.com/MijagoCoding/" target="_blank"><img src="assets/logo-twitter.png" class="logo-twitter" alt="Me on twitter"></a>
+
+  <span class="header-spacer"></span>
+  <div fxShow="true" fxHide.lt-md="true">
+    <nav mat-tab-nav-bar id="navbar">
+      <a mat-tab-link
+         *ngFor="let link of navLinks; let idx = index"
+         [routerLink]="link.link"
+         [active]="activeLinkIndex == idx">
+        {{link.name}}
+      </a>
+    </nav>
+  </div>
+
   <span class="header-spacer"></span>
   <div id="buttonContainer">
 

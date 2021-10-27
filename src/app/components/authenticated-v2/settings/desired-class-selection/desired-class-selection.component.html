@@ -9,12 +9,15 @@
   </mat-select>
 </mat-form-field>
 
-<a mat-stroked-button routerLink="/help"
+<a mat-flat-button routerLink="/help"
+   fxShow="false" fxShow.lt-md="true"
    style="margin-left: 15px;"
-   color="accent">
+   color="primary">
   <mat-icon inline>help</mat-icon> Help and Information about D2ArmorPicker
-</a><br/>
-<a mat-stroked-button routerLink="/cluster"
-   color="accent">
+</a>
+<span fxShow="false" fxShow.lt-md="true"><br/></span>
+<a mat-raised-button routerLink="/cluster"
+   fxShow="false" fxShow.lt-md="true"
+   color="primary">
   <mat-icon inline>help</mat-icon> Try out the new (experimental!) armor clustering feature.
 </a>

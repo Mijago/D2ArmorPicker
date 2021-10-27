@@ -18,3 +18,7 @@
 .d2ap-router-link {
   cursor: pointer;
 }
+
+.navbar {
+  height: 42px;
+}
