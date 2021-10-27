@@ -2,12 +2,23 @@ import {Injectable} from '@angular/core';
 import {Configuration} from "../data/configuration";
 import {BehaviorSubject, Observable} from "rxjs";
 import {ModOrAbility} from "../data/enum/modOrAbility";
+import * as lzutf8 from "lzutf8";
+import {CompressionOptions, DecompressionOptions} from "lzutf8";
 
 export interface StoredConfiguration {
   version: number; // TODO
   name: string;
   configuration: Configuration;
 }
+
+const lzCompOptions = {
+  outputEncoding: "Base64"
+} as CompressionOptions
+
+const lzDecompOptions = {
+  inputEncoding: "Base64",
+  outputEncoding: "String"
+} as DecompressionOptions
 
 @Injectable({
   providedIn: 'root'
@@ -55,7 +66,9 @@ export class ConfigurationService {
       else if (a.name > b.name) return 1;
       return 0;
     })
-    localStorage.setItem("storedConfigurations", JSON.stringify(list))
+
+    const compressed = lzutf8.compress(JSON.stringify(list), lzCompOptions);
+    localStorage.setItem("storedConfigurations", compressed)
     this._storedConfigurations.next(list);
   }
 
@@ -71,7 +84,11 @@ export class ConfigurationService {
   }
 
   listSavedConfigurations(): StoredConfiguration[] {
-    let result = (JSON.parse(localStorage.getItem("storedConfigurations") || "[]") || []) as StoredConfiguration[]
+    let item = localStorage.getItem("storedConfigurations") || "[]";
+    if (item.substr(0, 1) != "[")
+      item = lzutf8.decompress(item, lzDecompOptions);
+
+    let result = (JSON.parse(item) || []) as StoredConfiguration[]
     result = result.sort((a, b) => {
       if (a.name < b.name) return -1;
       else if (a.name > b.name) return 1;
@@ -88,7 +105,7 @@ export class ConfigurationService {
     if (!!c) {
       list.splice(c[1], 1)
     }
-    localStorage.setItem("storedConfigurations", JSON.stringify(list))
+    localStorage.setItem("storedConfigurations", lzutf8.compress(JSON.stringify(list), lzCompOptions))
     this._storedConfigurations.next(list);
   }
 
@@ -103,14 +120,39 @@ export class ConfigurationService {
     this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);
     this.__configuration.minimumStatTier = Object.assign({}, this.__configuration.minimumStatTier)
 
-    localStorage.setItem("currentConfig", JSON.stringify(this.__configuration));
+    const compressed = lzutf8.compress(JSON.stringify(this.__configuration), lzCompOptions)
+    localStorage.setItem("currentConfig", compressed);
     this._configuration.next(Object.assign({}, this.__configuration));
   }
 
   loadCurrentConfiguration() {
+    let config = localStorage.getItem("currentConfig") || "{}";
+    if (config.substr(0, 1) != "{")
+      config = lzutf8.decompress(config, lzDecompOptions);
+
     return Object.assign(Configuration.buildEmptyConfiguration(),
-      JSON.parse(localStorage.getItem("currentConfig") || "{}")
+      JSON.parse(config)
     );
+  }
+
+  getCurrentConfigBase64Compressed(): string {
+    let config = localStorage.getItem("currentConfig") || "{}";
+    if (config.substr(0, 1) == "{")
+      config = lzutf8.compress(config, {outputEncoding: "Base64"});
+    return config;
+  }
+
+  getAllStoredConfigurationsBase64Compressed(name: string): string {
+    let item = localStorage.getItem("storedConfigurations") || "[]";
+    if (item.substr(0, 1) == "[")
+      item = lzutf8.compress(item, {outputEncoding: "Base64"});
+    return item;
+  }
+
+  getStoredConfigurationBase64Compressed(name: string): string {
+    let c = this.listSavedConfigurations().filter(c => c.name == name)[0];
+    if (!c) return "";
+    return lzutf8.compress(JSON.stringify(c), {outputEncoding: "Base64"});
   }
 
   resetCurrentConfiguration() {

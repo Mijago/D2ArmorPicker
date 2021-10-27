@@ -1,22 +1,31 @@
-<form [formGroup]="settingsNameForm" (submit)="submit()">
+<form (submit)="submit()" [formGroup]="settingsNameForm">
   <table id="settings">
     <tr>
       <td>
         <mat-form-field appearance="outline">
           <mat-label>Name to save the configuration</mat-label>
-          <input matInput placeholder="Awesome Discipline Build 4" formControlName="name" maxlength="30" minlength="4">
+          <input formControlName="name" matInput maxlength="30" minlength="4" placeholder="Awesome Discipline Build 4">
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" type="submit" [disabled]="!this.settingsNameForm.get('name')?.value || this.settingsNameForm.get('name')?.value.length < 4
-|| this.settingsNameForm.get('name')?.value.length > 30">
+        <button [disabled]="!this.settingsNameForm.get('name')?.value || this.settingsNameForm.get('name')?.value.length < 4
+|| this.settingsNameForm.get('name')?.value.length > 30" color="primary" mat-raised-button type="submit">
           Save current
         </button>
       </td>
       <td>
-        <button mat-raised-button color="warn" (click)="clearEverything()"
+        <button (click)="clearEverything()" color="warn" mat-raised-button
                 matTooltip="Clears the ENTIRE configuration and uses the default settings. Use with caution."
         >Clear everything
+        </button>
+      </td>
+      <td>
+        <button
+          (click)="openSnackBar('Copied the configuration to your clipboard. You can share it with your friends.')"
+          [cdkCopyToClipboard]="config.getCurrentConfigBase64Compressed()" color="primary"
+          mat-raised-button
+          matTooltip="Copy your current configuration into your clipboard. You will be able to share it with others and import it later.">
+          Copy Current
         </button>
       </td>
     </tr>
@@ -36,12 +45,14 @@
         </mat-form-field>
       </td>
       <td>
-        <button mat-raised-button color="primary" (click)="load(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0"
+        <button (click)="load(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0" color="primary"
+                mat-raised-button
                 matTooltip="Load the currently selected configuration.">Load
         </button>
       </td>
       <td>
-        <button mat-stroked-button color="warn" (click)="delete(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0"
+        <button (click)="delete(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0" color="warn"
+                mat-stroked-button
                 matTooltip="Delete the currently selected configuration. Can not be undone.">Delete
         </button>
       </td>
@@ -50,19 +61,19 @@
 </form>
 <br/>
 
-<table mat-table [dataSource]="storedConfigs">
+<table [dataSource]="storedConfigs" mat-table>
   <!-- Position Column -->
   <ng-container matColumnDef="name">
-    <th mat-header-cell *matHeaderCellDef>Name</th>
-    <td mat-cell *matCellDef="let element">{{element.name}} </td>
+    <th *matHeaderCellDef mat-header-cell>Name</th>
+    <td *matCellDef="let element" mat-cell>{{element.name}} </td>
   </ng-container>
 
   <!-- Position Column -->
   <ng-container matColumnDef="class">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       Class
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       <span *ngIf="element.configuration.characterClass == 0">Titan</span>
       <span *ngIf="element.configuration.characterClass == 1">Hunter</span>
       <span *ngIf="element.configuration.characterClass == 2">Warlock</span>
@@ -71,50 +82,50 @@
 
   <!-- Position Column -->
   <ng-container matColumnDef="mobility">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="0"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[0] * 10}}
     </td>
   </ng-container>
 
   <!-- Position Column -->
   <ng-container matColumnDef="resilience">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="1"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[1] * 10}}
     </td>
   </ng-container>
 
   <!-- Position Column -->
   <ng-container matColumnDef="recovery">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="2"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[2] * 10}}
     </td>
   </ng-container>
 
   <!-- Position Column -->
   <ng-container matColumnDef="discipline">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="3"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[3] * 10}}
     </td>
   </ng-container>
 
   <!-- Position Column -->
   <ng-container matColumnDef="intellect">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="4"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[4] * 10}}
     </td>
   </ng-container>
@@ -122,10 +133,10 @@
 
   <!-- Position Column -->
   <ng-container matColumnDef="strength">
-    <th mat-header-cell *matHeaderCellDef>
+    <th *matHeaderCellDef mat-header-cell>
       <app-stat-icon [stat]="5"></app-stat-icon>
     </th>
-    <td mat-cell *matCellDef="let element">
+    <td *matCellDef="let element" mat-cell>
       {{element.configuration.minimumStatTier[5] * 10}}
     </td>
   </ng-container>
@@ -133,23 +144,58 @@
 
   <!-- Position Column -->
   <ng-container matColumnDef="delete">
-    <th mat-header-cell *matHeaderCellDef>
-      Delete
+    <th *matHeaderCellDef mat-header-cell>
+
     </th>
-    <td mat-cell *matCellDef="let element">
-      <button mat-stroked-button color="warn" (click)="delete(element.name)">Delete</button>
+    <td *matCellDef="let element" mat-cell>
+      <ng-container *ngVar="config.getStoredConfigurationBase64Compressed(element.name) as compressedValue">
+        <button (click)="delete(element.name)" color="warn" mat-icon-button
+                matTooltip="Delete this configuration permanently.">
+          <mat-icon>delete_forever</mat-icon>
+        </button>
+        <button (click)="load(element.name)" color="primary" mat-icon-button
+                matTooltip="Load this configuration. Your current settings will be overwritten.">
+          <mat-icon>check_circle_outline</mat-icon>
+        </button>
+        <button (click)="openSnackBar('Copied the configuration to your clipboard. You can share it with your friends.')"
+                [cdkCopyToClipboard]="compressedValue" color="primary"
+                mat-icon-button
+                matTooltip="Copy this configuration into your clipboard. You will be able to share it with others and import it later.">
+          <mat-icon>get_app</mat-icon>
+        </button>
+      </ng-container>
+
     </td>
   </ng-container>
 
-  <!-- Position Column -->
-  <ng-container matColumnDef="load">
-    <th mat-header-cell *matHeaderCellDef>Load</th>
-    <td mat-cell *matCellDef="let element">
-      <button mat-flat-button color="primary" (click)="load(element.name)">Load</button>
-    </td>
-  </ng-container>
-
-
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+  <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
 </table>
+
+<!-- import -->
+<br/>
+<div>
+  <hr>
+  <h2>Import a previously exported configuration</h2>
+  <form [formGroup]="importTextForm">
+    <table>
+      <tr>
+        <td>
+          <mat-form-field appearance="outline">
+            <mat-label>Copied configuration</mat-label>
+            <input formControlName="content" matInput>
+          </mat-form-field>
+        </td>
+        <td>
+
+          <button (click)="runImport()" color="primary" mat-raised-button
+                  matTooltip="Import the given configuration">
+            Import the given text.
+          </button>
+        </td>
+      </tr>
+    </table>
+
+
+  </form>
+</div>

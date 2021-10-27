@@ -3,6 +3,8 @@ import {ConfigurationService, StoredConfiguration} from "../../../../services/co
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confirm-dialog/confirm-dialog.component";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import * as lzutf8 from "lzutf8";
 
 @Component({
   selector: 'app-load-and-save-settings',
@@ -12,13 +14,15 @@ import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confir
 export class LoadAndSaveSettingsComponent implements OnInit {
   selectedEntry: string = "";
   storedConfigs: StoredConfiguration[] = [];
-  displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete", "load"];
+  displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete"];
 
   settingsNameForm: FormGroup;
+  importTextForm: FormGroup;
 
-  constructor(private config: ConfigurationService, private formBuilder: FormBuilder,
-              public dialog: MatDialog) {
+  constructor(public config: ConfigurationService, private formBuilder: FormBuilder,
+              public dialog: MatDialog, private _snackBar: MatSnackBar) {
     this.settingsNameForm = this.formBuilder.group({name: [null,]});
+    this.importTextForm = this.formBuilder.group({content: [null,]});
   }
 
   ngOnInit(): void {
@@ -80,5 +84,34 @@ export class LoadAndSaveSettingsComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) this.config.loadSavedConfiguration(element);
     });
+  }
+
+  runImport() {
+    const content = this.importTextForm.get("content")?.value;
+    if (!content) return this.openSnackBar("Invalid input.");
+    try {
+      let jsonData = JSON.parse(lzutf8.decompress(content, {inputEncoding: "Base64"}))
+      console.log("Incoming json:", jsonData)
+      if (jsonData.hasOwnProperty("name")) {
+        this.config.saveCurrentConfiguration(jsonData.configuration);
+        // TODO: may overwrite existing configurations, thus *currently* disabled
+        // this.config.saveCurrentConfigurationToName(jsonData.name);
+      } else {
+        this.config.saveCurrentConfiguration(jsonData);
+      }
+      this.openSnackBar("Successfully loaded this configuration")
+      this.importTextForm.get("content")?.reset()
+    } catch (e) {
+      this.openSnackBar("Invalid input.")
+      console.error(e)
+    }
+  }
+
+  openSnackBar(message: string) {
+    this._snackBar.open(message,
+      "", {
+        duration: 2500,
+        politeness: "polite"
+      });
   }
 }
