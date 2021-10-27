@@ -320,7 +320,8 @@
       Change the element of these items:
       <ul>
         <ng-container *ngFor="let item of element?.items; let idx = index">
-          <li *ngIf="$any(config_fixedArmorAffinities)[idx] != 0 && (item.energy != $any(config_fixedArmorAffinities)[idx])">
+          <li
+            *ngIf="$any(config_fixedArmorAffinities)[idx] != 0 && (item.energy != $any(config_fixedArmorAffinities)[idx])">
             {{item.name}} must be
 
             <span *ngIf="$any(config_fixedArmorAffinities)[idx] == 1">Arc </span>
@@ -361,7 +362,7 @@
     </ng-container>
 
     <!-- Mods -->
-    <li *ngIf="($any(element?.mods) | count:StatModifier.NONE) < 5">Equip the following stat mods:
+    <li *ngIf="($any(element?.mods).length > 0) && (($any(element?.mods) | count:StatModifier.NONE) < 5)">Equip the following stat mods:
       <ul *ngVar="element?.mods as mods">
         <!-- MOBILITY -->
         <ng-container *ngVar="mods | count:StatModifier.MINOR_MOBILITY as minorCount">
@@ -370,7 +371,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Mobility Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Mobility Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -382,7 +384,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Resilience Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Resilience Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -394,7 +397,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Recovery Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Recovery Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -406,7 +410,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Discipline Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Discipline Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -418,7 +423,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Intellect Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Intellect Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -430,7 +436,8 @@
               <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
               <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
               <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-              Strength Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+              Strength Mod
+              <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
             </li>
           </ng-container>
         </ng-container>
@@ -438,6 +445,49 @@
       </ul>
 
     </li>
-    <li *ngIf="config_enabledMods.length > 0">Equip any mods and fragments that you enabled in the configuration.</li>
+    <li *ngIf="config_enabledMods.length > 0">
+      Equip any mods and fragments that you enabled in the configuration:
+      <ul>
+        <ng-container *ngFor="let mod of config_enabledMods">
+          <ng-container *ngVar="ModInformation[mod] as info">
+            <li *ngIf="info.type == ModifierType.CombatStyleMod">
+              Equip the mod {{info.name}}
+              <span *ngIf="info.requiredArmorAffinity != 0">
+                ( {{info.cost}}
+                <span *ngIf="info.requiredArmorAffinity == 1"> Arc </span>
+                <span *ngIf="info.requiredArmorAffinity == 2"> Solar </span>
+                <span *ngIf="info.requiredArmorAffinity == 3"> Void </span>
+                <span *ngIf="info.requiredArmorAffinity == 6"> Stasis </span>
+                <!-- Item affinity -->
+                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 1"
+                     class="element-icon-mini"
+                     matTooltip='Arc affinity'
+                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
+                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 2"
+                     class="element-icon-mini"
+                     matTooltip='Solar affinity'
+                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
+                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 3"
+                     class="element-icon-mini"
+                     matTooltip='Void affinity'
+                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
+                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 6"
+                     class="element-icon-mini"
+                     matTooltip='Stasis affinity'
+                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+                  )
+                </span>
+            </li>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngFor="let mod of config_enabledMods">
+          <ng-container *ngVar="ModInformation[mod] as info">
+            <li *ngIf="info.type == ModifierType.Stasis">
+              Equip the stasis fragment {{info.name}}
+            </li>
+          </ng-container>
+        </ng-container>
+      </ul>
+    </li>
   </ol>
 </div>

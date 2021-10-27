@@ -14,4 +14,5 @@ export interface Modifier {
   type: ModifierType;
   bonus: ModifierValue[];
   requiredArmorAffinity: DestinyEnergyType;
+  cost: number;
 }

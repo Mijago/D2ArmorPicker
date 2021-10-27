@@ -11,6 +11,7 @@ import {ModOrAbility} from "../../../../data/enum/modOrAbility";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
+import {ModifierType} from "../../../../data/enum/modifierType";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -18,6 +19,8 @@ import {EnumDictionary} from "../../../../data/types/EnumDictionary";
   styleUrls: ['./expanded-result-content.component.scss']
 })
 export class ExpandedResultContentComponent implements OnInit {
+  public ModifierType = ModifierType;
+  public ModInformation = ModInformation;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
   public config_characterClass = DestinyClass.Titan;
