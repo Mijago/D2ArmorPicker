@@ -13,6 +13,14 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.1.0 (major)",
+      date: "Oct 27, 2021",
+      entries: [
+        "- Completely removed V1 of the tool.",
+        "~ Optimized code and reduced overall page size."
+      ]
+    },
+    {
       version: "2.0.16",
       date: "Oct 26, 2021",
       entries: [
