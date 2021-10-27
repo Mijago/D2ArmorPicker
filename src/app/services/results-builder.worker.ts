@@ -217,6 +217,42 @@ function handlePermutation(
       }
     }
   }
+
+  // Check if we should add our results at all
+  if (config.onlyShowResultsWithNoWastedStats) {
+    // Definitely return when we encounter stats above 100
+    if (stats.filter(d => d>100).length > 0)
+      return null;
+    // definitely return when we encounter stats that can not be fixed
+    if (stats.filter(d => d%5 != 0).length> 0)
+      return null;
+
+    // now find out how many mods we need to fix our stats to 0 waste
+    // Yes, this is basically duplicated code. But necessary.
+    let waste = [
+      stats[ArmorStat.Mobility],
+      stats[ArmorStat.Resilience],
+      stats[ArmorStat.Recovery],
+      stats[ArmorStat.Discipline],
+      stats[ArmorStat.Intellect],
+      stats[ArmorStat.Strength]
+    ].map((v, i) => [v % 10, i, v]).sort((a, b) => b[0] - a[0])
+
+    for (let id = usedMods.length; id < config.maximumStatMods; id++) {
+      let result = waste.filter(a => a[0] >= 5).filter(k => k[2] < 100).sort((a, b) => a[0] - b[0])[0]
+      if (!result) break;
+      stats[result[1]] += 5
+      result[0] -= 5;
+      usedMods.push(1 + 2 * result[1])
+    }
+    const waste1 = getWaste(stats);
+    if (waste1 > 0)
+      return null;
+  }
+  if (usedMods.length > config.maximumStatMods)
+    return null;
+
+
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
 
