@@ -17,6 +17,8 @@ export class HelpPageComponent implements OnInit {
       date: "Oct 27, 2021",
       entries: [
         "- Completely removed V1 of the tool.",
+        "+ Added a navigation bar to the title bar.",
+        "+ Added more details to the 'What to do now?' section.",
         "~ Optimized code and reduced overall page size."
       ]
     },
