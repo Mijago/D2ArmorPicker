@@ -371,7 +371,7 @@ export class BungieApiService {
   async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate")) {
       if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
-        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2)
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24)
           return;
     }
 
