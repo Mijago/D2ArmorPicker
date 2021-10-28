@@ -3,7 +3,7 @@ import {InventoryService} from "../../../../services/inventory.service";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
-import {IManifestArmor} from "../../../../services/IManifestArmor";
+import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {DID_NOT_SELECT_EXOTIC} from "../../../../data/constants";
 
 

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {CharacterClass} from "../data/enum/character-Class";
 import {DatabaseService} from "./database.service";
-import {IManifestArmor} from "./IManifestArmor";
+import {IManifestArmor} from "../data/types/IManifestArmor";
 import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
 import {BehaviorSubject, Observable} from "rxjs";

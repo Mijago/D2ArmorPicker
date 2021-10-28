@@ -1,5 +1,5 @@
 import {AfterViewInit, Component} from '@angular/core';
-import {IInventoryArmor} from "../../../../services/IInventoryArmor";
+import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 import {DatabaseService} from "../../../../services/database.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {InventoryService} from "../../../../services/inventory.service";

@@ -2,8 +2,8 @@ import {Injectable} from '@angular/core';
 import Dexie from 'dexie';
 import {AuthService} from "./auth.service";
 import {buildDb} from "../data/database";
-import {IManifestArmor} from "./IManifestArmor";
-import {IInventoryArmor} from "./IInventoryArmor";
+import {IManifestArmor} from "../data/types/IManifestArmor";
+import {IInventoryArmor} from "../data/types/IInventoryArmor";
 
 @Injectable({
   providedIn: 'root'

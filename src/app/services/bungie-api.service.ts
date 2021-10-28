@@ -13,8 +13,8 @@ import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
 import {DatabaseService} from "./database.service";
 import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
-import {IManifestArmor} from "./IManifestArmor";
-import {IInventoryArmor} from "./IInventoryArmor";
+import {IManifestArmor} from "../data/types/IManifestArmor";
+import {IInventoryArmor} from "../data/types/IInventoryArmor";
 
 @Injectable({
   providedIn: 'root'

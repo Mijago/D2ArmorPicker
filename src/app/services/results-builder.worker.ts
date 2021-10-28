@@ -1,5 +1,5 @@
 import {Configuration} from "../data/configuration";
-import {IInventoryArmor} from "./IInventoryArmor";
+import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {buildDb} from "../data/database";
 import {ArmorSlot} from "../data/enum/armor-slot";
 import {DID_NOT_SELECT_EXOTIC, FORCE_USE_NO_EXOTIC} from "../data/constants";

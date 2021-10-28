@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {DatabaseService} from "../../../../services/database.service";
-import {IInventoryArmor} from "../../../../services/IInventoryArmor";
+import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 
 @Component({
   selector: 'app-ignored-items-list',
