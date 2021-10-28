@@ -90,14 +90,22 @@ export class LoadAndSaveSettingsComponent implements OnInit {
     const content = this.importTextForm.get("content")?.value;
     if (!content) return this.openSnackBar("Invalid input.");
     try {
-      let jsonData = JSON.parse(lzutf8.decompress(content, {inputEncoding: "Base64"}))
+      const jsonText = lzutf8.decompress(content, {inputEncoding: "Base64"});
+      const isArray = jsonText.substr(0, 1) == "["
+      let jsonData = JSON.parse(jsonText)
+      if (!isArray)
+        jsonData = [jsonData]
+
       console.log("Incoming json:", jsonData)
-      if (jsonData.hasOwnProperty("name")) {
-        this.config.saveCurrentConfiguration(jsonData.configuration);
-        // TODO: may overwrite existing configurations, thus *currently* disabled
-        // this.config.saveCurrentConfigurationToName(jsonData.name);
-      } else {
-        this.config.saveCurrentConfiguration(jsonData);
+      for (let jsonDatum of jsonData) {
+        if (jsonDatum.hasOwnProperty("name")) {
+          if (isArray)
+            this.config.saveConfiguration(jsonDatum.name, jsonDatum.configuration);
+          else
+            this.config.saveCurrentConfiguration(jsonDatum.configuration);
+        } else {
+          this.config.saveCurrentConfiguration(jsonDatum);
+        }
       }
       this.openSnackBar("Successfully loaded this configuration")
       this.importTextForm.get("content")?.reset()

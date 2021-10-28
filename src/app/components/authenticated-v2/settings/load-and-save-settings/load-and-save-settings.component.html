@@ -172,6 +172,18 @@
   <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
 </table>
 
+<ng-container  *ngIf="storedConfigs.length > 0">
+  <br>
+  <ng-container *ngVar="config.getAllStoredConfigurationsBase64Compressed() as compressedValue">
+    <button color="primary" mat-raised-button
+            [cdkCopyToClipboard]="compressedValue"
+            matTooltip="Export all configurations to the clipboard. You can then save and share them.">
+      Copy all saved configurations to the clipboard
+    </button>
+  </ng-container>
+</ng-container>
+
+
 <!-- import -->
 <br/>
 <div>
@@ -187,7 +199,6 @@
           </mat-form-field>
         </td>
         <td>
-
           <button (click)="runImport()" color="primary" mat-raised-button
                   matTooltip="Import the given configuration">
             Import the given text.

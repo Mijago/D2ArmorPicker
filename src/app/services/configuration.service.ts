@@ -142,7 +142,7 @@ export class ConfigurationService {
     return config;
   }
 
-  getAllStoredConfigurationsBase64Compressed(name: string): string {
+  getAllStoredConfigurationsBase64Compressed(): string {
     let item = localStorage.getItem("storedConfigurations") || "[]";
     if (item.substr(0, 1) == "[")
       item = lzutf8.compress(item, {outputEncoding: "Base64"});
