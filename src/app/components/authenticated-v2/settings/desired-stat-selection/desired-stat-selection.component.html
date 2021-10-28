@@ -6,6 +6,7 @@
     <td>
       <!-- TODO [maximumAvailableTier]=""-->
       <app-stat-tier-selection
+        [statsByMods]="statsByMods[enum.value]"
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
         [selectedTier]="minimumStatTiers[enum.value]"
         [tooltipTexts]="ArmorStatTierBonus[enum.value]"

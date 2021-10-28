@@ -8,6 +8,7 @@ import {Component, Input, Output} from '@angular/core';
 })
 export class StatTierSelectionComponent {
   readonly TierRange = new Array(11);
+  @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 10;
   @Input() selectedTier: number = 0;
   @Input() tooltipTexts: string[] = [];
@@ -23,5 +24,21 @@ export class StatTierSelectionComponent {
     }
   }
 
+  isAddedByConfigMods(index: number) {
+    return index > 0
+      && (
+        ((this.selectedTier - index) >= 0 && (this.selectedTier - index) < this.statsByMods) // on the right
+        // ( index <= this.statsByMods) // on the left
+        || (this.selectedTier < this.statsByMods && index <= this.statsByMods)
+      )
+  }
+
+  getTooltip(index: number) {
+    let tooltip = (this.tooltipTexts || [])[index];
+    if (this.isAddedByConfigMods(index)) {
+      tooltip += "\n\n~ This tier is added by selected fragments or mods ~"
+    }
+    return tooltip
+  }
 
 }

@@ -4,11 +4,12 @@ import {ConfigurationService} from "../../../../services/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {getDefaultStatDict} from "../../../../data/configuration";
 import {InventoryService} from "../../../../services/inventory.service";
+import {ModInformation} from "../../../../data/ModInformation";
 
 function calcScore(d: number[]) {
   let score = 0;
   for (let n of d) {
-    score += Math.pow(10, 6-n)
+    score += Math.pow(10, 6 - n)
   }
   return score;
 }
@@ -23,6 +24,7 @@ export class DesiredStatSelectionComponent implements OnInit {
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
   ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = ArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
+  statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
   _statCombo3x100: ArmorStat[][] = [];
 
@@ -38,6 +40,13 @@ export class DesiredStatSelectionComponent implements OnInit {
   ngOnInit(): void {
     this.config.configuration.subscribe(
       c => {
+        const tmpStatsByMods = [0, 0, 0, 0, 0, 0];
+        for (let enabledMod of c.enabledMods) {
+          for (let bonus of ModInformation[enabledMod].bonus) {
+            tmpStatsByMods[bonus.stat]+=bonus.value/10;
+          }
+        }
+        this.statsByMods = tmpStatsByMods;
         this.minimumStatTiers = c.minimumStatTier;
       }
     )
@@ -50,7 +59,7 @@ export class DesiredStatSelectionComponent implements OnInit {
         this.maximumPossibleTiers = tiers;
       }
 
-      this._statCombo3x100 = (d.statCombo3x100 || []).sort((a,b) => calcScore(b) - calcScore(a))
+      this._statCombo3x100 = (d.statCombo3x100 || []).sort((a, b) => calcScore(b) - calcScore(a))
       this._statCombo4x100 = d.statCombo4x100 || []
     })
   }

@@ -11,3 +11,11 @@
 .stat-button-content {
   width: 100%;
 }
+
+.mat-button-toggle-checked.isFromMod {
+  background-color: #3f64b5;
+}
+
+.not-checked.isFromMod {
+  background-color: rgba(63, 110, 181, 0.15);
+}
