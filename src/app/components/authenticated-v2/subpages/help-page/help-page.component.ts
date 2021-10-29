@@ -14,13 +14,13 @@ export class HelpPageComponent implements OnInit {
   changelog = [
     {
       version: "2.1.0 (major)",
-      date: "Oct 27, 2021",
+      date: "Oct 29, 2021",
       entries: [
-        "- Completely removed V1 of the tool.",
+        "- Completely removed V1 of the tool. If you had any problems with V2, you had over three months to report them.",
         "+ The stat selection now displays which stat tiers are added by stat mods (PF/RL) or stasis fragments in the configuration.",
         "+ You can now export (and import) individual configurations as well as all stored configurations at once.",
-        "+ Added a navigation bar to the title bar.",
-        "+ Added more details to the last step of the 'What to do now?' section.",
+        "+ Added a navigation bar to the title bar. On smaller screens it is replaced by two buttons in the character selection.",
+        "+ Added more details to the last step of the 'What to do now?' section. It now lists the fragments and mods you selected.",
         "~ Optimized code and reduced overall page size."
       ]
     },
