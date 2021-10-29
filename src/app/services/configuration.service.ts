@@ -84,9 +84,14 @@ export class ConfigurationService {
   }
 
   listSavedConfigurations(): StoredConfiguration[] {
-    let item = localStorage.getItem("storedConfigurations") || "[]";
-    if (item.substr(0, 1) != "[")
-      item = lzutf8.decompress(item, lzDecompOptions);
+    let item;
+    try {
+      item = localStorage.getItem("storedConfigurations") || "[]";
+      if (item.substr(0, 1) != "[")
+        item = lzutf8.decompress(item, lzDecompOptions);
+    } catch (e) {
+      item = {}
+    }
 
     let result = (JSON.parse(item) || []) as StoredConfiguration[]
     result = result.sort((a, b) => {
@@ -126,9 +131,14 @@ export class ConfigurationService {
   }
 
   loadCurrentConfiguration() {
-    let config = localStorage.getItem("currentConfig") || "{}";
-    if (config.substr(0, 1) != "{")
-      config = lzutf8.decompress(config, lzDecompOptions);
+    let config;
+    try {
+      config = localStorage.getItem("currentConfig") || "{}";
+      if (config.substr(0, 1) != "{")
+        config = lzutf8.decompress(config, lzDecompOptions);
+    } catch (e) {
+      config = {}
+    }
 
     return Object.assign(Configuration.buildEmptyConfiguration(),
       JSON.parse(config)
