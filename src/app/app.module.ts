@@ -81,6 +81,7 @@ const routes: Routes = [
   //{path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
   {path: 'login', component: LoginComponent, canActivate: [NotAuthenticatedGuard]},
   {path: 'login-bungie', component: HandleBungieLoginComponent},
+  {path: '**', redirectTo: '/'},
 ];
 
 @NgModule({
