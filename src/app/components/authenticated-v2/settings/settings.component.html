@@ -1,0 +1,72 @@
+<div id="card-config">
+  <mat-card>
+    <mat-card-title>Character Selection</mat-card-title>
+    <mat-card-subtitle>Select the class you want to make an awesome build for!</mat-card-subtitle>
+    <mat-card-content id="content-char-selection">
+      <app-desired-class-selection></app-desired-class-selection>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Select the stats you want to achieve</mat-card-title>
+    <mat-card-subtitle>The heart of this tool. Select the stats you want!</mat-card-subtitle>
+    <mat-card-content>
+      <app-desired-stat-selection></app-desired-stat-selection>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Available Modslot limitation</mat-card-title>
+    <mat-card-subtitle>If you do not want to use all five available mod slots for stat mods, tell it to the tool here.</mat-card-subtitle>
+    <mat-card-content>
+      <app-desired-mod-selection></app-desired-mod-selection>
+    </mat-card-content>
+
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Exotic</mat-card-title>
+    <mat-card-subtitle>If you want, limit all results to an exotic. Use this to create a build around an exotic.</mat-card-subtitle>
+    <mat-card-content>
+      <app-desired-exotic-selection></app-desired-exotic-selection>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Desired Element Affinity</mat-card-title>
+    <mat-card-subtitle>
+      Select the element you want to enforce for each armor slot.<br>
+      The element of non-masterworked armor will be ignored, as you can easily change it.
+    </mat-card-subtitle>
+    <mat-card-content>
+      <app-desired-elemental-affinity-selection></app-desired-elemental-affinity-selection>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Desired Mod and Skills selection</mat-card-title>
+    <mat-card-subtitle>Select Mods and Skills that affect your overall stats.</mat-card-subtitle>
+    <mat-card-content>
+      <app-desired-mods-selection></app-desired-mods-selection>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Advanced Settings</mat-card-title>
+    <mat-card-subtitle>More settings! Use them to fine-tune your buildcrafting process.</mat-card-subtitle>
+    <mat-card-content>
+      <app-advanced-settings></app-advanced-settings>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Disabled items</mat-card-title>
+    <mat-card-subtitle>
+      These items were disabled. Click them to enable them again.<br/>
+      You can disable items in the detailed result overview.
+    </mat-card-subtitle>
+    <mat-card-content>
+      <app-ignored-items-list></app-ignored-items-list>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-title>Configuration Management</mat-card-title>
+    <mat-card-subtitle>Save and load your buildcrafting settings for another day!</mat-card-subtitle>
+    <mat-card-content>
+      <app-load-and-save-settings></app-load-and-save-settings>
+    </mat-card-content>
+  </mat-card>
+</div>

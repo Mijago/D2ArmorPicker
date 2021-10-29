@@ -1,0 +1,23 @@
+<mat-form-field appearance="outline">
+  <mat-label>Class</mat-label>
+  <mat-select [value]="selectedClass" (valueChange)="selectClass($event)">
+    <mat-option *ngFor="let clazz of availableClasses" [value]="clazz">
+      <span *ngIf="clazz == 0">Titan</span>
+      <span *ngIf="clazz == 1">Hunter</span>
+      <span *ngIf="clazz == 2">Warlock</span>
+    </mat-option>
+  </mat-select>
+</mat-form-field>
+
+<a mat-flat-button routerLink="/help"
+   fxShow="false" fxShow.lt-md="true"
+   style="margin-left: 15px;"
+   color="primary">
+  <mat-icon inline>help</mat-icon> Help and Information about D2ArmorPicker
+</a>
+<span fxShow="false" fxShow.lt-md="true"><br/></span>
+<a mat-raised-button routerLink="/cluster"
+   fxShow="false" fxShow.lt-md="true"
+   color="primary">
+  <mat-icon inline>help</mat-icon> Try out the new (experimental!) armor clustering feature.
+</a>

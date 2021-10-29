@@ -1,0 +1,39 @@
+#card-results {
+  float: left;
+  width: fit-content;
+  margin-left: 3px;
+}
+
+.statColumn {
+  position: relative;
+}
+
+.statIcon {
+  position: absolute;
+  height: 22px;
+  margin-left: 2px;
+  top: 11px;
+}
+
+.itemIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
+}
+
+tr.example-element-row td {
+  border-bottom-width: 0;
+}
+
+tr.example-detail-row {
+  height: 0 !important;
+}
+
+.example-element-detail {
+  overflow: hidden;
+  display: flex;
+}
+
+.report-problem-icon {
+  color: lightcoral;
+}

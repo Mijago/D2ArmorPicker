@@ -1,0 +1,144 @@
+<div id="help-container">
+
+  <a class="returnbutton" color="primary" fxShow="false" fxShow.lt-md="true" mat-raised-button routerLink="/"> Return to
+    D2ArmorPicker </a>
+
+  <mat-card>
+    <mat-card-title>
+      <span>About D2ArmorPicker <small> by Mijago</small> <a href="https://twitter.com/MijagoCoding/"
+                                                             target="_blank"><img alt="Me on twitter"
+                                                                                  class="logo-twitter"
+                                                                                  src="assets/logo-twitter.png"></a></span>
+    </mat-card-title>
+    <mat-card-content>
+      D2ArmorPicker (or short D2AP) is a small web-app to quickly find armor that fits your desired stat requirements.
+      It uses the armor in your vault, inventory and postmaster, calculates every possible variation and shows only
+      those that fulfill the given requirements.
+      <br/>
+      <br/>
+      As i raided a lot and I mainly play meme builds, I wanted to be able to switch exotics and have decent stats
+      without being a burden on my team.
+      That's why I developed the <a href="https://github.com/Mijago/D2-Gear-Calculator" target="_blank">first version of
+      this tool</a> in Python.
+      After a few days I started to translate this tool <a href="https://mijago.github.io/D2GearCalculator/"
+                                                           target="_blank">into a webpage</a>.
+      My friends liked it, but it didn't have API access.
+      Thus I created the first version of D2ArmorPicker, and after people started using and liking it, I started to
+      completely rewrite it - that's Version&nbsp;2!
+      <br/>
+      <br/>
+      I keep updating and improving this tool, but beware that it takes a bit, as I work on it on my spare time.
+      Feel free to follow me on Twitter <a href="https://twitter.com/MijagoCoding/" target="_blank"><img
+      alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png"></a>, i occasionally post updates there.
+      If you like my tools and want to support me, head to
+      <a href="https://www.buymeacoffee.com/mijago" target="_blank">buymeacoffee.com</a> and buy me a coffee! ❤
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>
+      How do I use D2ArmorPicker?
+    </mat-card-title>
+    <mat-card-content>
+      Follow these few steps:
+      <ol>
+        <li>Login. You already did this!</li>
+        <li>
+          [Optional] Pick an exotic you want to use.
+          The tool will only display results for this exotic.
+          You can always undo this.
+        </li>
+        <li>
+          [Optional] Select additional mods/fragments that give a bonus (or penalty).
+          These are important if you want certain stat combinations even if you have penalties on your gear.
+        </li>
+        <li>
+          Select the stat distribution you seek.
+          This is the heart of D2ArmorPicker.
+          You just click 100 recovery and it will display you builds that have 100 recovery.
+          <i>Note that it automatically adds stat mods if necessary.</i>
+        </li>
+        <li>
+          Now look to the result table.
+          On a normal desktop it should be on the right, on smaller devices it might move below the configuration.
+          The table lists multiple results and you can sort it by your requirements.<br>
+          <b>Click</b> on an entry to open look the detailed view:
+          <div class="preview-image-container">
+            <img alt="Preview of the results table" class="preview-image"
+                 src="assets/armor-images/preview_result_details.png">
+          </div>
+          The example above shows a build that utilizes Dunemarchers and a zero-waste-build.
+          To achieve it, I have to move all the items in my inventory and equip them.
+          After this, I <i>masterwork</i> them and <i>add the mods</i> as the table displays them:
+          <ul>
+            <li><b>Discipline:</b> One major mod, one minor mod;</li>
+            <li><b>Intellect:</b> One major mod, one minor mod;</li>
+            <li><b>Strength:</b> One major mod;</li>
+            <li>I also add Powerful Friends and Radiant Light, as I chose them in the configuration.</li>
+          </ul>
+        </li>
+      </ol>
+    </mat-card-content>
+  </mat-card>
+
+
+  <mat-card>
+    <mat-card-title>
+      Where can I grind high stat armor?
+    </mat-card-title>
+    <mat-card-content>
+      There are many spots that give you mediocre armor, but for the really good builds you need the correct armor.
+      Here I provide a list of high-stat armor sources.
+      It may not be complete, but a good starting point.
+      <i>Last updated September 24, 2021.</i>
+
+      <ul>
+        <li> You can do Corrupted Expunges for really good high stat gear (3 per week per char).</li>
+        <li> Focus Tier 3 Splicer Umbral Engrams (3 per week).</li>
+        <li> Clear Pit of Heresy Dungeon, the boss drop guarantees two stats to be 16 (or higher).</li>
+        <li> Farm a bunch of Spoils, go into Master Vault of Glass and buy armor at the final chest.</li>
+      </ul>
+      Some good armor rolls may look like these:
+      <div fxLayout="row" id="armor-image-container">
+        <img src="assets/armor-images/kabrs_battlecage.png">
+        <img src="assets/armor-images/lightkin_gauntlets.png">
+        <img src="assets/armor-images/phobos_warden_helm.png">
+        <img src="assets/armor-images/wild_hunt_vest.png">
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>Known Issues</mat-card-title>
+    <mat-card-content>
+      <ul>
+        <li *ngFor="let text of knownIssues">{{text}}</li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-title>Changelog</mat-card-title>
+    <mat-card-content>
+      <table class="changelog-table">
+        <tr>
+          <th>Date</th>
+          <th>Version</th>
+          <th>Description</th>
+        </tr>
+        <tr *ngFor="let log of changelog">
+          <td>{{log.date}}</td>
+          <td>{{log.version}}</td>
+          <td>
+            <ul>
+              <li *ngFor="let entry of log.entries">{{entry}}</li>
+            </ul>
+          </td>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <a class="returnbutton" color="primary" fxShow="false" fxShow.lt-md="true" mat-raised-button routerLink="/"> Return to
+    D2ArmorPicker </a>
+</div>

@@ -1,0 +1,24 @@
+#header {
+  position: relative;
+  height: 42px;
+  margin-bottom: 5px;
+}
+
+#header .header-spacer {
+  flex: 1 1 auto;
+}
+
+#loading {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.d2ap-router-link {
+  cursor: pointer;
+}
+
+.navbar {
+  height: 42px;
+}

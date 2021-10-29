@@ -1,0 +1,45 @@
+#help-container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+mat-card {
+  margin-bottom: 8px;
+}
+
+#armor-image-container {
+  overflow: auto;
+}
+
+#armor-image-container > img:not(:last-of-type) {
+  margin-right: 20px;
+}
+
+#armor-image-container > img {
+  max-height: 300px;
+}
+
+.preview-image-container {
+  max-width: 600px;
+}
+.preview-image {
+  max-width: 100%;
+}
+
+.returnbutton {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.changelog-table th:first-of-type {
+  min-width: 80px;
+}
+.changelog-table th:nth-of-type(2) {
+  min-width: 40px;
+}
+
+.changelog-table td {
+  border-top: #6e6e6e solid 1px;
+}

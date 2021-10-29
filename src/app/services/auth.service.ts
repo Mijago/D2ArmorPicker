@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Router} from "@angular/router";
-import {DatabaseService} from "./database.service";
 
 @Injectable({
   providedIn: 'root'
@@ -47,7 +46,6 @@ export class AuthService {
       body = `grant_type=refresh_token&refresh_token=${this.refreshToken}&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`;
     }
 
-    console.log(body)
     return await this.http.post<any>(`https://www.bungie.net/Platform/App/OAuth/Token/`,
       body, {
         headers: {

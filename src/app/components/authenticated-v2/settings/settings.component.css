@@ -1,0 +1,15 @@
+#card-config {
+  float: left;
+  width: fit-content;
+  margin-bottom: 20px;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+#card-config > mat-card {
+  margin-bottom: 4px;
+}
+
+#content-char-selection {
+  margin-bottom: 0;
+}

@@ -1,0 +1,15 @@
+<mat-button-toggle-group appearance="standard" name="fontStyle">
+  <mat-button-toggle (click)="setValue(i)"
+                     *ngFor="let tier of TierRange; let i = index"
+                     [checked]="selectedTier == i"
+                     [class.isFromMod]="isAddedByConfigMods(i)"
+                     [class.mat-button-toggle-checked]="selectedTier>=i"
+                     [class.not-checked]="selectedTier<i"
+                     [disabled]="maximumAvailableTier < i"
+                     class="select-button"
+                     value="{{i}}">
+    <div [matTooltip]="getTooltip(i)" class="stat-button-content" matTooltipClass="allow-cr">
+      {{i * 10}}
+    </div>
+  </mat-button-toggle>
+</mat-button-toggle-group>

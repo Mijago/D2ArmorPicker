@@ -1,0 +1,9 @@
+<div class="item-icon-container">
+  <span *ngFor="let i of disabledItems; let idx = index" class="item-sub">
+
+  <img class="item-icon" src="https://bungie.net/{{i.icon}}"
+       (click)="enableItem(i.itemInstanceId)" matTooltipClass="allow-cr"
+       [matTooltip]="generateTooltip(i)">
+    <br *ngIf="(idx+1) % 10 == 0">
+  </span>
+</div>

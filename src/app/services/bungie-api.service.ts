@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {
   getDestinyManifest,
   getDestinyManifestSlice,
-  getProfile, getItem,
+  getProfile, getItem, equipItem,
   HttpClientConfig,
   transferItem
 } from 'bungie-api-ts/destiny2';
@@ -10,9 +10,11 @@ import {getMembershipDataForCurrentUser} from 'bungie-api-ts/user';
 import {AuthService} from "./auth.service";
 import {HttpClient} from "@angular/common/http";
 import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
-import {DatabaseService, IInventoryArmor, IManifestArmor} from "./database.service";
+import {DatabaseService} from "./database.service";
 import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
+import {IManifestArmor} from "../data/types/IManifestArmor";
+import {IInventoryArmor} from "../data/types/IInventoryArmor";
 
 @Injectable({
   providedIn: 'root'
@@ -86,11 +88,11 @@ export class BungieApiService {
     }) || [];
   }
 
-  async transferItem(itemInstanceId: string, targetCharacter: string) {
+  async transferItem(itemInstanceId: string, targetCharacter: string, equip = false): Promise<boolean> {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
       await this.authService.logout();
-      return;
+      return false;
     }
 
     let r1 = await getItem(d => this.$http(d), {
@@ -102,30 +104,45 @@ export class BungieApiService {
       ]
     })
 
-    if (!r1) return;
-    if (r1.Response.characterId == targetCharacter) return;
-    if (r1.Response.item.data?.location != 2) {
-      await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
-      r1 = await getItem(d => this.$http(d), {
-        membershipType: destinyMembership.membershipType,
-        destinyMembershipId: destinyMembership.membershipId,
-        itemInstanceId: itemInstanceId,
-        components: [
-          DestinyComponentType.ItemCommonData
-        ]
-      })
+    let transferResult = false;
+
+    if (!r1) return false;
+    if (r1.Response.characterId != targetCharacter) {
+      if (r1.Response.item.data?.location != 2) {
+        await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
+        r1 = await getItem(d => this.$http(d), {
+          membershipType: destinyMembership.membershipType,
+          destinyMembershipId: destinyMembership.membershipId,
+          itemInstanceId: itemInstanceId,
+          components: [
+            DestinyComponentType.ItemCommonData
+          ]
+        })
+      }
+
+      const payload = {
+        "characterId": targetCharacter,
+        "membershipType": 3,
+        "itemId": r1?.Response.item.data?.itemInstanceId || "",
+        "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+        "stackSize": 1,
+        "transferToVault": false
+      }
+
+      transferResult = !!await transferItem(d => this.$httpPost(d), payload);
+    }
+    if (equip) {
+      let equipPayload = {
+        "characterId": targetCharacter,
+        "membershipType": 3,
+        "stackSize": 1,
+        "itemId": r1?.Response.item.data?.itemInstanceId || "",
+        "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
+      }
+      transferResult = !!await equipItem(d => this.$httpPost(d), equipPayload)
     }
 
-    const payload = {
-      "characterId": targetCharacter,
-      "membershipType": 3,
-      "itemId": r1?.Response.item.data?.itemInstanceId || "",
-      "itemReferenceHash": r1?.Response.item.data?.itemHash || 0,
-      "stackSize": 1,
-      "transferToVault": false
-    }
-
-   await transferItem(d => this.$httpPost(d), payload);
+    return transferResult;
   }
 
 
@@ -207,8 +224,9 @@ export class BungieApiService {
 
   async updateArmorItems(force = false) {
     if (!force && localStorage.getItem("LastArmorUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
-        return;
+      if (localStorage.getItem("last-armor-db-name") == this.db.inventoryArmor.db.name)
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
+          return;
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
       await this.authService.logout();
@@ -282,6 +300,12 @@ export class BungieApiService {
             strength: stats[4244567218].value,
             energyAffinity: instance.energy?.energyType || 0,
           }, res[d.itemHash]) as IInventoryArmor
+          (r.id as any) = undefined;
+
+          // HALLOWEEN SPECIAL
+          if (d.itemHash == 2545426109 || d.itemHash == 199733460 || d.itemHash == 3224066584)
+            r.slot = "Helmets";
+          // /HALLOWEEN SPECIAL
 
 
           // TODO: Negative values are capped at 0, thus i get always ~8 strength
@@ -322,7 +346,11 @@ export class BungieApiService {
 
           for (let perk of perks) {
             let f = fields[perk.perkHash ?? 0];
+
+            // Mark item as it may be bugged..
             if (!!f) {
+              if ((r as any)[f[0]] >= (r.masterworked ? 40 : 42)) (r as any).mayBeBugged = true;
+              if ((r as any)[f[0]] <= 0) (r as any).mayBeBugged = true;
               (r as any)[f[0]] += f[1]
             }
           }
@@ -333,16 +361,19 @@ export class BungieApiService {
 
     // Now add the stuff to the db..
     await this.db.inventoryArmor.clear();
-    await this.db.inventoryArmor.bulkPut(r);
+    await this.db.inventoryArmor.bulkAdd(r);
     localStorage.setItem("LastArmorUpdate", Date.now().toString())
+    localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name)
 
     return r;
   }
 
   async updateManifest(force = false) {
-    if (!force && localStorage.getItem("LastManifestUpdate"))
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 2)
-        return;
+    if (!force && localStorage.getItem("LastManifestUpdate")) {
+      if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24)
+          return;
+    }
 
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
     const manifestTables = await getDestinyManifestSlice(d => this.$httpWithoutKey(d), {
@@ -350,6 +381,8 @@ export class BungieApiService {
       tableNames: ['DestinyInventoryItemDefinition', "DestinySocketTypeDefinition"],
       language: 'en'
     });
+
+    console.log("manifestTables.DestinyInventoryItemDefinition", manifestTables.DestinyInventoryItemDefinition)
 
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
@@ -374,13 +407,23 @@ export class BungieApiService {
         if ((v.itemCategoryHashes?.indexOf(48) || -1) > -1) slot = "Legs";
         if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = "Class Items";
 
+        const isArmor2 = ((v.sockets?.socketEntries.filter(d => {
+          return d.socketTypeHash == 2512726577 // general
+            || d.socketTypeHash == 1108765570 // arms
+            || d.socketTypeHash == 959256494 // chest
+            || d.socketTypeHash == 2512726577 // class
+            || d.socketTypeHash == 3219375296 // legs
+            || d.socketTypeHash == 968742181 // head
+        }).length || []) > 0)
+
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
           name: v.displayProperties.name,
           clazz: v.classType,
+          armor2: isArmor2,
           slot: slot,
-          isExotic: v.inventory?.tierTypeName == 'Exotic'
+          isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0
         } as IManifestArmor
       });
 
@@ -390,6 +433,7 @@ export class BungieApiService {
     await this.db.manifestArmor.clear();
     await this.db.manifestArmor.bulkPut(entries);
     localStorage.setItem("LastManifestUpdate", Date.now().toString())
+    localStorage.setItem("last-manifest-db-name", this.db.manifestArmor.db.name)
 
     return manifestTables;
   }

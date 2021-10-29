@@ -1,26 +1,113 @@
 <mat-card>
   <mat-card-header>
-    <div mat-card-avatar class="example-header-image"></div>
+    <div class="example-header-image" mat-card-avatar></div>
     <mat-card-title>Destiny 2 Armor Picker</mat-card-title>
-    <mat-card-subtitle>A simple armor min-max tool by Mijago for the <a href="https://d2s.gg">D2Sanctuary community</a>.
-    </mat-card-subtitle>
+    <mat-card-subtitle>A simple armor min-max tool by Mijago.</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <p>
       This tool allows you to select the optimal armor from your inventory and vault to satisfy your stat needs.
-      It also tells you which status mods you have to use!
+      It also tells you which stat mods you have to use!
       <br/>
       <br/>
       You have to log in to enable this tool to grab your armor from the API.<br/>
-      If you like my tools and want to support me, head to <a href="https://www.buymeacoffee.com/mijago" target="_blank">buymeacoffee.com</a> and buy me a coffee! ❤
+      If you like my tools and want to support me, head to <a href="https://www.buymeacoffee.com/mijago"
+                                                              target="_blank">buymeacoffee.com</a> and buy me a coffee!
+      ❤
       <br/>
-      If you found a bug or have a feature request, please open an issue <a href="https://github.com/Mijago/D2ArmorPicker" target="_blank">in the Github Repository</a>!
-      <br/>
-      <br/>
+      If you found a bug or have a feature request, please open an issue <a
+      href="https://github.com/Mijago/D2ArmorPicker" target="_blank">in the Github Repository</a>!
+    </p>
+    <p>
+      D2ArmorPicker uses the Bungie.net api and it's OAuth authorization.
+      You log in on an official Bungie.net page and D2ArmorPicker receives a temporary login token from Bungie.
+      That means it does not receive your credentials.
     </p>
   </mat-card-content>
   <mat-card-actions>
-    <button mat-raised-button color="warn" (click)="startLogin()">Login</button>
+    <button (click)="startLogin()" color="warn" mat-raised-button>Login</button>
   </mat-card-actions>
+</mat-card>
 
+<mat-card>
+  <mat-card-title>
+    Examples
+  </mat-card-title>
+  <mat-card-subtitle>Some examples to show what D2ArmorPicker can do.</mat-card-subtitle>
+  <mat-card-content>
+
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Stat Selection
+          </mat-panel-title>
+          <mat-panel-description>
+            The heart of this tool.
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          First, you are able to select the stats you want.
+          The tool will automatically parse all your armor (including your vault and your postmaster), and then show you
+          which stat selections are even possible with your current gear.
+          The tool also shows you all possible loadouts with three or four stats at 100!
+          <img class="image-example" src="assets/info/statselection.png">
+          <br/>
+          <br/>
+          There are also additional settings.
+          You can add stasis fragments and  negative and positive stat mods to your builds.
+          Also, you can select 0-waste builds (so only flat numbers).
+          D2ArmorPicker will also add stat mods to reduce wasted stats wherever possible!
+        </p>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Result Display
+          </mat-panel-title>
+          <mat-panel-description>
+            What you will get from this tool.
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          D2ArmorPicker will show you a table with many results.
+          You can sort and filter it, and then you click on one row to see which items are needed for your desired stats.
+          <img class="image-example" src="assets/resultOverviewWithFlex.png">
+          <br>
+          <br>
+          The page will also give you a detailed description of what you have to do in order to get to your desired build.
+          The following screenshot shows one of the more detailed descriptions:
+          <img class="image-example" src="assets/info/whattodonow.png">
+        </p>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Armor Clustering
+          </mat-panel-title>
+          <mat-panel-description>
+            For the time when your vault is overflowing.
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <div>
+          Since version 2.0.14, D2ArmorPicker has an armor clustering feature.
+          This means that it takes all your armor and groups it in 25 groups, where all items in one group has very similar stats.
+          This can help you to clear out your vault, especially from duplicated armor rolls.
+          <img class="image-example" src="assets/info/armorClustering.png">
+          <br/>
+          <br/>
+          Take Cluster 1, for example.
+          I copy the DIM-Query, enter it into DIM and see the following results:
+          <div class="armor-image-container"
+               fxLayoutGap="10px" fxLayout="row">
+            <img src="assets/info/cluster-example/img.png">
+            <img src="assets/info/cluster-example/img_1.png">
+            <img src="assets/info/cluster-example/img_2.png">
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-card-content>
 </mat-card>

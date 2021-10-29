@@ -1,0 +1,21 @@
+.select-button {
+  min-width: 40px;
+}
+
+
+:host ::ng-deep .mat-button-toggle-label-content {
+  padding: 0 !important;
+  width: 100%;
+}
+
+.stat-button-content {
+  width: 100%;
+}
+
+.mat-button-toggle-checked.isFromMod {
+  background-color: #3f64b5;
+}
+
+.not-checked.isFromMod {
+  background-color: rgba(63, 110, 181, 0.15);
+}

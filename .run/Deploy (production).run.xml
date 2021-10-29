@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Deploy (production)" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="deploy" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs>
+      <env name="PRODUCTION" value="1" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>
