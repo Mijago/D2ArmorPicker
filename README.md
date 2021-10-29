@@ -1,8 +1,7 @@
 # D2ArmorPicker
 
 D2ArmorPicker is a small tool to min-max your armor stats with only a few clicks.
-
-Note that Version 1 is no longer actively updated (only for important bug fixes).
+Visit the page here: https://d2armorpicker.com
 
 # Building
 1) Copy `.env_example` to `.env` and `.env_dev` and fill the missing values.
