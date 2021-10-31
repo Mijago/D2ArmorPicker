@@ -40,7 +40,7 @@
         <!-- Item Icon -->
         <div class="item-icon-container">
           <div *ngIf="i.masterworked" class="item-icon-masterwork-overlay"></div>
-          <img class="item-icon" src="https://bungie.net/{{i.icon}}">
+          <img class="item-icon" src="https://bungie.net/{{i.icon}}" [matTooltip]="i.name">
         </div>
       </td>
       <td>
