@@ -72,15 +72,6 @@ addEventListener('message', async ({data}) => {
 
   console.time("tm")
   for (let helmet of helmets) {
-    // HALLOWEEN SPECIAL
-    if (config.eventHalloweenOnlyUseMask) {
-      if (
-        helmet.hash != 2545426109 // warlock
-        && helmet.hash != 199733460 // Titan
-        && helmet.hash != 3224066584 // Hunter
-      ) continue;
-    }
-    // /HALLOWEEN SPECIAL
     for (let gauntlet of gauntlets) {
       if (helmet.isExotic && gauntlet.isExotic) continue;
       for (let chest of chests) {
@@ -325,7 +316,7 @@ function handlePermutation(
       name: exotic.name
     },
     modCount: usedMods.length,
-    modCost: usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
+    modCost: usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2]**2, 0),
     mods: usedMods,
     stats: stats,
     statsNoMods: statsWithoutMods,

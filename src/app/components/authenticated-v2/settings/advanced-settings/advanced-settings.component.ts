@@ -26,16 +26,8 @@ export class AdvancedSettingsComponent implements OnInit {
     this.config.configuration.subscribe(
       c => {
         this.fields2 = {
-          "Events": [
-            {
-              name: "Only use the (current) Halloween Festival Mask as helmet.",
-              cp: (v: boolean) => this.config.modifyConfiguration(c => c.eventHalloweenOnlyUseMask = v),
-              value: c.eventHalloweenOnlyUseMask,
-              disabled: false,
-              impactsResultCount: true,
-              help: undefined
-            },
-          ],
+          // "Events": [
+          // ],
           "Masterwork": [
             {
               name: "Assume all legendary items are masterworked",
