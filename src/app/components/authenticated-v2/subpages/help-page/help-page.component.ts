@@ -8,7 +8,10 @@ import {Component, OnInit} from '@angular/core';
 export class HelpPageComponent implements OnInit {
   knownIssues: string[] = [
     "If an armor has less than 10 total in one stat and has a negative modifier (goes below 0), the API caps the item stat at 0, leading to the tool thinking it's at 10 (or 8, if masterworked).",
-    "The point above is also true for values above 42."
+    "The point above is also true for values above 42.",
+    "When you click buttons on the page too fast are able to select an invalid state with no results. Just undo your changed settings. And be patient - the calculation is an expensive task.",
+    "Sometimes the exotic selection does not load. Happens after the first login and is fixed with a reload of the page.",
+    "Sometimes duplicate results are given. This happens when the inventory got updated twice (Race Condition). Only reported once, and not really a problem."
   ]
 
   changelog = [
