@@ -62,8 +62,6 @@ export class AuthService {
         return true;
       })
       .catch(async err => {
-        // this.authCode = null;
-        // TODO: Handle error
         console.log({err})
         await this.logout();
         return false;

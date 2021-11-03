@@ -193,7 +193,6 @@ function handlePermutation(
   if (requiredModsTotal > config.maximumStatMods) {
     return null;
   } else if (requiredModsTotal > 0) {
-    //console.log({requiredModsTotal, usedMods})
     for (let statId = 0; statId < 6; statId++) {
       if (requiredMods[statId] == 0) continue;
       const statDifference = stats[statId] % 10;
@@ -282,7 +281,6 @@ function handlePermutation(
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste
-  // TODO: here's still potential to speed up code
   if (config.tryLimitWastedStats && freeMods > 0) {
 
     let waste = [
@@ -300,7 +298,6 @@ function handlePermutation(
       stats[result[1]] += 5
       result[0] -= 5;
       usedMods.push(1 + 2 * result[1])
-      // console.log("FIXED", result, waste, usedMods.length, usedMods, getWaste(stats))
     }
   }
 

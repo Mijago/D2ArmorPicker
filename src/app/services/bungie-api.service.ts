@@ -427,8 +427,6 @@ export class BungieApiService {
         } as IManifestArmor
       });
 
-    // TODO: clazz
-    // TODO: fix slot
 
     await this.db.manifestArmor.clear();
     await this.db.manifestArmor.bulkPut(entries);

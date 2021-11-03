@@ -59,7 +59,7 @@ export class ExpandedResultContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
-      this.config_characterClass = c.characterClass as unknown as DestinyClass; // TODO: remove my own class enum and use DestinyClass in the config
+      this.config_characterClass = c.characterClass as unknown as DestinyClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;

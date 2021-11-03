@@ -25,8 +25,6 @@
         <u #tooltip="matTooltip" *ngIf="i.masterworked" matTooltip='This item is already masterworked.'>{{i.name}}</u>
         <span *ngIf="!i.masterworked">{{i.name}}</span>
       </td>
-      <td *ngIf="!i.stats">An error occured. Please reload the page.</td>
-      <!-- TODO: remove once i collected enough data -->
       <ng-container
         *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
         <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + bonus}}</td>
@@ -135,8 +133,6 @@
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total">
       <td>Total (gear)</td>
-      <td *ngIf="!stats">An error occured. Please reload the page.</td>
-      <!-- TODO: remove once i collected enough data -->
       <td *ngIf="!!stats">
         {{stats[ArmorStat.Mobility]}}
         <img alt="Mobility"

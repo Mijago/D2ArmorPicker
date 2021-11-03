@@ -5,12 +5,10 @@
                       [checked]="f.value"
                       (change)="f.cp($event.checked)">
       {{f.name}}
-      <!-- TODO: Help text -->
       <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.help"
                 matTooltip='{{f.help}}'
                 #tooltip="matTooltip"> help
       </mat-icon>
-      <!-- TODO: Help text -->
       <mat-icon inline aria-hidden="false" aria-label="Help" *ngIf="f.impactsResultCount"
                 class="report-problem-icon"
                 matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this settings. In this case, simply switch it back to its default state."

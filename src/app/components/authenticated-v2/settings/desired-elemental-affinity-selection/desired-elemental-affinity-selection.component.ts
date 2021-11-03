@@ -35,7 +35,6 @@ export class DesiredElementalAffinitySelectionComponent implements OnInit {
     this.config.configuration.subscribe(c => {
       this.configFixedArmorAffinities = c.fixedArmorAffinities
 
-      // TODO: add note that you need those
       this.configSelectedArmorAffinities = c.enabledMods
         .map(d => ModInformation[d].requiredArmorAffinity)
         .filter(d => d != DestinyEnergyType.Any);
