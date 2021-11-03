@@ -21,6 +21,9 @@ export class HelpPageComponent implements OnInit {
       entries: [
         "- Removed the HALLOWEEN SPECIAL feature. Maybe something like this will return some day?",
         "+ Added tooltip to the item icons in the detailed overview to show the name of the item.",
+        "~ Fixed an issue where the list of exotics did not load at the first login.",
+        "~ Saved configurations now contain the current software version for future reference.",
+        "~ Minor code quality improvements",
       ]
     },
     {
