@@ -316,7 +316,7 @@ function handlePermutation(
       name: exotic.name
     },
     modCount: usedMods.length,
-    modCost: usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2]**2, 0),
+    modCost: usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
     mods: usedMods,
     stats: stats,
     statsNoMods: statsWithoutMods,
