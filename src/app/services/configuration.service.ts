@@ -4,9 +4,10 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {ModOrAbility} from "../data/enum/modOrAbility";
 import * as lzutf8 from "lzutf8";
 import {CompressionOptions, DecompressionOptions} from "lzutf8";
+import {environment} from "../../environments/environment";
 
 export interface StoredConfiguration {
-  version: number; // TODO
+  version: string;
   name: string;
   configuration: Configuration;
 }
@@ -59,7 +60,7 @@ export class ConfigurationService {
     list.push({
       configuration: config,
       name: name,
-      version: 1
+      version: environment.version
     });
     list = list.sort((a, b) => {
       if (a.name < b.name) return -1;
