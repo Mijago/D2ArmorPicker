@@ -16,6 +16,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.1.2",
+      date: "Nov ?, 2021",
+      entries: [
+        "~ The changelog is now in a scrollable box.",
+      ]
+    },
+    {
       version: "2.1.1",
       date: "Nov 3, 2021",
       entries: [
