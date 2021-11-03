@@ -33,18 +33,26 @@ export class DesiredExoticSelectionComponent implements OnInit {
 
   ngOnInit(): void {
     this.config.configuration.subscribe(async c => {
-      if (c.characterClass != this.currentClass) {
+      if (c.characterClass != this.currentClass || this.exotics.length == 0) {
         this.currentClass = c.characterClass;
-        const armors = await this.inventory.getExoticsForClass(this.currentClass);
-        this.exotics = [
-          armors.filter(a => a.slot == "Helmets"),
-          armors.filter(a => a.slot == "Arms"),
-          armors.filter(a => a.slot == "Chest"),
-          armors.filter(a => a.slot == "Legs"),
-        ]
+        await this.updateExoticsForClass();
       }
       this.selectedExoticHash = c.selectedExoticHash;
     })
+
+    this.inventory.manifest.subscribe(async () => {
+      await this.updateExoticsForClass();
+    })
+  }
+
+  private async updateExoticsForClass() {
+    const armors = await this.inventory.getExoticsForClass(this.currentClass);
+    this.exotics = [
+      armors.filter(a => a.slot == "Helmets"),
+      armors.filter(a => a.slot == "Arms"),
+      armors.filter(a => a.slot == "Chest"),
+      armors.filter(a => a.slot == "Legs"),
+    ]
   }
 
   selectExotic(hash: number) {

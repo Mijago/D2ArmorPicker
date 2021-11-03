@@ -43,6 +43,8 @@ export class InventoryService {
   private ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
 
+  private _manifest: BehaviorSubject<null>;
+  public readonly manifest: Observable<null>;
   private _inventory: BehaviorSubject<null>;
   public readonly inventory: Observable<null>;
 
@@ -56,6 +58,8 @@ export class InventoryService {
               private api: BungieApiService, private auth: AuthService, private router: Router) {
     this._inventory = new BehaviorSubject(null)
     this.inventory = this._inventory.asObservable();
+    this._manifest = new BehaviorSubject(null)
+    this.manifest = this._manifest.asObservable();
 
 
     this._armorResults = new BehaviorSubject({
@@ -213,6 +217,7 @@ export class InventoryService {
   async updateManifest(force: boolean = false): Promise<boolean> {
     this.status.modifyStatus(s => s.updatingManifest = true);
     let r = await this.api.updateManifest(force);
+    if (!!r) this._manifest.next(null);
     this.status.modifyStatus(s => s.updatingManifest = false);
     return !!r;
   }
