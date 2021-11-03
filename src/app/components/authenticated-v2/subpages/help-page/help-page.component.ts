@@ -17,7 +17,7 @@ export class HelpPageComponent implements OnInit {
   changelog = [
     {
       version: "2.1.1",
-      date: "Oct 29, 2021",
+      date: "Nov 3, 2021",
       entries: [
         "- Removed the HALLOWEEN SPECIAL feature. Maybe something like this will return some day?",
         "+ Added tooltip to the item icons in the detailed overview to show the name of the item.",
