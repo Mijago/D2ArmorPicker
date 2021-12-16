@@ -15,6 +15,13 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.1.3",
+      date: "Dec 16, 2021",
+      entries: [
+        "~ Added new stat cooldowns",
+      ]
+    },
+    {
       version: "2.1.2",
       date: "Dec 1, 2021",
       entries: [
