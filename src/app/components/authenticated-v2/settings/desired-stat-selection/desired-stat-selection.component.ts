@@ -1,10 +1,11 @@
 import {Component, OnInit} from '@angular/core';
-import {ArmorStat, ArmorStatTierBonus} from "../../../../data/enum/armor-stat";
+import {ArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {getDefaultStatDict} from "../../../../data/configuration";
 import {InventoryService} from "../../../../services/inventory.service";
 import {ModInformation} from "../../../../data/ModInformation";
+import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns";
 
 function calcScore(d: number[]) {
   let score = 0;
@@ -22,7 +23,7 @@ function calcScore(d: number[]) {
 export class DesiredStatSelectionComponent implements OnInit {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
-  ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = ArmorStatTierBonus;
+  ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = LoadingArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
@@ -43,11 +44,13 @@ export class DesiredStatSelectionComponent implements OnInit {
         const tmpStatsByMods = [0, 0, 0, 0, 0, 0];
         for (let enabledMod of c.enabledMods) {
           for (let bonus of ModInformation[enabledMod].bonus) {
-            tmpStatsByMods[bonus.stat]+=bonus.value/10;
+            tmpStatsByMods[bonus.stat] += bonus.value / 10;
           }
         }
         this.statsByMods = tmpStatsByMods;
         this.minimumStatTiers = c.minimumStatTier;
+
+        this.ArmorStatTierBonus = GetArmorStatTierBonus(c.characterClass);
       }
     )
 
