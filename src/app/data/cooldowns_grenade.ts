@@ -37,12 +37,12 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
 export function buildGrenadeCooldown(tier: number, clazz: CharacterClass) {
   const clazzEntry = GrenadeAbilitiesPerClassAndTier[clazz];
   var res = "Grenade Cooldown in seconds\r\n";
-  if (clazzEntry[0] != "") res += "Tier 7:\t" + calculateTierValueAbility(tier, 15) + "\t" + clazzEntry[0] + "\r\n";
-  if (clazzEntry[1] != "") res += "Tier 6:\t" + calculateTierValueAbility(tier, 75) + "\t" + clazzEntry[1] + "\r\n";
-  if (clazzEntry[2] != "") res += "Tier 5:\t" + calculateTierValueAbility(tier, 82) + "\t" + clazzEntry[2] + "\r\n";
-  if (clazzEntry[3] != "") res += "Tier 4:\t" + calculateTierValueAbility(tier, 90) + "\t" + clazzEntry[3] + "\r\n";
-  if (clazzEntry[4] != "") res += "Tier 3:\t" + calculateTierValueAbility(tier, 100) + "\t" + clazzEntry[4] + "\r\n";
-  if (clazzEntry[5] != "") res += "Tier 2:\t" + calculateTierValueAbility(tier, 106) + "\t" + clazzEntry[5] + "\r\n";
-  if (clazzEntry[6] != "") res += "Tier 1:\t" + calculateTierValueAbility(tier, 109) + "\t" + clazzEntry[6] + "\r\n";
+  if (clazzEntry[0] != "") res += "Tier 7:\t" + calculateTierValueAbility(tier, 64) + "\t" + clazzEntry[0] + "\r\n";
+  if (clazzEntry[1] != "") res += "Tier 6:\t" + calculateTierValueAbility(tier, 73) + "\t" + clazzEntry[1] + "\r\n";
+  if (clazzEntry[2] != "") res += "Tier 5:\t" + calculateTierValueAbility(tier, 91) + "\t" + clazzEntry[2] + "\r\n";
+  if (clazzEntry[3] != "") res += "Tier 4:\t" + calculateTierValueAbility(tier, 105) + "\t" + clazzEntry[3] + "\r\n";
+  if (clazzEntry[4] != "") res += "Tier 3:\t" + calculateTierValueAbility(tier, 121) + "\t" + clazzEntry[4] + "\r\n";
+  if (clazzEntry[5] != "") res += "Tier 2:\t" + calculateTierValueAbility(tier, 152) + "\t" + clazzEntry[5] + "\r\n";
+  if (clazzEntry[6] != "") res += "Tier 1:\t" + calculateTierValueAbility(tier, 182) + "\t" + clazzEntry[6] + "\r\n";
   return res;
 }
