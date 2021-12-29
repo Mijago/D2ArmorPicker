@@ -263,10 +263,10 @@ export class BungieApiService {
 
     let ids = Array.from(new Set(allItems.map(d => d.itemHash)))
     // Do not search directly in the DB, as it is VERY slow.
-    let cx = await this.db.manifestArmor.toArray();
-    cx = cx.filter(d => ids.indexOf(d.hash) > -1)
+    let manifestArmor = await this.db.manifestArmor.toArray();
+    const cx = manifestArmor.filter(d => ids.indexOf(d.hash) > -1)
+    const mods = manifestArmor.filter(d => d.itemType == 19)
     let res = Object.fromEntries(cx.map((_) => [_.hash, _]))
-
 
     let r = allItems
       //.filter(d => ids.indexOf(d.itemHash) > -1)
@@ -284,22 +284,14 @@ export class BungieApiService {
       })
       .map(
         d => {
-
-          let statData = profile.Response.itemComponents.stats.data || {};
-          let stats = statData[d.itemInstanceId || ""]?.stats || {}
-
           let instanceData = profile.Response.itemComponents.instances.data || {};
           let instance = instanceData[d.itemInstanceId || ""] || {}
 
           let r = Object.assign({
             itemInstanceId: d.itemInstanceId || "",
             masterworked: !!instance.energy && instance.energy.energyCapacity == 10,
-            mobility: stats[2996146975].value,
-            resilience: stats[392767087].value,
-            recovery: stats[1943323491].value,
-            discipline: stats[1735777505].value,
-            intellect: stats[144602215].value,
-            strength: stats[4244567218].value,
+            mobility: 0, resilience: 0, recovery: 0,
+            discipline: 0, intellect: 0, strength: 0,
             energyAffinity: instance.energy?.energyType || 0,
           }, res[d.itemHash]) as IInventoryArmor
           (r.id as any) = undefined;
@@ -309,53 +301,34 @@ export class BungieApiService {
             r.slot = "Helmets";
           // /HALLOWEEN MASKS
 
-
-          // TODO: Negative values are capped at 0, thus i get always ~8 strength
-          if (r.masterworked) {
-            r.mobility -= 2
-            r.resilience -= 2
-            r.recovery -= 2
-            r.discipline -= 2
-            r.intellect -= 2
-            r.strength -= 2;
-          }
-          //(r as any).__stats = stats;
-
-          // TODO: Use manifest for this.
-          let perks = ((profile.Response.itemComponents.perks.data || {})[d.itemInstanceId || ""] || {perks: []}).perks;
-          (r as any).__perks1 = perks;
-
-          let fields: any = {
-            3242738765: ["mobility", -5], 2378399451: ["mobility", -10], 2395177038: ["mobility", -20],
-            1675445975: ["mobility", 5], 139886105: ["mobility", 10], 89553216: ["89553216", 20],
-
-            964593855: ["recovery", -5], 1026637393: ["recovery", -10], 976304536: ["recovery", -20],
-            3716860505: ["recovery", 5], 511479895: ["recovery", 10], 528257482: ["recovery", 20],
-
-            1740967518: ["intellect", -5], 3040188318: ["intellect", -10], 3023410731: ["intellect", -20],
-            3656751878: ["intellect", 5], 530777110: ["intellect", 10], 513999523: ["intellect", 20],
-
-            4101235313: ["strength", -5], 1198358047: ["strength", -10], 1215135730: ["strength", -20],
-            892183419: ["strength", 5], 903373021: ["strength", 10], 853040132: ["strength", 20],
-
-            3337820677: ["resilience", -5], 833744803: ["resilience", -10], 850522390: ["resilience", -20],
-            3298086143: ["resilience", 5], 1899933457: ["resilience", 10], 1849600600: ["resilience", 20],
-
-            4175356498: ["discipline", -5], 484330834: ["discipline", -10], 467553279: ["discipline", -20],
-            2728273034: ["discipline", 5], 2364771258: ["discipline", 10], 2347993543: ["discipline", 20],
-
+          var investmentStats: { [id: number]: number; } = {
+            2996146975: 0, 392767087: 0, 1943323491: 0, 1735777505: 0, 144602215: 0, 4244567218: 0,
           }
 
-          for (let perk of perks) {
-            let f = fields[perk.perkHash ?? 0];
-
-            // Mark item as it may be bugged..
-            if (!!f) {
-              if ((r as any)[f[0]] >= (r.masterworked ? 40 : 42)) (r as any).mayBeBugged = true;
-              if ((r as any)[f[0]] <= 0) (r as any).mayBeBugged = true;
-              (r as any)[f[0]] += f[1]
+          if (res[d.itemHash] && res[d.itemHash].investmentStats) {
+            for (let newStats of res[d.itemHash].investmentStats) {
+              if (newStats.statTypeHash in investmentStats)
+                investmentStats[newStats.statTypeHash] += newStats.value;
             }
           }
+
+          if (r.slot != "Class Items") {
+            const sockets = (profile.Response.itemComponents.sockets.data || {})[d.itemInstanceId || ""].sockets;
+            var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
+            var plm = plugs.map(k => mods.filter(m => m.hash == k)[0]);
+            for (let entry of plm) {
+              for (let newStats of entry.investmentStats) {
+                if (newStats.statTypeHash in investmentStats)
+                  investmentStats[newStats.statTypeHash] += newStats.value;
+              }
+            }
+          }
+          r.mobility = investmentStats[2996146975]
+          r.resilience = investmentStats[392767087]
+          r.recovery = investmentStats[1943323491]
+          r.discipline = investmentStats[1735777505]
+          r.intellect = investmentStats[144602215]
+          r.strength = investmentStats[4244567218]
 
           return r as IInventoryArmor
         }
@@ -380,7 +353,7 @@ export class BungieApiService {
     const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
     const manifestTables = await getDestinyManifestSlice(d => this.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
-      tableNames: ['DestinyInventoryItemDefinition', "DestinySocketTypeDefinition"],
+      tableNames: ['DestinyInventoryItemDefinition'],
       language: 'en'
     });
 
@@ -388,18 +361,13 @@ export class BungieApiService {
 
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
-        if (!v.displayProperties.name)
-          return false;
-        if (!v.displayProperties.icon)
-          return false;
-        return true;
-        return (
-          (v.itemCategoryHashes?.indexOf(45) || -1) > -1
-          || (v.itemCategoryHashes?.indexOf(46) || -1) > -1
-          || (v.itemCategoryHashes?.indexOf(47) || -1) > -1
-          || (v.itemCategoryHashes?.indexOf(48) || -1) > -1
-          || (v.itemCategoryHashes?.indexOf(49) || -1) > -1
-        )
+        if (v.itemType == 19) return true;
+        if (v.itemType == 2) return true;
+        if (v.inventory?.bucketTypeHash == 3448274439) return true; // helmets, required for festival masks
+        if (v.inventory?.bucketTypeHash == 3551918588) return true; // gauntlets
+        if (v.inventory?.bucketTypeHash == 14239492) return true; // chest
+        if (v.inventory?.bucketTypeHash == 20886954) return true; // leg
+        return false;
       })
       .map(([k, v]) => {
         let slot = "none"
@@ -425,7 +393,10 @@ export class BungieApiService {
           clazz: v.classType,
           armor2: isArmor2,
           slot: slot,
-          isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0
+          isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0,
+          itemType: v.itemType,
+          itemSubType: v.itemSubType,
+          investmentStats: v.investmentStats
         } as IManifestArmor
       });
 
