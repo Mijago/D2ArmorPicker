@@ -16,7 +16,7 @@ export class DatabaseService {
 
   constructor(private auth: AuthService) {
     this.db = buildDb(async () => {
-      await this.auth.logout();
+      await this.auth.clearManifestInfo();
     })
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");

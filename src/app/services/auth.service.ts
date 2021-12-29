@@ -141,15 +141,23 @@ export class AuthService {
       localStorage.setItem("lastRefresh", newCode.toString())
   }
 
+  clearManifestInfo() {
+    localStorage.removeItem("LastArmorUpdate")
+    localStorage.removeItem("LastManifestUpdate")
+  }
+
+  private clearLoginInfo() {
+    this.lastRefresh = null;
+    this.refreshTokenExpiringAt = null;
+    this.authCode = null;
+    this.accessToken = null;
+    this.refreshToken = null;
+  }
+
   async logout() {
     try {
-      localStorage.removeItem("LastArmorUpdate")
-      localStorage.removeItem("LastManifestUpdate")
-      this.lastRefresh = null;
-      this.refreshTokenExpiringAt = null;
-      this.authCode = null;
-      this.accessToken = null;
-      this.refreshToken = null;
+      this.clearManifestInfo();
+      this.clearLoginInfo()
     } finally {
       await this.router.navigate(["login"]);
     }
