@@ -5,124 +5,130 @@
 
     <div>
       <div *ngIf="this.totalResults > 0">
-        Your selection used {{this.itemCount| number}} items to generate {{this.totalResults | number}} permutations in {{this.totalTime | number}}ms.
-        <br/>
-        Note: You can drastically increase the speed by selecting an exotic first.
-        <br/>
-        <ng-container *ngIf="this.parsedResults != this.totalResults">
-          <br>
-          <ng-container *ngIf="this.parsedResults == 5e4">
-            <b>Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.</b><br>
-            If you need more entries, disable the limitation in the advanced settings.<br>
-          </ng-container>
-          <ng-container *ngIf="this.parsedResults == 1e6">
-            <b>Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.</b><br>
-            You should narrow down your settings a bit.
-          </ng-container>
-        </ng-container>
+        <mat-form-field appearance="outline" class="info-box">
+          <mat-label>Items Used</mat-label>
+          <input matInput readonly value="{{this.itemCount| number}}">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="info-box">
+          <mat-label>Permutations generated</mat-label>
+          <input matInput readonly value="{{this.totalResults | number}}">
+
+          <mat-icon matSuffix #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 5e4"
+                    class="report-problem-icon"
+                    matTooltip="Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.
+                        If you need more entries, disable the limitation in the advanced settings.">report_problem</mat-icon>
+          <mat-icon matSuffix #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 1e6"
+                    class="report-problem-icon"
+                    matTooltip="Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.
+                                You should narrow down your settings a bit.">report_problem</mat-icon>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="info-box">
+          <mat-label>Time required</mat-label>
+          <input matInput readonly value="{{this.totalTime | number}}ms">
+        </mat-form-field>
         <br/>
         Click on a row to expand it and to see the list of the items required for this build.<br/>
-        Use the listed stats to identify the armor you have to use.
+
       </div>
-      <table class="result-table" mat-table [dataSource]="tableDataSource" multiTemplateDataRows
-             matSort matSortActive="Mods" matSortDirection="asc">
+      <table [dataSource]="tableDataSource" class="result-table" mat-table matSort
+             matSortActive="Mods" matSortDirection="asc" multiTemplateDataRows>
         <!--- Note that these columns can be defined in any order.
          The actual rendered columns are set as a property on the row definition" -->
         <!-- Name Column -->
         <ng-container matColumnDef="mobility">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Mobility">Mobility</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Mobility]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png"
-                 alt="Mobility" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mobility">Mobility</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Mobility]}}
+            <img alt="Mobility"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="resilience">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Resilience"> Resilience</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Resilience]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png"
-                 alt="Resilience" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Resilience"> Resilience</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Resilience]}}
+            <img alt="Resilience"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="recovery">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Recovery"> Recovery</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Recovery]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png"
-                 alt="Recovery" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Recovery"> Recovery</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Recovery]}}
+            <img alt="Recovery"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="discipline">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Discipline"> Discipline</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Discipline]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png"
-                 alt="Discipline" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Discipline"> Discipline</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Discipline]}}
+            <img alt="Discipline"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="intellect">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Intellect"> Intellect</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Intellect]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png"
-                 alt="Intellect" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Intellect"> Intellect</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Intellect]}}
+            <img alt="Intellect"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="strength">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Strength">Strength</th>
-          <td mat-cell *matCellDef="let element " class="statColumn">{{element.stats[ArmorStat.Strength]}}
-            <img src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
-                 alt="Strength" class="statIcon">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Strength">Strength</th>
+          <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Strength]}}
+            <img alt="Strength"
+                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png">
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="mods">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Mods"> Used Mods</th>
-          <td mat-cell *matCellDef="let element">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mods"> Used Mods</th>
+          <td *matCellDef="let element" mat-cell>
             <span *ngIf="element.modCount == 0">None</span>
             <!-- TODO amount -->
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_MOBILITY) + (element.mods | count:StatModifier.MAJOR_MOBILITY)"
+                                   class="modPreview"
                                    tooltipText="Mobility"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_MOBILITY) + (element.mods | count:StatModifier.MAJOR_MOBILITY)"></app-table-mod-display>
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"
+                                   url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"></app-table-mod-display>
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_RESILIENCE) + (element.mods | count:StatModifier.MAJOR_RESILIENCE)"
+                                   class="modPreview"
                                    tooltipText="Resilience"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_RESILIENCE) + (element.mods | count:StatModifier.MAJOR_RESILIENCE)"></app-table-mod-display>
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"
+                                   url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"></app-table-mod-display>
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_RECOVERY) + (element.mods | count:StatModifier.MAJOR_RECOVERY)"
+                                   class="modPreview"
                                    tooltipText="Recovery"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_RECOVERY) + (element.mods | count:StatModifier.MAJOR_RECOVERY)"></app-table-mod-display>
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"
+                                   url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"></app-table-mod-display>
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_DISCIPLINE) + (element.mods | count:StatModifier.MAJOR_DISCIPLINE)"
+                                   class="modPreview"
                                    tooltipText="Discipline"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_DISCIPLINE) + (element.mods | count:StatModifier.MAJOR_DISCIPLINE)"></app-table-mod-display>
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"
+                                   url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"></app-table-mod-display>
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_INTELLECT) + (element.mods | count:StatModifier.MAJOR_INTELLECT)"
+                                   class="modPreview"
                                    tooltipText="Intellect"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_INTELLECT) + (element.mods | count:StatModifier.MAJOR_INTELLECT)"></app-table-mod-display>
-            <app-table-mod-display class="modPreview"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"
+                                   url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"></app-table-mod-display>
+            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_STRENGTH) + (element.mods | count:StatModifier.MAJOR_STRENGTH)"
+                                   class="modPreview"
                                    tooltipText="Strength"
-                                   [amount]="(element.mods | count:StatModifier.MINOR_STRENGTH) + (element.mods | count:StatModifier.MAJOR_STRENGTH)"></app-table-mod-display>
+                                   url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"></app-table-mod-display>
           </td>
         </ng-container>
 
 
         <!-- Name Column -->
         <ng-container matColumnDef="exotic">
-          <th mat-header-cell *matHeaderCellDef> Exotic</th>
-          <td mat-cell *matCellDef="let element ">
+          <th *matHeaderCellDef mat-header-cell> Exotic</th>
+          <td *matCellDef="let element " mat-cell>
             <!-- TODO name , icon-->
-            <img *ngIf="!!element.exotic" class="itemIcon"
-                 matTooltip="{{element.exotic?.name}}" #tooltip="matTooltip"
+            <img #tooltip="matTooltip" *ngIf="!!element.exotic"
+                 class="itemIcon" matTooltip="{{element.exotic?.name}}"
                  src="https://bungie.net/{{element.exotic?.icon}}">
             <img *ngIf="!element.exotic" class="itemIcon"
                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
@@ -130,8 +136,8 @@
         </ng-container>
         <!-- Name Column -->
         <ng-container matColumnDef="dropdown">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let element ">
+          <th *matHeaderCellDef mat-header-cell></th>
+          <td *matCellDef="let element " mat-cell>
             <mat-icon *ngIf="expandedElement !== element" matTooltip="Click to show details for this build.">
               expand_more
             </mat-icon>
@@ -139,50 +145,51 @@
               expand_less
             </mat-icon>
 
-            <mat-icon inline aria-hidden="false" aria-label="Error"
-                      *ngIf="checkIfAnyItemsMayBeInvalid(element)"
+            <mat-icon #tooltip="matTooltip" *ngIf="checkIfAnyItemsMayBeInvalid(element)" aria-hidden="false"
+                      aria-label="Error"
                       class="report-problem-icon"
-                      matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items."
-                      #tooltip="matTooltip"> report_problem </mat-icon>
+                      inline
+                      matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items."> report_problem
+            </mat-icon>
 
           </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="tiers">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Tiers">Tiers</th>
-          <td mat-cell *matCellDef="let element "> {{element.tiers}} </td>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Tiers">Tiers</th>
+          <td *matCellDef="let element " mat-cell> {{element.tiers}} </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="waste">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="Waste">Wasted</th>
-          <td mat-cell *matCellDef="let element "> {{element.waste}} </td>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Waste">Wasted</th>
+          <td *matCellDef="let element " mat-cell> {{element.waste}} </td>
         </ng-container>
 
 
         <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
         <ng-container matColumnDef="expandedDetail">
-          <td mat-cell *matCellDef="let element" [attr.colspan]="shownColumns.length">
-            <div class="example-element-detail"
-                 [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+          <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
+            <div [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
+                 class="example-element-detail">
               <app-expanded-result-content [element]="element"></app-expanded-result-content>
             </div>
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="shownColumns"></tr>
-        <tr mat-row *matRowDef="let element; columns: shownColumns;"
-            class="example-element-row"
+        <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
+        <tr (click)="expandedElement = expandedElement === element ? null : element" *matRowDef="let element; columns: shownColumns;"
             [class.example-expanded-row]="expandedElement === element"
-            (click)="expandedElement = expandedElement === element ? null : element">
+            class="example-element-row"
+            mat-row>
         </tr>
-        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+        <tr *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row" mat-row></tr>
       </table>
       <mat-paginator [pageSizeOptions]="[10, 20, 50, 100, 200]"
+                     aria-label="Select page of periodic elements"
                      pageSize="20"
-                     showFirstLastButtons
-                     aria-label="Select page of periodic elements">
+                     showFirstLastButtons>
       </mat-paginator>
     </div>
 

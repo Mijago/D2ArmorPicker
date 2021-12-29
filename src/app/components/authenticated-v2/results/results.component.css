@@ -37,3 +37,7 @@ tr.example-detail-row {
 .report-problem-icon {
   color: lightcoral;
 }
+
+.info-box {
+  margin-right: 5px;
+}
