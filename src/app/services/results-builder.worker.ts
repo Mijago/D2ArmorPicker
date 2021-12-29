@@ -47,8 +47,8 @@ addEventListener('message', async ({data}) => {
       || config.fixedArmorAffinities[slotToEnum[item.slot]] == item.energyAffinity
     )
   //.toArray() as IInventoryArmor[];
-  console.log("items.len", items.length)
   console.log("ITEMS", items.length, items)
+  // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
 
   const helmets = items.filter(i => i.slot == "Helmets")
