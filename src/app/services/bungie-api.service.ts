@@ -262,7 +262,9 @@ export class BungieApiService {
 
 
     let ids = Array.from(new Set(allItems.map(d => d.itemHash)))
-    let cx = await this.db.manifestArmor.where('hash').anyOf(ids).toArray();
+    // Do not search directly in the DB, as it is VERY slow.
+    let cx = await this.db.manifestArmor.toArray();
+    cx = cx.filter(d => ids.indexOf(d.hash) > -1)
     let res = Object.fromEntries(cx.map((_) => [_.hash, _]))
 
 
