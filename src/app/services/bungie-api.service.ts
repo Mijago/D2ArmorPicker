@@ -265,8 +265,9 @@ export class BungieApiService {
     // Do not search directly in the DB, as it is VERY slow.
     let manifestArmor = await this.db.manifestArmor.toArray();
     const cx = manifestArmor.filter(d => ids.indexOf(d.hash) > -1)
-    const mods = manifestArmor.filter(d => d.itemType == 19)
+    const modsData = manifestArmor.filter(d => d.itemType == 19)
     let res = Object.fromEntries(cx.map((_) => [_.hash, _]))
+    let mods = Object.fromEntries(modsData.map((_) => [_.hash, _]))
 
     let r = allItems
       //.filter(d => ids.indexOf(d.itemHash) > -1)
@@ -315,7 +316,7 @@ export class BungieApiService {
           if (r.slot != "Class Items") {
             const sockets = (profile.Response.itemComponents.sockets.data || {})[d.itemInstanceId || ""].sockets;
             var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
-            var plm = plugs.map(k => mods.filter(m => m.hash == k)[0]);
+            var plm = plugs.map(k => mods[k || ""]).filter(k => k != null);
             for (let entry of plm) {
               for (let newStats of entry.investmentStats) {
                 if (newStats.statTypeHash in investmentStats)
