@@ -16,7 +16,7 @@ export class HelpPageComponent implements OnInit {
       version: "2.1.4",
       date: "Dec 29, 2021",
       entries: [
-        "~ Item stats are now built from their plugs and InvestmentStats (in case of some exotics). This fixes potentially invalid item stats when you use mods like Powerful Friends or Protective Light. A big thanks to u/deadgaudet for reminding me that the API also reports the plugs of an item.",
+        "~ Item stats are now built from their plugs and InvestmentStats (in case of some exotics). This fixes potentially invalid item stats when you use mods like Powerful Friends or Protective Light. A big thanks to u/deangaudet for reminding me that the API also reports the plugs of an item.",
         "~ Only save necessary item types of the manifest (namely mods and armor). Also, save the investmentStats now.",
         "~ Sped up the item update step.",
       ]
