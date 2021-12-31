@@ -1,35 +1,84 @@
 <mat-card id="card-results">
   <mat-card-title>Results</mat-card-title>
-  <mat-card-subtitle>All the build permutations that are possible with your current configuration.</mat-card-subtitle>
+  <mat-card-subtitle>
+    <ng-container *ngIf="this.totalResults > 0">
+      Click on a row to expand it and to see the list of the items required for this build.<br/>
+    </ng-container>
+    <ng-container *ngIf="this.totalResults == 0">
+      <b>No possible permutations found.</b> You should loosen your settings a bit.
+    </ng-container>
+  </mat-card-subtitle>
   <mat-card-content>
 
     <div>
-      <div *ngIf="this.totalResults > 0">
-        <mat-form-field appearance="outline" class="info-box">
-          <mat-label>Items Used</mat-label>
-          <input matInput readonly value="{{this.itemCount| number}}">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="info-box">
-          <mat-label>Permutations generated</mat-label>
-          <input matInput readonly value="{{this.totalResults | number}}">
+      <ng-container *ngIf="this.totalResults > 0">
+        <div class="config-summary-box"
+             fxLayout="row"
+             fxLayoutAlign="start center"
+             fxLayoutGap="5px"
+        >
+          <mat-form-field appearance="outline" class="info-box" fxFlex>
+            <mat-label>Items Used</mat-label>
+            <input matInput readonly value="{{this.itemCount| number}}">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="info-box" fxFlex>
+            <mat-label>Permutations generated</mat-label>
+            <input matInput readonly value="{{this.totalResults | number}}">
 
-          <mat-icon matSuffix #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 5e4"
-                    class="report-problem-icon"
-                    matTooltip="Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.
-                        If you need more entries, disable the limitation in the advanced settings.">report_problem</mat-icon>
-          <mat-icon matSuffix #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 1e6"
-                    class="report-problem-icon"
-                    matTooltip="Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.
-                                You should narrow down your settings a bit.">report_problem</mat-icon>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="info-box">
-          <mat-label>Time required</mat-label>
-          <input matInput readonly value="{{this.totalTime | number}}ms">
-        </mat-form-field>
-        <br/>
-        Click on a row to expand it and to see the list of the items required for this build.<br/>
+            <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 5e4"
+                      class="report-problem-icon"
+                      matSuffix
+                      matTooltip="Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.
+                        If you need more entries, disable the limitation in the advanced settings.">report_problem
+            </mat-icon>
+            <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 1e6"
+                      class="report-problem-icon"
+                      matSuffix
+                      matTooltip="Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.
+                                You should narrow down your settings a bit.">report_problem
+            </mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="info-box" fxFlex>
+            <mat-label>Time required</mat-label>
+            <input matInput readonly value="{{this.totalTime | number}}ms">
+          </mat-form-field>
+        </div>
+      </ng-container>
 
-      </div>
+      <mat-form-field appearance="outline" class="config-summary-box">
+        <mat-label>Summary of important configuration choices</mat-label>
+        <mat-chip-list aria-label="Configuration Summary">
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_selectedExoticHash == -1" disableRipple
+                    matTooltip="This setting enforces that all exotics are ignored.">No Exotic
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_selectedExoticHash > 1" disableRipple
+                    matTooltip="This setting enforces that only one specific exotic is used.">Exotic
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_maximumStatMods == 0" disableRipple
+                    matTooltip="You enforced that no stat mods are used.">No stat mods
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledAffinity.length > 0" disableRipple
+                    matTooltip="This setting enforces a specific element for a specific armor slot.">Elemental Affinity
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledCombatStyleMods" disableRipple
+                    matTooltip="You enabled combat style mods that affect stats.">Combat Style Mods
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledStasis" disableRipple
+                    matTooltip="You enabled stasis fragments that affect stats.">Stasis Fragments
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyShowResultsWithNoWastedStats" disableRipple matTooltip="This setting means that only builds with no wasted stats are shown."
+                    selected>Zero Waste
+          </mat-chip>
+          <mat-chip *ngIf="_config_onlyUseMasterworkedItems" disableRipple selected #tooltip="matTooltip" matTooltip="This setting means that only armor pieces are used that are already masterworked.">Masterworked Only</mat-chip>
+          <mat-chip
+            #tooltip="matTooltip" matTooltip="Some masterwork assumptions are in place. This means that you may have to masterwork items. Look at your advanced settings to see which ones are activated."
+            *ngIf="!_config_onlyUseMasterworkedItems && (_config_assumeLegendariesMasterworked || _config_assumeExoticsMasterworked || _config_assumeClassItemMasterworked)"
+            disableRipple>
+            Masterwork Assumption
+          </mat-chip>
+        </mat-chip-list>
+      </mat-form-field>
+
       <table [dataSource]="tableDataSource" class="result-table" mat-table matSort
              matSortActive="Mods" matSortDirection="asc" multiTemplateDataRows>
         <!--- Note that these columns can be defined in any order.
@@ -39,7 +88,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Mobility">Mobility</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Mobility]}}
             <img alt="Mobility"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png">
           </td>
         </ng-container>
 
@@ -48,7 +98,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Resilience"> Resilience</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Resilience]}}
             <img alt="Resilience"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png">
           </td>
         </ng-container>
 
@@ -57,7 +108,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Recovery"> Recovery</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Recovery]}}
             <img alt="Recovery"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png">
           </td>
         </ng-container>
 
@@ -66,7 +118,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Discipline"> Discipline</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Discipline]}}
             <img alt="Discipline"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png">
           </td>
         </ng-container>
 
@@ -75,7 +128,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Intellect"> Intellect</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Intellect]}}
             <img alt="Intellect"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png">
           </td>
         </ng-container>
 
@@ -84,7 +138,8 @@
           <th *matHeaderCellDef mat-header-cell mat-sort-header="Strength">Strength</th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Strength]}}
             <img alt="Strength"
-                 class="statIcon" src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png">
+                 class="statIcon"
+                 src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png">
           </td>
         </ng-container>
 
@@ -94,30 +149,36 @@
           <td *matCellDef="let element" mat-cell>
             <span *ngIf="element.modCount == 0">None</span>
             <!-- TODO amount -->
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_MOBILITY) + (element.mods | count:StatModifier.MAJOR_MOBILITY)"
-                                   class="modPreview"
-                                   tooltipText="Mobility"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"></app-table-mod-display>
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_RESILIENCE) + (element.mods | count:StatModifier.MAJOR_RESILIENCE)"
-                                   class="modPreview"
-                                   tooltipText="Resilience"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"></app-table-mod-display>
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_RECOVERY) + (element.mods | count:StatModifier.MAJOR_RECOVERY)"
-                                   class="modPreview"
-                                   tooltipText="Recovery"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"></app-table-mod-display>
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_DISCIPLINE) + (element.mods | count:StatModifier.MAJOR_DISCIPLINE)"
-                                   class="modPreview"
-                                   tooltipText="Discipline"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"></app-table-mod-display>
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_INTELLECT) + (element.mods | count:StatModifier.MAJOR_INTELLECT)"
-                                   class="modPreview"
-                                   tooltipText="Intellect"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"></app-table-mod-display>
-            <app-table-mod-display [amount]="(element.mods | count:StatModifier.MINOR_STRENGTH) + (element.mods | count:StatModifier.MAJOR_STRENGTH)"
-                                   class="modPreview"
-                                   tooltipText="Strength"
-                                   url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_MOBILITY) + (element.mods | count:StatModifier.MAJOR_MOBILITY)"
+              class="modPreview"
+              tooltipText="Mobility"
+              url="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_RESILIENCE) + (element.mods | count:StatModifier.MAJOR_RESILIENCE)"
+              class="modPreview"
+              tooltipText="Resilience"
+              url="https://www.bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_RECOVERY) + (element.mods | count:StatModifier.MAJOR_RECOVERY)"
+              class="modPreview"
+              tooltipText="Recovery"
+              url="https://www.bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_DISCIPLINE) + (element.mods | count:StatModifier.MAJOR_DISCIPLINE)"
+              class="modPreview"
+              tooltipText="Discipline"
+              url="https://www.bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_INTELLECT) + (element.mods | count:StatModifier.MAJOR_INTELLECT)"
+              class="modPreview"
+              tooltipText="Intellect"
+              url="https://www.bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png"></app-table-mod-display>
+            <app-table-mod-display
+              [amount]="(element.mods | count:StatModifier.MINOR_STRENGTH) + (element.mods | count:StatModifier.MAJOR_STRENGTH)"
+              class="modPreview"
+              tooltipText="Strength"
+              url="https://www.bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png"></app-table-mod-display>
           </td>
         </ng-container>
 
@@ -149,7 +210,8 @@
                       aria-label="Error"
                       class="report-problem-icon"
                       inline
-                      matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items."> report_problem
+                      matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items.">
+              report_problem
             </mat-icon>
 
           </td>
@@ -179,7 +241,8 @@
         </ng-container>
 
         <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
-        <tr (click)="expandedElement = expandedElement === element ? null : element" *matRowDef="let element; columns: shownColumns;"
+        <tr (click)="expandedElement = expandedElement === element ? null : element"
+            *matRowDef="let element; columns: shownColumns;"
             [class.example-expanded-row]="expandedElement === element"
             class="example-element-row"
             mat-row>

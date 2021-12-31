@@ -11,7 +11,10 @@ import {MatPaginator} from "@angular/material/paginator";
 import {MatSort} from "@angular/material/sort";
 import {StatusProviderService} from "../../../services/status-provider.service";
 import {animate, state, style, transition, trigger} from "@angular/animations";
-
+import {ModInformation} from "../../../data/ModInformation";
+import {ModifierType} from "../../../data/enum/modifierType";
+import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {DID_NOT_SELECT_EXOTIC} from "../../../data/constants";
 
 
 export interface ResultDefinition {
@@ -68,11 +71,19 @@ export class ResultsComponent implements OnInit {
   public StatModifier = StatModifier;
 
   private _results: ResultDefinition[] = [];
-  private _config_assumeLegendariesMasterworked: Boolean = false;
-  private _config_assumeExoticsMasterworked: Boolean = false;
-  private _config_assumeClassItemMasterworked: Boolean = false;
+  _config_assumeLegendariesMasterworked: Boolean = false;
+  _config_assumeExoticsMasterworked: Boolean = false;
+  _config_assumeClassItemMasterworked: Boolean = false;
   private _config_enabledMods: ModOrAbility[] = [];
   private _config_limitParsedResults: Boolean = false;
+
+  _config_maximumStatMods: number = 5;
+  _config_selectedExoticHash: number = DID_NOT_SELECT_EXOTIC;
+  _config_enabledStasis: boolean = false;
+  _config_enabledCombatStyleMods: boolean = false;
+  _config_enabledAffinity: DestinyEnergyType[] = [];
+  _config_onlyUseMasterworkedItems: Boolean = false;
+  _config_onlyShowResultsWithNoWastedStats: Boolean = false;
 
   tableDataSource = new MatTableDataSource<ResultDefinition>()
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -101,6 +112,14 @@ export class ResultsComponent implements OnInit {
       this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_enabledMods = c.enabledMods;
       this._config_limitParsedResults = c.limitParsedResults;
+
+      this._config_maximumStatMods = c.maximumStatMods;
+      this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
+      this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
+      this._config_selectedExoticHash = c.selectedExoticHash;
+      this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
+      this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;
+      this._config_enabledAffinity = Object.entries(c.fixedArmorAffinities).filter(v => v[1] != DestinyEnergyType.Any).map(k => k[1]);
 
       if (c.showWastedStatsColumn) {
         this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "waste", "dropdown",]

@@ -58,6 +58,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {ArmorClusterPageComponent} from './components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component';
 import {TableModDisplayComponent} from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
 import {MatTabsModule} from "@angular/material/tabs";
+import {MatChipsModule} from "@angular/material/chips";
 
 
 const routes: Routes = [
@@ -144,7 +145,8 @@ const routes: Routes = [
     ClipboardModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTabsModule
+    MatTabsModule,
+    MatChipsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

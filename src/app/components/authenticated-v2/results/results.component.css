@@ -38,6 +38,10 @@ tr.example-detail-row {
   color: lightcoral;
 }
 
-.info-box {
-  margin-right: 5px;
+:host ::ng-deep .info-box .mat-form-field-wrapper {
+  padding-bottom: 5px !important;
+}
+
+.config-summary-box {
+  width: 100%;
 }
