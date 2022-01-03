@@ -79,6 +79,7 @@ export class ResultsComponent implements OnInit {
 
   _config_maximumStatMods: number = 5;
   _config_selectedExoticHash: number = DID_NOT_SELECT_EXOTIC;
+  _config_tryLimitWastedStats: boolean = false;
   _config_enabledStasis: boolean = false;
   _config_enabledCombatStyleMods: boolean = false;
   _config_enabledAffinity: DestinyEnergyType[] = [];
@@ -110,6 +111,7 @@ export class ResultsComponent implements OnInit {
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
+      this._config_tryLimitWastedStats = c.tryLimitWastedStats;
       this._config_enabledMods = c.enabledMods;
       this._config_limitParsedResults = c.limitParsedResults;
 
