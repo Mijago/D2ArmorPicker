@@ -13,11 +13,21 @@ export class HelpPageComponent implements OnInit {
 
   changelog = [
     {
+      version: "2.2.0",
+      date: "??",
+      entries: [
+        "+ Improved readability of the result header. Also, added a summary of important coniguration choices.",
+        "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
+        "~ Fixed ability cooldowns for T7 and T8",
+        "~ Cooldowns now are shown in MM:SS instead of plain seconds.",
+      ]
+    },
+    {
       version: "2.1.4",
       date: "Dec 29, 2021",
       entries: [
         "~ Item stats are now built from their plugs and InvestmentStats (in case of some exotics). This fixes potentially invalid item stats when you use mods like Powerful Friends or Protective Light. A big thanks to u/deangaudet for reminding me that the API also reports the plugs of an item.",
-        "~ Only save necessary item types of the manifest (namely mods and armor). Also, save the investmentStats now.",
+        "~ Only save necessary item types of the manifest (namely mods and armor). Also, save twhe investmentStats now.",
         "~ Sped up the item update step.",
       ]
     },
