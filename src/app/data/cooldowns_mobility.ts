@@ -1,5 +1,5 @@
 import {CharacterClass} from "./enum/character-Class";
-import {calculateTierValueMobility} from "./cooldown_definitions";
+import {calculateTierValueClassAbility, calculateTierValueMobility} from "./cooldown_definitions";
 
 var marksmanDodge = [
   34, 32, 30, 29, 26, 24, 22, 19, 16, 14, 11
@@ -17,8 +17,9 @@ export function buildMobilityCooldown(tier: number, clazz: CharacterClass) {
 
   if (clazz == CharacterClass.Hunter) {
     res += "\r\n"
-    res += "Dodge cooldown (from UI): " + marksmanDodge[tier] + "s"
-
+    res += "Dodge Cooldown in MM:SS\r\n";
+    res += "Marksman D.:\t" + calculateTierValueClassAbility(tier, 29) + "\r\n";
+    res += "Gamblers D.:  \t" + calculateTierValueClassAbility(tier, 38) + "\r\n";
   }
   return res;
 }

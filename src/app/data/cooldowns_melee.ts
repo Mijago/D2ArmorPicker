@@ -39,7 +39,7 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
 
 export function buildMeleeCooldown(tier: number, clazz: CharacterClass) {
   const clazzEntry = MeleeAbilitiesPerClassAndTier[clazz];
-  var res = "Melee Cooldown in seconds\r\n";
+  var res = "Melee Cooldown in MM:SS\r\n";
   if (clazzEntry[0] != "") res += "Tier 8:\t" + calculateTierValueAbility(tier, 15) + "\t" + clazzEntry[0] + "\r\n";
   if (clazzEntry[1] != "") res += "Tier 7:\t" + calculateTierValueAbility(tier, 75) + "\t" + clazzEntry[1] + "\r\n";
   if (clazzEntry[2] != "") res += "Tier 6:\t" + calculateTierValueAbility(tier, 82) + "\t" + clazzEntry[2] + "\r\n";

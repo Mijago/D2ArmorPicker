@@ -30,7 +30,7 @@ export const SuperAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
 
 export function buildSuperCooldown(tier: number, clazz: CharacterClass) {
   const clazzEntry = SuperAbilitiesPerClassAndTier[clazz];
-  var res = "Super Cooldown in seconds\r\n";
+  var res = "Super Cooldown in MM:SS\r\n";
   if (clazzEntry[0] != "") res += "Tier 5:\t" + calculateTierValueSuper(tier, 417) + "\t" + clazzEntry[0] + "\r\n";
   if (clazzEntry[1] != "") res += "Tier 4:\t" + calculateTierValueSuper(tier, 455) + "\t" + clazzEntry[1] + "\r\n";
   if (clazzEntry[2] != "") res += "Tier 3:\t" + calculateTierValueSuper(tier, 500) + "\t" + clazzEntry[2] + "\r\n";

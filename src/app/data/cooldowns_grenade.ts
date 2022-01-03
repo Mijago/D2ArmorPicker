@@ -36,7 +36,7 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
 
 export function buildGrenadeCooldown(tier: number, clazz: CharacterClass) {
   const clazzEntry = GrenadeAbilitiesPerClassAndTier[clazz];
-  var res = "Grenade Cooldown in seconds\r\n";
+  var res = "Grenade Cooldown in MM:SS\r\n";
   if (clazzEntry[0] != "") res += "Tier 7:\t" + calculateTierValueAbility(tier, 64) + "\t" + clazzEntry[0] + "\r\n";
   if (clazzEntry[1] != "") res += "Tier 6:\t" + calculateTierValueAbility(tier, 73) + "\t" + clazzEntry[1] + "\r\n";
   if (clazzEntry[2] != "") res += "Tier 5:\t" + calculateTierValueAbility(tier, 91) + "\t" + clazzEntry[2] + "\r\n";

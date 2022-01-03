@@ -5,6 +5,9 @@ import {ArmorStat} from "./enum/armor-stat";
 import {buildGrenadeCooldown} from "./cooldowns_grenade";
 import {buildSuperCooldown} from "./cooldowns_super";
 import {buildMobilityCooldown} from "./cooldowns_mobility";
+import {buildBarricadeCooldown} from "./cooldowns_resilience";
+import {calculateTierValueAbility} from "./cooldown_definitions";
+import {buildRiftCooldown} from "./cooldowns_recovery";
 
 export function GetArmorStatTierBonus(clazz: CharacterClass): EnumDictionary<ArmorStat, string[]> {
   return {
@@ -15,31 +18,31 @@ export function GetArmorStatTierBonus(clazz: CharacterClass): EnumDictionary<Arm
       buildMobilityCooldown(9, clazz), buildMobilityCooldown(10, clazz),
     ],
     [ArmorStat.Resilience]: [
-      "Hitpoints: 185hp" + "\r\nBarricade TBD",
-      "Hitpoints: 186hp" + "\r\nBarricade TBD",
-      "Hitpoints: 187hp" + "\r\nBarricade TBD",
-      "Hitpoints: 188hp" + "\r\nBarricade TBD",
-      "Hitpoints: 189hp" + "\r\nBarricade TBD",
-      "Hitpoints: 190hp" + "\r\nBarricade TBD",
-      "Hitpoints: 192hp" + "\r\nBarricade TBD",
-      "Hitpoints: 194hp" + "\r\nBarricade TBD",
-      "Hitpoints: 196hp" + "\r\nBarricade TBD",
-      "Hitpoints: 198hp" + "\r\nBarricade TBD",
-      "Hitpoints: 200hp" + "\r\nBarricade TBD",
+      "Hitpoints: 185hp" + "\r\n" + buildBarricadeCooldown(0, clazz),
+      "Hitpoints: 186hp" + "\r\n" + buildBarricadeCooldown(1, clazz),
+      "Hitpoints: 187hp" + "\r\n" + buildBarricadeCooldown(2, clazz),
+      "Hitpoints: 188hp" + "\r\n" + buildBarricadeCooldown(3, clazz),
+      "Hitpoints: 189hp" + "\r\n" + buildBarricadeCooldown(4, clazz),
+      "Hitpoints: 190hp" + "\r\n" + buildBarricadeCooldown(5, clazz),
+      "Hitpoints: 192hp" + "\r\n" + buildBarricadeCooldown(6, clazz),
+      "Hitpoints: 194hp" + "\r\n" + buildBarricadeCooldown(7, clazz),
+      "Hitpoints: 196hp" + "\r\n" + buildBarricadeCooldown(8, clazz),
+      "Hitpoints: 198hp" + "\r\n" + buildBarricadeCooldown(9, clazz),
+      "Hitpoints: 200hp" + "\r\n" + buildBarricadeCooldown(10, clazz),
     ]
     ,
     [ArmorStat.Recovery]: [
-      "Recovery Rate Increase:  0.0%\r\nTotal regeneration time: 9.00s" + "\r\nRift TBD",
-      "Recovery Rate Increase:  2.9%\r\nTotal regeneration time: 8.80s" + "\r\nRift TBD",
-      "Recovery Rate Increase:  5.7%\r\nTotal regeneration time: 8.60s" + "\r\nRift TBD",
-      "Recovery Rate Increase:  8.6%\r\nTotal regeneration time: 8.40s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 11.4%\r\nTotal regeneration time: 8.20s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 14.3%\r\nTotal regeneration time: 8.00s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 17.1%\r\nTotal regeneration time: 7.80s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 22.9%\r\nTotal regeneration time: 7.40s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 28.6%\r\nTotal regeneration time: 7.00s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 34.3%\r\nTotal regeneration time: 6.60s" + "\r\nRift TBD",
-      "Recovery Rate Increase: 42.9%\r\nTotal regeneration time: 6.00s" + "\r\nRift TBD",
+      "Recovery Rate Increase:  0.0%\r\nTotal regeneration time: 9.00s" + "\r\n" + buildRiftCooldown(0, clazz),
+      "Recovery Rate Increase:  2.9%\r\nTotal regeneration time: 8.80s" + "\r\n" + buildRiftCooldown(1, clazz),
+      "Recovery Rate Increase:  5.7%\r\nTotal regeneration time: 8.60s" + "\r\n" + buildRiftCooldown(2, clazz),
+      "Recovery Rate Increase:  8.6%\r\nTotal regeneration time: 8.40s" + "\r\n" + buildRiftCooldown(3, clazz),
+      "Recovery Rate Increase: 11.4%\r\nTotal regeneration time: 8.20s" + "\r\n" + buildRiftCooldown(4, clazz),
+      "Recovery Rate Increase: 14.3%\r\nTotal regeneration time: 8.00s" + "\r\n" + buildRiftCooldown(5, clazz),
+      "Recovery Rate Increase: 17.1%\r\nTotal regeneration time: 7.80s" + "\r\n" + buildRiftCooldown(6, clazz),
+      "Recovery Rate Increase: 22.9%\r\nTotal regeneration time: 7.40s" + "\r\n" + buildRiftCooldown(7, clazz),
+      "Recovery Rate Increase: 28.6%\r\nTotal regeneration time: 7.00s" + "\r\n" + buildRiftCooldown(8, clazz),
+      "Recovery Rate Increase: 34.3%\r\nTotal regeneration time: 6.60s" + "\r\n" + buildRiftCooldown(9, clazz),
+      "Recovery Rate Increase: 42.9%\r\nTotal regeneration time: 6.00s" + "\r\n" + buildRiftCooldown(10, clazz),
     ],
     [ArmorStat.Discipline]: [
       buildGrenadeCooldown(0, clazz), buildGrenadeCooldown(1, clazz), buildGrenadeCooldown(2, clazz),
