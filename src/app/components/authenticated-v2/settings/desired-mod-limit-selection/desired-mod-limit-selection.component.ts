@@ -8,18 +8,11 @@ import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../data/constants";
   styleUrls: ['./desired-mod-limit-selection.component.scss']
 })
 export class DesiredModLimitSelectionComponent implements OnInit {
-  readonly ModRange = new Array(MAXIMUM_STAT_MOD_AMOUNT + 1);
-  selection: number = MAXIMUM_STAT_MOD_AMOUNT;
 
-  constructor(public config: ConfigurationService) {
+  constructor() {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(c => this.selection = c.maximumStatMods)
   }
 
-  setValue(i: number) {
-    this.selection = i;
-    this.config.modifyConfiguration(c => c.maximumStatMods = i);
-  }
 }

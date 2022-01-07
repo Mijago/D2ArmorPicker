@@ -69,7 +69,15 @@ export class AdvancedSettingsComponent implements OnInit {
               value: c.ignoreArmorAffinitiesOnMasterworkedItems,
               disabled: false,
               impactsResultCount: true,
-              help: "This tool already ignores the elemental affinity of non-masterworked items. Use this toggle to also ignore the affinity of masterworked items."
+              help: "Use this toggle to ignore the affinity of masterworked items. This may force you to change the element of exotics, which can be quite expensive. Enabling both settings disables the whole affinity selection."
+            },
+            {
+              name: "Ignore armor elemental affinities on non-masterworked armor",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.ignoreArmorAffinitiesOnNonMasterworkedItems = v),
+              value: c.ignoreArmorAffinitiesOnNonMasterworkedItems,
+              disabled: false,
+              impactsResultCount: true,
+              help: "Use this toggle to ignore the affinity of non-masterworked items. Enabling both settings disables the whole affinity selection."
             },
           ],
           "Performance Optimization": [

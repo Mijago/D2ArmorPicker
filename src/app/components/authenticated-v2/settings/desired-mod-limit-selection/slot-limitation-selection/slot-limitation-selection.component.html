@@ -1,0 +1,193 @@
+<div class="container">
+  <div class="energy">
+    <div (mouseout)="hoveredSlot = -1" class="energy-container">
+      <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
+      <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
+      <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
+      <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
+      <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
+      <div (click)="setValue(4)" (mouseover)="hoveredSlot = 1" [class.active]="5-maximumModSlots >= 1"
+           [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 1" [class.hovered]="hoveredSlot >= 1"
+           class="energy-bar"></div>
+      <div (click)="setValue(3)" (mouseover)="hoveredSlot = 2" [class.active]="5-maximumModSlots >= 2"
+           [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 2" [class.hovered]="hoveredSlot >= 2"
+           class="energy-bar"></div>
+      <div (click)="setValue(2)" (mouseover)="hoveredSlot = 3" [class.active]="5-maximumModSlots >= 3"
+           [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 3" [class.hovered]="hoveredSlot >= 3"
+           class="energy-bar"></div>
+      <div (click)="setValue(1)" (mouseover)="hoveredSlot = 4" [class.active]="5-maximumModSlots >= 4"
+           [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 4" [class.hovered]="hoveredSlot >= 4"
+           class="energy-bar"></div>
+      <div (click)="setValue(0)" (mouseover)="hoveredSlot = 5" [class.active]="5-maximumModSlots == 5"
+           [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 5" [class.hovered]="hoveredSlot == 5"
+           class="energy-bar"></div>
+    </div>
+    <br>
+    <div *ngVar="hoveredSlot > -1 ? 5-hoveredSlot : maximumModSlots as slot"> <!-- *ngVar="5-slot-1 as slot" -->
+      <!-- mobility -->
+      <div [class.major]="slot >= 3" [class.minor]="slot >= 1 && slot < 3" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://www.bungie.net/common/destiny2_content/icons/c664ddd10920daab49cc3808dbb6a1e6.png">
+        <img class="mod-icon mod-minor"
+             src="https://www.bungie.net/common/destiny2_content/icons/287901ef741855655856f6e8f5776f03.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">3</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">1</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+      <!-- resilience -->
+      <div [class.major]="slot >= 3" [class.minor]="slot >= 1 && slot < 3" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://bungie.net/common/destiny2_content/icons/195f4f173adb52b336b4ecd67101004d.png">
+        <img class="mod-icon mod-minor"
+             src="https://bungie.net/common/destiny2_content/icons/53c28186a4b97285a01aace5748e4de7.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">3</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">1</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+      <!-- discipline -->
+      <div [class.major]="slot >= 3" [class.minor]="slot >= 1 && slot < 3" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://bungie.net/common/destiny2_content/icons/9d54e2149f945b2c298020da443b70fa.png">
+        <img class="mod-icon mod-minor"
+             src="https://bungie.net/common/destiny2_content/icons/ec0b298ec4dac0023604e467a58c3868.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">3</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">1</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+      <!-- strength -->
+      <div [class.major]="slot >= 3" [class.minor]="slot >= 1 && slot < 3" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://bungie.net/common/destiny2_content/icons/07f2361532c79e773909220e5884ab07.png">
+        <img class="mod-icon mod-minor"
+             src="https://bungie.net/common/destiny2_content/icons/8fa2d4e4c82586668210e12c5115575a.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">3</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">1</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+      <!-- recovery -->
+      <div [class.major]="slot >= 4" [class.minor]="slot >= 2 && slot < 4" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://bungie.net/common/destiny2_content/icons/18054408a5fc068f2384c6c31a183423.png">
+        <img class="mod-icon mod-minor"
+             src="https://bungie.net/common/destiny2_content/icons/f39b0c97678148a864d6f6fbbe85524d.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">4</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">2</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+      <!-- intellect -->
+      <div [class.major]="slot >= 5" [class.minor]="slot >= 2 && slot < 5" class="mod-info">
+        <img class="mod-icon mod-major"
+             src="https://bungie.net/common/destiny2_content/icons/9fd56c3b42923c9df23edf585b0107bf.png">
+        <img class="mod-icon mod-minor"
+             src="https://bungie.net/common/destiny2_content/icons/d8da60458e3355ddf7123be5ffe3dc3c.png">
+        <svg class="mod-number mod-major" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">5</text>
+        </svg>
+        <svg class="mod-number mod-minor" viewBox="0 0 100 100">
+          <text font-size="25px" text-anchor="end" x="87" y="30">2</text>
+        </svg>
+        <div class="overlay"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <mat-button-toggle-group appearance="standard" name="fontStyle" style="display:none">
+    <mat-button-toggle (click)="setValue(i)" *ngFor="let r of ModRange; let i = index"
+                       [value]="i"
+                       class="select-button {{selection >= i ? 'mat-button-toggle-checked' : ''}}">{{i}}</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <div class="selector-element">
+    <div class="element-list">
+      <!-- Item affinity -->
+      <img #tooltip="matTooltip" (click)="setArmorElement(1)" [class.selected]="element == 1" class="element-icon"
+           matTooltip='Arc affinity'
+           src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
+      <img #tooltip="matTooltip" (click)="setArmorElement(2)" [class.selected]="element == 2" class="element-icon"
+           matTooltip='Solar affinity'
+           src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
+      <img #tooltip="matTooltip" (click)="setArmorElement(3)" [class.selected]="element == 3" class="element-icon"
+           matTooltip='Void affinity'
+           src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
+      <img #tooltip="matTooltip" (click)="setArmorElement(6)" [class.selected]="element == 6" class="element-icon"
+           matTooltip='Stasis affinity'
+           src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+    </div>
+
+    <button (click)="toggleElementLock()" class="lock" mat-icon-button
+            matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
+      <mat-icon *ngIf="!elementLock">lock_open</mat-icon>
+      <mat-icon *ngIf="elementLock">lock</mat-icon>
+    </button>
+
+    <div class="left_line"></div>
+  </div>
+
+  <div class="selector-slots">
+    <div class="element-list">
+      <!-- Item affinity -->
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotVaultOfGlass)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotVaultOfGlass"
+           class="element-icon"
+           matTooltip='Vault of Glass'
+           src="https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotDeepStoneCrypt)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotDeepStoneCrypt"
+           class="element-icon"
+           matTooltip='Deep Stone Crypt'
+           src="https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotGardenOfSalvation)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotGardenOfSalvation"
+           class="element-icon"
+           matTooltip='Garden of Salvation'
+           src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotLastWish)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotLastWish"
+           class="element-icon"
+           matTooltip='Last Wish'
+           src="https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotNightmare)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotNightmare"
+           class="element-icon"
+           matTooltip='Nightmare'
+           src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotArtificer)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotArtificer"
+           class="element-icon"
+           matTooltip='Artificer Modslot'
+           src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.PerkIronBanner)"
+           [class.selected]="armorPerk == ArmorPerkOrSlot.PerkIronBanner"
+           class="element-icon"
+           matTooltip='Iron Banner'
+           src="https://bungie.net/common/destiny2_content/icons/0ee91b79ba1366243832cf810afc3b75.jpg">
+    </div>
+    <button (click)="toggleArmorPerkLock()" class="lock" mat-icon-button
+            matTooltip="Force this slot to be on a helmet.">
+      <mat-icon *ngIf="!armorPerkLock">lock_open</mat-icon>
+      <mat-icon *ngIf="armorPerkLock">lock</mat-icon>
+    </button>
+    <div class="left_line"></div>
+  </div>
+</div>

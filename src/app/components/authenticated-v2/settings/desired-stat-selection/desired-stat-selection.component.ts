@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
-import {getDefaultStatDict} from "../../../../data/configuration";
+import {FixableSelection, getDefaultStatDict} from "../../../../data/configuration";
 import {InventoryService} from "../../../../services/inventory.service";
 import {ModInformation} from "../../../../data/ModInformation";
 import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns";
@@ -22,7 +22,7 @@ function calcScore(d: number[]) {
 })
 export class DesiredStatSelectionComponent implements OnInit {
   readonly stats: { name: string; value: ArmorStat }[];
-  minimumStatTiers: EnumDictionary<ArmorStat, number> = getDefaultStatDict(1);
+  minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
   ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = LoadingArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
@@ -48,7 +48,7 @@ export class DesiredStatSelectionComponent implements OnInit {
           }
         }
         this.statsByMods = tmpStatsByMods;
-        this.minimumStatTiers = c.minimumStatTier;
+        this.minimumStatTiers = c.minimumStatTiers;
 
         this.ArmorStatTierBonus = GetArmorStatTierBonus(c.characterClass);
       }
@@ -69,22 +69,28 @@ export class DesiredStatSelectionComponent implements OnInit {
 
   setSelectedTier(stat: ArmorStat, value: number) {
     this.config.modifyConfiguration(c => {
-      c.minimumStatTier[stat] = value;
+      c.minimumStatTiers[stat].value = value;
     })
   }
 
   clearStatSelection() {
     this.config.modifyConfiguration(c => {
       for (let n = 0; n < 6; n++)
-        c.minimumStatTier[n as ArmorStat] = 0;
+        c.minimumStatTiers[n as ArmorStat].value = 0;
     })
   }
 
   useStatPreset(d: ArmorStat[]) {
     this.config.modifyConfiguration(c => {
       for (let armorStat of d) {
-        c.minimumStatTier[armorStat] = 10;
+        c.minimumStatTiers[armorStat].value = 10;
       }
+    })
+  }
+
+  setLockState(stat: ArmorStat, value: boolean) {
+    this.config.modifyConfiguration(c => {
+      c.minimumStatTiers[stat].fixed = value;
     })
   }
 }

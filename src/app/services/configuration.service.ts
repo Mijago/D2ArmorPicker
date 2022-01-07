@@ -1,10 +1,12 @@
 import {Injectable} from '@angular/core';
-import {Configuration} from "../data/configuration";
+import {Configuration, FixableSelection} from "../data/configuration";
 import {BehaviorSubject, Observable} from "rxjs";
 import {ModOrAbility} from "../data/enum/modOrAbility";
 import * as lzutf8 from "lzutf8";
 import {CompressionOptions, DecompressionOptions} from "lzutf8";
 import {environment} from "../../environments/environment";
+import {EnumDictionary} from "../data/types/EnumDictionary";
+import {ArmorStat} from "../data/enum/armor-stat";
 
 export interface StoredConfiguration {
   version: string;
@@ -84,6 +86,20 @@ export class ConfigurationService {
     return true;
   }
 
+  checkAndFixOldSavedConfigurations(c: StoredConfiguration) {
+    c.configuration = Object.assign(Configuration.buildEmptyConfiguration(), c.configuration);
+    if (c.configuration.hasOwnProperty("minimumStatTier")) {
+      let tiers = (c.configuration as any).minimumStatTier as EnumDictionary<ArmorStat, number>;
+      c.configuration.minimumStatTiers[ArmorStat.Mobility].value = tiers[ArmorStat.Mobility];
+      c.configuration.minimumStatTiers[ArmorStat.Resilience].value = tiers[ArmorStat.Resilience];
+      c.configuration.minimumStatTiers[ArmorStat.Recovery].value = tiers[ArmorStat.Recovery];
+      c.configuration.minimumStatTiers[ArmorStat.Discipline].value = tiers[ArmorStat.Discipline];
+      c.configuration.minimumStatTiers[ArmorStat.Intellect].value = tiers[ArmorStat.Intellect];
+      c.configuration.minimumStatTiers[ArmorStat.Strength].value = tiers[ArmorStat.Strength];
+      delete (c.configuration as any).minimumStatTier;
+    }
+  }
+
   listSavedConfigurations(): StoredConfiguration[] {
     let item;
     try {
@@ -91,7 +107,7 @@ export class ConfigurationService {
       if (item.substr(0, 1) != "[")
         item = lzutf8.decompress(item, lzDecompOptions);
     } catch (e) {
-      item = {}
+      item = []
     }
 
     let result = (JSON.parse(item) || []) as StoredConfiguration[]
@@ -100,6 +116,7 @@ export class ConfigurationService {
       else if (a.name > b.name) return 1;
       return 0;
     })
+    result.forEach(c => this.checkAndFixOldSavedConfigurations(c))
     return result;
   }
 
@@ -124,7 +141,7 @@ export class ConfigurationService {
     // deep copy it
     this.__configuration = Object.assign(Configuration.buildEmptyConfiguration(), configuration);
     this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);
-    this.__configuration.minimumStatTier = Object.assign({}, this.__configuration.minimumStatTier)
+    this.__configuration.minimumStatTiers = Object.assign({}, this.__configuration.minimumStatTiers)
 
     const compressed = lzutf8.compress(JSON.stringify(this.__configuration), lzCompOptions)
     localStorage.setItem("currentConfig", compressed);
@@ -141,9 +158,9 @@ export class ConfigurationService {
       config = {}
     }
 
-    return Object.assign(Configuration.buildEmptyConfiguration(),
-      JSON.parse(config)
-    );
+    var dummy: StoredConfiguration = {name: "dummy", version: "1", configuration: JSON.parse(config)}
+    this.checkAndFixOldSavedConfigurations(dummy);
+    return dummy.configuration;
   }
 
   getCurrentConfigBase64Compressed(): string {

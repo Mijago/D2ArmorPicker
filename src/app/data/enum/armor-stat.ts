@@ -61,3 +61,14 @@ export type ArmorStatLiteral = Literal<ArmorStat>;
 export enum SpecialArmorStat {
   ClassAbilityRegenerationStat = 10
 }
+
+export enum ArmorPerkOrSlot {
+  None,
+  SlotNightmare,
+  SlotArtificer,
+  SlotLastWish,
+  SlotGardenOfSalvation,
+  SlotDeepStoneCrypt,
+  SlotVaultOfGlass,
+  PerkIronBanner
+}

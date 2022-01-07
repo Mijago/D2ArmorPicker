@@ -98,6 +98,7 @@ export class LoadAndSaveSettingsComponent implements OnInit {
 
       console.log("Incoming json:", jsonData)
       for (let jsonDatum of jsonData) {
+        this.config.checkAndFixOldSavedConfigurations(jsonDatum);
         if (jsonDatum.hasOwnProperty("name")) {
           if (isArray)
             this.config.saveConfiguration(jsonDatum.name, jsonDatum.configuration);

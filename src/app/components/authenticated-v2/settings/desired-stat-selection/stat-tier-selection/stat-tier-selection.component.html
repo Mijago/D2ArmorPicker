@@ -13,3 +13,10 @@
     </div>
   </mat-button-toggle>
 </mat-button-toggle-group>
+
+
+<button mat-icon-button (click)="toggleLockState()"
+        matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
+  <mat-icon *ngIf="!locked">lock_open</mat-icon>
+  <mat-icon *ngIf="locked">lock</mat-icon>
+</button>

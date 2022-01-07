@@ -16,10 +16,19 @@ export class HelpPageComponent implements OnInit {
       version: "2.2.0",
       date: "??",
       entries: [
-        "+ Improved readability of the result header. Also, added a summary of important coniguration choices.",
-        "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
-        "~ Fixed ability cooldowns for T7 and T8",
+        "+ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
+        "+ Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artificer modslots.",
+        "+ Added the ability to limit the available points on each armor item for stat mods. This allows you to limit the kind of stat mods that are usable. You can now say 'do not use major intellect mods'.",
+        "+ Added the ability to lock stat tiers. Previously you could only set 'Use Tier 3 or higher', now you can optionally set 'Enforce Tier 3'. This is useful for example if you want to enforce T3 mobility on a Titan.",
+        "+ Improved readability of the result header. Also, added a summary of important configuration choices.",
+        "+ Added an option that forces the correct element on non-masterworked armor pieces.", // todo
+        "+ Added an option to ignore sunset armor.", // todo
+        "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).", // todo
+        "+ Added visual indicators for minor and major mods in the overview table.", // todo
+        "+ Added visual cursor indicator to every clickable input, e.g. in the exotic, element and perk/mod selection.",
+        "~ Fixed ability cooldowns for melee and grenade at tier 7 and tier 8.",
         "~ Cooldowns now are shown in MM:SS instead of plain seconds.",
+        "~ Completely rewrote the core logic of D2ArmorPicker for the changes mentioned above."
       ]
     },
     {

@@ -180,12 +180,12 @@ function handlePermutation(
 
   // required mods for each stat
   const requiredMods = [
-    Math.ceil(Math.max(0, config.minimumStatTier[0] - stats[0] / 10)),
-    Math.ceil(Math.max(0, config.minimumStatTier[1] - stats[1] / 10)),
-    Math.ceil(Math.max(0, config.minimumStatTier[2] - stats[2] / 10)),
-    Math.ceil(Math.max(0, config.minimumStatTier[3] - stats[3] / 10)),
-    Math.ceil(Math.max(0, config.minimumStatTier[4] - stats[4] / 10)),
-    Math.ceil(Math.max(0, config.minimumStatTier[5] - stats[5] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[0].value - stats[0] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[1].value - stats[1] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[2].value - stats[2] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[3].value - stats[3] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[4].value - stats[4] / 10)),
+    Math.ceil(Math.max(0, config.minimumStatTiers[5].value - stats[5] / 10)),
   ]
   const requiredModsTotal = requiredMods[0] + requiredMods[1] + requiredMods[2] + requiredMods[3] + requiredMods[4] + requiredMods[5]
   const usedMods: number[] = []

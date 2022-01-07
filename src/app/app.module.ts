@@ -48,7 +48,6 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {ExpandedResultContentComponent} from './components/authenticated-v2/results/expanded-result-content/expanded-result-content.component';
 import {CountElementInListPipe} from './components/authenticated-v2/results/expanded-result-content/count-element-in-list.pipe';
 import {ClipboardModule} from "@angular/cdk/clipboard";
-import {DesiredElementalAffinitySelectionComponent} from './components/authenticated-v2/settings/desired-elemental-affinity-selection/desired-elemental-affinity-selection.component';
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {IgnoredItemsListComponent} from './components/authenticated-v2/settings/ignored-items-list/ignored-items-list.component';
 import {HelpPageComponent} from './components/authenticated-v2/subpages/help-page/help-page.component';
@@ -59,6 +58,7 @@ import {ArmorClusterPageComponent} from './components/authenticated-v2/subpages/
 import {TableModDisplayComponent} from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatChipsModule} from "@angular/material/chips";
+import { SlotLimitationSelectionComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component';
 
 
 const routes: Routes = [
@@ -107,12 +107,12 @@ const routes: Routes = [
     ConfirmDialogComponent,
     ExpandedResultContentComponent,
     CountElementInListPipe,
-    DesiredElementalAffinitySelectionComponent,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
     ArmorClusterPageComponent,
-    TableModDisplayComponent
+    TableModDisplayComponent,
+    SlotLimitationSelectionComponent
   ],
   imports: [
     FlexLayoutModule,
