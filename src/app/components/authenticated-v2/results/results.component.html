@@ -11,7 +11,6 @@
   <mat-card-content>
 
     <div>
-      <ng-container *ngIf="this.totalResults > 0">
         <div class="config-summary-box"
              fxLayout="row"
              fxLayoutAlign="start center"
@@ -43,7 +42,6 @@
             <input matInput readonly value="{{this.totalTime | number}}ms">
           </mat-form-field>
         </div>
-      </ng-container>
 
       <mat-form-field appearance="outline" class="config-summary-box">
         <mat-label>Summary of important configuration choices</mat-label>
