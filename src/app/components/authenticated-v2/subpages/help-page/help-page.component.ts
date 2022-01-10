@@ -16,6 +16,7 @@ export class HelpPageComponent implements OnInit {
       version: "2.2.0",
       date: "??",
       entries: [
+        "+ Hotswapping! Added the ability to select two exotics. The tool then gives you a build with both exotics that you can just hotswap, while still having the same base stat selection. It also adds legendaries if the exotics are not in the same slot. Note that the quality of the results HEAVILY varies the less similar your exotics are rolled.",
         "+ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
         "+ Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artificer modslots.",
         "+ Added the ability to limit the available points on each armor item for stat mods. This allows you to limit the kind of stat mods that are usable. You can now say 'do not use major intellect mods'.",
