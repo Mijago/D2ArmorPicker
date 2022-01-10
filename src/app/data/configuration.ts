@@ -45,7 +45,8 @@ export class Configuration {
     [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: 5},
     [ArmorSlot.ArmorSlotChest]: {fixed: false, value: 5},
     [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: 5},
-    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5}
+    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5},
+    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
   }
 
 
@@ -59,7 +60,7 @@ export class Configuration {
   showWastedStatsColumn = false;
 
   enabledMods: ModOrAbility[] = [];
-  selectedExoticHash: number = 0;
+  selectedExotics: number[] = []
 
   // Armor affinity for each slot // TODO: remove
   fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
@@ -68,6 +69,7 @@ export class Configuration {
     [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
     [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
     [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+    [ArmorSlot.ArmorSlotNone]: DestinyEnergyType.Any,
   };
 
   armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
@@ -76,6 +78,7 @@ export class Configuration {
     [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
     [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
     [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
   };
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
@@ -84,6 +87,7 @@ export class Configuration {
     [ArmorSlot.ArmorSlotChest]: {fixed: false, value: ArmorPerkOrSlot.None},
     [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: ArmorPerkOrSlot.None},
     [ArmorSlot.ArmorSlotClass]: {fixed: false, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: ArmorPerkOrSlot.None},
   };
 
   // Ignore armor element affinities.
@@ -107,13 +111,14 @@ export class Configuration {
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,
-      selectedExoticHash: 0,
+      selectedExotics: [],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotChest]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: 5},
-        [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5}
+        [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5},
+        [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
       },
       fixedArmorAffinities: { // TODO: remove
         [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
@@ -121,6 +126,7 @@ export class Configuration {
         [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
         [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
         [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
+        [ArmorSlot.ArmorSlotNone]: DestinyEnergyType.Any,
       },
       armorAffinities: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
@@ -128,6 +134,7 @@ export class Configuration {
         [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
         [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
         [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
       },
       ignoreArmorAffinitiesOnNonMasterworkedItems: true,
       armorPerks: {
@@ -136,6 +143,7 @@ export class Configuration {
         [ArmorSlot.ArmorSlotChest]: {fixed: false, value: ArmorPerkOrSlot.None},
         [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: ArmorPerkOrSlot.None},
         [ArmorSlot.ArmorSlotClass]: {fixed: false, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotNone]: {fixed: false, value: ArmorPerkOrSlot.None},
       },
       minimumStatTiers: getDefaultStatDict(1)
     }

@@ -96,6 +96,7 @@ export class InventoryService {
           [ArmorSlot.ArmorSlotChest]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotChest],
           [ArmorSlot.ArmorSlotLegs]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs],
           [ArmorSlot.ArmorSlotClass]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotClass],
+          [ArmorSlot.ArmorSlotNone]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotNone],
         };
 
         isUpdating = true;
@@ -201,17 +202,21 @@ export class InventoryService {
 
   }
 
-  async getExoticsForClass(clazz: CharacterClass, slot?: string): Promise<Array<IManifestArmor>> {
-    const armors = await this.db.manifestArmor
+  public exoticsForClass: Array<IManifestArmor> = [];
+
+  async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<Array<IManifestArmor>> {
+    let armors = await this.db.inventoryArmor
       .where("isExotic").equals(1)
       .toArray();
-    return armors
+    armors = armors
       // filter relevant items
       .filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot))
       // Remove duplicates, in case the manifest has been inserted twice
       .filter((thing, index, self) =>
         index === self.findIndex((t) => (t.hash === thing.hash))
       )
+    this.exoticsForClass = armors;
+    return armors;
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {

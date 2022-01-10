@@ -4,6 +4,7 @@ import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorPerkOrSlot} from "../../../../../data/enum/armor-stat";
+import {InventoryService} from "../../../../../services/inventory.service";
 
 @Component({
   selector: 'app-slot-limitation-selection',
@@ -11,6 +12,7 @@ import {ArmorPerkOrSlot} from "../../../../../data/enum/armor-stat";
   styleUrls: ['./slot-limitation-selection.component.scss']
 })
 export class SlotLimitationSelectionComponent implements OnInit {
+  readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
   readonly ModRange = new Array(MAXIMUM_STAT_MOD_AMOUNT + 1);
   selection: number = MAXIMUM_STAT_MOD_AMOUNT;
@@ -25,9 +27,28 @@ export class SlotLimitationSelectionComponent implements OnInit {
 
   hoveredSlot: number = -1;
 
-  constructor(public config: ConfigurationService) {
+  disabled: boolean = false;
+
+  constructor(public config: ConfigurationService, public inventory: InventoryService) {
   }
 
+
+  get slotName(): string {
+    switch (this.slot) {
+      case ArmorSlot.ArmorSlotHelmet:
+        return "Helmet";
+      case ArmorSlot.ArmorSlotGauntlet:
+        return "Gauntlet";
+      case ArmorSlot.ArmorSlotChest:
+        return "Chest";
+      case ArmorSlot.ArmorSlotLegs:
+        return "Leg";
+      case ArmorSlot.ArmorSlotClass:
+        return "Class Item";
+      default:
+        return "";
+    }
+  }
 
   ngOnInit(): void {
     this.config.configuration.subscribe(c => {
@@ -37,6 +58,13 @@ export class SlotLimitationSelectionComponent implements OnInit {
       this.armorPerk = c.armorPerks[this.slot].value;
       this.armorPerkLock = c.armorPerks[this.slot].fixed;
       this.maximumModSlots = c.maximumModSlots[this.slot].value;
+
+      if (c.selectedExotics.length > 0) {
+        this.disabled = this.inventory.exoticsForClass
+          .filter(x => c.selectedExotics.indexOf(x.hash) > -1)
+          .map(e => e.slot)
+          .indexOf(this.slot) > -1
+      }
     })
   }
 

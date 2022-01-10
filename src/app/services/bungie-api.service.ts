@@ -15,6 +15,7 @@ import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
+import {ArmorSlot} from "../data/enum/armor-slot";
 
 @Injectable({
   providedIn: 'root'
@@ -299,7 +300,7 @@ export class BungieApiService {
 
           // HALLOWEEN MASKS
           if (d.itemHash == 2545426109 || d.itemHash == 199733460 || d.itemHash == 3224066584)
-            r.slot = "Helmets";
+            r.slot = ArmorSlot.ArmorSlotHelmet;
           // /HALLOWEEN MASKS
 
           var investmentStats: { [id: number]: number; } = {
@@ -313,7 +314,7 @@ export class BungieApiService {
             }
           }
 
-          if (r.slot != "Class Items") {
+          if (r.slot != ArmorSlot.ArmorSlotClass) {
             const sockets = (profile.Response.itemComponents.sockets.data || {})[d.itemInstanceId || ""].sockets;
             var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
             var plm = plugs.map(k => mods[k || ""]).filter(k => k != null);
@@ -371,12 +372,12 @@ export class BungieApiService {
         return false;
       })
       .map(([k, v]) => {
-        let slot = "none"
-        if ((v.itemCategoryHashes?.indexOf(45) || -1) > -1) slot = "Helmets";
-        if ((v.itemCategoryHashes?.indexOf(46) || -1) > -1) slot = "Arms";
-        if ((v.itemCategoryHashes?.indexOf(47) || -1) > -1) slot = "Chest";
-        if ((v.itemCategoryHashes?.indexOf(48) || -1) > -1) slot = "Legs";
-        if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = "Class Items";
+        let slot = ArmorSlot.ArmorSlotNone
+        if ((v.itemCategoryHashes?.indexOf(45) || -1) > -1) slot = ArmorSlot.ArmorSlotHelmet;
+        if ((v.itemCategoryHashes?.indexOf(46) || -1) > -1) slot = ArmorSlot.ArmorSlotGauntlet;
+        if ((v.itemCategoryHashes?.indexOf(47) || -1) > -1) slot = ArmorSlot.ArmorSlotChest;
+        if ((v.itemCategoryHashes?.indexOf(48) || -1) > -1) slot = ArmorSlot.ArmorSlotLegs;
+        if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = ArmorSlot.ArmorSlotClass;
 
         const isArmor2 = ((v.sockets?.socketEntries.filter(d => {
           return d.socketTypeHash == 2512726577 // general

@@ -14,7 +14,7 @@ import {animate, state, style, transition, trigger} from "@angular/animations";
 import {ModInformation} from "../../../data/ModInformation";
 import {ModifierType} from "../../../data/enum/modifierType";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {DID_NOT_SELECT_EXOTIC} from "../../../data/constants";
+import {ArmorSlot} from "../../../data/enum/armor-slot";
 
 
 export interface ResultDefinition {
@@ -25,7 +25,7 @@ export interface ResultDefinition {
   mods: number[];
   stats: number[];
   statsNoMods: number[];
-  items: ResultItem[];
+  items: ResultItem[][];
   tiers: number;
   waste: number;
   modCost: number;
@@ -50,6 +50,7 @@ export interface ResultItem {
   masterworked: boolean,
   mayBeBugged: boolean,
   stats: number[],
+  slot: ArmorSlot,
   transferState: ResultItemMoveState,
   statsNoMods: number[]
 }
@@ -78,7 +79,7 @@ export class ResultsComponent implements OnInit {
   private _config_limitParsedResults: Boolean = false;
 
   _config_maximumStatMods: number = 5;
-  _config_selectedExoticHash: number = DID_NOT_SELECT_EXOTIC;
+  _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
   _config_enabledStasis: boolean = false;
   _config_enabledCombatStyleMods: boolean = false;
@@ -118,7 +119,7 @@ export class ResultsComponent implements OnInit {
       this._config_maximumStatMods = c.maximumStatMods;
       this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
       this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
-      this._config_selectedExoticHash = c.selectedExoticHash;
+      this._config_selectedExotics = c.selectedExotics;
       this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
       this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;
       this._config_enabledAffinity = Object.entries(c.fixedArmorAffinities).filter(v => v[1] != DestinyEnergyType.Any).map(k => k[1]);
@@ -179,6 +180,6 @@ export class ResultsComponent implements OnInit {
   }
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return (element?.items.filter(d => d.mayBeBugged).length || 0) > 0
+    return (element?.items.filter(d => d.filter(x => x.mayBeBugged).length > 0).length || 0) > 0
   }
 }

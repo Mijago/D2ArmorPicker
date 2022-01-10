@@ -1,6 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ConfigurationService} from "../../../../services/configuration.service";
-import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../data/constants";
+import { ArmorSlot } from 'src/app/data/enum/armor-slot';
 
 @Component({
   selector: 'app-desired-mod-selection',
@@ -8,7 +7,7 @@ import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../data/constants";
   styleUrls: ['./desired-mod-limit-selection.component.scss']
 })
 export class DesiredModLimitSelectionComponent implements OnInit {
-
+  readonly ArmorSlot = ArmorSlot;
   constructor() {
   }
 

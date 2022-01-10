@@ -1,10 +1,11 @@
 import {DestinyClass, DestinyItemInvestmentStatDefinition} from "bungie-api-ts/destiny2/interfaces";
+import {ArmorSlot} from "../enum/armor-slot";
 
 export interface IManifestArmor {
   hash: number;
   name: string;
   icon: string;
-  slot: string;
+  slot: ArmorSlot;
   clazz: DestinyClass;
   isExotic: 1 | 0;
   armor2: boolean;

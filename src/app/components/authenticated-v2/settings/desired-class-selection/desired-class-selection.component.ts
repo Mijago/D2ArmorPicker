@@ -1,7 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ConfigurationService} from "../../../../services/configuration.service";
-import {DID_NOT_SELECT_EXOTIC} from "../../../../data/constants";
 
 @Component({
   selector: 'app-desired-class-selection',
@@ -25,7 +24,7 @@ export class DesiredClassSelectionComponent implements OnInit {
   selectClass(clazz: number) {
     this.config.modifyConfiguration(d => {
       d.characterClass = clazz;
-      d.selectedExoticHash = DID_NOT_SELECT_EXOTIC;
+      d.selectedExotics = [];
     });
   }
 }

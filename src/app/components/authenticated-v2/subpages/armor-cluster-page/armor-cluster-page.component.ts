@@ -4,6 +4,7 @@ import {DatabaseService} from "../../../../services/database.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {InventoryService} from "../../../../services/inventory.service";
 import {debounceTime} from "rxjs/operators";
+import {ArmorSlot} from "../../../../data/enum/armor-slot";
 
 
 var clusterData = [{
@@ -198,8 +199,8 @@ export class ArmorClusterPageComponent implements AfterViewInit {
     }
 
     for (let item of items) {
-      if (item.slot == "Class Items") continue;
-      if (item.slot == "none") continue; // ignores stasis and halloween masks.
+      if (item.slot == ArmorSlot.ArmorSlotClass) continue;
+      if (item.slot == ArmorSlot.ArmorSlotNone) continue; // ignores stasis and halloween masks.
 
       if (this.classFilter != -1 && item.clazz != this.classFilter) continue
       if (this.exoticFilter == -1 && item.isExotic) continue;

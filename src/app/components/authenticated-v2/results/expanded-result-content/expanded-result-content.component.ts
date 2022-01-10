@@ -12,6 +12,7 @@ import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
+import {FixableSelection} from "../../../../data/configuration";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -29,24 +30,25 @@ export class ExpandedResultContentComponent implements OnInit {
   public config_assumeClassItemMasterworked = false;
   public config_ignoreArmorAffinitiesOnMasterworkedItems = false;
   public config_enabledMods: ModOrAbility[] = [];
-  public config_fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
-    [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
-  };
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
   element: ResultDefinition | null = null;
+  config_armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
+    [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
+  };
 
 
   constructor(private config: ConfigurationService, private _snackBar: MatSnackBar, private bungieApi: BungieApiService) {
   }
 
   public buildItemIdString(element: ResultDefinition | null) {
-    return element?.items.map(d => `id:'${d.itemInstanceId}'`).join(" or ")
+    return element?.items.flat().map(d => `id:'${d.itemInstanceId}'`).join(" or ")
   }
 
   openSnackBar(message: string) {
@@ -64,7 +66,7 @@ export class ExpandedResultContentComponent implements OnInit {
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this.config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
-      this.config_fixedArmorAffinities = c.fixedArmorAffinities;
+      this.config_armorAffinities = c.armorAffinities;
       this.config_enabledMods = c.enabledMods;
       this.configValues = c.enabledMods
         .reduce((p, v) => {
@@ -83,7 +85,7 @@ export class ExpandedResultContentComponent implements OnInit {
 
   disableAllItems() {
     this.config.modifyConfiguration(cb => {
-      for (let item of this.element?.items as ResultItem[])
+      for (let item of this.element?.items.flat() as ResultItem[])
         cb.disabledItems.push(item.itemInstanceId)
     })
   }
@@ -95,7 +97,7 @@ export class ExpandedResultContentComponent implements OnInit {
   }
 
   get mayAnyItemBeBugged() {
-    return (this.element?.items.filter((d: ResultItem) => d.mayBeBugged).length || 0) > 0
+    return (this.element?.items.flat().filter((d: ResultItem) => d.mayBeBugged).length || 0) > 0
   }
 
 
@@ -110,19 +112,17 @@ export class ExpandedResultContentComponent implements OnInit {
     return characters[0].characterId;
   }
 
-  async moveItems(equip=false) {
-    for (let item of (this.element?.items || [])) {
+  async moveItems(equip = false) {
+    for (let item of (this.element?.items || []).flat()) {
       item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
     }
 
     let characterId = await this.getCharacterId()
     if (!characterId) return;
 
-    let itemIdx = [0,1,2,3].sort((a, b) => this.element?.items[a].exotic ? 1 : -1)
-
     let allSuccessful = true;
-    for (let idx of itemIdx) {
-      let item = this.element?.items[idx] as ResultItem
+    let items = (this.element?.items || []).flat().sort(i => i.exotic ? 1 : -1)
+    for (let item of items) {
       item.transferState = ResultItemMoveState.TRANSFERRING
       let success = await this.bungieApi.transferItem(item.itemInstanceId, characterId, equip);
       item.transferState = success ? ResultItemMoveState.TRANSFERRED : ResultItemMoveState.ERROR_DURING_TRANSFER
@@ -136,18 +136,18 @@ export class ExpandedResultContentComponent implements OnInit {
   }
 
   getCountOfItemsWithWrongElement() {
-    let count = 0;
-    for (let t = 0; t < 4; t++) {
-      const fixed = this.config_fixedArmorAffinities[t as ArmorSlot];
-      if (fixed == 0) continue;
-      if (this.element?.items[t].energy != fixed)
-        count++;
-    }
-    return count;
+    if (!this.element) return 0;
+
+    return this.element.items.flat().filter(item => {
+      if (!this.config_armorAffinities[item.slot].fixed) return false;
+      if (this.config_armorAffinities[item.slot].value == DestinyEnergyType.Any) return false;
+
+      return this.config_armorAffinities[item.slot].value != item.energy;
+    }).length
   }
 
-  getItemsThatMustBeMasterworked() {
-    return this.element?.items.filter(item => {
+  getItemsThatMustBeMasterworked(): ResultItem[] | undefined {
+    return this.element?.items.flat().filter(item => {
       if (item.masterworked) return false;
       if (item.exotic && !this.config_assumeExoticsMasterworked) return false;
       if (!item.exotic && !this.config_assumeLegendariesMasterworked) return false;
