@@ -11,8 +11,38 @@ import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 declare global {
   interface Array<T> {
     where(o: (val: T) => boolean): T[];
+
+    addSorted(o: T): T[];
   }
 }
+
+Array.prototype.addSorted = function (element: any) {
+  var i = 0;
+  var j = this.length;
+  var h;
+  var c = false;
+  if (element > this[j]) {
+    this.push(element);
+    return this;
+  }
+  if (element < this[i]) {
+    this.splice(i, 0, element);
+    return this;
+  }
+  while (c == false) {
+    h = ~~((i + j) / 2); //a faster h=Math.floor((i+j)/2);
+    if (element > this[h]) {
+      i = h;
+    } else {
+      j = h;
+    }
+    if (j - i <= 1) {
+      this.splice(j, 0, element);
+      c = true;
+    }
+  }
+  return this;
+};
 
 
 Array.prototype.where = Array.prototype.where || function (predicate: any) {
@@ -176,6 +206,16 @@ function prepareConstantElementRequirement(config: Configuration) {
   return constantElementRequirement;
 }
 
+function prepareConstantAvailableModslots(config: Configuration) {
+  var availableModCost: number[] = [];
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value)
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value)
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value)
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value)
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value)
+  return availableModCost.where(d => d > 0).sort()
+}
+
 addEventListener('message', async ({data}) => {
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2")
@@ -325,6 +365,7 @@ addEventListener('message', async ({data}) => {
   }
   const constantBonus = prepareConstantStatBonus(config);
   const constantElementRequirement = prepareConstantElementRequirement(config);
+  const constantAvailableModslots = prepareConstantAvailableModslots(config);
   const constantMustCheckElementRequirement = constantElementRequirement[0] < 5
   const constHasOneExoticLength = selectedExotics.length <= 1
 
@@ -348,10 +389,12 @@ addEventListener('message', async ({data}) => {
            *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
            *  - disabled items were already removed (config.disabledItems)
            */
-            if (constantMustCheckElementRequirement && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
-            // if (!checkSlots(config, helmet, gauntlet, chest, leg)) continue;
+          if (constantMustCheckElementRequirement && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
+          // if (!checkSlots(config, helmet, gauntlet, chest, leg)) continue;
 
-          const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg, constantBonus, (config.limitParsedResults && listedResults >= 5e4) || listedResults >= 1e6);
+          const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
+            constantBonus, constantAvailableModslots.slice(),
+            (config.limitParsedResults && listedResults >= 5e4) || listedResults >= 1e6);
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
           if (result != null) {
@@ -430,30 +473,40 @@ function getStatSum(items: ItemCombination[]): [number, number, number, number, 
   }
 }
 
-// Wrapper for UsedMods so I always have an sorted array. The first one is the most expensive mod.
-class UsedMods {
-  public mods: StatModifier[] = [];
+class OrderedList<T> {
+  public list: T[] = [];
+  // this list contains the comparator values for each entry
+  private comparatorList: number[] = [];
   public length = 0;
 
-  public insert(modId: StatModifier) {
+  private comparator: (d: T) => number;
+
+  constructor(comparator: (d: T) => number) {
+    this.comparator = comparator;
+  }
+
+  public insert(value: T) {
+    let compVal = this.comparator(value);
     let i;
-    for (i = 0; i < this.mods.length; i++) {
-      if (this.mods[i] > modId)
+    for (i = 0; i < this.list.length; i++) {
+      if (this.comparatorList[i] > compVal)
         continue;
       break;
     }
     this.length++;
-    this.mods.splice(i, 0, modId)
+    this.list.splice(i, 0, value)
+    this.comparatorList.splice(i, 0, compVal)
   }
 
-  public remove(modId: StatModifier) {
+  public remove(value: T) {
     let idx = -1;
-    for (let i = 0; i < this.mods.length; i++) {
-      if (this.mods[i] == modId)
+    for (let i = 0; i < this.list.length; i++) {
+      if (this.list[i] == value)
         break;
     }
     if (idx != -1) {
-      this.mods.splice(idx, 1)
+      this.list.splice(idx, 1)
+      this.comparatorList.splice(idx, 1)
       this.length--;
     }
   }
@@ -472,6 +525,7 @@ function handlePermutation(
   chest: ItemCombination,
   leg: ItemCombination,
   constantBonus: number[],
+  availableModCost: number[],
   doNotOutput = false
 ): any {
   const items = [helmet, gauntlet, chest, leg]
@@ -502,7 +556,6 @@ function handlePermutation(
   stats[3] += constantBonus[3];
   stats[4] += constantBonus[4];
   stats[5] += constantBonus[5];
-
   // required mods for each stat
   const requiredMods = [
     Math.ceil(Math.max(0, config.minimumStatTiers[0].value - stats[0] / 10)),
@@ -514,18 +567,10 @@ function handlePermutation(
   ]
 
   const requiredModsTotal = requiredMods[0] + requiredMods[1] + requiredMods[2] + requiredMods[3] + requiredMods[4] + requiredMods[5]
-  const usedMods: UsedMods = new UsedMods()
+  const usedMods: OrderedList<StatModifier> = new OrderedList<StatModifier>(d => STAT_MOD_VALUES[d][2])
   // only calculate mods if necessary. If we are already above the limit there's no reason to do the rest
   if (requiredModsTotal > 5) return null;
 
-
-  let availableModCost: number[] = [
-    config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value,
-    config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value,
-    config.maximumModSlots[ArmorSlot.ArmorSlotChest].value,
-    config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value,
-    config.maximumModSlots[ArmorSlot.ArmorSlotClass].value,
-  ].where(c => c > 0).sort((a, b) => a - b)
   let availableModCostLen = availableModCost.length;
   if (requiredModsTotal > availableModCostLen) return null;
 
@@ -547,7 +592,7 @@ function handlePermutation(
     }
     // now replace major mods with minor mods if necessary, or abort
     for (let i = 0; i < usedMods.length; i++) {
-      const mod = usedMods.mods[i];
+      const mod = usedMods.list[i];
 
       const cost = STAT_MOD_VALUES[mod][2];
       const availableSlots = availableModCost.where(d => d >= cost);
@@ -557,7 +602,7 @@ function handlePermutation(
           usedMods.remove(mod)
           let minorMod = mod - 1 as StatModifier;
           for (let usedModIdx = usedMods.length - 1; usedModIdx >= 0; usedModIdx--) {
-            if (STAT_MOD_VALUES[usedMods.mods[usedModIdx]][2] <= STAT_MOD_VALUES[minorMod][2])
+            if (STAT_MOD_VALUES[usedMods.list[usedModIdx]][2] <= STAT_MOD_VALUES[minorMod][2])
               continue;
             else {
               usedMods.insert(usedModIdx)
@@ -622,18 +667,19 @@ function handlePermutation(
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
   for (let n = 0; n < 6; n++) {
-    let minor = STAT_MOD_VALUES[(1 + (n * 2)) as StatModifier][2]
-    let major = STAT_MOD_VALUES[(2 + (n * 2)) as StatModifier][2]
     let maximum = stats[n]
-    for (let i = 0; i < availableModCostLen && maximum < 100; i++) {
-      if (availableModCost[i] >= major) maximum += 10;
-      if (availableModCost[i] >= minor && availableModCost[i] < major) maximum += 5;
+    if (maximum + 10 * availableModCostLen >= runtime.maximumPossibleTiers[n]) {
+      let minor = STAT_MOD_VALUES[(1 + (n * 2)) as StatModifier][2]
+      let major = STAT_MOD_VALUES[(2 + (n * 2)) as StatModifier][2]
+      for (let i = 0; i < availableModCostLen && maximum < 100; i++) {
+        if (availableModCost[i] >= major) maximum += 10;
+        if (availableModCost[i] >= minor && availableModCost[i] < major) maximum += 5;
+      }
+      if (maximum > runtime.maximumPossibleTiers[n])
+        runtime.maximumPossibleTiers[n] = maximum
     }
-    if (maximum > runtime.maximumPossibleTiers[n])
-      runtime.maximumPossibleTiers[n] = maximum
   }
 
-  // 500ms~600ms
   if (availableModCostLen > 0) {
     let availableBonus = availableModCostLen * 10
     var requiredPointsTo100: [number, number[], number, number][] = []
@@ -652,7 +698,6 @@ function handlePermutation(
       }
       if (tmp > 0 && tmp <= 5) {
         requiredModCosts.push(STAT_MOD_VALUES[(1 + (statIndex * 2)) as StatModifier][2])
-        requiredModCostsLen++;
       }
       requiredPointsTo100.push([val, requiredModCosts, requiredModCostsLen, statIndex])
       amountOfPotential100Stats++;
@@ -735,12 +780,12 @@ function handlePermutation(
   const exotic = helmet.containsExotics ? helmet : gauntlet.containsExotics ? gauntlet : chest.containsExotics ? chest : leg.containsExotics ? leg : null
   return {
     exotic: exotic == null ? [] : [{
-      icon: exotic.items[0].icon,
-      name: exotic.items[0]
+      icon: exotic?.items[0].icon,
+      name: exotic?.items[0].name
     }],
     modCount: usedMods.length,
-    modCost: usedMods.mods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
-    mods: usedMods.mods,
+    modCost: usedMods.list.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
+    mods: usedMods.list,
     stats: stats,
     statsNoMods: statsWithoutMods,
     tiers: getSkillTier(stats),
