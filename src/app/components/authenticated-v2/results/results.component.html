@@ -70,10 +70,12 @@
                     matTooltip="This setting enforces a specific element for a specific armor slot.">Elemental Affinity
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_modslotLimitation.length > 0" disableRipple
-                    matTooltip="This setting limits available stat mod types, like major Intellect or Recovery.">Stat Mod Limitation
+                    matTooltip="This setting limits available stat mod types, like major Intellect or Recovery.">Stat
+            Mod Limitation
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_armorPerkLimitation.length > 0" disableRipple
-                    matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">Armor Perk or Slot
+                    matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
+            Armor Perk or Slot
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledCombatStyleMods" disableRipple
                     matTooltip="You enabled combat style mods that affect stats.">Combat Style Mods
@@ -85,7 +87,8 @@
                     matTooltip="This setting means that only builds with no wasted stats are shown."
                     selected>Zero Waste
           </mat-chip>
-          <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyUseMasterworkedItems" disableRipple matTooltip="This setting means that only armor pieces are used that are already masterworked."
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyUseMasterworkedItems" disableRipple
+                    matTooltip="This setting means that only armor pieces are used that are already masterworked."
                     selected>
             Masterworked Only
           </mat-chip>
@@ -105,7 +108,9 @@
          The actual rendered columns are set as a property on the row definition" -->
         <!-- Name Column -->
         <ng-container matColumnDef="mobility">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mobility">Mobility</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mobility"
+              matTooltip="The mobility of this armor combination.">Mobility
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Mobility]}}
             <img alt="Mobility"
                  class="statIcon"
@@ -115,7 +120,9 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="resilience">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Resilience"> Resilience</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Resilience"
+              matTooltip="The resilience of this armor combination."> Resilience
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Resilience]}}
             <img alt="Resilience"
                  class="statIcon"
@@ -125,7 +132,9 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="recovery">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Recovery"> Recovery</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Recovery"
+              matTooltip="The recovery of this armor combination."> Recovery
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Recovery]}}
             <img alt="Recovery"
                  class="statIcon"
@@ -135,7 +144,9 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="discipline">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Discipline"> Discipline</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Discipline"
+              matTooltip="The discipline of this armor combination."> Discipline
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Discipline]}}
             <img alt="Discipline"
                  class="statIcon"
@@ -145,7 +156,9 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="intellect">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Intellect"> Intellect</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Intellect"
+              matTooltip="The intellect of this armor combination."> Intellect
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Intellect]}}
             <img alt="Intellect"
                  class="statIcon"
@@ -155,7 +168,9 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="strength">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Strength">Strength</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Strength"
+              matTooltip="The strength of this armor combination.">Strength
+          </th>
           <td *matCellDef="let element " class="statColumn" mat-cell>{{element.stats[ArmorStat.Strength]}}
             <img alt="Strength"
                  class="statIcon"
@@ -165,7 +180,10 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="mods">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mods"> Used Mods</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Mods"
+              matTooltip="The amount of mods required for each combination. Sorting after this takes the mod cost into account.">
+            Used Mods
+          </th>
           <td *matCellDef="let element" mat-cell>
             <span *ngIf="element.modCount == 0">None</span>
             <!-- TODO amount -->
@@ -241,13 +259,15 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="tiers">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Tiers">Tiers</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Tiers"
+              matTooltip="The amountof Tiers in this build. A tier is each successful 10-step of any stat."
+          >Tiers</th>
           <td *matCellDef="let element " mat-cell> {{element.tiers}} </td>
         </ng-container>
 
         <!-- Name Column -->
         <ng-container matColumnDef="waste">
-          <th *matHeaderCellDef mat-header-cell mat-sort-header="Waste">Wasted</th>
+          <th *matHeaderCellDef mat-header-cell mat-sort-header="Waste" matTooltip="How many points are wasted. Any stat not ending in 0 adds to this value.">Wasted</th>
           <td *matCellDef="let element " mat-cell> {{element.waste}} </td>
         </ng-container>
 
