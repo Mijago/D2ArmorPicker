@@ -67,12 +67,15 @@ export class DesiredExoticSelectionComponent implements OnInit {
       // if length is 0 or shift is NOT pressed, add the exotic
       this.selectedExotics = [hash]
     } else {
-      // here length is 1 and shift is pressed.
-      if (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) > -1) return // ignore
-      if (this.selectedExotics.length == 1)
-        this.selectedExotics.push(hash)
-      else
-        this.selectedExotics[1] = hash;
+      if (false) { // TODO: finish this feature and enable this code
+        // here length is 1 and shift is pressed.
+        if (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) > -1) return // ignore
+        if (this.selectedExotics.length == 1)
+          this.selectedExotics.push(hash)
+        else
+          this.selectedExotics[1] = hash;
+      }
+
     }
     this.config.modifyConfiguration(c => {
       c.selectedExotics = this.selectedExotics;
