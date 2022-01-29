@@ -15,14 +15,24 @@
   </mat-card>
   <mat-card>
     <mat-card-title>Exotic</mat-card-title>
-    <mat-card-subtitle>If you want, limit all results to an exotic. Use this to create a build around an exotic.</mat-card-subtitle>
+    <mat-card-subtitle>If you want, limit all results to an exotic. Use this to create a build around an exotic.
+    </mat-card-subtitle>
     <mat-card-content>
       <app-desired-exotic-selection></app-desired-exotic-selection>
     </mat-card-content>
   </mat-card>
   <mat-card>
-    <mat-card-title>Available Modslot limitation</mat-card-title>
-    <mat-card-subtitle>If you do not want to use all five available mod slots for stat mods, tell it to the tool here.</mat-card-subtitle>
+    <mat-card-title>Armor limitation</mat-card-title>
+    <mat-card-subtitle>
+      This section allows you to further specify what kind of armor and mods you want.
+      <span matTooltipClass="allow-cr" matTooltip="On the left you can limit the type of stat mods available.
+In the center you can select armor perks and slots.
+On the right you can select the element.
+Per default, the slot of your selection is NOT fixed.
+Use the lock symbol to enforce a slot.">
+        Info <mat-icon inline aria-hidden="false" aria-label="Help"> help </mat-icon>
+      </span>
+    </mat-card-subtitle>
     <mat-card-content>
       <app-desired-mod-selection></app-desired-mod-selection>
     </mat-card-content>
