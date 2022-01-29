@@ -1,7 +1,7 @@
 const writeFile = require("fs").writeFile
 
 const production = process.env.PRODUCTION === "1"
-const version = "2.1.4"
+const version = "2.2.0"
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
