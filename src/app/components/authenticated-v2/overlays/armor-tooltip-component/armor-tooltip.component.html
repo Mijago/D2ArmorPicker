@@ -1,0 +1,18 @@
+<div>
+  <div class="tooltip-container">
+    <table>
+      <tr>
+        <td colspan="3">{{armor?.name}}</td>
+      </tr>
+      <tr *ngFor="let stat of armor?.stats; let i = index">
+        <td>{{getArmorStatName(i)}}</td>
+        <td>{{stat}}</td>
+        <td>
+          <div class="stat-display">
+            <div class="stat-display-bar" [style.width]="getWidth(stat)">&nbsp;</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

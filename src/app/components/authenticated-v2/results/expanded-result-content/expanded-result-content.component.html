@@ -37,7 +37,7 @@
         </ng-container>
         <td>
           <!-- Item Icon -->
-          <div class="item-icon-container">
+          <div class="item-icon-container" [itemTooltip]="i">
             <div *ngIf="i.masterworked" class="item-icon-masterwork-overlay"></div>
             <img class="item-icon" src="https://bungie.net/{{i.icon}}">
           </div>

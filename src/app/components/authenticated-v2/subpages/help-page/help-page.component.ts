@@ -29,6 +29,7 @@ export class HelpPageComponent implements OnInit {
         "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
         "+ Added visual indicators for minor and major mods in the overview table.",
         "+ Added visual cursor indicator to every clickable input, e.g. in the exotic, element and perk/mod selection.",
+        "+ Added a (very basic) item tooltip.",
         "~ Added info text to the table headers.",
         "~ The alternating rows of the results details table have now a lighter color to make it easier to read.",
         "~ Fixed ability cooldowns for melee and grenade at tier 7 and tier 8.",

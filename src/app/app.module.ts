@@ -59,6 +59,8 @@ import {TableModDisplayComponent} from "./components/authenticated-v2/results/ta
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatChipsModule} from "@angular/material/chips";
 import { SlotLimitationSelectionComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component';
+import { ArmorTooltipComponent } from './components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component';
+import { TooltipRendererDirective } from './components/authenticated-v2/overlays/tooltip-renderer.directive';
 
 
 const routes: Routes = [
@@ -112,7 +114,9 @@ const routes: Routes = [
     ArmorPickerPageComponent,
     ArmorClusterPageComponent,
     TableModDisplayComponent,
-    SlotLimitationSelectionComponent
+    SlotLimitationSelectionComponent,
+    ArmorTooltipComponent,
+    TooltipRendererDirective
   ],
   imports: [
     FlexLayoutModule,
