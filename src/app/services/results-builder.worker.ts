@@ -153,17 +153,26 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
   let requirements = constantElementRequirements.slice()
   let wildcard = requirements[0]
 
-  if ((helmet.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems) || (!helmet.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
+  if ((helmet.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
+    || (!helmet.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
   else requirements[helmet.elements[0]]--;
-  if ((gauntlet.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems) || (!gauntlet.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
+
+  if ((gauntlet.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
+    || (!gauntlet.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
   else requirements[gauntlet.elements[0]]--;
-  if ((chest.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems) || (!chest.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
+
+  if ((chest.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
+    || (!chest.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
   else requirements[chest.elements[0]]--;
-  if ((leg.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems) || (!leg.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
+
+  if ((leg.allMasterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
+    || (!leg.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
   else requirements[leg.elements[0]]--;
 
-  if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any)
-    requirements[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]--;
+  if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed
+    && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any)
+    // requirements[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]--;
+    wildcard++;
 
   let bad = (
     Math.max(0, requirements[DestinyEnergyType.Arc])
