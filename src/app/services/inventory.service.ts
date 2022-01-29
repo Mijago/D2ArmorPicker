@@ -39,7 +39,6 @@ export class InventoryService {
    */
   private allArmorResults: ResultDefinition[] = [];
   private currentClass: CharacterClass = CharacterClass.None;
-  private checkFixedArmorAffinities: null | EnumDictionary<ArmorSlot, DestinyEnergyType> = null;
   private ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
 
@@ -90,14 +89,6 @@ export class InventoryService {
 
         this._config = c;
         this.ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
-        this.checkFixedArmorAffinities = {
-          [ArmorSlot.ArmorSlotHelmet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotHelmet],
-          [ArmorSlot.ArmorSlotGauntlet]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotGauntlet],
-          [ArmorSlot.ArmorSlotChest]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotChest],
-          [ArmorSlot.ArmorSlotLegs]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotLegs],
-          [ArmorSlot.ArmorSlotClass]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotClass],
-          [ArmorSlot.ArmorSlotNone]: c.fixedArmorAffinities[ArmorSlot.ArmorSlotNone],
-        };
 
         isUpdating = true;
         await this.refreshAll(!dataAlreadyFetched);

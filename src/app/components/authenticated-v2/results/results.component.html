@@ -69,6 +69,12 @@
           <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledAffinity.length > 0" disableRipple
                     matTooltip="This setting enforces a specific element for a specific armor slot.">Elemental Affinity
           </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_modslotLimitation.length > 0" disableRipple
+                    matTooltip="This setting limits available stat mod types, like major Intellect or Recovery.">Stat Mod Limitation
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_armorPerkLimitation.length > 0" disableRipple
+                    matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">Armor Perk or Slot
+          </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledCombatStyleMods" disableRipple
                     matTooltip="You enabled combat style mods that affect stats.">Combat Style Mods
           </mat-chip>

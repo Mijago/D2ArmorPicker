@@ -51,7 +51,7 @@ export class SlotLimitationSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(c => {
+    this.config.configuration.subscribe(async c => {
       this.selection = c.maximumModSlots[this.slot].value;
       this.element = c.armorAffinities[this.slot].value;
       this.elementLock = c.armorAffinities[this.slot].fixed;
@@ -59,12 +59,10 @@ export class SlotLimitationSelectionComponent implements OnInit {
       this.armorPerkLock = c.armorPerks[this.slot].fixed;
       this.maximumModSlots = c.maximumModSlots[this.slot].value;
 
-      if (c.selectedExotics.length > 0) {
-        this.disabled = this.inventory.exoticsForClass
-          .filter(x => c.selectedExotics.indexOf(x.hash) > -1)
-          .map(e => e.slot)
-          .indexOf(this.slot) > -1
-      }
+      this.disabled = (await this.inventory.getExoticsForClass(c.characterClass))
+        .filter(x => c.selectedExotics.indexOf(x.hash) > -1)
+        .map(e => e.slot)
+        .indexOf(this.slot) > -1;
     })
   }
 

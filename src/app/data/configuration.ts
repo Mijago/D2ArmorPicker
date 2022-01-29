@@ -62,16 +62,6 @@ export class Configuration {
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = []
 
-  // Armor affinity for each slot // TODO: remove
-  fixedArmorAffinities: EnumDictionary<ArmorSlot, DestinyEnergyType> = {
-    [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
-    [ArmorSlot.ArmorSlotNone]: DestinyEnergyType.Any,
-  };
-
   armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
     [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
     [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: DestinyEnergyType.Any},
@@ -119,14 +109,6 @@ export class Configuration {
         [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
-      },
-      fixedArmorAffinities: { // TODO: remove
-        [ArmorSlot.ArmorSlotHelmet]: DestinyEnergyType.Any,
-        [ArmorSlot.ArmorSlotGauntlet]: DestinyEnergyType.Any,
-        [ArmorSlot.ArmorSlotChest]: DestinyEnergyType.Any,
-        [ArmorSlot.ArmorSlotLegs]: DestinyEnergyType.Any,
-        [ArmorSlot.ArmorSlotClass]: DestinyEnergyType.Any,
-        [ArmorSlot.ArmorSlotNone]: DestinyEnergyType.Any,
       },
       armorAffinities: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
