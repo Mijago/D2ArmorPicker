@@ -11,6 +11,8 @@ export class TableModDisplayComponent implements OnInit {
   url: string = "";
   @Input()
   tooltipText: string = "";
+  @Input()
+  isMinorMod: boolean = false;
 
   @Input()
   amount: number = 0;

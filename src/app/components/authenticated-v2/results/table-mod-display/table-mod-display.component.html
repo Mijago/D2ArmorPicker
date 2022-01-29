@@ -1,4 +1,4 @@
 <span class="container" *ngIf="amount > 0">
-  <img class="modIcon" [src]="url" [matTooltip]="tooltipText" #tooltip="matTooltip">
-  <span class="modText">{{amount}}</span>
+  <img class="modIcon" [class.minor]="isMinorMod" [src]="url" [matTooltip]="tooltipText" #tooltip="matTooltip">
+  <span class="modText" [class.minor]="isMinorMod">{{amount}}</span>
 </span>
