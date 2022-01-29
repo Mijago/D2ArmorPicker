@@ -295,6 +295,12 @@
       Copy DIM query to clipboard
     </button>
   </ng-container>
+  <button (click)="goToDIM()"
+          mat-stroked-button
+          matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
+    Open in DIM Optimizer
+  </button>
+  <br>
   <button (click)="moveItems()"
           mat-stroked-button
           matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">

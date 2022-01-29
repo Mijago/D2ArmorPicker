@@ -19,10 +19,11 @@ import {FixableSelection} from "../../../data/configuration";
 
 
 export interface ResultDefinition {
-  exotic: undefined | {
+  exotic: undefined | [{
     icon: string,
-    name: string
-  },
+    name: string,
+    hash: string
+  }],
   mods: number[];
   stats: number[];
   statsNoMods: number[];

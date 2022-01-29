@@ -846,135 +846,8 @@ function handlePermutation(
           runtime.statCombo4x100.add((1 << combination[0][0]) + (1 << combination[1][0]) + (1 << combination[2][0]) + (1 << combination[3][0]));
       }
     }
-
-
-    /*
-    //console.log(">>> possible100", possible100, possible100.length, "availableModCostLen", availableModCostLen)
-    let occupiedSlots3 = 0;
-    for (let i = 0; i < 3 && occupiedSlots3 < availableModCostLen; i++) {
-      if (possible100[i][1] > 0)
-        occupiedSlots3 += ~~((possible100[i][1] + 9) / 10);
-    }
-    //console.log(">>> occupiedSlots3", occupiedSlots3, "availableModCostLen", availableModCostLen)
-    if (occupiedSlots3 <= availableModCostLen) {
-      // now check slots
-      var requiredModCosts = [0, 0, 0, 0, 0, 0]
-      let requiredModCostsCount = 0
-
-      for (let i = 0; i < 3; i++) {
-        if (possible100[i][1] <= 0)
-          continue
-        const data = possible100[i]
-        const id = data[0]
-        let minor = STAT_MOD_VALUES[(1 + (id * 2)) as StatModifier][2]
-        let major = STAT_MOD_VALUES[(2 + (id * 2)) as StatModifier][2]
-
-        let amountMajor = ~~((data[1]) / 10);
-        let amountMinor = (data[1]) % 10;
-        if (amountMinor > 5) {
-          amountMajor++;
-        } else if (amountMinor > 0) {
-          requiredModCosts[minor]++;
-          requiredModCostsCount++;
-        }
-
-        for (let k = 0; k < amountMajor; k++) {
-          requiredModCosts[major]++;
-          requiredModCostsCount++;
-        }
-      }
-      const majorMapping = [0, 0, 1, 2, 2]
-      const usedCostIdx = [false, false, false, false, false]
-      for (let costIdx = requiredModCosts.length - 1; costIdx >= 0; costIdx--) {
-        let costAmount = requiredModCosts[costIdx];
-        if (costAmount == 0) continue
-        let dat = availableModCost.map((d, i) => [d, i]).filter(([d, index]) => !usedCostIdx[index] && d >= costIdx)
-        for (let datElement of dat) {
-          usedCostIdx[datElement[1]] = true;
-          costAmount--;
-        }
-        for (let n = 0; n < costAmount; n++) {
-          requiredModCosts[costIdx]--;
-          requiredModCosts[majorMapping[costIdx]]++;
-          requiredModCosts[majorMapping[costIdx]]++;
-          requiredModCostsCount++;
-        }
-      }
-      // 3x100 possible
-      if (requiredModCostsCount <= availableModCostLen) {
-        // console.log("D", occupiedSlots3, requiredModCostsCount, availableModCostLen, requiredModCosts)
-        runtime.statCombo3x100.add((1 << possible100[0][0]) + (1 << possible100[1][0]) + (1 << possible100[2][0]));
-      }
-    }
-    //*/
-    //console.log(possible100)
   }
 
-  /*
-  return;
-  if (availableModCostLen > 0) {
-    let availableBonus = availableModCostLen * 10
-    var requiredPointsTo100: [number, number[], number, number][] = []
-    let amountOfPotential100Stats = 0
-    for (let statIndex = 0; statIndex < 6; statIndex++) {
-      let val = Math.max(0, 100 - stats[statIndex])
-      if (val > availableBonus)
-        continue;
-      let requiredModCosts: number[] = []
-      let requiredModCostsLen = 0;
-      let tmp = val
-      while (tmp > 5) {
-        requiredModCosts.push(STAT_MOD_VALUES[(2 + (statIndex * 2)) as StatModifier][2])
-        requiredModCostsLen++;
-        tmp -= 10
-      }
-      if (tmp > 0 && tmp <= 5) {
-        requiredModCosts.push(STAT_MOD_VALUES[(1 + (statIndex * 2)) as StatModifier][2])
-      }
-      requiredPointsTo100.push([val, requiredModCosts, requiredModCostsLen, statIndex])
-      amountOfPotential100Stats++;
-    }
-
-    if (amountOfPotential100Stats >= 3) {
-      const sortedPointsTo100 = requiredPointsTo100.sort((a, b) => a[2] - b[2])
-      // if we can't even make 3x100, just stop right here
-      const requiredSteps3x100 = sortedPointsTo100[0][2] + sortedPointsTo100[1][2] + sortedPointsTo100[2][2];
-      if (requiredSteps3x100 <= availableModCostLen) {
-        // in here we can find 3x100 and 4x100 stats
-        // now validate the modslots
-        var tmpAvailableModCost = availableModCost.slice()
-        var aborted = false;
-        const flatArray = [sortedPointsTo100[0], sortedPointsTo100[1], sortedPointsTo100[2]].flat();
-        for (let i = 0; i < flatArray.length; i++) {
-          let modCost = flatArray[i];
-          let availableSlots = tmpAvailableModCost.where(d => d >= modCost)
-          if (availableSlots.length == 0) {
-            aborted = true;
-            break;
-          }
-          tmpAvailableModCost.splice(tmpAvailableModCost.indexOf(availableSlots[0]), 1)
-        }
-        if (!aborted)
-          runtime.statCombo3x100.add((1 << sortedPointsTo100[0][3]) + (1 << sortedPointsTo100[1][3]) + (1 << sortedPointsTo100[2][3]));
-
-        // if 4x is also in range, add a 4x100 mod
-        if (amountOfPotential100Stats >= 4 && !aborted && sortedPointsTo100[3][2] <= tmpAvailableModCost.length) {
-          aborted = false;
-          for (let i = 0; i < sortedPointsTo100[3][1].length; i++) {
-            let availableSlots = tmpAvailableModCost.where(d => d >= sortedPointsTo100[3][1][i])
-            if (availableSlots.length == 0) {
-              aborted = true;
-              break;
-            }
-            tmpAvailableModCost.splice(tmpAvailableModCost.indexOf(availableSlots[0]), 1)
-          }
-          if (!aborted)
-            runtime.statCombo4x100.add((1 << sortedPointsTo100[0][3]) + (1 << sortedPointsTo100[1][3]) + (1 << sortedPointsTo100[2][3]) + (1 << sortedPointsTo100[3][3]));
-        }
-      }
-    }
-  }
-  //*/
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste // TODO fix :c
@@ -1014,7 +887,8 @@ function handlePermutation(
   return {
     exotic: exotic == null ? [] : [{
       icon: exotic?.items[0].icon,
-      name: exotic?.items[0].name
+      name: exotic?.items[0].name,
+      hash: exotic?.items[0].hash
     }],
     modCount: usedMods.length,
     modCost: usedMods.list.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),

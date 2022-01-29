@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ArmorStat, SpecialArmorStat, StatModifier} from 'src/app/data/enum/armor-stat';
+import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from 'src/app/data/enum/armor-stat';
 import {ResultDefinition, ResultItem, ResultItemMoveState} from "../results.component";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
@@ -12,7 +12,7 @@ import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
-import {FixableSelection} from "../../../../data/configuration";
+import {Configuration, FixableSelection} from "../../../../data/configuration";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -30,6 +30,7 @@ export class ExpandedResultContentComponent implements OnInit {
   public config_assumeClassItemMasterworked = false;
   public config_ignoreArmorAffinitiesOnMasterworkedItems = false;
   public config_enabledMods: ModOrAbility[] = [];
+  public DIMUrl: string = "";
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
@@ -80,6 +81,8 @@ export class ExpandedResultContentComponent implements OnInit {
             p[v.stat as number] += v.value;
           return p;
         }, [0, 0, 0, 0, 0, 0])
+
+      this.DIMUrl = this.generateDIMLink(c)
     })
   }
 
@@ -155,4 +158,86 @@ export class ExpandedResultContentComponent implements OnInit {
       return true;
     })
   }
+
+  generateDIMLink(c: Configuration): string {
+    var data = {
+      "statConstraints": [
+        {
+          "statHash": 2996146975,
+          "minTier": c.minimumStatTiers[ArmorStat.Mobility].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Mobility].fixed ? c.minimumStatTiers[ArmorStat.Mobility].value : 10
+        },
+        {
+          "statHash": 392767087,
+          "minTier": c.minimumStatTiers[ArmorStat.Resilience].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Resilience].fixed ? c.minimumStatTiers[ArmorStat.Resilience].value : 10
+        },
+        {
+          "statHash": 1943323491,
+          "minTier": c.minimumStatTiers[ArmorStat.Recovery].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Recovery].fixed ? c.minimumStatTiers[ArmorStat.Recovery].value : 10
+        },
+        {
+          "statHash": 1735777505,
+          "minTier": c.minimumStatTiers[ArmorStat.Discipline].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Recovery].fixed ? c.minimumStatTiers[ArmorStat.Recovery].value : 10
+        },
+        {
+          "statHash": 144602215,
+          "minTier": c.minimumStatTiers[ArmorStat.Intellect].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Intellect].fixed ? c.minimumStatTiers[ArmorStat.Intellect].value : 10
+        },
+        {
+          "statHash": 4244567218,
+          "minTier": c.minimumStatTiers[ArmorStat.Strength].value,
+          "maxTier": c.minimumStatTiers[ArmorStat.Strength].fixed ? c.minimumStatTiers[ArmorStat.Strength].value : 10
+        }
+      ],
+      "mods": [] as number[],
+      //"pinnedItems": {} as any,
+      "items": [] as any,
+      "upgradeSpendTier": 5,
+      "autoStatMods": true,
+      "lockItemEnergyType": false,
+      "assumeMasterworked": false,
+      "query": this.buildItemIdString(this.element)
+    } as any
+
+    if (c.selectedExotics.length == 1) {
+      data["exoticArmorHash"] = c.selectedExotics[0];
+    } else {
+      var exos = this.element?.exotic;
+      if (exos && exos.length == 1) {
+        var exoticHash = exos[0].hash;
+        if (!!exoticHash)
+          data["exoticArmorHash"] = exoticHash;
+      }
+    }
+
+    for (let itemx of (this.element?.items || [])) {
+      data.items.push(itemx[0].itemInstanceId);
+    }
+
+    // add selected mods
+    for (let mod of this.config_enabledMods) {
+      data.mods.push(ModInformation[mod].hash)
+    }
+
+    // add stat mods
+    for (let mod of (this.element?.mods || [])) {
+      data.mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+    }
+
+    var url = "https://beta.destinyitemmanager.com/optimizer?class=" + c.characterClass +
+      "&p=" + encodeURIComponent(JSON.stringify(data))
+
+    console.log(data)
+
+    return url;
+  }
+
+  goToDIM() {
+    window.open(this.DIMUrl, "blank")
+  }
+
 }

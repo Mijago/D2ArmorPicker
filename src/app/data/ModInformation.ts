@@ -14,7 +14,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Mobility, value: 20}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Arc
+    requiredArmorAffinity: DestinyEnergyType.Arc,
+    hash: 1484685887
   },
   [ModOrAbility.RadiantLight]: {
     id: ModOrAbility.RadiantLight,
@@ -22,7 +23,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: 20}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Arc
+    requiredArmorAffinity: DestinyEnergyType.Arc,
+    hash: 2979815167
   },
   // NEGATIVE Mods
   [ModOrAbility.ProtectiveLight]: {
@@ -31,7 +33,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: -10}],
     cost: 2,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 3523075120
   },
   [ModOrAbility.ExtraReserves]: {
     id: ModOrAbility.ExtraReserves,
@@ -39,7 +42,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Intellect, value: -10}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 3523075121
   },
   [ModOrAbility.PreciselyCharged]: {
     id: ModOrAbility.PreciselyCharged,
@@ -47,7 +51,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 3523075122
   },
   [ModOrAbility.StacksOnStacks]: {
     id: ModOrAbility.StacksOnStacks,
@@ -55,7 +60,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Recovery, value: -10}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 3523075123
   },
   [ModOrAbility.PrecisionCharge]: {
     id: ModOrAbility.PrecisionCharge,
@@ -63,7 +69,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: -10}],
     cost: 2,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 2263321584
   },
   [ModOrAbility.SurpriseAttack]: {
     id: ModOrAbility.SurpriseAttack,
@@ -71,7 +78,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Intellect, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 2263321585
   },
   [ModOrAbility.EnergyConverter]: {
     id: ModOrAbility.EnergyConverter,
@@ -79,7 +87,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 2263321586
   },
   [ModOrAbility.ChargeHarvester]: {
     id: ModOrAbility.ChargeHarvester,
@@ -87,7 +96,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Void
+    requiredArmorAffinity: DestinyEnergyType.Void,
+    hash: 2263321587
   },
   // Positive STASIS
   [ModOrAbility.WhisperOfDurance]: {
@@ -96,7 +106,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Strength, value: 10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3469412969
   },
   [ModOrAbility.WhisperOfChains]: {
     id: ModOrAbility.WhisperOfChains,
@@ -104,7 +115,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Recovery, value: 10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 537774540
   },
   [ModOrAbility.WhisperOfShards]: {
     id: ModOrAbility.WhisperOfShards,
@@ -112,7 +124,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Resilience, value: 10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3469412975
   },
   [ModOrAbility.WhisperOfConduction]: {
     id: ModOrAbility.WhisperOfConduction,
@@ -120,7 +133,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Resilience, value: 10}, {stat: ArmorStat.Intellect, value: 10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2483898429
   },
   // NEGATIVE STASIS
 
@@ -130,7 +144,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Discipline, value: -10}, {stat: ArmorStat.Intellect, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3469412974
   },
   [ModOrAbility.WhisperOfHedrons]: {
     id: ModOrAbility.WhisperOfHedrons,
@@ -138,7 +153,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Strength, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3469412970
   },
   [ModOrAbility.WhisperOfFractures]: {
     id: ModOrAbility.WhisperOfFractures,
@@ -146,7 +162,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 537774542
   },
   [ModOrAbility.WhisperOfHunger]: {
     id: ModOrAbility.WhisperOfHunger,
@@ -154,6 +171,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.Stasis,
     bonus: [{stat: ArmorStat.Mobility, value: -10}, {stat: ArmorStat.Recovery, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2483898431
   },
 }
