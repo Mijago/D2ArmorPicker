@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import { ArmorSlot } from 'src/app/data/enum/armor-slot';
+import {ArmorSlot} from 'src/app/data/enum/armor-slot';
+import {ConfigurationService} from "../../../../services/configuration.service";
 
 @Component({
   selector: 'app-desired-mod-selection',
@@ -8,10 +9,22 @@ import { ArmorSlot } from 'src/app/data/enum/armor-slot';
 })
 export class DesiredModLimitSelectionComponent implements OnInit {
   readonly ArmorSlot = ArmorSlot;
-  constructor() {
+
+  constructor(public config: ConfigurationService) {
   }
 
   ngOnInit(): void {
+  }
+
+  clear() {
+    this.config.modifyConfiguration(c => {
+      for (let n = 0; n < 5; n++) {
+        c.armorAffinities[n + 1 as ArmorSlot] = {fixed: false, value: 0}
+        c.armorPerks[n + 1 as ArmorSlot] = {fixed: false, value: 0}
+        c.maximumModSlots[n + 1 as ArmorSlot] = {fixed: false, value: 5}
+      }
+
+    })
   }
 
 }

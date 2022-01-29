@@ -1,5 +1,11 @@
-<app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotHelmet)"></app-slot-limitation-selection><br/>
-<app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotGauntlet)"></app-slot-limitation-selection><br/>
-<app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotChest)"></app-slot-limitation-selection><br/>
-<app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotLegs)"></app-slot-limitation-selection><br/>
-<app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotClass)"></app-slot-limitation-selection>
+<div class="container">
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotHelmet)"></app-slot-limitation-selection><br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotGauntlet)"></app-slot-limitation-selection><br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotChest)"></app-slot-limitation-selection><br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotLegs)"></app-slot-limitation-selection><br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotClass)"></app-slot-limitation-selection>
+</div>
+
+<div id="clear-container">
+  <button mat-raised-button color="primary" (click)="clear()">Clear the whole selection</button>
+</div>
