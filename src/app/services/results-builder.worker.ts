@@ -501,8 +501,10 @@ class OrderedList<T> {
   public remove(value: T) {
     let idx = -1;
     for (let i = 0; i < this.list.length; i++) {
-      if (this.list[i] == value)
+      if (this.list[i] == value) {
+        idx = i;
         break;
+      }
     }
     if (idx != -1) {
       this.list.splice(idx, 1)
@@ -578,6 +580,9 @@ function handlePermutation(
     // first, add mods that are necessary
     for (let statId = 0; statId < 6; statId++) {
       if (requiredMods[statId] == 0) continue;
+
+      // Add a minor mod in favor of a major mod, if the stat number ends at 5, 6, 7, 8, or 9.
+      // This saves slots AND reduces wasted stats.
       const statDifference = stats[statId] % 10;
       if (statDifference > 0 && statDifference % 10 >= 5) {
         usedMods.insert((1 + (statId * 2)) as StatModifier)
@@ -585,31 +590,31 @@ function handlePermutation(
         requiredMods[statId]--;
         stats[statId] += 5
       }
+      // Now fill the rest with major mods.
       for (let n = 0; n < requiredMods[statId]; n++) {
-        usedMods.insert((1 + (statId * 2 + 1)) as StatModifier)
+        usedMods.insert((2 + (statId * 2)) as StatModifier)
         stats[statId] += 10
       }
     }
-    // now replace major mods with minor mods if necessary, or abort
-    for (let i = 0; i < usedMods.length; i++) {
+    /**
+     *  Now we know how many major mods we need.
+     *  If the modslot limitation forces us to only use N major mods, we can simply replace
+     *  a major mod with two minor mods.
+     *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
+     *  modslot limitations are satisfied.
+     */
+    for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) {
       const mod = usedMods.list[i];
 
       const cost = STAT_MOD_VALUES[mod][2];
       const availableSlots = availableModCost.where(d => d >= cost);
       if (availableSlots.length == 0) {
-        // replace a major mod with two minor mods OR abort
         if (mod % 2 == 0) {
+          // replace a major mod with two minor mods OR abort
           usedMods.remove(mod)
           let minorMod = mod - 1 as StatModifier;
-          for (let usedModIdx = usedMods.length - 1; usedModIdx >= 0; usedModIdx--) {
-            if (STAT_MOD_VALUES[usedMods.list[usedModIdx]][2] <= STAT_MOD_VALUES[minorMod][2])
-              continue;
-            else {
-              usedMods.insert(usedModIdx)
-              usedMods.insert(usedModIdx)
-              break;
-            }
-          }
+          usedMods.insert(minorMod)
+          usedMods.insert(minorMod)
           i--;
         } else {
           // cannot replace a minor mod, so this build is not possible
@@ -621,6 +626,7 @@ function handlePermutation(
       }
     }
   }
+  if (usedMods.length > 5) return null;
 
   // Check if we should add our results at all
   if (config.onlyShowResultsWithNoWastedStats) {
@@ -666,9 +672,18 @@ function handlePermutation(
 
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
+  const maxBonus = 10 * availableModCostLen
+  const maxBonus1 = 100 - 10 * availableModCostLen
+  const possible100 = []
   for (let n = 0; n < 6; n++) {
     let maximum = stats[n]
-    if (maximum + 10 * availableModCostLen >= runtime.maximumPossibleTiers[n]) {
+    // can reach 100, so we want an effective way to find out how
+    if (maximum >= maxBonus1) {
+      possible100.push([n, 100 - maximum])
+    }
+
+    // TODO there is a bug here somewhere
+    if (maximum + maxBonus >= runtime.maximumPossibleTiers[n]) {
       let minor = STAT_MOD_VALUES[(1 + (n * 2)) as StatModifier][2]
       let major = STAT_MOD_VALUES[(2 + (n * 2)) as StatModifier][2]
       for (let i = 0; i < availableModCostLen && maximum < 100; i++) {
@@ -680,6 +695,164 @@ function handlePermutation(
     }
   }
 
+  if (availableModCostLen > 0 && possible100.length >= 3) {
+    // validate if it is possible
+    possible100.sort((a, b) => a[1] - b[1])
+
+    // combinations...
+    const comb3 = []
+    const comb4 = []
+    for (let i1 = 0; i1 < possible100.length - 2; i1++) {
+      let cost1 = ~~((Math.max(0, possible100[i1][1], 0) + 9) / 10);
+      if (cost1 > availableModCostLen) break;
+
+      for (let i2 = i1 + 1; i2 < possible100.length - 1; i2++) {
+        let cost2 = ~~((Math.max(0, possible100[i2][1], 0) + 9) / 10);
+        if (cost1 + cost2 > availableModCostLen) break;
+
+        for (let i3 = i2 + 1; i3 < possible100.length; i3++) {
+          let cost3 = ~~((Math.max(0, possible100[i3][1], 0) + 9) / 10);
+          if (cost1 + cost2 + cost3 > availableModCostLen) break;
+          comb3.push([possible100[i1], possible100[i2], possible100[i3]])
+
+          for (let i4 = i3 + 1; i4 < possible100.length; i4++) {
+            let cost4 = ~~((Math.max(0, possible100[i4][1], 0) + 9) / 10);
+            if (cost1 + cost2 + cost3 + cost4 > availableModCostLen) break;
+            //comb3.push([possible100[i1], possible100[i2], possible100[i3], possible100[i4]])
+          }
+        }
+      }
+    }
+
+
+    for (let combination of comb3) {
+      var requiredModCosts = [0, 0, 0, 0, 0, 0]
+      let requiredModCostsCount = 0
+
+      for (let i = 0; i < combination.length; i++) {
+        if (combination[i][1] <= 0)
+          continue
+        const data = combination[i]
+        const id = data[0]
+        let minor = STAT_MOD_VALUES[(1 + (id * 2)) as StatModifier][2]
+        let major = STAT_MOD_VALUES[(2 + (id * 2)) as StatModifier][2]
+
+        const valueToOvercome = Math.max(0, data[1]);
+        let amountMajor = ~~(valueToOvercome / 10);
+        let amountMinor = valueToOvercome % 10;
+        if (amountMinor > 5) {
+          amountMajor++;
+        } else if (amountMinor > 0) {
+          requiredModCosts[minor]++;
+          requiredModCostsCount++;
+        }
+
+        for (let k = 0; k < amountMajor; k++) {
+          requiredModCosts[major]++;
+          requiredModCostsCount++;
+        }
+      }
+      const majorMapping = [0, 0, 0, 1, 2, 2]
+      const usedCostIdx = [false, false, false, false, false]
+      //if (combination.where(d => d[0] == 4).length > 0) console.log("01", {usedCostIdx, possible100, combination, availableModCostLen, requiredModCosts, requiredModCostsCount})
+
+      if (requiredModCostsCount > availableModCostLen)
+        continue;
+
+      for (let costIdx = 5; costIdx >= 3; costIdx--) {
+        let costAmount = requiredModCosts[costIdx];
+        if (costAmount == 0) continue
+        let dat = availableModCost
+          .map((d, i) => [d, i])
+          .filter(([d, index]) => (!usedCostIdx[index]) && d >= costIdx)
+
+        //if (combination.where(d => d[0] == 4).length > 0)  console.log("01 >>","log",  costAmount, dat.length, dat, costAmount)
+        let origCostAmount = costAmount
+        for (let n = 0; (n < origCostAmount) && (n < dat.length); n++) {
+          usedCostIdx[dat[n][1]] = true;
+          costAmount--;
+        }
+        for (let n = 0; n < costAmount; n++) {
+          requiredModCosts[costIdx]--;
+          requiredModCosts[majorMapping[costIdx]] += 2;
+          requiredModCostsCount++;
+        }
+        if (requiredModCostsCount > availableModCostLen)
+          break;
+      }
+      // 3x100 possible
+      if (requiredModCostsCount <= availableModCostLen) {
+        runtime.statCombo3x100.add((1 << combination[0][0]) + (1 << combination[1][0]) + (1 << combination[2][0]));
+        if (combination.length > 3)
+          runtime.statCombo4x100.add((1 << combination[0][0]) + (1 << combination[1][0]) + (1 << combination[2][0]) + (1 << combination[3][0]));
+      }
+    }
+
+
+    /*
+    //console.log(">>> possible100", possible100, possible100.length, "availableModCostLen", availableModCostLen)
+    let occupiedSlots3 = 0;
+    for (let i = 0; i < 3 && occupiedSlots3 < availableModCostLen; i++) {
+      if (possible100[i][1] > 0)
+        occupiedSlots3 += ~~((possible100[i][1] + 9) / 10);
+    }
+    //console.log(">>> occupiedSlots3", occupiedSlots3, "availableModCostLen", availableModCostLen)
+    if (occupiedSlots3 <= availableModCostLen) {
+      // now check slots
+      var requiredModCosts = [0, 0, 0, 0, 0, 0]
+      let requiredModCostsCount = 0
+
+      for (let i = 0; i < 3; i++) {
+        if (possible100[i][1] <= 0)
+          continue
+        const data = possible100[i]
+        const id = data[0]
+        let minor = STAT_MOD_VALUES[(1 + (id * 2)) as StatModifier][2]
+        let major = STAT_MOD_VALUES[(2 + (id * 2)) as StatModifier][2]
+
+        let amountMajor = ~~((data[1]) / 10);
+        let amountMinor = (data[1]) % 10;
+        if (amountMinor > 5) {
+          amountMajor++;
+        } else if (amountMinor > 0) {
+          requiredModCosts[minor]++;
+          requiredModCostsCount++;
+        }
+
+        for (let k = 0; k < amountMajor; k++) {
+          requiredModCosts[major]++;
+          requiredModCostsCount++;
+        }
+      }
+      const majorMapping = [0, 0, 1, 2, 2]
+      const usedCostIdx = [false, false, false, false, false]
+      for (let costIdx = requiredModCosts.length - 1; costIdx >= 0; costIdx--) {
+        let costAmount = requiredModCosts[costIdx];
+        if (costAmount == 0) continue
+        let dat = availableModCost.map((d, i) => [d, i]).filter(([d, index]) => !usedCostIdx[index] && d >= costIdx)
+        for (let datElement of dat) {
+          usedCostIdx[datElement[1]] = true;
+          costAmount--;
+        }
+        for (let n = 0; n < costAmount; n++) {
+          requiredModCosts[costIdx]--;
+          requiredModCosts[majorMapping[costIdx]]++;
+          requiredModCosts[majorMapping[costIdx]]++;
+          requiredModCostsCount++;
+        }
+      }
+      // 3x100 possible
+      if (requiredModCostsCount <= availableModCostLen) {
+        // console.log("D", occupiedSlots3, requiredModCostsCount, availableModCostLen, requiredModCosts)
+        runtime.statCombo3x100.add((1 << possible100[0][0]) + (1 << possible100[1][0]) + (1 << possible100[2][0]));
+      }
+    }
+    //*/
+    //console.log(possible100)
+  }
+
+  /*
+  return;
   if (availableModCostLen > 0) {
     let availableBonus = availableModCostLen * 10
     var requiredPointsTo100: [number, number[], number, number][] = []
@@ -742,9 +915,10 @@ function handlePermutation(
       }
     }
   }
+  //*/
   if (doNotOutput) return "DONOTSEND";
 
-  // Add mods to reduce stat waste
+  // Add mods to reduce stat waste // TODO fix :c
   if (config.tryLimitWastedStats && availableModCostLen > 0) {
 
     let waste = [

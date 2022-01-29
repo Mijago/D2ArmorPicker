@@ -204,22 +204,22 @@
     <tr *ngVar="element?.mods as mods" class="highlight-row">
       <td>Minor Mods</td>
       <td *ngVar="mods | count:StatModifier.MINOR_MOBILITY as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_RESILIENCE as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_RECOVERY as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_DISCIPLINE as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_INTELLECT as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
       <td *ngVar="mods | count:StatModifier.MINOR_STRENGTH as count">
-        <span *ngIf="count > 0" class="positive">5</span>
+        <span *ngIf="count > 0" class="positive">{{count}}×5</span>
       </td>
     </tr>
     <!-- +10 Mods -->
