@@ -70,5 +70,6 @@ export enum ArmorPerkOrSlot {
   SlotGardenOfSalvation,
   SlotDeepStoneCrypt,
   SlotVaultOfGlass,
-  PerkIronBanner
+  PerkIronBanner,
+  COUNT
 }

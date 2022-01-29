@@ -4,7 +4,7 @@ import {buildDb} from "../data/database";
 import {ArmorSlot} from "../data/enum/armor-slot";
 import {FORCE_USE_NO_EXOTIC} from "../data/constants";
 import {ModInformation} from "../data/ModInformation";
-import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
+import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 
@@ -97,6 +97,7 @@ class ItemCombination {
   readonly allMasterworked: boolean = false;
 
   readonly elements: DestinyEnergyType[] = [];
+  readonly perks: ArmorPerkOrSlot[] = [];
   readonly allSameElement: boolean = true;
 
   constructor(items: IInventoryArmor[]) {
@@ -132,6 +133,7 @@ class ItemCombination {
     this.allMasterworked = this._allMasterworked;
 
     this.elements = items.map(d => d.energyAffinity)
+    this.perks = items.map(d => d.perk)
     this.allSameElement = new Set(items).size == 1
   }
 
@@ -183,8 +185,42 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
   return bad - wildcard <= 0;
 }
 
-function checkSlots(config: Configuration, helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
-  return true;
+function checkSlots(config: Configuration, constantModslotRequirement: number[], helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
+  let requirements = constantModslotRequirement.slice()
+  let wildcard =0// requirements[0]
+
+  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None
+    && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perks[0])
+    return false;
+  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None
+    && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perks[0])
+    return false;
+  if (config.armorPerks[ArmorSlot.ArmorSlotChest].fixed && config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None
+    && config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perks[0])
+    return false;
+  if (config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None
+    && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0])
+    return false;
+
+  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].value == ArmorPerkOrSlot.None) wildcard++;
+  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value == ArmorPerkOrSlot.None) wildcard++;
+  if (config.armorPerks[ArmorSlot.ArmorSlotChest].value == ArmorPerkOrSlot.None) wildcard++;
+  if (config.armorPerks[ArmorSlot.ArmorSlotLegs].value == ArmorPerkOrSlot.None) wildcard++;
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None
+    || !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) wildcard++;
+
+  requirements[helmet.perks[0]]--;
+  requirements[gauntlet.perks[0]]--;
+  requirements[chest.perks[0]]--;
+  requirements[leg.perks[0]]--;
+
+  let bad = 0;
+  for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++)
+    bad += Math.max(0, requirements[n])
+
+  //console.debug(">", requirements, constantModslotRequirement, bad, wildcard)
+
+  return bad - wildcard <= 0;
 }
 
 function prepareConstantStatBonus(config: Configuration) {
@@ -212,6 +248,19 @@ function prepareConstantElementRequirement(config: Configuration) {
   constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotLegs].value]++;
   if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed)
     constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]++;
+  return constantElementRequirement;
+}
+
+function prepareConstantModslotRequirement(config: Configuration) {
+  let constantElementRequirement = []
+  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantElementRequirement.push(0)
+
+  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
+  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
+  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
+  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
+  if (!config.armorPerks[ArmorSlot.ArmorSlotClass].fixed)
+    constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
   return constantElementRequirement;
 }
 
@@ -374,6 +423,7 @@ addEventListener('message', async ({data}) => {
   }
   const constantBonus = prepareConstantStatBonus(config);
   const constantElementRequirement = prepareConstantElementRequirement(config);
+  const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
   const constantMustCheckElementRequirement = constantElementRequirement[0] < 5
   const constHasOneExoticLength = selectedExotics.length <= 1
@@ -399,7 +449,7 @@ addEventListener('message', async ({data}) => {
            *  - disabled items were already removed (config.disabledItems)
            */
           if (constantMustCheckElementRequirement && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
-          // if (!checkSlots(config, helmet, gauntlet, chest, leg)) continue;
+          if (!checkSlots(config, constantModslotRequirement, helmet, gauntlet, chest, leg)) continue;
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
             constantBonus, constantAvailableModslots.slice(),

@@ -4,7 +4,7 @@ import {
   getDestinyManifestSlice,
   getProfile, getItem, equipItem,
   HttpClientConfig,
-  transferItem
+  transferItem, DestinyInventoryItemDefinition
 } from 'bungie-api-ts/destiny2';
 import {getMembershipDataForCurrentUser} from 'bungie-api-ts/user';
 import {AuthService} from "./auth.service";
@@ -16,6 +16,7 @@ import {BungieMembershipType} from "bungie-api-ts/common";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {ArmorSlot} from "../data/enum/armor-slot";
+import {ArmorPerkOrSlot} from "../data/enum/armor-stat";
 
 @Injectable({
   providedIn: 'root'
@@ -345,6 +346,28 @@ export class BungieApiService {
     return r;
   }
 
+
+  private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
+    if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1436) || []).length > 0)
+      return ArmorPerkOrSlot.SlotArtificer;
+
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1679876242) || []).length > 0)
+      return ArmorPerkOrSlot.SlotLastWish;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 3738398030) || []).length > 0)
+      return ArmorPerkOrSlot.SlotVaultOfGlass;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 706611068) || []).length > 0)
+      return ArmorPerkOrSlot.SlotGardenOfSalvation;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 4055462131) || []).length > 0)
+      return ArmorPerkOrSlot.SlotDeepStoneCrypt;
+
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1180997867) || []).length > 0)
+      return ArmorPerkOrSlot.SlotNightmare;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2472875850) || []).length > 0)
+      return ArmorPerkOrSlot.PerkIronBanner;
+
+    return ArmorPerkOrSlot.None
+  }
+
   async updateManifest(force = false) {
     if (!force && localStorage.getItem("LastManifestUpdate")) {
       if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
@@ -398,7 +421,8 @@ export class BungieApiService {
           isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0,
           itemType: v.itemType,
           itemSubType: v.itemSubType,
-          investmentStats: v.investmentStats
+          investmentStats: v.investmentStats,
+          perk: this.getArmorPerk(v)
         } as IManifestArmor
       });
 
