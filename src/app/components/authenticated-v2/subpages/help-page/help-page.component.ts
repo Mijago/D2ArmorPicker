@@ -17,19 +17,19 @@ export class HelpPageComponent implements OnInit {
       date: "??",
       entries: [
         // "+ Hotswapping! Added the ability to select two exotics. The tool then gives you a build with both exotics that you can just hotswap, while still having the same base stat selection. It also adds legendaries if the exotics are not in the same slot. Note that the quality of the results HEAVILY varies the less similar your exotics are rolled.",
+        // "+ Added a filter for the minimum amount of tiers on a build. You can now say 'Give me only builds with at least 35 tiers'.",  // todo
+        // "+ Added an option to ignore sunset armor.", // todo
+        // "~ Improved help texts of advanced settings.", // TODO; Feedback source https://www.reddit.com/r/DestinyTheGame/comments/rxikvo/how_to_minimize_wasted_stat_points_in_your_build/hrj7141/?utm_source=reddit&utm_medium=web2x&context=3
         "+ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
         "+ Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artificer modslots.",
         "+ Added the ability to limit the available points on each armor item for stat mods. This allows you to limit the kind of stat mods that are usable. You can now say 'do not use major intellect mods'.",
         "+ Added the ability to lock stat tiers. Previously you could only set 'Use Tier 3 or higher', now you can optionally set 'Enforce Tier 3'. This is useful for example if you want to enforce T3 mobility on a Titan.",
-        "+ Added a filter for the minimum amount of tiers on a build. You can now say 'Give me only builds with at least 35 tiers'.",
         "+ Improved readability of the result header. Also, added a summary of important configuration choices.",
-        "+ Added an option that forces the correct element on non-masterworked armor pieces.", // todo
-        "+ Added an option to ignore sunset armor.", // todo
-        "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).", // todo
-        "+ Added visual indicators for minor and major mods in the overview table.", // todo
+        "+ Added an option that forces the correct element on non-masterworked armor pieces.",
+        "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
+        "+ Added visual indicators for minor and major mods in the overview table.",
         "+ Added visual cursor indicator to every clickable input, e.g. in the exotic, element and perk/mod selection.",
-        "~ Improved help texts of advanced settings.", // TODO; Feedback source https://www.reddit.com/r/DestinyTheGame/comments/rxikvo/how_to_minimize_wasted_stat_points_in_your_build/hrj7141/?utm_source=reddit&utm_medium=web2x&context=3
-        "~ Added info text to the table headers.", // TODO; feedback source https://www.reddit.com/r/DestinyTheGame/comments/rxikvo/how_to_minimize_wasted_stat_points_in_your_build/
+        "~ Added info text to the table headers.",
         "~ The alternating rows of the results details table have now a lighter color to make it easier to read.",
         "~ Fixed ability cooldowns for melee and grenade at tier 7 and tier 8.",
         "~ Cooldowns now are shown in MM:SS instead of plain seconds.",
