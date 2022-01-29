@@ -45,3 +45,12 @@ tr.example-detail-row {
 .config-summary-box {
   width: 100%;
 }
+
+.result-table tr.example-element-row {
+  cursor: pointer;
+
+}
+
+.mat-row:nth-child(4n+3){
+  background-color: rgba(0, 89, 255, 0.03);
+}

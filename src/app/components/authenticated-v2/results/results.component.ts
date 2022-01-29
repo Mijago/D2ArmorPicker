@@ -59,7 +59,7 @@ export interface ResultItem {
 @Component({
   selector: 'app-results',
   templateUrl: './results.component.html',
-  styleUrls: ['./results.component.css'],
+  styleUrls: ['./results.component.scss'],
   animations: [
     trigger('detailExpand', [
       state('collapsed, void', style({height: '0px'})),
