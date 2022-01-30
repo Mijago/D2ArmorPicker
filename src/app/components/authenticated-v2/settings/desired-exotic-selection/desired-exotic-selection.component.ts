@@ -6,6 +6,7 @@ import {animate, query, stagger, style, transition, trigger} from "@angular/anim
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {FORCE_USE_NO_EXOTIC} from "../../../../data/constants";
+import {debounceTime} from "rxjs/operators";
 
 
 export const listAnimation = trigger('listAnimation', [
@@ -41,9 +42,16 @@ export class DesiredExoticSelectionComponent implements OnInit {
       this.selectedExotics = c.selectedExotics;
     })
 
-    this.inventory.manifest.subscribe(async () => {
-      await this.updateExoticsForClass();
-    })
+    this.inventory.manifest
+      .pipe(debounceTime(10))
+      .subscribe(async () => {
+        await this.updateExoticsForClass();
+      })
+    this.inventory.inventory
+      .pipe(debounceTime(10))
+      .subscribe(async () => {
+        await this.updateExoticsForClass();
+      })
   }
 
   private async updateExoticsForClass() {
