@@ -7,6 +7,15 @@
   cursor: pointer;
 }
 
+.watermarkIcon {
+  width: 40px;
+  height: 40px;
+  margin-left: -45px;
+  margin-top: 2px;
+  position: absolute;
+  pointer-events: none;
+}
+
 .exoticIcon:hover {
   border: cornflowerblue solid 2px;
 }

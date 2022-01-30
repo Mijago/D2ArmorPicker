@@ -8,6 +8,7 @@
          src="https://www.bungie.net/{{exotic.icon}}"
          matTooltip="{{exotic.name}}" #tooltip="matTooltip"
          (click)="selectExotic(exotic.hash, $event)">
+    <img class="watermarkIcon" *ngIf="exotic.watermarkIcon" src="https://www.bungie.net/{{exotic.watermarkIcon}}">
   </span>
 
 </div>

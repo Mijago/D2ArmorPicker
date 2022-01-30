@@ -414,6 +414,7 @@ export class BungieApiService {
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
+          watermarkIcon: (v.quality?.displayVersionWatermarkIcons || [null])[0],
           name: v.displayProperties.name,
           clazz: v.classType,
           armor2: isArmor2,
