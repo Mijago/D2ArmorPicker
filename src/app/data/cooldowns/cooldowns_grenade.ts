@@ -1,5 +1,5 @@
-import {EnumDictionary} from "./types/EnumDictionary";
-import {CharacterClass} from "./enum/character-Class";
+import {EnumDictionary} from "../types/EnumDictionary";
+import {CharacterClass} from "../enum/character-Class";
 import {calculateTierValueAbility} from "./cooldown_definitions";
 
 export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {

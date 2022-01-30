@@ -1,4 +1,4 @@
-import {CharacterClass} from "./enum/character-Class";
+import {CharacterClass} from "../enum/character-Class";
 import {calculateTierValueClassAbility, calculateTierValueMobility} from "./cooldown_definitions";
 
 var marksmanDodge = [

@@ -5,7 +5,7 @@ import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {FixableSelection, getDefaultStatDict} from "../../../../data/configuration";
 import {InventoryService} from "../../../../services/inventory.service";
 import {ModInformation} from "../../../../data/ModInformation";
-import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns";
+import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns/cooldowns";
 
 function calcScore(d: number[]) {
   let score = 0;

@@ -1,7 +1,7 @@
 import {EnumDictionary} from "../types/EnumDictionary";
 import {CharacterClass} from "./character-Class";
-import {calculateTierValueAbility} from "../cooldown_definitions";
-import {buildMeleeCooldown} from "../cooldowns_melee";
+import {calculateTierValueAbility} from "../cooldowns/cooldown_definitions";
+import {buildMeleeCooldown} from "../cooldowns/cooldowns_melee";
 
 
 export enum StatModifier {

@@ -1,4 +1,4 @@
-import {CharacterClass} from "./enum/character-Class";
+import {CharacterClass} from "../enum/character-Class";
 import {calculateTierValueClassAbility} from "./cooldown_definitions";
 
 

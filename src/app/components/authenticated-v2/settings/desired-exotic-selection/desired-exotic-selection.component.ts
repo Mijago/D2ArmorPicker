@@ -26,7 +26,7 @@ export const listAnimation = trigger('listAnimation', [
 export class DesiredExoticSelectionComponent implements OnInit {
 
   selectedExotics: number[] = [];
-  currentClass: CharacterClass = CharacterClass.None;
+  currentClass: CharacterClass = CharacterClass.Titan;
   exotics: IManifestArmor[][] = [];
 
   constructor(public inventory: InventoryService, public config: ConfigurationService) {

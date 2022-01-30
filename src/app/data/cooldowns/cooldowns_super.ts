@@ -1,5 +1,5 @@
-import {EnumDictionary} from "./types/EnumDictionary";
-import {CharacterClass} from "./enum/character-Class";
+import {EnumDictionary} from "../types/EnumDictionary";
+import {CharacterClass} from "../enum/character-Class";
 import {calculateTierValueAbility, calculateTierValueSuper} from "./cooldown_definitions";
 
 export const SuperAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {
