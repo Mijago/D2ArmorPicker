@@ -21,6 +21,14 @@
   margin-right: 3px;
 }
 
+.itemIconWatermark {
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
+  margin-left: -35px;
+  pointer-events: none;
+}
+
 tr.example-element-row td {
   border-bottom-width: 0;
 }

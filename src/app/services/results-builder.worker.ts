@@ -887,6 +887,7 @@ function handlePermutation(
   return {
     exotic: exotic == null ? [] : [{
       icon: exotic?.items[0].icon,
+      watermark: exotic?.items[0].watermarkIcon,
       name: exotic?.items[0].name,
       hash: exotic?.items[0].hash
     }],
@@ -901,6 +902,7 @@ function handlePermutation(
       p[instance.slot - 1].push({
         energy: instance.energyAffinity,
         icon: instance.icon,
+        watermark: instance.watermarkIcon,
         itemInstanceId: instance.itemInstanceId,
         name: instance.name,
         exotic: !!instance.isExotic,

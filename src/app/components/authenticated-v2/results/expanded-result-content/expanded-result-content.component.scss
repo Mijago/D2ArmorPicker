@@ -15,6 +15,11 @@ $icon-with: 22px;
   width: $icon-with;
 }
 
+.item-icon-overlay {
+  width: $icon-with;
+  margin-left: -$icon-with;
+}
+
 .item-icon-container {
   position: relative;
   contain: layout paint style;
