@@ -772,13 +772,17 @@ function handlePermutation(
         for (let i3 = i2 + 1; i3 < possible100.length; i3++) {
           let cost3 = ~~((Math.max(0, possible100[i3][1], 0) + 9) / 10);
           if (cost1 + cost2 + cost3 > availableModCostLen) break;
-          comb3.push([possible100[i1], possible100[i2], possible100[i3]])
 
+
+          var addedAs4x100=false
           for (let i4 = i3 + 1; i4 < possible100.length; i4++) {
             let cost4 = ~~((Math.max(0, possible100[i4][1], 0) + 9) / 10);
             if (cost1 + cost2 + cost3 + cost4 > availableModCostLen) break;
-            //comb3.push([possible100[i1], possible100[i2], possible100[i3], possible100[i4]])
+            comb3.push([possible100[i1], possible100[i2], possible100[i3], possible100[i4]])
+            addedAs4x100 = true;
           }
+          if (!addedAs4x100)
+            comb3.push([possible100[i1], possible100[i2], possible100[i3]])
         }
       }
     }
