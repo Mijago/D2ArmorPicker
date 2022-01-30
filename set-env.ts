@@ -1,22 +1,33 @@
 const writeFile = require("fs").writeFile
 
 const production = process.env.PRODUCTION === "1"
+const beta_branch = process.env.BETA === "1"
 const version = "2.2.0"
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
   ? './src/environments/environment.prod.ts'
-  : './src/environments/environment.ts';
+  : beta_branch
+    ? './src/environments/environment.prod.ts'
+    : './src/environments/environment.ts';
 // Load node modules
 
 require('dotenv').config({
   path: production
     ? ".env"
-    : ".env_dev"
+    : beta_branch
+      ? ".env_beta"
+      : ".env_dev"
 });
 
+var version_tag = production
+  ? ""
+  : beta_branch
+    ? "-beta"
+    : "-dev"
+
 const data = {
-  version: version + (production ? "" : "-dev"),
+  version: version + version_tag,
   production: production,
   apiKey: process.env.D2AP_BUNGIE_API_KEY,
   clientId: process.env.D2AP_BUNGIE_CLIENT_ID,

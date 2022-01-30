@@ -231,8 +231,6 @@ export class ExpandedResultContentComponent implements OnInit {
     var url = "https://beta.destinyitemmanager.com/optimizer?class=" + c.characterClass +
       "&p=" + encodeURIComponent(JSON.stringify(data))
 
-    console.log(data)
-
     return url;
   }
 

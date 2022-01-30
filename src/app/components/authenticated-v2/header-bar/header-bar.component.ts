@@ -35,11 +35,9 @@ export class HeaderBarComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log("OAKJSDOIAJIOHJSDO ON INIT");
     this.activeLinkIndex = this.navLinks.indexOf(this.navLinks.find(tab => tab.link === this.router.url) as any);
 
     this.router.events.subscribe((res) => {
-      console.log(res)
       if (res instanceof NavigationEnd)
         this.activeLinkIndex = this.navLinks.indexOf(this.navLinks.find(tab => tab.link === this.router.url) as any);
     });

@@ -7,6 +7,7 @@
     "start": "npm run config && ng serve --ssl",
     "build": "npm run config && ng build",
     "deploy": "npm run config && ng deploy D2ArmorPicker --base-href=/ --cname=d2armorpicker.com",
+    "deploy-beta": "npm run config && ng deploy D2ArmorPicker --repo=https://github.com/Mijago/D2ArmorPicker-beta.git --base-href=/ --cname=beta.d2armorpicker.com",
     "watch": "npm run config && ng build --watch --configuration development",
     "test": "ng test"
   },
