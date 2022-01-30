@@ -35,7 +35,8 @@ export class HelpPageComponent implements OnInit {
         "~ Fixed ability cooldowns for melee and grenade at tier 7 and tier 8.",
         "~ Cooldowns now are shown in MM:SS instead of plain seconds.",
         "~ Completely rewrote the core logic of D2ArmorPicker for the changes mentioned above.",
-        "~ Only show exotics that you have in the inventory or vault."
+        "~ Only show exotics that you have in the inventory or vault.",
+        "~ Fixed an issue where exotics were not shown at your first login.",
       ]
     },
     {
