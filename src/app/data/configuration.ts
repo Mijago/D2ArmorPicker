@@ -63,21 +63,21 @@ export class Configuration {
   selectedExotics: number[] = []
 
   armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
-    [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotChest]: {fixed: true, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotClass]: {fixed: true, value: DestinyEnergyType.Any},
+    [ArmorSlot.ArmorSlotNone]: {fixed: true, value: DestinyEnergyType.Any},
   };
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
-    [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: ArmorPerkOrSlot.None},
-    [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: ArmorPerkOrSlot.None},
-    [ArmorSlot.ArmorSlotChest]: {fixed: false, value: ArmorPerkOrSlot.None},
-    [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: ArmorPerkOrSlot.None},
-    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: ArmorPerkOrSlot.None},
-    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotChest]: {fixed: true, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotClass]: {fixed: true, value: ArmorPerkOrSlot.None},
+    [ArmorSlot.ArmorSlotNone]: {fixed: true, value: ArmorPerkOrSlot.None},
   };
 
   // Ignore armor element affinities.
@@ -111,21 +111,21 @@ export class Configuration {
         [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
       },
       armorAffinities: {
-        [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotChest]: {fixed: true, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotClass]: {fixed: true, value: DestinyEnergyType.Any},
+        [ArmorSlot.ArmorSlotNone]: {fixed: true, value: DestinyEnergyType.Any},
       },
       ignoreArmorAffinitiesOnNonMasterworkedItems: true,
       armorPerks: {
-        [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: ArmorPerkOrSlot.None},
-        [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: ArmorPerkOrSlot.None},
-        [ArmorSlot.ArmorSlotChest]: {fixed: false, value: ArmorPerkOrSlot.None},
-        [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: ArmorPerkOrSlot.None},
-        [ArmorSlot.ArmorSlotClass]: {fixed: false, value: ArmorPerkOrSlot.None},
-        [ArmorSlot.ArmorSlotNone]: {fixed: false, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotChest]: {fixed: true, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotClass]: {fixed: true, value: ArmorPerkOrSlot.None},
+        [ArmorSlot.ArmorSlotNone]: {fixed: true, value: ArmorPerkOrSlot.None},
       },
       minimumStatTiers: getDefaultStatDict(1)
     }

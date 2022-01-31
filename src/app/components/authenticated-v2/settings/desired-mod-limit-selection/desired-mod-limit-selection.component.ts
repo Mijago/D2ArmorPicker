@@ -19,9 +19,9 @@ export class DesiredModLimitSelectionComponent implements OnInit {
   clear() {
     this.config.modifyConfiguration(c => {
       for (let n = 0; n < 5; n++) {
-        c.armorAffinities[n + 1 as ArmorSlot] = {fixed: false, value: 0}
-        c.armorPerks[n + 1 as ArmorSlot] = {fixed: false, value: 0}
-        c.maximumModSlots[n + 1 as ArmorSlot] = {fixed: false, value: 5}
+        c.armorAffinities[n + 1 as ArmorSlot] = {fixed: true, value: 0}
+        c.armorPerks[n + 1 as ArmorSlot] = {fixed: true, value: 0}
+        c.maximumModSlots[n + 1 as ArmorSlot] = {fixed: true, value: 5}
       }
     })
   }
