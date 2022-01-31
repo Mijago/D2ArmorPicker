@@ -5,7 +5,7 @@ import {ConfigurationService} from "../../../../services/configuration.service";
 @Component({
   selector: 'app-desired-class-selection',
   templateUrl: './desired-class-selection.component.html',
-  styleUrls: ['./desired-class-selection.component.css']
+  styleUrls: ['./desired-class-selection.component.scss']
 })
 export class DesiredClassSelectionComponent implements OnInit {
 

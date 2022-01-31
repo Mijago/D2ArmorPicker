@@ -13,7 +13,10 @@ button {
 }
 
 a {
-  color: antiquewhite;
+  color: #99afe3;
+}
+a:visited {
+  color: #7294dc;
 }
 .example-header-image {
   background-image: url('../../../assets/superGreatLogo.png');
