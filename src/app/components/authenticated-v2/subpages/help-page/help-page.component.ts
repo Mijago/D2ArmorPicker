@@ -34,6 +34,7 @@ export class HelpPageComponent implements OnInit {
         "+ Detailed information is now in expandable containers to improve readability.",
         "+ Show the item source overlay for every item.",
         "+ Added info text to the table headers.",
+        "+ Added Discord and another Ko-Fi link.",
         "~ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
         "~ The results header now screams at you in bright red letters when no results are found.",
         "~ The alternating rows of the results details table have now a lighter color to make it easier to read.",
