@@ -4,6 +4,9 @@
       <tr>
         <td colspan="3">{{armor?.name}}</td>
       </tr>
+      <tr>
+        <td>Current stats:</td>
+      </tr>
       <tr *ngFor="let stat of armor?.stats; let i = index">
         <td>{{getArmorStatName(i)}}</td>
         <td>

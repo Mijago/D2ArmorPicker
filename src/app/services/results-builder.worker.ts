@@ -187,7 +187,7 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
 
 function checkSlots(config: Configuration, constantModslotRequirement: number[], helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
   let requirements = constantModslotRequirement.slice()
-  let wildcard =0// requirements[0]
+  let wildcard = 0// requirements[0]
 
   if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perks[0])
@@ -202,13 +202,6 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
     && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0])
     return false;
 
-  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].value == ArmorPerkOrSlot.None) wildcard++;
-  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value == ArmorPerkOrSlot.None) wildcard++;
-  if (config.armorPerks[ArmorSlot.ArmorSlotChest].value == ArmorPerkOrSlot.None) wildcard++;
-  if (config.armorPerks[ArmorSlot.ArmorSlotLegs].value == ArmorPerkOrSlot.None) wildcard++;
-  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None
-    || !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) wildcard++;
-
   requirements[helmet.perks[0]]--;
   requirements[gauntlet.perks[0]]--;
   requirements[chest.perks[0]]--;
@@ -218,9 +211,12 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
   for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++)
     bad += Math.max(0, requirements[n])
 
-  //console.debug(">", requirements, constantModslotRequirement, bad, wildcard)
 
-  return bad - wildcard <= 0;
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None) bad--;
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None
+    && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
+
+  return bad <= 0;
 }
 
 function prepareConstantStatBonus(config: Configuration) {
@@ -774,7 +770,7 @@ function handlePermutation(
           if (cost1 + cost2 + cost3 > availableModCostLen) break;
 
 
-          var addedAs4x100=false
+          var addedAs4x100 = false
           for (let i4 = i3 + 1; i4 < possible100.length; i4++) {
             let cost4 = ~~((Math.max(0, possible100[i4][1], 0) + 9) / 10);
             if (cost1 + cost2 + cost3 + cost4 > availableModCostLen) break;

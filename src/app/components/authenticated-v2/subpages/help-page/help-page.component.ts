@@ -27,7 +27,7 @@ export class HelpPageComponent implements OnInit {
         "+ Added a button to open the DIM Loadout Builder with the current settings.",
         "+ Added an option that forces the correct element on non-masterworked armor pieces.",
         "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
-        "+ Added visual indicators for minor and major mods in the overview table.",
+        "+ Added visual indicators for minor and major mods in the overview table. They are simply shown as smaller icons.",
         "+ Added visual cursor indicator to every clickable input, e.g. in the exotic, element and perk/mod selection.",
         "+ Added a (very basic) item tooltip.",
         "+ Added a stat summary table to the stat detail view. This allows you to easily share a stat distribution with others.",
