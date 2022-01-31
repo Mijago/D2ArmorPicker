@@ -24,6 +24,7 @@ export class HelpPageComponent implements OnInit {
         "+ Added the ability to limit the available points on each armor item for stat mods. This allows you to limit the kind of stat mods that are usable. You can now say 'do not use major intellect mods'.",
         "+ Added the ability to lock stat tiers. Previously you could only set 'Use Tier 3 or higher', now you can optionally set 'Enforce Tier 3'. This is useful for example if you want to enforce T3 mobility on a Titan.",
         "+ Added a summary of important configuration choices to the result header to improve readability.",
+        "+ Added a button to open the DIM Loadout Builder with the current settings.",
         "+ Added an option that forces the correct element on non-masterworked armor pieces.",
         "+ Added cooldowns for class abilities (Dodge, Barricade, Rift).",
         "+ Added visual indicators for minor and major mods in the overview table.",
