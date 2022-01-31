@@ -24,6 +24,10 @@ export interface ResultDefinition {
     name: string,
     hash: string
   }],
+  classItem: {
+    affinity: DestinyEnergyType,
+    perk: ArmorPerkOrSlot
+  },
   mods: number[];
   stats: number[];
   statsNoMods: number[];

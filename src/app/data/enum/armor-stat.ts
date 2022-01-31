@@ -2,6 +2,7 @@ import {EnumDictionary} from "../types/EnumDictionary";
 import {CharacterClass} from "./character-Class";
 import {calculateTierValueAbility} from "../cooldowns/cooldown_definitions";
 import {buildMeleeCooldown} from "../cooldowns/cooldowns_melee";
+import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 
 
 export enum StatModifier {
@@ -73,4 +74,14 @@ export enum ArmorPerkOrSlot {
   SlotVaultOfGlass,
   PerkIronBanner,
   COUNT
+}
+
+export const ArmorAffinityNames: EnumDictionary<DestinyEnergyType, string> = {
+  [DestinyEnergyType.Any]: "Any",
+  [DestinyEnergyType.Arc]: "Arc",
+  [DestinyEnergyType.Thermal]: "Solar",
+  [DestinyEnergyType.Void]: "Void",
+  [DestinyEnergyType.Stasis]: "Stasis",
+  [DestinyEnergyType.Ghost]: "Ghost",
+  [DestinyEnergyType.Subclass]: "Subclass"
 }

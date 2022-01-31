@@ -114,7 +114,25 @@
       <td>{{2}}</td>
       <td>{{2}}</td>
       <td></td>
-      <td></td>
+      <td *ngVar="element?.classItem?.affinity as affinity">
+        <!-- Item affinity -->
+        <img #tooltip="matTooltip" *ngIf="affinity == 1"
+             class="element-icon"
+             matTooltip='Arc affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
+        <img #tooltip="matTooltip" *ngIf="affinity == 2"
+             class="element-icon"
+             matTooltip='Solar affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
+        <img #tooltip="matTooltip" *ngIf="affinity == 3"
+             class="element-icon"
+             matTooltip='Void affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
+        <img #tooltip="matTooltip" *ngIf="affinity == 6"
+             class="element-icon"
+             matTooltip='Stasis affinity'
+             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+      </td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
                 matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">

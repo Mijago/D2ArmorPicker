@@ -1,5 +1,12 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ArmorStat, ArmorStatNames, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from 'src/app/data/enum/armor-stat';
+import {
+  ArmorAffinityNames,
+  ArmorStat,
+  ArmorStatNames,
+  SpecialArmorStat,
+  STAT_MOD_VALUES,
+  StatModifier
+} from 'src/app/data/enum/armor-stat';
 import {ResultDefinition, ResultItem, ResultItemMoveState} from "../results.component";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
@@ -51,7 +58,14 @@ export class ExpandedResultContentComponent implements OnInit {
   }
 
   public buildItemIdString(element: ResultDefinition | null) {
-    return element?.items.flat().map(d => `id:'${d.itemInstanceId}'`).join(" or ")
+    let result = element?.items.flat().map(d => `id:'${d.itemInstanceId}'`).join(" or ");
+
+
+    if (element?.classItem.affinity != DestinyEnergyType.Any) {
+      result += ` or (is:classitem is:${ArmorAffinityNames[element?.classItem.affinity || 0]})`;
+    }
+
+    return result
   }
 
   openSnackBar(message: string) {
@@ -254,15 +268,15 @@ export class ExpandedResultContentComponent implements OnInit {
       + (this.element?.mods.filter(k => k == (2 + 2 * statId)) || []).length * 10
     ) / 10)
 
-    var tiers = this.getTiersForStat(statId) - configValueTiers- moddedTiersMinor;
+    var tiers = this.getTiersForStat(statId) - configValueTiers - moddedTiersMinor;
     for (let n = 0; n < tiers; n++) {
       d.push("normal" + (++total > 10 ? " over100" : ""))
     }
 
     for (let cvt = 0; cvt < moddedTiersMinor; cvt++)
-      d.push('mod'+ (++total > 10 ? " over100" : ""))
+      d.push('mod' + (++total > 10 ? " over100" : ""))
     for (let cvt = 0; cvt < configValueTiers; cvt++)
-      d.push('config'+ (++total > 10 ? " over100" : ""))
+      d.push('config' + (++total > 10 ? " over100" : ""))
     return d;
   }
 

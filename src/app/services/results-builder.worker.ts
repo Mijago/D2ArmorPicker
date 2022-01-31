@@ -143,7 +143,8 @@ class ItemCombination {
 }
 
 
-function checkElements(config: Configuration, constantElementRequirements: number[], helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
+function checkElements(config: Configuration, constantElementRequirements: number[], availableClassElements: Set<DestinyEnergyType>,
+                       helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
   let requirements = constantElementRequirements.slice()
   let wildcard = requirements[0]
 
@@ -163,18 +164,35 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
     || (!leg.allMasterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)) wildcard++;
   else requirements[leg.elements[0]]--;
 
-  if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed
-    && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any)
-    // requirements[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]--;
-    wildcard++;
+//  if (config.armorAffinities[ArmorSlot.ArmorSlotClass].value == DestinyEnergyType.Any)
+//    wildcard++;
 
   let bad = (
     Math.max(0, requirements[DestinyEnergyType.Arc])
     + Math.max(0, requirements[DestinyEnergyType.Thermal])
     + Math.max(0, requirements[DestinyEnergyType.Void])
     + Math.max(0, requirements[DestinyEnergyType.Stasis])
-  )
-  return bad - wildcard <= 0;
+  ) - wildcard
+
+  var requiredClassItemElement = DestinyEnergyType.Any;
+
+  if (config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed)
+    requiredClassItemElement = config.armorAffinities[ArmorSlot.ArmorSlotClass].value;
+
+  if (bad == 1
+    && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any) {
+    var fixed = false;
+    for (let k of [DestinyEnergyType.Void, DestinyEnergyType.Stasis, DestinyEnergyType.Thermal, DestinyEnergyType.Arc]) {
+      if (requirements[k] <= 0) continue;
+      if (availableClassElements.has(k)) {
+        fixed = true;
+        requiredClassItemElement = k;
+      }
+    }
+    if (fixed) bad--;
+  }
+
+  return {valid: bad <= 0, requiredClassItemElement};
 }
 
 function checkSlots(config: Configuration, constantModslotRequirement: number[], availableClassItemTypes: Set<ArmorPerkOrSlot>,
@@ -186,20 +204,16 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
   if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perks[0])
     return {valid: false};
-  ;
   if (config.armorPerks[ArmorSlot.ArmorSlotChest].fixed && config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perks[0])
     return {valid: false};
-  ;
   if (config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0])
     return {valid: false};
-  ;
   // also return if we can not find the correct class item. pepepoint.
   if (config.armorPerks[ArmorSlot.ArmorSlotClass].fixed && config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None
     && !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value))
     return {valid: false};
-  ;
 
   requirements[helmet.perks[0]]--;
   requirements[gauntlet.perks[0]]--;
@@ -229,7 +243,7 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
 
   // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
 
-  return {valid: bad <= 0, requiredClassItemType: requiredClassItemType};
+  return {valid: bad <= 0, requiredClassItemType};
 }
 
 function prepareConstantStatBonus(config: Configuration) {
@@ -330,7 +344,18 @@ addEventListener('message', async ({data}) => {
   let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
   let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
   // new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(i => [i.energyAffinity, i.perk]))
-  let availableClassItemTypes = new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(d => d.perk));
+  let classItems = items.filter(i => i.slot == ArmorSlot.ArmorSlotClass);
+  let availableClassItemPerkTypes = new Set(classItems.map(d => d.perk));
+  let availableClassItemEnergyPerkDict = Array.from(availableClassItemPerkTypes)
+    .reduce((p, v) => {
+      if (!p.has(v)) p.set(v, new Set<DestinyEnergyType>());
+      if (!p.has(ArmorPerkOrSlot.None)) p.set(ArmorPerkOrSlot.None, new Set<DestinyEnergyType>());
+      for (let cls of classItems.filter(i => i.perk == v)) {
+        p.get(ArmorPerkOrSlot.None)?.add(cls.energyAffinity)
+        p.get(v)?.add(cls.energyAffinity)
+      }
+      return p;
+    }, new Map<ArmorPerkOrSlot, Set<DestinyEnergyType>>())
 
   if (selectedExotics.length > 1) {
     let armorSlots = [...new Set(selectedExotics.map(i => i.slot))]
@@ -421,7 +446,14 @@ addEventListener('message', async ({data}) => {
       }
     }
   }
-  console.debug("items", {helmets, gauntlets, chests, legs, availableClassItemTypes})
+  console.debug("items", {
+    helmets,
+    gauntlets,
+    chests,
+    legs,
+    availableClassItemTypes: availableClassItemPerkTypes,
+    availableClassItemEnergyPerkDict
+  })
 
 
   // runtime variables
@@ -458,11 +490,18 @@ addEventListener('message', async ({data}) => {
            *  - disabled items were already removed (config.disabledItems)
            */
 
-          const slotCheckResult = checkSlots(config, constantModslotRequirement, availableClassItemTypes, helmet, gauntlet, chest, leg);
+          const slotCheckResult = checkSlots(config, constantModslotRequirement, availableClassItemPerkTypes, helmet, gauntlet, chest, leg);
           if (!slotCheckResult.valid) continue;
 
-          if (constantMustCheckElementRequirement
-            && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
+          var requiredClassElement = DestinyEnergyType.Any;
+          if (constantMustCheckElementRequirement) {
+            const energyCheckResult = checkElements(config, constantElementRequirement,
+              availableClassItemEnergyPerkDict.get(slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None) ?? new Set(),
+              helmet, gauntlet, chest, leg);
+            if (!energyCheckResult.valid) continue;
+            requiredClassElement = energyCheckResult.requiredClassItemElement;
+          }
+
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
             constantBonus, constantAvailableModslots.slice(),
@@ -472,6 +511,11 @@ addEventListener('message', async ({data}) => {
           if (result != null) {
             totalResults++;
             if (result !== "DONOTSEND") {
+              result["classItem"] = {
+                perk: slotCheckResult.requiredClassItemType,
+                affinity: requiredClassElement,
+              }
+
               results.push(result)
               resultsLength++;
               listedResults++;
