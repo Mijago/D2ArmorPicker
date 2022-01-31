@@ -1,15 +1,19 @@
 import {Injectable} from '@angular/core';
 import {
+  DestinyClass,
+  DestinyComponentType,
+  DestinyInventoryItemDefinition,
+  equipItem,
   getDestinyManifest,
   getDestinyManifestSlice,
-  getProfile, getItem, equipItem,
+  getItem,
+  getProfile,
   HttpClientConfig,
-  transferItem, DestinyInventoryItemDefinition
+  transferItem
 } from 'bungie-api-ts/destiny2';
 import {getMembershipDataForCurrentUser} from 'bungie-api-ts/user';
 import {AuthService} from "./auth.service";
 import {HttpClient} from "@angular/common/http";
-import {DestinyClass, DestinyComponentType} from "bungie-api-ts/destiny2";
 import {DatabaseService} from "./database.service";
 import {environment} from "../../environments/environment";
 import {BungieMembershipType} from "bungie-api-ts/common";
@@ -333,6 +337,14 @@ export class BungieApiService {
           r.intellect = investmentStats[144602215]
           r.strength = investmentStats[4244567218]
 
+          // Take a look if it really has the artificer perk
+          if (r.perk == ArmorPerkOrSlot.SlotArtificer) {
+            let statData = profile.Response.itemComponents.perks.data || {};
+            let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || []
+            const hasPerk = perks.filter(p => p.perkHash == 229248542).length > 0;
+            if(!hasPerk)
+              r.perk = ArmorPerkOrSlot.None
+          }
           return r as IInventoryArmor
         }
       ) || []
