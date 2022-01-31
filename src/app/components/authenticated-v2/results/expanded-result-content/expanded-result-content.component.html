@@ -45,23 +45,10 @@
           </div>
         </td>
         <td>
-          <!-- Item affinity -->
-          <img #tooltip="matTooltip" *ngIf="i.energy == 1"
-               class="element-icon"
-               matTooltip='Arc affinity'
-               src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
-          <img #tooltip="matTooltip" *ngIf="i.energy == 2"
-               class="element-icon"
-               matTooltip='Solar affinity'
-               src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
-          <img #tooltip="matTooltip" *ngIf="i.energy == 3"
-               class="element-icon"
-               matTooltip='Void affinity'
-               src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
-          <img #tooltip="matTooltip" *ngIf="i.energy == 6"
-               class="element-icon"
-               matTooltip='Stasis affinity'
-               src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+          <img #tooltip="matTooltip"
+               class="element-icon" *ngIf="i.energy != 0"
+               matTooltip='{{getAffinityName(i.energy)}} affinity'
+               [src]="getAffinityUrl(i.energy)">
         </td>
         <td>
           <button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn" mat-icon-button
@@ -116,22 +103,10 @@
       <td></td>
       <td *ngVar="element?.classItem?.affinity as affinity">
         <!-- Item affinity -->
-        <img #tooltip="matTooltip" *ngIf="affinity == 1"
-             class="element-icon"
-             matTooltip='Arc affinity'
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
-        <img #tooltip="matTooltip" *ngIf="affinity == 2"
-             class="element-icon"
-             matTooltip='Solar affinity'
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
-        <img #tooltip="matTooltip" *ngIf="affinity == 3"
-             class="element-icon"
-             matTooltip='Void affinity'
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
-        <img #tooltip="matTooltip" *ngIf="affinity == 6"
-             class="element-icon"
-             matTooltip='Stasis affinity'
-             src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+        <img #tooltip="matTooltip"
+             class="element-icon" *ngIf="affinity != 0"
+             matTooltip='{{getAffinityName(affinity)}} affinity'
+             [src]="getAffinityUrl(affinity)">
       </td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
@@ -423,23 +398,10 @@
                 <span *ngIf="$any(config_armorAffinities)[idx].value == 3">Void </span>
                 <span *ngIf="$any(config_armorAffinities)[idx].value == 6">Stasis </span>
                 <!-- Item affinity -->
-                <img #tooltip="matTooltip" *ngIf="$any(config_armorAffinities)[idx].value == 1"
-                     class="element-icon-mini"
-                     matTooltip='Arc affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
-                <img #tooltip="matTooltip" *ngIf="$any(config_armorAffinities)[idx].value == 2"
-                     class="element-icon-mini"
-                     matTooltip='Solar affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
-                <img #tooltip="matTooltip" *ngIf="$any(config_armorAffinities)[idx].value == 3"
-                     class="element-icon-mini"
-                     matTooltip='Void affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
-                <img #tooltip="matTooltip" *ngIf="$any(config_armorAffinities)[idx].value == 6"
-                     class="element-icon-mini"
-                     matTooltip='Stasis affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
-
+                <img #tooltip="matTooltip"
+                     class="element-icon-mini" *ngIf="$any(config_armorAffinities)[idx].value != 0"
+                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx].value)}} affinity'
+                     [src]="getAffinityUrl($any(config_armorAffinities)[idx].value)">
               </li>
             </ng-container>
           </ul>
@@ -548,22 +510,10 @@
                 <span *ngIf="info.requiredArmorAffinity == 3"> Void </span>
                 <span *ngIf="info.requiredArmorAffinity == 6"> Stasis </span>
                     <!-- Item affinity -->
-                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 1"
-                     class="element-icon-mini"
-                     matTooltip='Arc affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png">
-                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 2"
-                     class="element-icon-mini"
-                     matTooltip='Solar affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png">
-                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 3"
-                     class="element-icon-mini"
-                     matTooltip='Void affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png">
-                <img #tooltip="matTooltip" *ngIf="info.requiredArmorAffinity == 6"
-                     class="element-icon-mini"
-                     matTooltip='Stasis affinity'
-                     src="https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png">
+                <img #tooltip="matTooltip"
+                     class="element-icon-mini" *ngIf="info.requiredArmorAffinity != 0"
+                     matTooltip='{{getAffinityName(info.requiredArmorAffinity)}} affinity'
+                     [src]="getAffinityUrl(info.requiredArmorAffinity)">
                   )
                 </span>
                 </li>

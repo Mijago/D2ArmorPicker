@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierType} from "../../../../data/enum/modifierType";
 import {Modifier, ModifierValue} from "../../../../data/modifier";
-import {ArmorStat, SpecialArmorStat} from "../../../../data/enum/armor-stat";
+import {ArmorAffinityIcons, ArmorAffinityNames, ArmorStat, SpecialArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
@@ -84,5 +84,12 @@ export class DesiredModsSelectionComponent implements OnInit {
     this.config.modifyConfiguration(c => {
       c.enabledMods = []
     })
+  }
+
+  getAffinityName(id:DestinyEnergyType) {
+    return ArmorAffinityNames[id];
+  }
+  getAffinityUrl(id:DestinyEnergyType) {
+    return ArmorAffinityIcons[id];
   }
 }

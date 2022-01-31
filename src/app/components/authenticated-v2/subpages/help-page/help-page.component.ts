@@ -32,6 +32,7 @@ export class HelpPageComponent implements OnInit {
         "+ Added a (very basic) item tooltip.",
         "+ Added a stat summary table to the stat detail view. This allows you to easily share a stat distribution with others.",
         "+ Added 'Clear this section' button to each configuration section.",
+        "+ Added support for your class items. You won't see a lot of this, except when you use the slot and element limitation in specific ways.",
         "+ Detailed information is now in expandable containers to improve readability.",
         "+ Show the item source overlay for every item.",
         "+ Added info text to the table headers.",

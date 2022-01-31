@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {
+  ArmorAffinityIcons,
   ArmorAffinityNames,
   ArmorStat,
   ArmorStatNames,
@@ -278,6 +279,13 @@ export class ExpandedResultContentComponent implements OnInit {
     for (let cvt = 0; cvt < configValueTiers; cvt++)
       d.push('config' + (++total > 10 ? " over100" : ""))
     return d;
+  }
+
+  getAffinityName(id:DestinyEnergyType) {
+    return ArmorAffinityNames[id];
+  }
+  getAffinityUrl(id:DestinyEnergyType) {
+    return ArmorAffinityIcons[id];
   }
 
 }

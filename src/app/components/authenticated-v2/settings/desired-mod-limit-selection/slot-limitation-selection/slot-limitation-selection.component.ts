@@ -3,7 +3,11 @@ import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {ArmorPerkOrSlot} from "../../../../../data/enum/armor-stat";
+import {
+  ArmorAffinityIcons,
+  ArmorAffinityNames,
+  ArmorPerkOrSlot
+} from "../../../../../data/enum/armor-stat";
 import {InventoryService} from "../../../../../services/inventory.service";
 
 @Component({
@@ -82,6 +86,14 @@ export class SlotLimitationSelectionComponent implements OnInit {
         c.armorAffinities[this.slot].value = DestinyEnergyType.Any;
       })
   }
+
+  getAffinityName(id:DestinyEnergyType) {
+    return ArmorAffinityNames[id];
+  }
+  getAffinityUrl(id:DestinyEnergyType) {
+    return ArmorAffinityIcons[id];
+  }
+
 
   toggleArmorPerkLock() {
     this.config.modifyConfiguration(c => {
