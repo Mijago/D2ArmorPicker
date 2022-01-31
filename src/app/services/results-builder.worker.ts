@@ -62,14 +62,6 @@ Array.prototype.where = Array.prototype.where || function (predicate: any) {
   return results;
 };
 
-
-const slotToEnum: { [id: string]: ArmorSlot; } = {
-  "Helmets": ArmorSlot.ArmorSlotHelmet,
-  "Arms": ArmorSlot.ArmorSlotGauntlet,
-  "Chest": ArmorSlot.ArmorSlotChest,
-  "Legs": ArmorSlot.ArmorSlotLegs,
-}
-
 const db = buildDb(async () => {
 })
 const inventoryArmor = db.table("inventoryArmor");
@@ -185,22 +177,29 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
   return bad - wildcard <= 0;
 }
 
-function checkSlots(config: Configuration, constantModslotRequirement: number[], helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
+function checkSlots(config: Configuration, constantModslotRequirement: number[], availableClassItemTypes: Set<ArmorPerkOrSlot>,
+                    helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
   let requirements = constantModslotRequirement.slice()
-  let wildcard = 0// requirements[0]
-
   if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perks[0])
-    return false;
+    return {valid: false};
   if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perks[0])
-    return false;
+    return {valid: false};
+  ;
   if (config.armorPerks[ArmorSlot.ArmorSlotChest].fixed && config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perks[0])
-    return false;
+    return {valid: false};
+  ;
   if (config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0])
-    return false;
+    return {valid: false};
+  ;
+  // also return if we can not find the correct class item. pepepoint.
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].fixed && config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None
+    && !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value))
+    return {valid: false};
+  ;
 
   requirements[helmet.perks[0]]--;
   requirements[gauntlet.perks[0]]--;
@@ -212,11 +211,25 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
     bad += Math.max(0, requirements[n])
 
 
-  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None) bad--;
-  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None
-    && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
+  var requiredClassItemType = ArmorPerkOrSlot.None
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None)
+    bad--;
+  else if (bad == 1) {
+    // search if we have a class item to fulfill the stats
+    var fixed = false;
+    for (let k = 1; k < ArmorPerkOrSlot.COUNT && !fixed; k++) {
+      if (requirements[k] <= 0) continue;
+      if (availableClassItemTypes.has(k)) {
+        fixed = true;
+        requiredClassItemType = k;
+      }
+    }
+    if (fixed) bad--;
+  }
 
-  return bad <= 0;
+  // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
+
+  return {valid: bad <= 0, requiredClassItemType: requiredClassItemType};
 }
 
 function prepareConstantStatBonus(config: Configuration) {
@@ -286,7 +299,7 @@ addEventListener('message', async ({data}) => {
 
   items = items
     // only armor :)
-    .filter(item => item.slot != ArmorSlot.ArmorSlotNone && item.slot != ArmorSlot.ArmorSlotClass)
+    .filter(item => item.slot != ArmorSlot.ArmorSlotNone)
     // filter disabled items
     .filter(item => config.disabledItems.indexOf(item.itemInstanceId) == -1)
     // filter the selected exotic right here
@@ -296,21 +309,19 @@ addEventListener('message', async ({data}) => {
     .filter(item => !config.onlyUseMasterworkedItems || item.masterworked)
     // filter fixed elements
     .filter(item => {
-        return !config.armorAffinities[item.slot].fixed
-          || config.armorAffinities[item.slot].value == DestinyEnergyType.Any
-          || (item.masterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
-          || (!item.masterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)
-          || config.armorAffinities[item.slot].value == item.energyAffinity
-      }
-    )
-  // filter sockets
-  //  .filter(item => {
-//      return !config.armorPerks[item.slot].fixed
-//        || config.armorPerks[item.slot].value == ArmorPerkOrSlot.None
-//        || item.isExotic // TODO: add field for the perk/slot into the db and use this here
-  //  })
-  //.toArray() as IInventoryArmor[];
-  console.log("ITEMS", items.length, items)
+      return !config.armorAffinities[item.slot].fixed
+        || config.armorAffinities[item.slot].value == DestinyEnergyType.Any
+        || (item.masterworked && config.ignoreArmorAffinitiesOnMasterworkedItems)
+        || (!item.masterworked && config.ignoreArmorAffinitiesOnNonMasterworkedItems)
+        || config.armorAffinities[item.slot].value == item.energyAffinity
+    })
+    // armor perks
+    .filter(item => {
+      return !config.armorPerks[item.slot].fixed
+        || config.armorPerks[item.slot].value == ArmorPerkOrSlot.None
+        || config.armorPerks[item.slot].value == item.perk
+    });
+  console.debug("ITEMS", items.length, items)
   // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
 
@@ -318,6 +329,8 @@ addEventListener('message', async ({data}) => {
   let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet).map(d => new ItemCombination([d]))
   let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
   let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
+  // new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(i => [i.energyAffinity, i.perk]))
+  let availableClassItemTypes = new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(d => d.perk));
 
   if (selectedExotics.length > 1) {
     let armorSlots = [...new Set(selectedExotics.map(i => i.slot))]
@@ -408,7 +421,7 @@ addEventListener('message', async ({data}) => {
       }
     }
   }
-  console.log("items", {helmets, gauntlets, chests, legs})
+  console.debug("items", {helmets, gauntlets, chests, legs, availableClassItemTypes})
 
 
   // runtime variables
@@ -444,8 +457,12 @@ addEventListener('message', async ({data}) => {
            *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
            *  - disabled items were already removed (config.disabledItems)
            */
-          if (constantMustCheckElementRequirement && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
-          if (!checkSlots(config, constantModslotRequirement, helmet, gauntlet, chest, leg)) continue;
+
+          const slotCheckResult = checkSlots(config, constantModslotRequirement, availableClassItemTypes, helmet, gauntlet, chest, leg);
+          if (!slotCheckResult.valid) continue;
+
+          if (constantMustCheckElementRequirement
+            && !checkElements(config, constantElementRequirement, helmet, gauntlet, chest, leg)) continue;
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
             constantBonus, constantAvailableModslots.slice(),
