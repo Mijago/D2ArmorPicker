@@ -20,7 +20,6 @@ export class HelpPageComponent implements OnInit {
         // "+ Added a filter for the minimum amount of tiers on a build. You can now say 'Give me only builds with at least 35 tiers'.",  // todo
         // "+ Added an option to ignore sunset armor.", // todo
         // "~ Improved help texts of advanced settings.", // TODO; Feedback source https://www.reddit.com/r/DestinyTheGame/comments/rxikvo/how_to_minimize_wasted_stat_points_in_your_build/hrj7141/?utm_source=reddit&utm_medium=web2x&context=3
-        "+ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
         "+ Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artificer modslots.",
         "+ Added the ability to limit the available points on each armor item for stat mods. This allows you to limit the kind of stat mods that are usable. You can now say 'do not use major intellect mods'.",
         "+ Added the ability to lock stat tiers. Previously you could only set 'Use Tier 3 or higher', now you can optionally set 'Enforce Tier 3'. This is useful for example if you want to enforce T3 mobility on a Titan.",
@@ -35,6 +34,7 @@ export class HelpPageComponent implements OnInit {
         "+ Detailed information is now in expandable containers to improve readability.",
         "+ Show the item source overlay for every item.",
         "+ Added info text to the table headers.",
+        "~ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
         "~ The results header now screams at you in bright red letters when no results are found.",
         "~ The alternating rows of the results details table have now a lighter color to make it easier to read.",
         "~ Fixed ability cooldowns for melee and grenade at tier 7 and tier 8.",
