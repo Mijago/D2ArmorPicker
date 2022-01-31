@@ -23,7 +23,6 @@ export class DesiredModLimitSelectionComponent implements OnInit {
         c.armorPerks[n + 1 as ArmorSlot] = {fixed: false, value: 0}
         c.maximumModSlots[n + 1 as ArmorSlot] = {fixed: false, value: 5}
       }
-
     })
   }
 

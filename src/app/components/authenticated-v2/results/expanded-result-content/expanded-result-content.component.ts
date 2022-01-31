@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from 'src/app/data/enum/armor-stat';
+import {ArmorStat, ArmorStatNames, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from 'src/app/data/enum/armor-stat';
 import {ResultDefinition, ResultItem, ResultItemMoveState} from "../results.component";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {ModInformation} from "../../../../data/ModInformation";
@@ -20,8 +20,10 @@ import {Configuration, FixableSelection} from "../../../../data/configuration";
   styleUrls: ['./expanded-result-content.component.scss']
 })
 export class ExpandedResultContentComponent implements OnInit {
+  public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5]
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
+  public ArmorStatNames = ArmorStatNames;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
   public config_characterClass = DestinyClass.Titan;
@@ -236,6 +238,32 @@ export class ExpandedResultContentComponent implements OnInit {
 
   goToDIM() {
     window.open(this.DIMUrl, "blank")
+  }
+
+  getTiersForStat(statId: number) {
+    return Math.floor((this.element?.stats[statId] || 0) / 10);
+  }
+
+  getColumnForStat(statId: number) {
+    var configValueTiers = Math.floor(this.configValues[statId] / 10)
+    let d = []
+    let total = 0;
+
+    let moddedTiersMinor = Math.ceil(((
+        this.element?.mods.filter(k => k == (1 + 2 * statId)) || []).length * 5
+      + (this.element?.mods.filter(k => k == (2 + 2 * statId)) || []).length * 10
+    ) / 10)
+
+    var tiers = this.getTiersForStat(statId) - configValueTiers- moddedTiersMinor;
+    for (let n = 0; n < tiers; n++) {
+      d.push("normal" + (++total > 10 ? " over100" : ""))
+    }
+
+    for (let cvt = 0; cvt < moddedTiersMinor; cvt++)
+      d.push('mod'+ (++total > 10 ? " over100" : ""))
+    for (let cvt = 0; cvt < configValueTiers; cvt++)
+      d.push('config'+ (++total > 10 ? " over100" : ""))
+    return d;
   }
 
 }

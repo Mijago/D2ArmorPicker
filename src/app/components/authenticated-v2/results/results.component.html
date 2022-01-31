@@ -5,7 +5,8 @@
       Click on a row to expand it and to see the list of the items required for this build.<br/>
     </ng-container>
     <ng-container *ngIf="this.totalResults == 0">
-      <b>No possible permutations found.</b> You should loosen your settings a bit.
+      <span class="warning-none-found"><b>No possible permutations found.</b></span>
+      You should loosen your settings a bit.
     </ng-container>
   </mat-card-subtitle>
   <mat-card-content>

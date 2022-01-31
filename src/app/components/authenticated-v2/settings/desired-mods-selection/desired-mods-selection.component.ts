@@ -79,4 +79,10 @@ export class DesiredModsSelectionComponent implements OnInit {
       }
     })
   }
+
+  clear() {
+    this.config.modifyConfiguration(c => {
+      c.enabledMods = []
+    })
+  }
 }

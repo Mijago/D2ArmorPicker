@@ -68,7 +68,8 @@ table tr:not(:last-child) td {
 }
 
 .buttonContainer {
-  margin-top: 3px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   button:not(:last-of-type) {
     margin-right: 6px;
     margin-bottom: 3px;
@@ -130,4 +131,35 @@ table tr:not(:last-child) td {
 
 .highlight-row {
   background-color: rgba(110, 110, 110, 0.13);
+}
+
+tr.legend td {
+  padding-top: 3px;
+}
+
+.tier-column{
+  min-width: 34px;
+}
+
+.energy-bar {
+  width: 30px;
+  height: 10px;
+
+  border: white solid 2px;
+  /*background-color: white;*/
+  position: relative;
+
+  &.normal {
+    background-color: #fff;
+  }
+  &.mod {
+    background-color: #808080;
+  }
+  &.config {
+    background-color: #a3b1c2;
+  }
+  &.over100 {
+    border-color: #ff5e5e;
+    width: 10px;
+  }
 }
