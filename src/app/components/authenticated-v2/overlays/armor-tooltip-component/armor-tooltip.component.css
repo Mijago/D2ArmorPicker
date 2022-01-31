@@ -6,10 +6,15 @@
 
 .stat-display {
   width: 70px;
-  height: 100%;
+  height: 20px;
   background-color: #2c2c2c;
 }
 .stat-display-bar {
   height: 100%;
   background-color: #a1a1a1;
+  float: left;
+}
+
+.masterwork {
+  background-color: #eedb9e;
 }

@@ -6,10 +6,14 @@
       </tr>
       <tr *ngFor="let stat of armor?.stats; let i = index">
         <td>{{getArmorStatName(i)}}</td>
-        <td>{{stat}}</td>
+        <td>
+          <span *ngIf="!armor?.masterworked">{{stat}}</span>
+          <span *ngIf="armor?.masterworked">{{stat+2}}</span>
+        </td>
         <td>
           <div class="stat-display">
             <div class="stat-display-bar" [style.width]="getWidth(stat)">&nbsp;</div>
+            <div class="stat-display-bar masterwork" [style.width]="getWidth(2)" *ngIf="armor?.masterworked">&nbsp;</div>
           </div>
         </td>
       </tr>

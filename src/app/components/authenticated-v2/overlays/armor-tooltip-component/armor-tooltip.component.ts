@@ -15,7 +15,7 @@ export class ArmorTooltipComponent implements OnInit {
   }
 
   getWidth(stat: number) {
-    return Math.min(100, stat/30*100)+'%'
+    return Math.min(100, stat/32*100)+'%'
   }
 
   constructor() {
