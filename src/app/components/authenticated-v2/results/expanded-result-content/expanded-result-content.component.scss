@@ -164,3 +164,22 @@ tr.legend td {
     width: 10px;
   }
 }
+
+.item-stat-container {
+  position: relative;
+}
+
+.item-stat-bonus {
+  position: absolute;
+  right: 20px;
+  font-size: x-small;
+}
+
+.item-name-mw {
+  text-decoration: underline;
+  text-decoration-color: #ffbc00;
+}
+
+.text-mw, .item-stat-bonus {
+  color: #ffd86a;
+}

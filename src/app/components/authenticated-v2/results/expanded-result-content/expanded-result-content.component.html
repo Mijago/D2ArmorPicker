@@ -24,17 +24,29 @@
     <ng-container *ngFor="let items of element?.items">
       <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 == 0">
         <td>
-          <u #tooltip="matTooltip" *ngIf="i.masterworked" matTooltip='This item is already masterworked.'>{{i.name}}</u>
+          <u #tooltip="matTooltip" *ngIf="i.masterworked" matTooltip='This item is already masterworked.' class="item-name-mw">{{i.name}}</u>
           <span *ngIf="!i.masterworked">{{i.name}}</span>
         </td>
         <ng-container
           *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Mobility] + bonus}}</td>
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Resilience] + bonus}}</td>
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Recovery] + bonus}}</td>
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Discipline] + bonus}}</td>
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Intellect] + bonus}}</td>
-          <td *ngIf="!!i.stats">{{i.stats[ArmorStat.Strength] + bonus}}</td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Mobility] + bonus}}</span>
+          </td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Resilience] + bonus}}</span>
+          </td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Recovery] + bonus}}</span>
+          </td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Discipline] + bonus}}</span>
+          </td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Intellect] + bonus}}</span>
+          </td>
+          <td class="item-stat-container">
+            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Strength] + bonus}}</span>
+          </td>
         </ng-container>
         <td>
           <!-- Item Icon -->
@@ -91,13 +103,13 @@
     </ng-container>
     <!-- Class Item -->
     <tr *ngIf="config_assumeClassItemMasterworked">
-      <td><u #tooltip="matTooltip" matTooltip='Class item should be masterworked.'>Any Class Item</u></td>
-      <td>{{2}}</td>
-      <td>{{2}}</td>
-      <td>{{2}}</td>
-      <td>{{2}}</td>
-      <td>{{2}}</td>
-      <td>{{2}}</td>
+      <td #tooltip="matTooltip" matTooltip='Class item should be masterworked.' class="item-name-mw">Any Class Item</td>
+      <td class="text-mw">{{2}}</td>
+      <td class="text-mw">{{2}}</td>
+      <td class="text-mw">{{2}}</td>
+      <td class="text-mw">{{2}}</td>
+      <td class="text-mw">{{2}}</td>
+      <td class="text-mw">{{2}}</td>
       <td></td>
       <td *ngVar="element?.classItem?.affinity as affinity">
         <!-- Item affinity -->

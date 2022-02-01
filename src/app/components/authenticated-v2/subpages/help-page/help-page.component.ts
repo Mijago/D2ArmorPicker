@@ -35,6 +35,7 @@ export class HelpPageComponent implements OnInit {
         "+ Added support for your class items. You won't see a lot of this, except when you use the slot and element limitation in specific ways.",
         "+ Detailed information is now in expandable containers to improve readability.",
         "+ Show the item source overlay for every item.",
+        "+ The stat values of masterworked items in the result table are now shown in a light yellow.",
         "+ Added info text to the table headers.",
         "+ Added Discord and another Ko-Fi link.",
         "~ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",

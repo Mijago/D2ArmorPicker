@@ -281,10 +281,17 @@ export class ExpandedResultContentComponent implements OnInit {
     return d;
   }
 
-  getAffinityName(id:DestinyEnergyType) {
+  getRequiredMasterworkBonus() {
+    return (this.element?.items.filter(i =>
+      !i[0].masterworked && (!i[0].exotic && this.config_assumeLegendariesMasterworked) || (i[0].exotic && this.config_assumeExoticsMasterworked)
+    ) || []).length * 2;
+  }
+
+  getAffinityName(id: DestinyEnergyType) {
     return ArmorAffinityNames[id];
   }
-  getAffinityUrl(id:DestinyEnergyType) {
+
+  getAffinityUrl(id: DestinyEnergyType) {
     return ArmorAffinityIcons[id];
   }
 
