@@ -46,6 +46,8 @@ export class HelpPageComponent implements OnInit {
         "~ Only show exotics that you have in the inventory or vault.",
         "~ Fixed an issue where exotics were not shown at your first login.",
         "~ Changed the color of important buttons so that they are easier to read.",
+        "~ The icons of items in the results are now loaded asynchronous from their hashes. This saves a lot of memory, as I do not have to send two icon URLs for each item - for each result. I will further improve this in a later version.",
+        "~ Table output is now limited to 50 results (instead of 200)."
       ]
     },
     {
