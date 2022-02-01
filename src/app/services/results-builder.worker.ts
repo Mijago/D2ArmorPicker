@@ -674,6 +674,12 @@ function handlePermutation(
   stats[3] += constantBonus[3];
   stats[4] += constantBonus[4];
   stats[5] += constantBonus[5];
+
+  // Abort here if we are already above the limit, in case of fixed stat tiers
+  for (let n: ArmorStat = 0; n < 6; n++)
+    if (config.minimumStatTiers[n].fixed && (stats[n] / 10) >= config.minimumStatTiers[n].value + 1)
+      return null;
+
   // required mods for each stat
   const requiredMods = [
     Math.ceil(Math.max(0, config.minimumStatTiers[0].value - stats[0] / 10)),
@@ -817,7 +823,6 @@ function handlePermutation(
 
     // combinations...
     const comb3 = []
-    const comb4 = []
     for (let i1 = 0; i1 < possible100.length - 2; i1++) {
       let cost1 = ~~((Math.max(0, possible100[i1][1], 0) + 9) / 10);
       if (cost1 > availableModCostLen) break;
@@ -911,7 +916,7 @@ function handlePermutation(
 
   if (doNotOutput) return "DONOTSEND";
 
-  // Add mods to reduce stat waste // TODO fix :c
+  // Add mods to reduce stat waste
   if (config.tryLimitWastedStats && availableModCostLen > 0) {
 
     let waste = [
@@ -929,6 +934,12 @@ function handlePermutation(
         .filter(t => t[0] >= 5 && t[2] < 100)
         .sort((a, b) => a[0] - b[0])[0]
       if (!result) break;
+
+      // Ignore this if it would bring us over the fixed stat tier
+      if (config.minimumStatTiers[result[1] as ArmorStat].fixed && (stats[result[1]] + 5) / 10 >= config.minimumStatTiers[result[1] as ArmorStat].value + 1) {
+        result[0] -= 5;
+        continue;
+      }
 
       const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 2)) as StatModifier][2])[0]
       availableModCost.splice(availableModCost.indexOf(modCost), 1);
