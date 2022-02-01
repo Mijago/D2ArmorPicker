@@ -398,20 +398,20 @@
         <li *ngIf="getCountOfItemsWithWrongElement() > 0">
           Change the element of these items:
           <ul>
-            <ng-container *ngFor="let item of (element?.items || []).flat(); let idx = index">
+            <ng-container *ngFor="let item of (element?.items || []); let idx = index">
               <li
-                *ngIf="$any(config_armorAffinities)[idx].fixed && $any(config_armorAffinities)[idx].value != 0 && (item?.energy != $any(config_armorAffinities)[idx].value)">
-                {{item.name}} must be
+                *ngIf="$any(config_armorAffinities)[idx+1].fixed && $any(config_armorAffinities)[idx+1].value != 0 && (item[0].energy != $any(config_armorAffinities)[idx+1].value)">
+                {{item[0].name}} must be
 
-                <span *ngIf="$any(config_armorAffinities)[idx].value == 1">Arc </span>
-                <span *ngIf="$any(config_armorAffinities)[idx].value == 2">Solar </span>
-                <span *ngIf="$any(config_armorAffinities)[idx].value == 3">Void </span>
-                <span *ngIf="$any(config_armorAffinities)[idx].value == 6">Stasis </span>
+                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 1">Arc </span>
+                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 2">Solar </span>
+                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 3">Void </span>
+                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 6">Stasis </span>
                 <!-- Item affinity -->
                 <img #tooltip="matTooltip"
-                     class="element-icon-mini" *ngIf="$any(config_armorAffinities)[idx].value != 0"
-                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx].value)}} affinity'
-                     [src]="getAffinityUrl($any(config_armorAffinities)[idx].value)">
+                     class="element-icon-mini" *ngIf="$any(config_armorAffinities)[idx+1].value != 0"
+                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx+1].value)}} affinity'
+                     [src]="getAffinityUrl($any(config_armorAffinities)[idx+1].value)">
               </li>
             </ng-container>
           </ul>
