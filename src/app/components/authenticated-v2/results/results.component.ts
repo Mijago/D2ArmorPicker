@@ -49,8 +49,7 @@ export enum ResultItemMoveState {
 
 export interface ResultItem {
   energy: number,
-  icon: string,
-  watermark: string,
+  hash: number,
   itemInstanceId: string,
   name: string,
   exotic: boolean,

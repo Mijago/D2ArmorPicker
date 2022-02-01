@@ -9,6 +9,7 @@ import {
   ArmorPerkOrSlot
 } from "../../../../../data/enum/armor-stat";
 import {InventoryService} from "../../../../../services/inventory.service";
+import {DatabaseService} from "../../../../../services/database.service";
 
 @Component({
   selector: 'app-slot-limitation-selection',
@@ -33,7 +34,7 @@ export class SlotLimitationSelectionComponent implements OnInit {
 
   disabled: boolean = false;
 
-  constructor(public config: ConfigurationService, public inventory: InventoryService) {
+  constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
 
 
@@ -116,4 +117,5 @@ export class SlotLimitationSelectionComponent implements OnInit {
     this.maximumModSlots = i;
     this.config.modifyConfiguration(c => c.maximumModSlots[this.slot].value = i);
   }
+
 }

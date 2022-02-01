@@ -61,6 +61,7 @@ import {MatChipsModule} from "@angular/material/chips";
 import { SlotLimitationSelectionComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component';
 import { ArmorTooltipComponent } from './components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component';
 import { TooltipRendererDirective } from './components/authenticated-v2/overlays/tooltip-renderer.directive';
+import { ItemIconComponent } from './components/authenticated-v2/components/item-icon/item-icon.component';
 
 
 const routes: Routes = [
@@ -116,7 +117,8 @@ const routes: Routes = [
     TableModDisplayComponent,
     SlotLimitationSelectionComponent,
     ArmorTooltipComponent,
-    TooltipRendererDirective
+    TooltipRendererDirective,
+    ItemIconComponent
   ],
   imports: [
     FlexLayoutModule,
