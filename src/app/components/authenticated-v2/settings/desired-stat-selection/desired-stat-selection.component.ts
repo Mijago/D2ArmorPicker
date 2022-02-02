@@ -82,7 +82,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   clearStatSelection() {
     this.config.modifyConfiguration(c => {
       for (let n = 0; n < 6; n++)
-        c.minimumStatTiers[n as ArmorStat] = {fixed: false, value: 1};
+        c.minimumStatTiers[n as ArmorStat] = {fixed: false, value: 0};
     })
   }
 
