@@ -63,6 +63,8 @@ import { ArmorTooltipComponent } from './components/authenticated-v2/overlays/ar
 import { TooltipRendererDirective } from './components/authenticated-v2/overlays/tooltip-renderer.directive';
 import { ItemIconComponent } from './components/authenticated-v2/components/item-icon/item-icon.component';
 import { ArmorInvestigationPageComponent } from './components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component';
+import { ChangelogDialogComponent } from './components/authenticated-v2/components/changelog-dialog/changelog-dialog.component';
+import { ChangelogDialogControllerComponent } from './components/authenticated-v2/components/changelog-dialog-controller/changelog-dialog-controller.component';
 
 
 const routes: Routes = [
@@ -124,7 +126,9 @@ const routes: Routes = [
     ArmorTooltipComponent,
     TooltipRendererDirective,
     ItemIconComponent,
-    ArmorInvestigationPageComponent
+    ArmorInvestigationPageComponent,
+    ChangelogDialogComponent,
+    ChangelogDialogControllerComponent
   ],
   imports: [
     FlexLayoutModule,
