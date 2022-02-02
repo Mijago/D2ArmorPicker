@@ -26,6 +26,7 @@ export const CHANGELOG_DATA = [
       "+ Added info text to the table headers.",
       "+ Added Discord and another Ko-Fi link. You can find them in the Character selection.",
       "+ Added a changelog popup right at the start of the page. It only appears when a new update occured. You can always trigger it by clicking the current version number.",
+      "~ Fixed the width of the 'Exotic' header in the results table. This means that it is now farther away from the 'Mobility' column.",
       "~ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
       "~ The results header now screams at you in bright red letters when no results are found.",
       "~ The alternating rows of the results details table have now a lighter color to make it easier to read.",
