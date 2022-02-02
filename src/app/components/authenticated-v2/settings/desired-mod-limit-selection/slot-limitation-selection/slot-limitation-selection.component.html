@@ -143,43 +143,43 @@
   <div class="selector-slots">
     <div class="element-list">
       <!-- Item affinity -->
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotVaultOfGlass)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotVaultOfGlass)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.SlotVaultOfGlass"
-           class="element-icon" matTooltip='Vault of Glass'
+           class="element-icon" matTooltip='Vault of Glass{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png">
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotDeepStoneCrypt)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotDeepStoneCrypt)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.SlotDeepStoneCrypt" class="element-icon"
-           matTooltip='Deep Stone Crypt'
+           matTooltip='Deep Stone Crypt{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png">
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotGardenOfSalvation)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotGardenOfSalvation)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.SlotGardenOfSalvation" class="element-icon"
-           matTooltip='Garden of Salvation'
+           matTooltip='Garden of Salvation{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotLastWish)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotLastWish)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.SlotLastWish" class="element-icon"
-           matTooltip='Last Wish'
+           matTooltip='Last Wish{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png">
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotNightmare)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotNightmare)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.SlotNightmare" class="element-icon"
-           matTooltip='Nightmare'
+           matTooltip='Nightmare{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
       <span class="overlay-icon-container">
-        <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.SlotArtificer)"
+        <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotArtificer)"
              [class.disabled]="disabled"
              [class.selected]="armorPerk == ArmorPerkOrSlot.SlotArtificer" class="element-icon"
-             matTooltip='Artificer Modslot'
+             matTooltip='Artificer Modslot{{disabled? " (disabled due to exotic selection)": ""}}'
              src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
         <img src="https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png" class="overlay-icon">
       </span>
-      <img #tooltip="matTooltip" (click)="setArmorPerk(ArmorPerkOrSlot.PerkIronBanner)"
+      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.PerkIronBanner)"
            [class.disabled]="disabled"
            [class.selected]="armorPerk == ArmorPerkOrSlot.PerkIronBanner" class="element-icon"
-           matTooltip='Iron Banner'
+           matTooltip='Iron Banner{{disabled? " (disabled due to exotic selection)": ""}}'
            src="https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png">
     </div>
     <button (click)="toggleArmorPerkLock()" [disabled]="disabled" class="lock"

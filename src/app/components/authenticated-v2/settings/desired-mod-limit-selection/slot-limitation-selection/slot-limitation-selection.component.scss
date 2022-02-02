@@ -80,7 +80,7 @@
       &.disabled {
         opacity: 0.5;
         cursor: default;
-        pointer-events: none;
+        border: #00000000 solid 2px !important;
       }
     }
   }
