@@ -22,3 +22,7 @@
 .navbar {
   height: 42px;
 }
+
+.changelogText {
+  cursor: pointer;
+}

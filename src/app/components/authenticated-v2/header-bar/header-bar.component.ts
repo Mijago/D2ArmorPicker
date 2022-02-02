@@ -4,6 +4,7 @@ import {StatusProviderService} from "../../../services/status-provider.service";
 import {InventoryService} from "../../../services/inventory.service";
 import {environment} from "../../../../environments/environment";
 import {NavigationEnd, Router} from "@angular/router";
+import {ChangelogService} from "../../../services/changelog.service";
 
 @Component({
   selector: 'app-header-bar',
@@ -30,6 +31,7 @@ export class HeaderBarComponent implements OnInit {
   ]
 
   constructor(private auth: AuthService, public status: StatusProviderService,
+              public changelog: ChangelogService,
               private inv: InventoryService, private router: Router) {
 
   }

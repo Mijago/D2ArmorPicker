@@ -22,8 +22,8 @@
   <span class="header-spacer"></span>
   <div id="buttonContainer">
 
-    <span>
-      v{{version}}
+    <span class="changelogText" matTooltip="Click to show the changelog dialog.">
+      <a (click)="changelog.openChangelogDialog()">v{{version}}&nbsp;</a>
     </span>
 
     <a mat-stroked-button matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
