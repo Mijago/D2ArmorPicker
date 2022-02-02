@@ -103,6 +103,10 @@
         </mat-chip-list>
       </mat-form-field>
 
+      <div class="hint-text">
+        <mat-icon inline aria-hidden="false">info</mat-icon>
+        Note that you can change the sort column and order of the table by clicking on the headers.</div>
+
       <table [dataSource]="tableDataSource" class="result-table" mat-table matSort
              matSortActive="Mods" matSortDirection="asc" multiTemplateDataRows>
         <!--- Note that these columns can be defined in any order.

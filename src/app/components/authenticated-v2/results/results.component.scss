@@ -46,6 +46,11 @@ tr.example-detail-row {
   color: lightcoral;
 }
 
+.hint-text {
+  font-size: small;
+  color: #d5d5d5;
+}
+
 :host ::ng-deep .info-box .mat-form-field-wrapper {
   padding-bottom: 5px !important;
 }
