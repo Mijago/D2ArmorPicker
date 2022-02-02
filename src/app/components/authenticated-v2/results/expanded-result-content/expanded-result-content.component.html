@@ -322,67 +322,6 @@
   <mat-expansion-panel class="mat-elevation-z6">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Stat overview
-      </mat-panel-title>
-      <mat-panel-description>
-        Shows a summary of all the stats and where they come from.
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <table class="stat-preview">
-      <tr>
-        <td>Stat</td>
-        <td>Tiers</td>
-        <td class="tier-column">1</td>
-        <td class="tier-column">2</td>
-        <td class="tier-column">3</td>
-        <td class="tier-column">4</td>
-        <td class="tier-column">5</td>
-        <td class="tier-column">6</td>
-        <td class="tier-column">7</td>
-        <td class="tier-column">8</td>
-        <td class="tier-column">9</td>
-        <td class="tier-column">10</td>
-      </tr>
-      <tr *ngFor="let statId of armorStatIds">
-        <td>{{ArmorStatNames[statId]}}</td>
-        <td>{{getTiersForStat(statId)}}</td>
-        <td *ngFor="let d of getColumnForStat(statId)">
-          <div [class]="d" class="energy-bar"></div>
-        </td>
-      </tr>
-      <tr class="legend">
-        <td colspan="2">Armor</td>
-        <td>
-          <div class="energy-bar normal"></div>
-        </td>
-        <td colspan="3">Stat Mod</td>
-        <td>
-          <div class="energy-bar mod"></div>
-        </td>
-        <td colspan="4">Stasis & Mods</td>
-        <td>
-          <div class="energy-bar config"></div>
-        </td>
-      </tr>
-      <ng-container *ngVar="element?.exotic as exotic">
-        <tr *ngIf="exotic[0]">
-          <td>Exotic:</td>
-          <td colspan="10">{{exotic[0].name}}</td>
-          <td colspan="1">
-            <div class="item-icon-container">
-              <img class="item-icon" src="https://bungie.net/{{exotic[0].icon}}">
-              <img class="item-icon-overlay" src="https://bungie.net/{{exotic[0].watermark}}">
-            </div>
-          </td>
-        </tr>
-      </ng-container>
-    </table>
-  </mat-expansion-panel>
-
-
-  <mat-expansion-panel class="mat-elevation-z6">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
         What to do now?
       </mat-panel-title>
       <mat-panel-description>
@@ -541,7 +480,65 @@
       </ol>
     </div>
   </mat-expansion-panel>
-
+  <mat-expansion-panel class="mat-elevation-z6">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Stat overview
+      </mat-panel-title>
+      <mat-panel-description>
+        Shows a summary of all the stats and where they come from.
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <table class="stat-preview">
+      <tr>
+        <td>Stat</td>
+        <td>Tiers</td>
+        <td class="tier-column">1</td>
+        <td class="tier-column">2</td>
+        <td class="tier-column">3</td>
+        <td class="tier-column">4</td>
+        <td class="tier-column">5</td>
+        <td class="tier-column">6</td>
+        <td class="tier-column">7</td>
+        <td class="tier-column">8</td>
+        <td class="tier-column">9</td>
+        <td class="tier-column">10</td>
+      </tr>
+      <tr *ngFor="let statId of armorStatIds">
+        <td>{{ArmorStatNames[statId]}}</td>
+        <td>{{getTiersForStat(statId)}}</td>
+        <td *ngFor="let d of getColumnForStat(statId)">
+          <div [class]="d" class="energy-bar"></div>
+        </td>
+      </tr>
+      <tr class="legend">
+        <td colspan="2">Armor</td>
+        <td>
+          <div class="energy-bar normal"></div>
+        </td>
+        <td colspan="3">Stat Mod</td>
+        <td>
+          <div class="energy-bar mod"></div>
+        </td>
+        <td colspan="4">Stasis & Mods</td>
+        <td>
+          <div class="energy-bar config"></div>
+        </td>
+      </tr>
+      <ng-container *ngVar="element?.exotic as exotic">
+        <tr *ngIf="exotic[0]">
+          <td>Exotic:</td>
+          <td colspan="10">{{exotic[0].name}}</td>
+          <td colspan="1">
+            <div class="item-icon-container">
+              <img class="item-icon" src="https://bungie.net/{{exotic[0].icon}}">
+              <img class="item-icon-overlay" src="https://bungie.net/{{exotic[0].watermark}}">
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </table>
+  </mat-expansion-panel>
 </mat-accordion>
 <br/>
 <br/>
