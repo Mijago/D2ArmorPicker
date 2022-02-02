@@ -129,7 +129,13 @@
       <td>Any Class Item</td>
       <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>
-      <td></td>
+      <td *ngVar="element?.classItem?.affinity as affinity">
+        <!-- Item affinity -->
+        <img #tooltip="matTooltip"
+             class="element-icon" *ngIf="affinity != 0"
+             matTooltip='{{getAffinityName(affinity)}} affinity'
+             [src]="getAffinityUrl(affinity)">
+      </td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
                 matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
