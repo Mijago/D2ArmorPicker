@@ -96,6 +96,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
+  _config_ignoreArmorAffinitiesOnNonMasterworkedItems : boolean = false;
+  _config_ignoreArmorAffinitiesOnMasterworkedItems : boolean = false;
 
   tableDataSource = new MatTableDataSource<ResultDefinition>()
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -127,6 +129,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._config_tryLimitWastedStats = c.tryLimitWastedStats;
         this._config_enabledMods = c.enabledMods;
         this._config_limitParsedResults = c.limitParsedResults;
+        this._config_ignoreArmorAffinitiesOnNonMasterworkedItems = c.ignoreArmorAffinitiesOnNonMasterworkedItems;
+        this._config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
 
         this._config_maximumStatMods = c.maximumStatMods;
         this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;

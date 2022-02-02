@@ -84,6 +84,22 @@
           <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledStasis" disableRipple
                     matTooltip="You enabled stasis fragments that affect stats.">Stasis Fragments
           </mat-chip>
+          <mat-chip #tooltip="matTooltip"
+                    *ngIf="_config_ignoreArmorAffinitiesOnMasterworkedItems && !_config_ignoreArmorAffinitiesOnNonMasterworkedItems"
+                    disableRipple
+                    matTooltip="Ignore elements of non-masterworked items">Masterworked: IgnoreElements
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip"
+                    *ngIf="_config_ignoreArmorAffinitiesOnNonMasterworkedItems && !_config_ignoreArmorAffinitiesOnMasterworkedItems"
+                    disableRipple
+                    matTooltip="Ignore elements of masterworked items">Non-Masterworked: Ignore Elements
+          </mat-chip>
+          <mat-chip #tooltip="matTooltip"
+                    *ngIf="_config_ignoreArmorAffinitiesOnNonMasterworkedItems && _config_ignoreArmorAffinitiesOnMasterworkedItems"
+                    disableRipple
+                    matTooltip="Ignore all elements of all items."
+                    selected>Ignore all Elements
+          </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyShowResultsWithNoWastedStats" disableRipple
                     matTooltip="This setting means that only builds with no wasted stats are shown."
                     selected>Zero Waste
@@ -104,8 +120,9 @@
       </mat-form-field>
 
       <div class="hint-text">
-        <mat-icon inline aria-hidden="false">info</mat-icon>
-        Note that you can change the sort column and order of the table by clicking on the headers.</div>
+        <mat-icon aria-hidden="false" inline>info</mat-icon>
+        Note that you can change the sort column and order of the table by clicking on the headers.
+      </div>
 
       <table [dataSource]="tableDataSource" class="result-table" mat-table matSort
              matSortActive="Mods" matSortDirection="asc" multiTemplateDataRows>
