@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {InventoryService} from "../../../services/inventory.service";
 import {DatabaseService} from "../../../services/database.service";
 import {MatTableDataSource} from "@angular/material/table";
@@ -16,6 +16,8 @@ import {ModifierType} from "../../../data/enum/modifierType";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../data/enum/armor-slot";
 import {FixableSelection} from "../../../data/configuration";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 
 export interface ResultDefinition {
@@ -73,7 +75,7 @@ export interface ResultItem {
       transition('expanded <=> void', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
     ]),],
 })
-export class ResultsComponent implements OnInit {
+export class ResultsComponent implements OnInit, OnDestroy {
   ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
 
@@ -115,46 +117,48 @@ export class ResultsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(c => {
-      this.selectedClass = c.characterClass;
-      this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
-      this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
-      this._config_tryLimitWastedStats = c.tryLimitWastedStats;
-      this._config_enabledMods = c.enabledMods;
-      this._config_limitParsedResults = c.limitParsedResults;
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(c => {
+        this.selectedClass = c.characterClass;
+        this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+        this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+        this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
+        this._config_tryLimitWastedStats = c.tryLimitWastedStats;
+        this._config_enabledMods = c.enabledMods;
+        this._config_limitParsedResults = c.limitParsedResults;
 
-      this._config_maximumStatMods = c.maximumStatMods;
-      this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
-      this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
-      this._config_selectedExotics = c.selectedExotics;
-      this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
-      this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;
-      this._config_enabledAffinity = Object.entries(c.armorAffinities).filter(v => v[1].value != DestinyEnergyType.Any).map(k => k[1]);
-      this._config_armorPerkLimitation = Object.entries(c.armorPerks).filter(v => v[1].value != ArmorPerkOrSlot.None).map(k => k[1]);
-      this._config_modslotLimitation = Object.entries(c.maximumModSlots).filter(v => v[1].value <5).map(k => k[1]);
+        this._config_maximumStatMods = c.maximumStatMods;
+        this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
+        this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
+        this._config_selectedExotics = c.selectedExotics;
+        this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
+        this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;
+        this._config_enabledAffinity = Object.entries(c.armorAffinities).filter(v => v[1].value != DestinyEnergyType.Any).map(k => k[1]);
+        this._config_armorPerkLimitation = Object.entries(c.armorPerks).filter(v => v[1].value != ArmorPerkOrSlot.None).map(k => k[1]);
+        this._config_modslotLimitation = Object.entries(c.maximumModSlots).filter(v => v[1].value < 5).map(k => k[1]);
 
 
+        if (c.showWastedStatsColumn) {
+          this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "waste", "dropdown",]
+        } else {
+          this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
+        }
+      })
 
+    this.inventory.armorResults
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async value => {
+        this._results = value.results;
+        this.itemCount = value.itemCount;
+        this.totalTime = value.totalTime;
+        this.totalResults = value.totalResults;
+        this.parsedResults = this._results.length;
 
-      if (c.showWastedStatsColumn) {
-        this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "waste", "dropdown",]
-      } else {
-        this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
-      }
-    })
-
-    this.inventory.armorResults.subscribe(async value => {
-      this._results = value.results;
-      this.itemCount = value.itemCount;
-      this.totalTime = value.totalTime;
-      this.totalResults = value.totalResults;
-      this.parsedResults = this._results.length;
-
-      this.status.modifyStatus(s => s.updatingResultsTable = true)
-      await this.updateData();
-      this.status.modifyStatus(s => s.updatingResultsTable = false)
-    })
+        this.status.modifyStatus(s => s.updatingResultsTable = true)
+        await this.updateData();
+        this.status.modifyStatus(s => s.updatingResultsTable = false)
+      })
 
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
@@ -194,5 +198,12 @@ export class ResultsComponent implements OnInit {
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
     return (element?.items.filter(d => d.filter(x => x.mayBeBugged).length > 0).length || 0) > 0
+  }
+
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

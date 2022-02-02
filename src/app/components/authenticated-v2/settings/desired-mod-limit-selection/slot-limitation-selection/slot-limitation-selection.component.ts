@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
@@ -10,13 +10,15 @@ import {
 } from "../../../../../data/enum/armor-stat";
 import {InventoryService} from "../../../../../services/inventory.service";
 import {DatabaseService} from "../../../../../services/database.service";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'app-slot-limitation-selection',
   templateUrl: './slot-limitation-selection.component.html',
   styleUrls: ['./slot-limitation-selection.component.scss']
 })
-export class SlotLimitationSelectionComponent implements OnInit {
+export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
   readonly ModRange = new Array(MAXIMUM_STAT_MOD_AMOUNT + 1);
@@ -56,7 +58,9 @@ export class SlotLimitationSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(async c => {
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async c => {
       this.selection = c.maximumModSlots[this.slot].value;
       this.element = c.armorAffinities[this.slot].value;
       this.elementLock = c.armorAffinities[this.slot].fixed;
@@ -88,10 +92,11 @@ export class SlotLimitationSelectionComponent implements OnInit {
       })
   }
 
-  getAffinityName(id:DestinyEnergyType) {
+  getAffinityName(id: DestinyEnergyType) {
     return ArmorAffinityNames[id];
   }
-  getAffinityUrl(id:DestinyEnergyType) {
+
+  getAffinityUrl(id: DestinyEnergyType) {
     return ArmorAffinityIcons[id];
   }
 
@@ -118,4 +123,10 @@ export class SlotLimitationSelectionComponent implements OnInit {
     this.config.modifyConfiguration(c => c.maximumModSlots[this.slot].value = i);
   }
 
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

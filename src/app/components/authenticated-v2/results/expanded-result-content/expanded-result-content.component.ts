@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {
   ArmorAffinityIcons,
   ArmorAffinityNames,
@@ -21,13 +21,15 @@ import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
 import {Configuration, FixableSelection} from "../../../../data/configuration";
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 @Component({
   selector: 'app-expanded-result-content',
   templateUrl: './expanded-result-content.component.html',
   styleUrls: ['./expanded-result-content.component.scss']
 })
-export class ExpandedResultContentComponent implements OnInit {
+export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5]
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
@@ -78,29 +80,31 @@ export class ExpandedResultContentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(c => {
-      this.config_characterClass = c.characterClass as unknown as DestinyClass;
-      this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
-      this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
-      this.config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
-      this.config_armorAffinities = c.armorAffinities;
-      this.config_enabledMods = c.enabledMods;
-      this.configValues = c.enabledMods
-        .reduce((p, v) => {
-          p = p.concat(ModInformation[v].bonus)
-          return p;
-        }, [] as ModifierValue[])
-        .reduce((p, v) => {
-          if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat)
-            p[[1, 0, 2][c.characterClass]] += v.value;
-          else
-            p[v.stat as number] += v.value;
-          return p;
-        }, [0, 0, 0, 0, 0, 0])
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(c => {
+        this.config_characterClass = c.characterClass as unknown as DestinyClass;
+        this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+        this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+        this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
+        this.config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
+        this.config_armorAffinities = c.armorAffinities;
+        this.config_enabledMods = c.enabledMods;
+        this.configValues = c.enabledMods
+          .reduce((p, v) => {
+            p = p.concat(ModInformation[v].bonus)
+            return p;
+          }, [] as ModifierValue[])
+          .reduce((p, v) => {
+            if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat)
+              p[[1, 0, 2][c.characterClass]] += v.value;
+            else
+              p[v.stat as number] += v.value;
+            return p;
+          }, [0, 0, 0, 0, 0, 0])
 
-      this.DIMUrl = this.generateDIMLink(c)
-    })
+        this.DIMUrl = this.generateDIMLink(c)
+      })
   }
 
   disableAllItems() {
@@ -295,4 +299,10 @@ export class ExpandedResultContentComponent implements OnInit {
     return ArmorAffinityIcons[id];
   }
 
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

@@ -1,5 +1,7 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigurationService} from "../../../../services/configuration.service";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 interface AdvancedSettingField {
   name: string;
@@ -15,7 +17,7 @@ interface AdvancedSettingField {
   templateUrl: './advanced-settings.component.html',
   styleUrls: ['./advanced-settings.component.scss']
 })
-export class AdvancedSettingsComponent implements OnInit {
+export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   fields2: { [id: string]: AdvancedSettingField[]; } = {};
   fieldKeys: string[] = []
 
@@ -23,7 +25,9 @@ export class AdvancedSettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(
       c => {
         this.fields2 = {
           // "Events": [
@@ -122,4 +126,10 @@ export class AdvancedSettingsComponent implements OnInit {
     )
   }
 
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

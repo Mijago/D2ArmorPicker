@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierType} from "../../../../data/enum/modifierType";
 import {Modifier, ModifierValue} from "../../../../data/modifier";
@@ -8,6 +8,8 @@ import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
 import {MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS} from "@angular/material/slide-toggle";
 import {DestinyEnergyType} from 'bungie-api-ts/destiny2';
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 @Component({
   selector: 'app-desired-mods-selection',
@@ -17,7 +19,7 @@ import {DestinyEnergyType} from 'bungie-api-ts/destiny2';
     {provide: MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS, useValue: {disableToggleValue: false, disableDragValue: true}},
   ]
 })
-export class DesiredModsSelectionComponent implements OnInit {
+export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   dataSource: Modifier[];
   displayedColumns = ["name", "cost", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
   private selectedClass: CharacterClass = CharacterClass.None;
@@ -46,10 +48,12 @@ export class DesiredModsSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(c => {
-      this.selectedMods = c.enabledMods;
-      this.selectedClass = c.characterClass;
-    })
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(c => {
+        this.selectedMods = c.enabledMods;
+        this.selectedClass = c.characterClass;
+      })
   }
 
 
@@ -86,10 +90,18 @@ export class DesiredModsSelectionComponent implements OnInit {
     })
   }
 
-  getAffinityName(id:DestinyEnergyType) {
+  getAffinityName(id: DestinyEnergyType) {
     return ArmorAffinityNames[id];
   }
-  getAffinityUrl(id:DestinyEnergyType) {
+
+  getAffinityUrl(id: DestinyEnergyType) {
     return ArmorAffinityIcons[id];
+  }
+
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

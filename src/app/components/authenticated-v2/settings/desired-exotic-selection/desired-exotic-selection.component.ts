@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {InventoryService} from "../../../../services/inventory.service";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {CharacterClass} from "../../../../data/enum/character-Class";
@@ -6,7 +6,8 @@ import {animate, query, stagger, style, transition, trigger} from "@angular/anim
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {FORCE_USE_NO_EXOTIC} from "../../../../data/constants";
-import {debounceTime} from "rxjs/operators";
+import {debounceTime, takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 
 export const listAnimation = trigger('listAnimation', [
@@ -24,7 +25,7 @@ export const listAnimation = trigger('listAnimation', [
   styleUrls: ['./desired-exotic-selection.component.scss'],
   animations: [listAnimation]
 })
-export class DesiredExoticSelectionComponent implements OnInit {
+export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   selectedExotics: number[] = [];
   currentClass: CharacterClass = CharacterClass.Titan;
@@ -34,7 +35,9 @@ export class DesiredExoticSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(async c => {
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async c => {
       if (c.characterClass != this.currentClass || this.exotics.length == 0) {
         this.currentClass = c.characterClass;
         await this.updateExoticsForClass();
@@ -43,12 +46,18 @@ export class DesiredExoticSelectionComponent implements OnInit {
     })
 
     this.inventory.manifest
-      .pipe(debounceTime(10))
+      .pipe(
+        debounceTime(10),
+        takeUntil(this.ngUnsubscribe)
+      )
       .subscribe(async () => {
         await this.updateExoticsForClass();
       })
     this.inventory.inventory
-      .pipe(debounceTime(10))
+      .pipe(
+        debounceTime(10),
+        takeUntil(this.ngUnsubscribe)
+      )
       .subscribe(async () => {
         await this.updateExoticsForClass();
       })
@@ -90,4 +99,10 @@ export class DesiredExoticSelectionComponent implements OnInit {
     })
   }
 
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

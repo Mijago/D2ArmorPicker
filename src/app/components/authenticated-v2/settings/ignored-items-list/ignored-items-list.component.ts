@@ -1,14 +1,16 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {DatabaseService} from "../../../../services/database.service";
 import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'app-ignored-items-list',
   templateUrl: './ignored-items-list.component.html',
   styleUrls: ['./ignored-items-list.component.scss']
 })
-export class IgnoredItemsListComponent implements OnInit {
+export class IgnoredItemsListComponent implements OnInit, OnDestroy {
 
   disabledItems: IInventoryArmor [] = [];
 
@@ -33,15 +35,24 @@ export class IgnoredItemsListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.configuration.subscribe(async cb => {
-      let items = [];
-      for (let hash of cb.disabledItems) {
-        let itemInstance = await this.db.inventoryArmor.where("itemInstanceId").equals(hash).first();
-        if (itemInstance)
-          items.push(itemInstance)
-      }
-      this.disabledItems = items;
-    })
+    this.config.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async cb => {
+        let items = [];
+        for (let hash of cb.disabledItems) {
+          let itemInstance = await this.db.inventoryArmor.where("itemInstanceId").equals(hash).first();
+          if (itemInstance)
+            items.push(itemInstance)
+        }
+        this.disabledItems = items;
+      })
   }
 
+
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

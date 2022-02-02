@@ -1,17 +1,19 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigurationService, StoredConfiguration} from "../../../../services/configuration.service";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confirm-dialog/confirm-dialog.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import * as lzutf8 from "lzutf8";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'app-load-and-save-settings',
   templateUrl: './load-and-save-settings.component.html',
   styleUrls: ['./load-and-save-settings.component.css']
 })
-export class LoadAndSaveSettingsComponent implements OnInit {
+export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
   selectedEntry: string = "";
   storedConfigs: StoredConfiguration[] = [];
   displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete"];
@@ -26,7 +28,9 @@ export class LoadAndSaveSettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.config.storedConfigurations.subscribe(d => this.storedConfigs = d)
+    this.config.storedConfigurations
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(d => this.storedConfigs = d)
   }
 
   submit() {
@@ -122,5 +126,12 @@ export class LoadAndSaveSettingsComponent implements OnInit {
         duration: 2500,
         politeness: "polite"
       });
+  }
+
+  private ngUnsubscribe = new Subject();
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }
