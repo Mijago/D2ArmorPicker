@@ -21,7 +21,7 @@ export const CHANGELOG_DATA = [
       "+ Added 'Clear this section' button to each configuration section.",
       "+ Added support for your class items. You won't see a lot of this, except when you use the slot and element limitation in specific ways.",
       "+ Detailed information is now in expandable containers to improve readability.",
-      "+ Show the item source overlay for every item.",
+      "+ Show the seasonal icon for every item too.",
       "+ The stat values of masterworked items in the result table are now shown in a light yellow.",
       "+ Added info text to the table headers.",
       "+ Added Discord and another Ko-Fi link. You can find them in the Character selection.",
@@ -37,7 +37,7 @@ export const CHANGELOG_DATA = [
       "~ Fixed an issue where exotics were not shown at your first login.",
       "~ Changed the color of important buttons so that they are easier to read.",
       "~ The icons of items in the results are now loaded asynchronous from their hashes. This saves a lot of memory, as I do not have to send two icon URLs for each item - for each result. I will further improve this in a later version.",
-      "~ Table output is now limited to 50 results (instead of 200)."
+      "~ Maximum table output is now limited to 50 results (instead of 200). It still defaults to 20."
     ]
   },
   {
