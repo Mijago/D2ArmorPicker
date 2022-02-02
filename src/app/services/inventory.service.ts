@@ -180,8 +180,13 @@ export class InventoryService {
             }, []) || []
           })
           console.timeEnd("updateResults with WebWorker")
+          worker.terminate();
         }
       };
+      worker.onerror = ev => {
+        console.error("ERROR IN WEBWORKER, TERMINATING WEBWORKER", ev);
+        worker.terminate()
+      }
       worker.postMessage({
         currentClass: this.currentClass,
         config: this._config
