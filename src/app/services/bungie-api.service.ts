@@ -311,17 +311,17 @@ export class BungieApiService {
           var investmentStats: { [id: number]: number; } = {
             2996146975: 0, 392767087: 0, 1943323491: 0, 1735777505: 0, 144602215: 0, 4244567218: 0,
           }
-
+          // Intrinsics
           if (res[d.itemHash] && res[d.itemHash].investmentStats) {
             for (let newStats of res[d.itemHash].investmentStats) {
               if (newStats.statTypeHash in investmentStats)
                 investmentStats[newStats.statTypeHash] += newStats.value;
             }
           }
-
           if (r.slot != ArmorSlot.ArmorSlotClass) {
             const sockets = (profile.Response.itemComponents.sockets.data || {})[d.itemInstanceId || ""].sockets;
             var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
+            r.statPlugHashes = plugs;
             var plm = plugs.map(k => mods[k || ""]).filter(k => k != null);
             for (let entry of plm) {
               for (let newStats of entry.investmentStats) {
@@ -342,7 +342,7 @@ export class BungieApiService {
             let statData = profile.Response.itemComponents.perks.data || {};
             let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || []
             const hasPerk = perks.filter(p => p.perkHash == 229248542).length > 0;
-            if(!hasPerk)
+            if (!hasPerk)
               r.perk = ArmorPerkOrSlot.None
           }
           return r as IInventoryArmor

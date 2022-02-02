@@ -13,4 +13,5 @@ export interface IInventoryArmor extends IManifestArmor {
   intellect: number;
   strength: number;
   energyAffinity: DestinyEnergyType;
+  statPlugHashes: (number|undefined)[];
 }
