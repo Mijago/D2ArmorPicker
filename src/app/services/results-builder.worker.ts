@@ -545,7 +545,7 @@ addEventListener('message', async ({data}) => {
     done: true,
     stats: {
       permutationCount: totalResults,
-      itemCount: items.length,
+      itemCount: items.length - classItems.length,
       totalTime: Date.now() - startTime
     }
   });
