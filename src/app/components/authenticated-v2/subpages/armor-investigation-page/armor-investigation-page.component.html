@@ -1,0 +1,62 @@
+<div class="armor-container"
+     fxFlexFill="1" fxLayout="row"
+     fxLayout.xs="column"
+     fxLayoutGap="10px"
+>
+  <ng-container *ngFor="let armor of armorItems; let idx = index">
+    <mat-card class="cluster-item">
+      <mat-card-title>
+        {{armor.name}}
+      </mat-card-title>
+      <mat-card-content>
+        <table>
+          <tr>
+            <td>Hash:</td>
+            <td>
+              <a alt="This armor on data.destinysets.com" href="https://data.destinysets.com/i/InventoryItem:{{armor.hash}}"
+                 target="_blank">
+                <img src="https://data.destinysets.com/static/media/logo.556bd7bd.svg" style="width: 15px;">
+              </a>
+              {{armor.hash}}</td>
+          </tr>
+          <tr>
+            <td>ItemInstanceId:</td>
+            <td>{{armor.itemInstanceId}}</td>
+          </tr>
+          <ng-container
+            *ngFor="let entry of [armor.mobility, armor.resilience, armor.recovery, armor.discipline, armor.intellect, armor.strength];let idx1 = index">
+            <tr [matTooltip]="['Mobility', 'Resilience','Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]">
+              <td>
+                {{['Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]}}
+              </td>
+              <td width="100%">
+                <div class="stat-range">
+                  <div *ngFor="let ci of entry; let id2 = index" class="stat-range-bar stat-range-bar{{id2}}"
+                       style="width:{{ci/32*100}}%"></div>
+                  <span class="avg-stat-value">
+                        {{armor.totalStats[idx1] |number:'1.0-0'}}
+                      </span>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </table>
+      </mat-card-content>
+      <mat-card-content>
+        Plugs:
+        <table>
+          <tr *ngFor="let plug of armor.statPlugHashes">
+            <td>
+              <a alt="This plug on data.destinysets.com" href="https://data.destinysets.com/i/InventoryItem:{{plug}}"
+                 target="_blank">
+                <img src="https://data.destinysets.com/static/media/logo.556bd7bd.svg" style="width: 15px;">
+              </a>
+            </td>
+            <td>{{plug}}</td>
+            <td>{{getPlugString(plug)}}</td>
+          </tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>

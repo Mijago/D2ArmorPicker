@@ -1,0 +1,42 @@
+.cluster-item {
+  flex-grow: 1;
+  flex-basis: 0;
+
+  min-width: 250px;
+  margin-bottom: 10px;
+}
+
+.armor-container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.armor-container {
+  flex-wrap: wrap;
+}
+
+.stat-range {
+  height: 20px;
+  width: 100%;
+  margin-bottom: 3px;
+  float: left;
+  background-color: gray;
+}
+
+.stat-range-bar {
+  height: 100%;
+  float: left;
+  background-color: white;
+}
+
+
+.stat-range-bar0 {
+  background-color: #acfff1;
+}
+.stat-range-bar1 {
+  background-color: #5e9eff;
+}
+.stat-range-bar2 {
+  background-color: #c246ff;
+}

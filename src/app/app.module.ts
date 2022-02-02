@@ -62,6 +62,7 @@ import { SlotLimitationSelectionComponent } from './components/authenticated-v2/
 import { ArmorTooltipComponent } from './components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component';
 import { TooltipRendererDirective } from './components/authenticated-v2/overlays/tooltip-renderer.directive';
 import { ItemIconComponent } from './components/authenticated-v2/components/item-icon/item-icon.component';
+import { ArmorInvestigationPageComponent } from './components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component';
 
 
 const routes: Routes = [
@@ -79,6 +80,10 @@ const routes: Routes = [
       {
         path: 'cluster',
         component: ArmorClusterPageComponent
+      },
+      {
+        path: 'investigate',
+        component: ArmorInvestigationPageComponent
       }
     ]
   },
@@ -118,7 +123,8 @@ const routes: Routes = [
     SlotLimitationSelectionComponent,
     ArmorTooltipComponent,
     TooltipRendererDirective,
-    ItemIconComponent
+    ItemIconComponent,
+    ArmorInvestigationPageComponent
   ],
   imports: [
     FlexLayoutModule,
