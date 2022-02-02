@@ -197,17 +197,23 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
 
 function checkSlots(config: Configuration, constantModslotRequirement: number[], availableClassItemTypes: Set<ArmorPerkOrSlot>,
                     helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
+
+  var exoticId = config.selectedExotics[0] || 0
   let requirements = constantModslotRequirement.slice()
-  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None
+  if ((exoticId <= 0 || (helmet.items[0].hash != exoticId))
+    && config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perks[0])
     return {valid: false};
-  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None
+  if ((exoticId <= 0 || (gauntlet.items[0].hash != exoticId))
+    && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perks[0])
     return {valid: false};
-  if (config.armorPerks[ArmorSlot.ArmorSlotChest].fixed && config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None
+  if ((exoticId <= 0 || (chest.items[0].hash != exoticId))
+    && config.armorPerks[ArmorSlot.ArmorSlotChest].fixed && config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perks[0])
     return {valid: false};
-  if (config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None
+  if ((exoticId <= 0 || (leg.items[0].hash != exoticId))
+    && config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None
     && config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0])
     return {valid: false};
   // also return if we can not find the correct class item. pepepoint.
@@ -220,10 +226,17 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
   requirements[chest.perks[0]]--;
   requirements[leg.perks[0]]--;
 
+  // ignore exotic selection
+  if (exoticId > 0) {
+    if (helmet.items[0].hash == exoticId) requirements[config.armorPerks[helmet.items[0].slot].value]--;
+    else if (gauntlet.items[0].hash == exoticId) requirements[config.armorPerks[gauntlet.items[0].slot].value]--;
+    else if (chest.items[0].hash == exoticId) requirements[config.armorPerks[chest.items[0].slot].value]--;
+    else if (leg.items[0].hash == exoticId) requirements[config.armorPerks[leg.items[0].slot].value]--;
+  }
+
   let bad = 0;
   for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++)
     bad += Math.max(0, requirements[n])
-
 
   var requiredClassItemType = ArmorPerkOrSlot.None
   if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None)
@@ -331,7 +344,8 @@ addEventListener('message', async ({data}) => {
     })
     // armor perks
     .filter(item => {
-      return !config.armorPerks[item.slot].fixed
+      return item.isExotic
+        || !config.armorPerks[item.slot].fixed
         || config.armorPerks[item.slot].value == ArmorPerkOrSlot.None
         || config.armorPerks[item.slot].value == item.perk
     });
