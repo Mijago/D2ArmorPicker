@@ -1,3 +1,52 @@
 .container {
   margin-bottom: 10px;
 }
+
+.element-icon {
+  height: 30px;
+  width: 30px;
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+.overlay-icon-container {
+  position: relative;
+
+  .overlay-icon {
+    width: 20px;
+    position: absolute;
+    left: 5px;
+    bottom: 9px;
+    pointer-events: none;
+  }
+}
+
+.modslot-legend {
+  border-collapse: separate;
+  border-spacing: 0 0;
+  width: 100%;
+
+  td {
+    padding: 0;
+  }
+}
+
+#explanation-description {
+  width: 520px;
+}
+.minispace{
+  height: 7px;
+}
+
+.text-highlight {
+  color: #cddcef;
+}
+
+.example-usecase {
+  font-size: small;
+  line-height: normal;
+}

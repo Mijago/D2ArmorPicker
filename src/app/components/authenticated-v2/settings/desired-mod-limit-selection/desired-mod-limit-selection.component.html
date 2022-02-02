@@ -1,11 +1,121 @@
 <div class="container">
-  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotHelmet)"></app-slot-limitation-selection><br/>
-  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotGauntlet)"></app-slot-limitation-selection><br/>
-  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotChest)"></app-slot-limitation-selection><br/>
-  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotLegs)"></app-slot-limitation-selection><br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotHelmet)"></app-slot-limitation-selection>
+  <br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotGauntlet)"></app-slot-limitation-selection>
+  <br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotChest)"></app-slot-limitation-selection>
+  <br/>
+  <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotLegs)"></app-slot-limitation-selection>
+  <br/>
   <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotClass)"></app-slot-limitation-selection>
 </div>
 
 <div id="clear-container">
-  <button mat-stroked-button color="warn" (click)="clear()">Clear the whole selection</button>
+  <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>
 </div>
+
+<div class="minispace"></div>
+<mat-accordion>
+  <mat-expansion-panel class="mat-elevation-z6">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Explanation
+      </mat-panel-title>
+      <mat-panel-description>
+        Detailed instructions for this section.
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+    <div id="explanation-description">
+      This section allows you to further finetune the results to your requirements.<br/>
+
+      <div class="minispace"></div>
+      <u>Limitation of available stat mod types</u><br/>
+      First off, you are able to <span class="text-highlight">select the kind and amount of stat mods</span> you want.
+      By filling the bars you <span class="text-highlight">specify how many modslots are already occupied</span> and
+      thus the tool knows how much space it is able to use for your builds.
+      Hover over the bars, it will show you which mods are available after you changed your selection.
+      <div class="minispace"></div>
+      <div class="example-usecase">
+        Example Use Case: "On one item I can only use up to four recovery mods, no major intellect mod. One item can not hold any mods".
+        In this scenario you would set one slot to 10 used slots, and the rest to 6.
+      </div>
+      <br/>
+      <u>Filter for Elemental Affinity and Armor Perk/Slot</u><br/>
+      This allows you to super-finetune your elemental and armor-perk requirements.
+      You can change the settings for <span class="text-highlight">each armor slot</span>.
+      There are two modes per armor slot: <span class="text-highlight">Locked</span> and <span
+      class="text-highlight">Unlocked</span>.
+      Per default each entry is in the <span class="text-highlight">Locked</span> mode.
+      <div class="minispace"></div>
+      <span class="text-highlight">Locked</span> means that <span class="text-highlight">this armor slot must have</span> the
+      selected element or perk.
+      <div class="minispace"></div>
+      <span class="text-highlight">Unlocked</span> means that the perk must exist, but <span class="text-highlight">the exact armor slot is irrelevant</span>.
+      That means that the tool can decide where it puts the desired element or perk.
+      <div class="minispace"></div>
+      <div class="example-usecase">
+        Example Use Case: "The Class Item and Gauntlet <span class="text-highlight">must be stasis</span>. Oh, and I
+        need two solar and one arc modslots, but the position does not matter".
+        In this scenario, Class Item and Gauntlet would be <span class="text-highlight">Locked</span> and the rest would
+        be <span class="text-highlight">Unlocked</span>.
+      </div>
+      <br/>
+      Legend:
+      <table class="modslot-legend">
+        <tr>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon" matTooltip='Vault of Glass'
+                 src="https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png">
+          </td>
+          <td>Vault of Glass</td>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon"
+                 matTooltip='Deep Stone Crypt'
+                 src="https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png">
+          </td>
+          <td>Deep Stone Crypt</td>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon"
+                 matTooltip='Garden of Salvation'
+                 src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+          </td>
+          <td>Garden of Salvation</td>
+        </tr>
+        <tr>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon"
+                 matTooltip='Last Wish'
+                 src="https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png">
+          </td>
+          <td>Last Wish</td>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon"
+                 matTooltip='Nightmare'
+                 src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+          </td>
+          <td>Nightmare Modslot</td>
+          <td>
+        <span class="overlay-icon-container">
+        <img #tooltip="matTooltip"
+             class="element-icon"
+             matTooltip='Artificer Modslot'
+             src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
+        <img class="overlay-icon"
+             src="https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png">
+      </span>
+          </td>
+          <td>Artificer Modslot</td>
+        </tr>
+        <tr>
+          <td>
+            <img #tooltip="matTooltip" class="element-icon"
+                 matTooltip='Iron Banner'
+                 src="https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png">
+          </td>
+          <td>Iron Banner Perk</td>
+        </tr>
+      </table>
+    </div>
+  </mat-expansion-panel>
+</mat-accordion>
+
