@@ -20,11 +20,15 @@ require('dotenv').config({
       : ".env_dev"
 });
 
+const revision = require('child_process')
+  .execSync('git rev-parse --short HEAD')
+  .toString().trim()
+
 var version_tag = production
   ? ""
   : beta_branch
-    ? "-beta"
-    : "-dev"
+    ? "-beta-" + revision
+    : "-dev-" + revision
 
 const data = {
   version: version + version_tag,
