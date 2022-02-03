@@ -30,6 +30,10 @@ export class ConfigurationService {
 
   private __configuration: Configuration;
 
+  get readonlyConfigurationSnapshot() {
+    return Object.assign(this.__configuration,{});
+  }
+
   private _configuration: BehaviorSubject<Configuration>;
   public readonly configuration: Observable<Configuration>;
 

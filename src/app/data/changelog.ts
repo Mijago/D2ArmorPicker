@@ -100,6 +100,10 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Clicking on a setting that is already set does not re-trigger the calculation now. For example, selecting T3 recovery when it is already at T3 now does nothing."
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "The 'time required' number now measures the time from before the webworkers are spawned until all webworkers are done. Previously it only monitored the time required INSIDE the webworker, so it may show slower times."
       },
       {

@@ -26,6 +26,9 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy  {
   }
 
   selectClass(clazz: number) {
+    if (this.config.readonlyConfigurationSnapshot.characterClass == clazz)
+      return;
+
     this.config.modifyConfiguration(d => {
       d.characterClass = clazz;
       d.selectedExotics = [];

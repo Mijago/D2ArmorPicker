@@ -74,6 +74,9 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   setSelectedTier(stat: ArmorStat, value: number) {
+    if (this.config.readonlyConfigurationSnapshot.minimumStatTiers[stat].value == value)
+      return;
+
     this.config.modifyConfiguration(c => {
       c.minimumStatTiers[stat].value = value;
     })
@@ -87,6 +90,9 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   useStatPreset(d: ArmorStat[]) {
+    if (d.filter(k => this.config.readonlyConfigurationSnapshot.minimumStatTiers[k].value != 10).length == 0)
+      return;
+
     this.config.modifyConfiguration(c => {
       for (let armorStat of d) {
         c.minimumStatTiers[armorStat].value = 10;

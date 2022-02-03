@@ -119,6 +119,9 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   }
 
   setValue(i: number) {
+    if (this.maximumModSlots == i)
+      return;
+
     this.maximumModSlots = i;
     this.config.modifyConfiguration(c => c.maximumModSlots[this.slot].value = i);
   }
