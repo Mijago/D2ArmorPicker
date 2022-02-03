@@ -139,11 +139,11 @@ tr.legend td {
 }
 
 .tier-column{
-  min-width: 34px;
+  min-width: 27px;
 }
 
 .energy-bar {
-  width: 30px;
+  width: 25px;
   height: 10px;
 
   border: white solid 2px;
@@ -155,9 +155,11 @@ tr.legend td {
   }
   &.mod {
     background-color: #808080;
+    border: white ridge 2px;
   }
   &.config {
     background-color: #a3b1c2;
+    border: white ridge 2px;
   }
   &.over100 {
     border-color: #ff5e5e;
