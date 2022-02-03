@@ -83,7 +83,7 @@ export class Configuration {
   // Ignore armor element affinities.
   // Note, the tool already ignores affinities of non-masterworked armor.
   ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
-  ignoreArmorAffinitiesOnNonMasterworkedItems: boolean = true;
+  ignoreArmorAffinitiesOnNonMasterworkedItems: boolean = false;
 
 
   static buildEmptyConfiguration(): Configuration {
@@ -118,7 +118,7 @@ export class Configuration {
         [ArmorSlot.ArmorSlotClass]: {fixed: true, value: DestinyEnergyType.Any},
         [ArmorSlot.ArmorSlotNone]: {fixed: true, value: DestinyEnergyType.Any},
       },
-      ignoreArmorAffinitiesOnNonMasterworkedItems: true,
+      ignoreArmorAffinitiesOnNonMasterworkedItems: false,
       armorPerks: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: ArmorPerkOrSlot.None},
         [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: ArmorPerkOrSlot.None},

@@ -40,7 +40,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added an option that forces the correct element on non-masterworked armor pieces."
+        text: "Added an option that forces the correct element on non-masterworked armor pieces. This is per default enabled."
       },
       {
         type: ChangelogEntryType.ADD,
@@ -80,10 +80,6 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "The stat values of masterworked items in the result table are now shown in a light yellow."
-      },
-      {
-        type: ChangelogEntryType.ADD,
         text: "Added info text to the table headers."
       },
       {
@@ -105,6 +101,10 @@ export const CHANGELOG_DATA = [
       {
         type: ChangelogEntryType.MODIFIED,
         text: "The default for all stats is now tier 0 instead of tier 1, to make it consistent with the clear buttons."
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The default setting for 'ignore non masterworked elements' is now 'off'."
       },
       {
         type: ChangelogEntryType.MODIFIED,
