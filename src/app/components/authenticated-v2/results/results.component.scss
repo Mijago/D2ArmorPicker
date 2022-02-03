@@ -53,6 +53,11 @@ tr.example-detail-row {
 
 :host ::ng-deep .info-box .mat-form-field-wrapper {
   padding-bottom: 5px !important;
+  cursor: default;
+}
+
+.hidden-input {
+  display: none;
 }
 
 .config-summary-box {

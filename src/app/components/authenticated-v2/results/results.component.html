@@ -44,8 +44,9 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field appearance="outline" class="config-summary-box">
+      <mat-form-field appearance="outline" class="config-summary-box" disabled>
         <mat-label>Summary of important configuration choices</mat-label>
+        <input matInput readonly value="&nbsp;" class="hidden-input">
         <mat-chip-list aria-label="Configuration Summary">
           <mat-chip #tooltip="matTooltip" *ngIf="_config_selectedExotics.indexOf(-1) > -1" disableRipple
                     matTooltip="This setting enforces that all exotics are ignored.">No Exotic
