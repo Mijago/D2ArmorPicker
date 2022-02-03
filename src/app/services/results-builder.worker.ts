@@ -239,9 +239,7 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
     bad += Math.max(0, requirements[n])
 
   var requiredClassItemType = ArmorPerkOrSlot.None
-  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value == ArmorPerkOrSlot.None)
-    bad--;
-  else if (bad == 1) {
+  if (bad == 1) {
     // search if we have a class item to fulfill the stats
     var fixed = false;
     for (let k = 1; k < ArmorPerkOrSlot.COUNT && !fixed; k++) {
@@ -371,8 +369,8 @@ addEventListener('message', async ({data}) => {
     ] as [ItemCombination[], number][])
       .sort((a, b) => a[1] - b[1])[0][0]
     var keepLength = Math.floor(splitEntry.length / threadSplit.count)
-    var startIndex = keepLength* threadSplit.current // we can delete everything before this
-    var endIndex = keepLength* (threadSplit.current+1) // we can delete everything after this
+    var startIndex = keepLength * threadSplit.current // we can delete everything before this
+    var endIndex = keepLength * (threadSplit.current + 1) // we can delete everything after this
     // if we have rounding issues, let the last thread do the rest
     if (keepLength * threadSplit.count != splitEntry.length && threadSplit.current == threadSplit.count - 1)
       endIndex += splitEntry.length - keepLength * threadSplit.count
@@ -558,7 +556,7 @@ addEventListener('message', async ({data}) => {
               results.push(result)
               resultsLength++;
               listedResults++;
-              doNotOutput = doNotOutput || (config.limitParsedResults && listedResults >= 5e4/threadSplit.count) || listedResults >= 1e6/threadSplit.count
+              doNotOutput = doNotOutput || (config.limitParsedResults && listedResults >= 5e4 / threadSplit.count) || listedResults >= 1e6 / threadSplit.count
             }
           }
           //}
