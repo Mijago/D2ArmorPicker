@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ChangelogService} from "../../../../services/changelog.service";
+import {ChangelogEntry} from "../../../../data/changelog";
 
 @Component({
   selector: 'app-changelog-dialog',
@@ -7,8 +8,9 @@ import {ChangelogService} from "../../../../services/changelog.service";
   styleUrls: ['./changelog-dialog.component.css']
 })
 export class ChangelogDialogComponent implements OnInit {
+  constructor(public changelog: ChangelogService) {
+  }
 
-  constructor(public changelog: ChangelogService) { }
 
   ngOnInit(): void {
   }

@@ -65,6 +65,7 @@ import { ItemIconComponent } from './components/authenticated-v2/components/item
 import { ArmorInvestigationPageComponent } from './components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component';
 import { ChangelogDialogComponent } from './components/authenticated-v2/components/changelog-dialog/changelog-dialog.component';
 import { ChangelogDialogControllerComponent } from './components/authenticated-v2/components/changelog-dialog-controller/changelog-dialog-controller.component';
+import { ChangelogListComponent } from './components/authenticated-v2/components/changelog-list/changelog-list.component';
 
 
 const routes: Routes = [
@@ -128,7 +129,8 @@ const routes: Routes = [
     ItemIconComponent,
     ArmorInvestigationPageComponent,
     ChangelogDialogComponent,
-    ChangelogDialogControllerComponent
+    ChangelogDialogControllerComponent,
+    ChangelogListComponent
   ],
   imports: [
     FlexLayoutModule,

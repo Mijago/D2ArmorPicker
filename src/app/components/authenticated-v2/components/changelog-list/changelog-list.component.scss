@@ -1,0 +1,13 @@
+:host ::ng-deep .mat-line {
+  word-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+:host ::ng-deep .mat-list .mat-list-item {
+  height: initial !important;
+}
+
+.title {
+  text-decoration: underline;
+  font-size: 20px;
+}

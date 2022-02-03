@@ -121,21 +121,7 @@
   <mat-card>
     <mat-card-title>Changelog</mat-card-title>
     <mat-card-content class="changelog-table-container">
-      <table class="changelog-table">
-        <tr>
-          <th>Date</th>
-          <th>Version</th>
-          <th>Description</th>
-        </tr>
-        <tr *ngFor="let log of changelog">
-          <td>{{log.date}}</td>
-          <td>{{log.version}}</td>
-          <td>
-            <ul>
-              <li *ngFor="let entry of log.entries">{{entry}}</li>
-            </ul>
-          </td>
-      </table>
+      <app-changelog-list></app-changelog-list>
     </mat-card-content>
   </mat-card>
 

@@ -28,6 +28,7 @@ mat-card {
 .preview-image-container {
   max-width: 600px;
 }
+
 .preview-image {
   max-width: 100%;
 }
@@ -41,6 +42,7 @@ mat-card {
 .changelog-table th:first-of-type {
   min-width: 80px;
 }
+
 .changelog-table th:nth-of-type(2) {
   min-width: 40px;
 }
@@ -52,6 +54,7 @@ mat-card {
 a {
   color: #99afe3;
 }
+
 a:visited {
   color: #7294dc;
 }
