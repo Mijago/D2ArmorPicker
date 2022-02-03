@@ -131,7 +131,7 @@ export class InventoryService {
   }
 
 
-  updateResults() {
+  updateResults(nthreads: number = 3) {
     this.clearResults();
 
     if (this.updatingResults) {
@@ -142,60 +142,83 @@ export class InventoryService {
       console.time("updateResults with WebWorker")
       this.updatingResults = true;
       this.status.modifyStatus(s => s.calculatingResults = true)
+      let doneWorkerCount = 0;
+
       let results: any[] = []
-      const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
-      worker.onmessage = ({data}) => {
-        results.push(data.results)
-        if (data.done == true) {
-          this.status.modifyStatus(s => s.calculatingResults = false)
-          this.updatingResults = false;
+      let totalPermutationCount = 0;
+      let resultMaximumTiers: number[][] = []
+      let resultStatCombo3x100 = new Set<number>()
+      let resultStatCombo4x100 = new Set<number>()
+      const startTime = Date.now();
 
-          let endResults = []
-          for (let result of results) {
-            endResults.push(...result)
+      for (let n = 0; n < nthreads; n++) {
+        const worker = new Worker(new URL('./results-builder.worker', import.meta.url));
+        worker.onmessage = ({data}) => {
+          results.push(data.results)
+          if (data.done == true) {
+            doneWorkerCount++;
+            totalPermutationCount += data.stats.permutationCount;
+            resultMaximumTiers.push(data.runtime.maximumPossibleTiers)
+            for (let elem of data.runtime.statCombo3x100) resultStatCombo3x100.add(elem)
+            for (let elem of data.runtime.statCombo4x100) resultStatCombo4x100.add(elem)
+            console.debug("resultMaximumTiers", resultMaximumTiers)
           }
+          if (data.done == true && doneWorkerCount == nthreads) {
+            this.status.modifyStatus(s => s.calculatingResults = false)
+            this.updatingResults = false;
 
-          for (let n = 0; n < 6; n++)
-            data.runtime.maximumPossibleTiers[n] = Math.floor(Math.min(100, data.runtime.maximumPossibleTiers[n]) / 10)
+            let endResults = []
+            for (let result of results) {
+              endResults.push(...result)
+            }
 
-          this._armorResults.next({
-            results: endResults,
-            totalResults: data.stats.permutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
-            itemCount: data.stats.itemCount,
-            totalTime: data.stats.totalTime,
-            maximumPossibleTiers: data.runtime.maximumPossibleTiers,
-            statCombo3x100: Array.from(data.runtime.statCombo3x100 as Set<number>).map((d: number) => {
-              let r: ArmorStat[] = []
-              for (let n = 0; n < 6; n++)
-                if ((d & (1 << n)) > 0)
-                  r.push(n)
-              return r;
-            }) || [],
-            statCombo4x100: Array.from(data.runtime.statCombo4x100 as Set<number>).map((d: number) => {
-              let r = [];
-              for (let n = 0; n < 6; n++)
-                if ((d & (1 << n)) > 0)
-                  r.push(n)
-              return r;
-            }, []) || []
-          })
-          console.timeEnd("updateResults with WebWorker")
-          worker.terminate();
+            this._armorResults.next({
+              results: endResults,
+              totalResults: totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
+              itemCount: data.stats.itemCount,
+              totalTime: Date.now() - startTime,
+              maximumPossibleTiers: resultMaximumTiers.reduce((p, v) => {
+                for (let k = 0; k < 6; k++)
+                  if (p[k] < v[k]) p[k] = v[k];
+                return p;
+              }, [0, 0, 0, 0, 0, 0]).map(k => Math.floor(Math.min(100, k) / 10)),
+              statCombo3x100: Array.from(resultStatCombo3x100 as Set<number>).map((d: number) => {
+                let r: ArmorStat[] = []
+                for (let n = 0; n < 6; n++)
+                  if ((d & (1 << n)) > 0)
+                    r.push(n)
+                return r;
+              }) || [],
+              statCombo4x100: Array.from(resultStatCombo4x100 as Set<number>).map((d: number) => {
+                let r = [];
+                for (let n = 0; n < 6; n++)
+                  if ((d & (1 << n)) > 0)
+                    r.push(n)
+                return r;
+              }, []) || []
+            })
+            console.timeEnd("updateResults with WebWorker")
+            worker.terminate();
+          } else if (data.done == true && doneWorkerCount != nthreads)
+            worker.terminate();
+        };
+        worker.onerror = ev => {
+          console.error("ERROR IN WEBWORKER, TERMINATING WEBWORKER", ev);
+          worker.terminate()
         }
-      };
-      worker.onerror = ev => {
-        console.error("ERROR IN WEBWORKER, TERMINATING WEBWORKER", ev);
-        worker.terminate()
+        worker.postMessage({
+          currentClass: this.currentClass,
+          config: this._config,
+          threadSplit: {
+            count: nthreads,
+            current: n
+          }
+        });
       }
-      worker.postMessage({
-        currentClass: this.currentClass,
-        config: this._config
-      });
+
 
     } finally {
     }
-
-
   }
 
   public exoticsForClass: Array<IManifestArmor> = [];

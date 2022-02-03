@@ -26,6 +26,8 @@ export const CHANGELOG_DATA = [
       "+ Added info text to the table headers.",
       "+ Added Discord and another Ko-Fi link. You can find them in the Character selection.",
       "+ Added a changelog popup right at the start of the page. It only appears when a new update occured. You can always trigger it by clicking the current version number.",
+      "+ Now utilizes three webworkers instead of one. The process is simple, but generally speeds up the results by a huge margin.",
+      "~ The 'time required' number now measures the time from before the webworkers are spawned until all webworkers are done. Previously it only monitored the time required INSIDE the webworker, so it may show slower times.",
       "~ Fixed the width of the 'Exotic' header in the results table. This means that it is now farther away from the 'Mobility' column.",
       "~ Completely reworked the elemental affinity selection. Per default it is now not fixed to a certain armor slot, but using a toggle button you can simply do so again.",
       "~ The results header now screams at you in bright red letters when no results are found.",

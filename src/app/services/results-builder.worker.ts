@@ -358,6 +358,31 @@ addEventListener('message', async ({data}) => {
   let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
   let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
   // new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(i => [i.energyAffinity, i.perk]))
+
+
+  // Support multithreading. find the largest set and split it by N.
+  const threadSplit = data.threadSplit as { count: number, current: number };
+  if (threadSplit.count > 1) {
+    var splitEntry = ([
+      [helmets, helmets.length],
+      [gauntlets, gauntlets.length],
+      [chests, chests.length],
+      [legs, legs.length],
+    ] as [ItemCombination[], number][])
+      .sort((a, b) => a[1] - b[1])[0][0]
+    var keepLength = Math.floor(splitEntry.length / threadSplit.count)
+    var startIndex = keepLength* threadSplit.current // we can delete everything before this
+    var endIndex = keepLength* (threadSplit.current+1) // we can delete everything after this
+    // if we have rounding issues, let the last thread do the rest
+    if (keepLength * threadSplit.count != splitEntry.length && threadSplit.current == threadSplit.count - 1)
+      endIndex += splitEntry.length - keepLength * threadSplit.count
+
+    // remove data at the end
+    splitEntry.splice(endIndex)
+    splitEntry.splice(0, startIndex)
+  }
+
+
   let classItems = items.filter(i => i.slot == ArmorSlot.ArmorSlotClass);
   let availableClassItemPerkTypes = new Set(classItems.map(d => d.perk));
   let availableClassItemEnergyPerkDict = Array.from(availableClassItemPerkTypes)
@@ -489,6 +514,7 @@ addEventListener('message', async ({data}) => {
 
   let listedResults = 0;
   let totalResults = 0;
+  let doNotOutput = false;
 
   console.time("tm")
   for (let helmet of helmets) {
@@ -518,8 +544,7 @@ addEventListener('message', async ({data}) => {
 
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
-            constantBonus, constantAvailableModslots.slice(),
-            (config.limitParsedResults && listedResults >= 5e4) || listedResults >= 1e6);
+            constantBonus, constantAvailableModslots.slice(), doNotOutput);
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
           if (result != null) {
@@ -533,6 +558,7 @@ addEventListener('message', async ({data}) => {
               results.push(result)
               resultsLength++;
               listedResults++;
+              doNotOutput = doNotOutput || (config.limitParsedResults && listedResults >= 5e4/threadSplit.count) || listedResults >= 1e6/threadSplit.count
             }
           }
           //}
