@@ -104,6 +104,10 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "The default for all stats is now tier 0 instead of tier 1, to make it consistent with the clear buttons."
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "The 'time required' number now measures the time from before the webworkers are spawned until all webworkers are done. Previously it only monitored the time required INSIDE the webworker, so it may show slower times."
       },
       {

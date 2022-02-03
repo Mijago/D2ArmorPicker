@@ -30,12 +30,12 @@ export class Configuration {
 
   // TODO: convert minimumStatTier -> minimumStatTiers for old configs
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = {
-    [ArmorStat.Mobility]: {fixed: false, value: 1},
-    [ArmorStat.Resilience]: {fixed: false, value: 1},
-    [ArmorStat.Recovery]: {fixed: false, value: 1},
-    [ArmorStat.Discipline]: {fixed: false, value: 1},
-    [ArmorStat.Intellect]: {fixed: false, value: 1},
-    [ArmorStat.Strength]: {fixed: false, value: 1}
+    [ArmorStat.Mobility]: {fixed: false, value: 0},
+    [ArmorStat.Resilience]: {fixed: false, value: 0},
+    [ArmorStat.Recovery]: {fixed: false, value: 0},
+    [ArmorStat.Discipline]: {fixed: false, value: 0},
+    [ArmorStat.Intellect]: {fixed: false, value: 0},
+    [ArmorStat.Strength]: {fixed: false, value: 0}
   }
   maximumStatMods: number = 5; // TODO: remove
 
@@ -127,7 +127,7 @@ export class Configuration {
         [ArmorSlot.ArmorSlotClass]: {fixed: true, value: ArmorPerkOrSlot.None},
         [ArmorSlot.ArmorSlotNone]: {fixed: true, value: ArmorPerkOrSlot.None},
       },
-      minimumStatTiers: getDefaultStatDict(1)
+      minimumStatTiers: getDefaultStatDict(0)
     }
   }
 }
