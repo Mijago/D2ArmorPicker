@@ -24,42 +24,55 @@
     <ng-container *ngFor="let items of element?.items">
       <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 == 0">
         <td>
-          <u #tooltip="matTooltip" *ngIf="i.masterworked" matTooltip='This item is already masterworked.' class="item-name-mw">{{i.name}}</u>
+          <u #tooltip="matTooltip" *ngIf="i.masterworked" class="item-name-mw"
+             matTooltip='This item is already masterworked.'>{{i.name}}</u>
           <span *ngIf="!i.masterworked">{{i.name}}</span>
         </td>
         <ng-container
           *ngVar="((i.masterworked || (!i.exotic &&  config_assumeLegendariesMasterworked) || (i.exotic && config_assumeExoticsMasterworked)) ? 2 : 0) as bonus">
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Mobility] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Mobility] + bonus}}</span>
           </td>
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Resilience] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Resilience] + bonus}}</span>
           </td>
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Recovery] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Recovery] + bonus}}</span>
           </td>
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Discipline] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Discipline] + bonus}}</span>
           </td>
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Intellect] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Intellect] + bonus}}</span>
           </td>
           <td class="item-stat-container">
-            <span class="item-stat-value" [class.text-mw]="i.masterworked">{{i.stats[ArmorStat.Strength] + bonus}}</span>
+            <span [class.text-mw]="i.masterworked"
+                  class="item-stat-value">{{i.stats[ArmorStat.Strength] + bonus}}</span>
           </td>
         </ng-container>
         <td>
           <!-- Item Icon -->
           <div [itemTooltip]="i" class="item-icon-container">
-            <item-icon [itemHash]="i.hash" class="item-icon" [masterworked]="i.masterworked"></item-icon>
+            <item-icon [itemHash]="i.hash" [masterworked]="i.masterworked" class="item-icon"></item-icon>
           </div>
         </td>
         <td>
           <img #tooltip="matTooltip"
-               class="element-icon" *ngIf="i.energy != 0"
-               matTooltip='{{getAffinityName(i.energy)}} affinity'
-               [src]="getAffinityUrl(i.energy)">
+               *ngIf="i.energy != 0" [src]="getAffinityUrl(i.energy)"
+               class="element-icon"
+               matTooltip='{{getAffinityName(i.energy)}} affinity'>
         </td>
+        <td>
+          <div style="position: relative; width: 25px;">
+            <app-armor-perk-icon [perk]="i.perk || 0"></app-armor-perk-icon>
+          </div>
+        </td>
+        <!-- Disable -->
         <td>
           <button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn" mat-icon-button
                   matTooltip="Disable this item from the results. It will not be used to generate results anymore, but you can always undo this.">
@@ -103,7 +116,7 @@
     </ng-container>
     <!-- Class Item -->
     <tr *ngIf="config_assumeClassItemMasterworked">
-      <td #tooltip="matTooltip" matTooltip='Class item should be masterworked.' class="item-name-mw">Any Class Item</td>
+      <td #tooltip="matTooltip" class="item-name-mw" matTooltip='Class item should be masterworked.'>Any Class Item</td>
       <td class="text-mw">{{2}}</td>
       <td class="text-mw">{{2}}</td>
       <td class="text-mw">{{2}}</td>
@@ -114,9 +127,14 @@
       <td *ngVar="element?.classItem?.affinity as affinity">
         <!-- Item affinity -->
         <img #tooltip="matTooltip"
-             class="element-icon" *ngIf="affinity != 0"
-             matTooltip='{{getAffinityName(affinity)}} affinity'
-             [src]="getAffinityUrl(affinity)">
+             *ngIf="affinity != 0" [src]="getAffinityUrl(affinity)"
+             class="element-icon"
+             matTooltip='{{getAffinityName(affinity)}} affinity'>
+      </td>
+      <td>
+        <div style="position: relative; width: 25px;">
+          <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
+        </div>
       </td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
@@ -132,9 +150,9 @@
       <td *ngVar="element?.classItem?.affinity as affinity">
         <!-- Item affinity -->
         <img #tooltip="matTooltip"
-             class="element-icon" *ngIf="affinity != 0"
-             matTooltip='{{getAffinityName(affinity)}} affinity'
-             [src]="getAffinityUrl(affinity)">
+             *ngIf="affinity != 0" [src]="getAffinityUrl(affinity)"
+             class="element-icon"
+             matTooltip='{{getAffinityName(affinity)}} affinity'>
       </td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
@@ -301,13 +319,13 @@
 <div class="buttonContainer">
   <ng-container *ngVar="buildItemIdString(element) as text">
     <button (click)="openSnackBar('Copied the DIM search query to your clipboard.')" [cdkCopyToClipboard]="text"
-            mat-raised-button color="primary"
+            color="primary" mat-raised-button
             matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
       Copy DIM query to clipboard
     </button>
   </ng-container>
   <button (click)="goToDIM()"
-          mat-raised-button color="primary"
+          color="primary" mat-raised-button
           matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
     Open in DIM Optimizer
   </button>
@@ -354,9 +372,10 @@
                 <span *ngIf="$any(config_armorAffinities)[idx+1].value == 6">Stasis </span>
                 <!-- Item affinity -->
                 <img #tooltip="matTooltip"
-                     class="element-icon-mini" *ngIf="$any(config_armorAffinities)[idx+1].value != 0"
-                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx+1].value)}} affinity'
-                     [src]="getAffinityUrl($any(config_armorAffinities)[idx+1].value)">
+                     *ngIf="$any(config_armorAffinities)[idx+1].value != 0"
+                     [src]="getAffinityUrl($any(config_armorAffinities)[idx+1].value)"
+                     class="element-icon-mini"
+                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx+1].value)}} affinity'>
               </li>
             </ng-container>
           </ul>
@@ -383,7 +402,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Mobility Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Mobility Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -395,7 +415,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Resilience Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Resilience Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -407,7 +428,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Recovery Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Recovery Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -419,7 +441,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Discipline Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Discipline Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -431,7 +454,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Intellect Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Intellect Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -443,7 +467,8 @@
                   <span *ngIf="minorCount > 0">{{minorCount}} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
                   <span *ngIf="majorCount > 0"> {{majorCount}} major </span>
-                  Strength Mod<ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
+                  Strength Mod
+                  <ng-container *ngIf="(minorCount + majorCount) > 1">s</ng-container>
                 </li>
               </ng-container>
             </ng-container>
@@ -466,9 +491,9 @@
                 <span *ngIf="info.requiredArmorAffinity == 6"> Stasis </span>
                     <!-- Item affinity -->
                 <img #tooltip="matTooltip"
-                     class="element-icon-mini" *ngIf="info.requiredArmorAffinity != 0"
-                     matTooltip='{{getAffinityName(info.requiredArmorAffinity)}} affinity'
-                     [src]="getAffinityUrl(info.requiredArmorAffinity)">
+                     *ngIf="info.requiredArmorAffinity != 0" [src]="getAffinityUrl(info.requiredArmorAffinity)"
+                     class="element-icon-mini"
+                     matTooltip='{{getAffinityName(info.requiredArmorAffinity)}} affinity'>
                   )
                 </span>
                 </li>

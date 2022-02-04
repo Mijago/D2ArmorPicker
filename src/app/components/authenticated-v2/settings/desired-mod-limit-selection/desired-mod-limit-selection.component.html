@@ -19,7 +19,8 @@
   <mat-expansion-panel class="mat-elevation-z6">
     <mat-expansion-panel-header>
       <mat-panel-title>
-        <mat-icon aria-hidden="false" inline>info</mat-icon> Explanation
+        <mat-icon aria-hidden="false" inline>info</mat-icon>
+        Explanation
       </mat-panel-title>
       <mat-panel-description>
         Detailed instructions for this section.
@@ -36,7 +37,8 @@
       Hover over the bars, it will show you which mods are available after you changed your selection.
       <div class="minispace"></div>
       <div class="example-usecase">
-        Example Use Case: "On one item I can only use up to four recovery mods, no major intellect mod. One item can not hold any mods".
+        Example Use Case: "On one item I can only use up to four recovery mods, no major intellect mod. One item can not
+        hold any mods".
         In this scenario you would set one slot to 10 used slots, and the rest to 6.
       </div>
       <br/>
@@ -47,7 +49,8 @@
       class="text-highlight">Unlocked</span>.
       Per default each entry is in the <span class="text-highlight">Locked</span> mode.
       <div class="minispace"></div>
-      <span class="text-highlight">Locked</span> means that <span class="text-highlight">this armor slot must have</span> the
+      <span class="text-highlight">Locked</span> means that <span
+      class="text-highlight">this armor slot must have</span> the
       selected element or perk.
       <div class="minispace"></div>
       <span class="text-highlight">Unlocked</span> means that the perk must exist, but <span class="text-highlight">the exact armor slot is irrelevant</span>.
@@ -64,53 +67,35 @@
       <table class="modslot-legend">
         <tr>
           <td>
-            <img #tooltip="matTooltip" class="element-icon" matTooltip='Vault of Glass'
-                 src="https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotVaultOfGlass"></app-armor-perk-icon>
           </td>
           <td>Vault of Glass</td>
           <td>
-            <img #tooltip="matTooltip" class="element-icon"
-                 matTooltip='Deep Stone Crypt'
-                 src="https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotDeepStoneCrypt"></app-armor-perk-icon>
           </td>
           <td>Deep Stone Crypt</td>
           <td>
-            <img #tooltip="matTooltip" class="element-icon"
-                 matTooltip='Garden of Salvation'
-                 src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotGardenOfSalvation"></app-armor-perk-icon>
           </td>
           <td>Garden of Salvation</td>
         </tr>
         <tr>
           <td>
-            <img #tooltip="matTooltip" class="element-icon"
-                 matTooltip='Last Wish'
-                 src="https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotLastWish"></app-armor-perk-icon>
           </td>
           <td>Last Wish</td>
           <td>
-            <img #tooltip="matTooltip" class="element-icon"
-                 matTooltip='Nightmare'
-                 src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotNightmare"></app-armor-perk-icon>
           </td>
           <td>Nightmare Modslot</td>
           <td>
-        <span class="overlay-icon-container">
-        <img #tooltip="matTooltip"
-             class="element-icon"
-             matTooltip='Artificer Modslot'
-             src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
-        <img class="overlay-icon"
-             src="https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png">
-      </span>
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotArtificer"></app-armor-perk-icon>
           </td>
           <td>Artificer Modslot</td>
         </tr>
         <tr>
           <td>
-            <img #tooltip="matTooltip" class="element-icon"
-                 matTooltip='Iron Banner'
-                 src="https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png">
+            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.PerkIronBanner"></app-armor-perk-icon>
           </td>
           <td>Iron Banner Perk</td>
         </tr>

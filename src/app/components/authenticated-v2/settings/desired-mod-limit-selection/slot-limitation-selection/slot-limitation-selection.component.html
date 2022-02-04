@@ -121,14 +121,14 @@
   <div class="selector-element">
     <div class="element-list">
       <!-- Item affinity -->
-      <img #tooltip="matTooltip" (click)="setArmorElement(1)" [class.selected]="element == 1" class="element-icon"
-           matTooltip='{{getAffinityName(1)}} affinity' [src]="getAffinityUrl(1)">
-      <img #tooltip="matTooltip" (click)="setArmorElement(2)" [class.selected]="element == 2" class="element-icon"
-           matTooltip='{{getAffinityName(2)}} affinity' [src]="getAffinityUrl(2)">
-      <img #tooltip="matTooltip" (click)="setArmorElement(3)" [class.selected]="element == 3" class="element-icon"
-           matTooltip='{{getAffinityName(3)}} affinity' [src]="getAffinityUrl(3)">
-      <img #tooltip="matTooltip" (click)="setArmorElement(6)" [class.selected]="element == 6" class="element-icon"
-           matTooltip='{{getAffinityName(6)}} affinity' [src]="getAffinityUrl(6)">
+      <img #tooltip="matTooltip" (click)="setArmorElement(1)" [class.selected]="element == 1" [src]="getAffinityUrl(1)"
+           class="element-icon" matTooltip='{{getAffinityName(1)}} affinity'>
+      <img #tooltip="matTooltip" (click)="setArmorElement(2)" [class.selected]="element == 2" [src]="getAffinityUrl(2)"
+           class="element-icon" matTooltip='{{getAffinityName(2)}} affinity'>
+      <img #tooltip="matTooltip" (click)="setArmorElement(3)" [class.selected]="element == 3" [src]="getAffinityUrl(3)"
+           class="element-icon" matTooltip='{{getAffinityName(3)}} affinity'>
+      <img #tooltip="matTooltip" (click)="setArmorElement(6)" [class.selected]="element == 6" [src]="getAffinityUrl(6)"
+           class="element-icon" matTooltip='{{getAffinityName(6)}} affinity'>
     </div>
 
     <button (click)="toggleElementLock()" class="lock" mat-icon-button
@@ -142,45 +142,14 @@
 
   <div class="selector-slots">
     <div class="element-list">
-      <!-- Item affinity -->
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotVaultOfGlass)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotVaultOfGlass"
-           class="element-icon" matTooltip='Vault of Glass{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png">
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotDeepStoneCrypt)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotDeepStoneCrypt" class="element-icon"
-           matTooltip='Deep Stone Crypt{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png">
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotGardenOfSalvation)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotGardenOfSalvation" class="element-icon"
-           matTooltip='Garden of Salvation{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotLastWish)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotLastWish" class="element-icon"
-           matTooltip='Last Wish{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png">
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotNightmare)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.SlotNightmare" class="element-icon"
-           matTooltip='Nightmare{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png">
-      <span class="overlay-icon-container">
-        <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.SlotArtificer)"
-             [class.disabled]="disabled"
-             [class.selected]="armorPerk == ArmorPerkOrSlot.SlotArtificer" class="element-icon"
-             matTooltip='Artificer Modslot{{disabled? " (disabled due to exotic selection)": ""}}'
-             src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
-        <img src="https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png" class="overlay-icon">
-      </span>
-      <img #tooltip="matTooltip" (click)="!disabled && setArmorPerk(ArmorPerkOrSlot.PerkIronBanner)"
-           [class.disabled]="disabled"
-           [class.selected]="armorPerk == ArmorPerkOrSlot.PerkIronBanner" class="element-icon"
-           matTooltip='Iron Banner{{disabled? " (disabled due to exotic selection)": ""}}'
-           src="https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png">
+      <ng-container
+        *ngFor="let perk of [ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner]">
+        <app-armor-perk-icon (click)="!disabled && setArmorPerk(perk)"
+                             [class.disabled]="disabled"
+                             [class.selected]="armorPerk == perk"
+                             [perk]="perk"
+                             class="element-icon"></app-armor-perk-icon>
+      </ng-container>
     </div>
     <button (click)="toggleArmorPerkLock()" [disabled]="disabled" class="lock"
             mat-icon-button matTooltip="Force the selected perk or slot to be on a {{slotName}}.">

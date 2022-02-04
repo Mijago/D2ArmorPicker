@@ -67,6 +67,7 @@ import { ChangelogDialogControllerComponent } from './components/authenticated-v
 import { ChangelogListComponent } from './components/authenticated-v2/components/changelog-list/changelog-list.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { ArmorPerkIconComponent } from './components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component';
 
 
 const routes: Routes = [
@@ -130,7 +131,8 @@ const routes: Routes = [
     ArmorInvestigationPageComponent,
     ChangelogDialogComponent,
     ChangelogDialogControllerComponent,
-    ChangelogListComponent
+    ChangelogListComponent,
+    ArmorPerkIconComponent
   ],
   imports: [
     FlexLayoutModule,

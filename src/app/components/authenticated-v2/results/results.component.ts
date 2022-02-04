@@ -59,6 +59,7 @@ export interface ResultItem {
   mayBeBugged: boolean,
   stats: number[],
   slot: ArmorSlot,
+  perk: ArmorPerkOrSlot,
   transferState: ResultItemMoveState,
   statsNoMods: number[]
 }

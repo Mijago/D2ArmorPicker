@@ -1,0 +1,8 @@
+<span class="overlay-icon-container" *ngIf="perk != ArmorPerkOrSlot.None">
+  <img #tooltip="matTooltip"
+       class="element-icon"
+       matTooltip='{{name}}'
+       src="{{url}}">
+  <img class="overlay-icon" *ngIf="perk == ArmorPerkOrSlot.SlotArtificer"
+       src="https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png">
+</span>

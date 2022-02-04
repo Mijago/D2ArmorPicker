@@ -2,6 +2,7 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {
   ArmorAffinityIcons,
   ArmorAffinityNames,
+  ArmorPerkOrSlot, ArmorPerkOrSlotDIMText,
   ArmorStat,
   ArmorStatNames,
   SpecialArmorStat,
@@ -64,9 +65,16 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     let result = element?.items.flat().map(d => `id:'${d.itemInstanceId}'`).join(" or ");
 
 
+    let classItemFilters = ["is:classitem"]
     if (element?.classItem.affinity != DestinyEnergyType.Any) {
-      result += ` or (is:classitem is:${ArmorAffinityNames[element?.classItem.affinity || 0]})`;
+      classItemFilters.push(`is:${ArmorAffinityNames[element?.classItem.affinity || 0]}`)
     }
+    if (element?.classItem.perk != ArmorPerkOrSlot.None && element?.classItem.perk != ArmorPerkOrSlot.COUNT) {
+      classItemFilters.push(ArmorPerkOrSlotDIMText[element?.classItem.perk || 0])
+    }
+
+    if (classItemFilters.length > 1)
+      result += ` or (${classItemFilters.join(" ")})`;
 
     return result
   }

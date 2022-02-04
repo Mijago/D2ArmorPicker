@@ -549,7 +549,7 @@ addEventListener('message', async ({data}) => {
             totalResults++;
             if (result !== "DONOTSEND") {
               result["classItem"] = {
-                perk: slotCheckResult.requiredClassItemType,
+                perk: slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None,
                 affinity: requiredClassElement,
               }
 
@@ -1018,6 +1018,7 @@ function handlePermutation(
         masterworked: instance.masterworked,
         mayBeBugged: instance.mayBeBugged,
         slot: instance.slot,
+        perk: instance.perk,
         transferState: 0, // TRANSFER_NONE
         stats: [
           instance.mobility, instance.resilience, instance.recovery,

@@ -76,6 +76,42 @@ export enum ArmorPerkOrSlot {
   COUNT
 }
 
+export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
+  [ArmorPerkOrSlot.SlotArtificer]: "Artificer Modslot",
+  [ArmorPerkOrSlot.SlotLastWish]: "Last Wish Modslot",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "Garden of Salvation Modslot",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "Deep Stone Crypt Modslot",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: "Vault of Glass Modslot",
+  [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
+  [ArmorPerkOrSlot.COUNT]: "",
+}
+export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.SlotNightmare]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
+  [ArmorPerkOrSlot.SlotArtificer]: "https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png",
+  [ArmorPerkOrSlot.SlotLastWish]: "https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: "https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png",
+  [ArmorPerkOrSlot.PerkIronBanner]: "https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png",
+  [ArmorPerkOrSlot.COUNT]: "",
+}
+
+export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.SlotNightmare]: "modslot:nightmare",
+  [ArmorPerkOrSlot.SlotArtificer]: "perkname:\"artifice armor\"",
+  [ArmorPerkOrSlot.SlotLastWish]: "modslot:lastwish",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "modslot:gardenofsalvation",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "modslot:deepstonecrypt",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: "modslot:vaultofglass",
+  [ArmorPerkOrSlot.PerkIronBanner]: "perkname:\"iron lord's pride\"",
+  [ArmorPerkOrSlot.COUNT]: "",
+}
+
+
 export const ArmorAffinityNames: EnumDictionary<DestinyEnergyType, string> = {
   [DestinyEnergyType.Any]: "Any",
   [DestinyEnergyType.Arc]: "Arc",
