@@ -1,15 +1,21 @@
+#description {
+  max-width: 700px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .cluster-item {
   flex-grow: 1;
   flex-basis: 0;
 
   min-width: 250px;
+  max-width: 350px;
   margin-bottom: 10px;
 }
 
 .armor-container {
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  padding-left: 5px;
 }
 
 .armor-container {
@@ -39,4 +45,12 @@
 }
 .stat-range-bar2 {
   background-color: #c246ff;
+}
+
+a {
+  color: #99afe3;
+}
+
+a:visited {
+  color: #7294dc;
 }

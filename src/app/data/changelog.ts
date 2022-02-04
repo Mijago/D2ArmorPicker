@@ -95,6 +95,14 @@ export const CHANGELOG_DATA = [
         text: "Now utilizes three webworkers instead of one. The process is simple, but generally speeds up the results by a huge margin."
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Added an Armor Investigation tab for data scientists."
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a sidenav for smaller devices and reworked the top menubar."
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
         text: "Clicking on a setting that is already set does not re-trigger the calculation now. For example, selecting T3 recovery when it is already at T3 now does nothing."
       },

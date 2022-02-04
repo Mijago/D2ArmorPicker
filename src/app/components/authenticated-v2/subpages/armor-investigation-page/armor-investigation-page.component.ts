@@ -5,6 +5,9 @@ import {InventoryService} from "../../../../services/inventory.service";
 import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 import {DatabaseService} from "../../../../services/database.service";
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
+import {ArmorSlot} from "../../../../data/enum/armor-slot";
+
+type LocalArmorInfo = { slot: ArmorSlot, totalSum: number, totalStats: number[]; itemInstanceId: string; mobility: number[]; intellect: number[]; strength: number[]; statPlugHashes: (number)[]; name: string; recovery: number[]; discipline: number[]; resilience: number[]; hash: number };
 
 @Component({
   selector: 'app-armor-investigation-page',
@@ -12,8 +15,8 @@ import {IManifestArmor} from "../../../../data/types/IManifestArmor";
   styleUrls: ['./armor-investigation-page.component.css']
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
+  armorItemsPerSlot: Map<ArmorSlot, LocalArmorInfo[]> = new Map();
 
-  armorItems: { totalStats: number[]; itemInstanceId: string; mobility: number[]; intellect: number[]; strength: number[]; statPlugHashes: (number)[]; name: string; recovery: number[]; discipline: number[]; resilience: number[]; hash: number }[] = [];
   plugData: { [p: string]: IManifestArmor } = {};
 
   constructor(public inventory: InventoryService, private db: DatabaseService) {
@@ -64,8 +67,8 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     let plugData = Object.fromEntries(modsData.map((_) => [_.hash, _]))
     this.plugData = plugData;
 
-    this.armorItems = (await this.db.inventoryArmor.toArray() as IInventoryArmor[])
-      .sort((a,b) => (""+a.name).localeCompare(b.name))
+    const armorItems = (await this.db.inventoryArmor.toArray() as IInventoryArmor[])
+      .sort((a, b) => ("" + a.name).localeCompare(b.name))
       .map((i: IInventoryArmor) => {
         var result = {
           name: i.name,
@@ -78,8 +81,10 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           discipline: [] as number[],
           intellect: [] as number[],
           strength: [] as number[],
-          totalStats: [0, 0, 0, 0, 0, 0]
-        }
+          totalStats: [0, 0, 0, 0, 0, 0],
+          totalSum: 0,
+          slot: i.slot
+        } as LocalArmorInfo
         // add stat plugs
         if (i.statPlugHashes)
           for (let p of i.statPlugHashes) {
@@ -146,8 +151,19 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           }
         }
 
+        for (let s of result.totalStats)
+          result.totalSum += s
+
         return result;
       })
+
+    this.armorItemsPerSlot = armorItems.reduce((p, v) => {
+      const slot = !v.slot ? 10 : v.slot;
+      if (!p.has(slot)) p.set(slot, [])
+      p.get(slot)?.push(v)
+
+      return p;
+    }, new Map<ArmorSlot, LocalArmorInfo[]>())
   }
 
   private ngUnsubscribe = new Subject();
@@ -155,5 +171,16 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  getCategoryName(id: number): string {
+    switch (id) {
+      case 1: return "Helmets";
+      case 2: return "Gauntlets";
+      case 3: return "Chest Pieces";
+      case 4: return "Legs";
+      case 5: return "Class Items";
+    }
+    return "Unknown Category"
   }
 }

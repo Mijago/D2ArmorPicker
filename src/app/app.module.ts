@@ -34,7 +34,6 @@ import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {StatTierSelectionComponent} from "./components/authenticated-v2/settings/desired-stat-selection/stat-tier-selection/stat-tier-selection.component";
 import {DesiredExoticSelectionComponent} from './components/authenticated-v2/settings/desired-exotic-selection/desired-exotic-selection.component';
 import {DesiredClassSelectionComponent} from './components/authenticated-v2/settings/desired-class-selection/desired-class-selection.component';
-import {HeaderBarComponent} from './components/authenticated-v2/header-bar/header-bar.component';
 import {StatIconComponent} from './components/authenticated-v2/components/stat-icon/stat-icon.component';
 import {DesiredModLimitSelectionComponent} from "./components/authenticated-v2/settings/desired-mod-limit-selection/desired-mod-limit-selection.component";
 import {DesiredModsSelectionComponent} from './components/authenticated-v2/settings/desired-mods-selection/desired-mods-selection.component';
@@ -66,6 +65,8 @@ import { ArmorInvestigationPageComponent } from './components/authenticated-v2/s
 import { ChangelogDialogComponent } from './components/authenticated-v2/components/changelog-dialog/changelog-dialog.component';
 import { ChangelogDialogControllerComponent } from './components/authenticated-v2/components/changelog-dialog-controller/changelog-dialog-controller.component';
 import { ChangelogListComponent } from './components/authenticated-v2/components/changelog-list/changelog-list.component';
+import { LayoutModule } from '@angular/cdk/layout';
+import { MatSidenavModule } from '@angular/material/sidenav';
 
 
 const routes: Routes = [
@@ -109,7 +110,6 @@ const routes: Routes = [
     DesiredModLimitSelectionComponent,
     DesiredExoticSelectionComponent,
     DesiredClassSelectionComponent,
-    HeaderBarComponent,
     StatIconComponent,
     DesiredModsSelectionComponent,
     VarDirectiveDirective,
@@ -164,7 +164,9 @@ const routes: Routes = [
     MatSnackBarModule,
     MatProgressSpinnerModule,
     MatTabsModule,
-    MatChipsModule
+    MatChipsModule,
+    LayoutModule,
+    MatSidenavModule
   ],
   providers: [],
   bootstrap: [AppComponent]

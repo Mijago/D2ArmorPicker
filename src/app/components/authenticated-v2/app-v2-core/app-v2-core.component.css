@@ -13,3 +13,57 @@
 
   border: antiquewhite 1px solid;
 }
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 200px;
+}
+
+.sidenav .mat-toolbar {
+  background: inherit;
+}
+
+.sidenav .active{
+  background-color: rgba(255, 255, 255, 0.07);
+  color: #b8c4dc;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* HEADER */
+#header {
+  position: relative;
+  height: 42px;
+  margin-bottom: 5px;
+}
+
+#header .header-spacer {
+  flex: 1 1 auto;
+}
+
+.changelogText {
+  cursor: pointer;
+}
+
+#loading {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.d2ap-router-link {
+  cursor: pointer;
+}
+
+:host ::ng-deep .mat-tab-link {
+  min-width: 75px;
+  opacity: 1;
+}
