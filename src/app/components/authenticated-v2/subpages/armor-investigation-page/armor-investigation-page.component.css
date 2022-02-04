@@ -37,13 +37,22 @@
 }
 
 
+/* Plugs for the first triplet*/
 .stat-range-bar0 {
   background-color: #acfff1;
 }
 .stat-range-bar1 {
   background-color: #5e9eff;
 }
-.stat-range-bar2 {
+/* Plugs for the 2nd triplet */
+.stat-range-bar3 {
+  background-color: #ffc2ac;
+}
+.stat-range-bar4 {
+  background-color: #ffb45e;
+}
+
+.stat-range-bar2, .stat-range-bar5 {
   background-color: #c246ff;
 }
 

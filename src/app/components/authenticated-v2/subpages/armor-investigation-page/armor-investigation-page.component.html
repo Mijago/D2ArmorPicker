@@ -65,7 +65,7 @@
                 <td>{{armor.totalStats[idx1] |number:'1.0-0'}}</td>
                 <td width="100%">
                   <div class="stat-range">
-                    <div *ngFor="let ci of entry; let id2 = index" class="stat-range-bar stat-range-bar{{id2}}"
+                    <div *ngFor="let ci of entry; let id2 = index" class="stat-range-bar stat-range-bar{{id2 + (idx1>=3 ? 3: 0)}}"
                          style="width:{{ci/32*100}}%"></div>
                   </div>
                 </td>
