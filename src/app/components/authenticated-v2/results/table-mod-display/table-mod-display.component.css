@@ -1,17 +1,31 @@
+.container {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  position: relative;
+}
+
 .modIcon {
-  width: 35px;
-  height: 35px;
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 50px;
+  height: 50px;
+
+  -webkit-filter: contrast(1.7);
+  filter: contrast(1.7);
 
   border: #00000000 solid 2px;
+
+  -webkit-mask-image: url('../../../../../assets/masks/modmask.svg');
+  mask-image: image(url('../../../../../assets/masks/modmask.svg'), black);
 }
 
 .modIcon.minor {
-  padding: 3px;
-  width: 29px;
-  height: 29px;
-
-  border: #00000000 solid 2px;
+  -webkit-filter: contrast(1.5);
+  filter: contrast(1.5);
 }
+
 
 .selected {
   border: red solid 2px;
@@ -23,18 +37,9 @@
 
 .modText {
   position: absolute;
-  text-shadow:  0 0 6px #000000;
-  background: rgba(33, 33, 33, 0.51);
+  text-shadow: 0 0 6px #000000;
+  font-size: smaller;
   color: whitesmoke;
-  bottom: 5px;
-  right: 2px;
-}
-
-.modText.minor {
-  position: absolute;
-  text-shadow:  0 0 6px #000000;
-  background: rgba(33, 33, 33, 0.51);
-  color: whitesmoke;
-  bottom: 8px;
-  right: 5px;
+  bottom: -6px;
+  right: -1px;
 }

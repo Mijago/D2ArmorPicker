@@ -48,7 +48,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added visual indicators for minor and major mods in the overview table. They are simply shown as smaller icons."
+        text: "Added visual indicators for minor and major mods in the overview table. The whole visualization is also more compact now."
       },
       {
         type: ChangelogEntryType.ADD,
