@@ -3,7 +3,7 @@ import {
   ArmorAffinityIcons,
   ArmorAffinityNames,
   ArmorPerkOrSlot, ArmorPerkOrSlotDIMText,
-  ArmorStat,
+  ArmorStat, ArmorStatIconUrls,
   ArmorStatNames,
   SpecialArmorStat,
   STAT_MOD_VALUES,
@@ -35,6 +35,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
   public ArmorStatNames = ArmorStatNames;
+  public ArmorStatIconUrls = ArmorStatIconUrls;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
   public config_characterClass = DestinyClass.Titan;
@@ -290,6 +291,9 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       d.push('mod' + (++total > 10 ? " over100" : ""))
     for (let cvt = 0; cvt < configValueTiers; cvt++)
       d.push('config' + (++total > 10 ? " over100" : ""))
+
+    while (total++ < 10)
+      d.push("");
     return d;
   }
 

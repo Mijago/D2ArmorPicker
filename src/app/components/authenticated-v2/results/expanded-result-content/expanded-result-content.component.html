@@ -349,7 +349,7 @@
         What to do now?
       </mat-panel-title>
       <mat-panel-description>
-        Detailed Instructions of what you have to do now.
+        Detailed Instructions of to get your loadout ready.
       </mat-panel-description>
     </mat-expansion-panel-header>
     <div>
@@ -522,8 +522,7 @@
     </mat-expansion-panel-header>
     <table class="stat-preview">
       <tr>
-        <td>Stat</td>
-        <td>Tiers</td>
+        <td colspan="2">Stat</td>
         <td class="tier-column">1</td>
         <td class="tier-column">2</td>
         <td class="tier-column">3</td>
@@ -534,13 +533,17 @@
         <td class="tier-column">8</td>
         <td class="tier-column">9</td>
         <td class="tier-column">10</td>
+        <td>Tiers</td>
       </tr>
       <tr *ngFor="let statId of armorStatIds">
         <td>{{ArmorStatNames[statId]}}</td>
-        <td>{{getTiersForStat(statId)}}</td>
-        <td *ngFor="let d of getColumnForStat(statId)">
-          <div [class]="d" class="energy-bar"></div>
+        <td>
+          <img alt="{{ArmorStatNames[statId]}}"  style="height: 18px" src="{{ArmorStatIconUrls[statId]}}">
         </td>
+        <td *ngFor="let d of getColumnForStat(statId)">
+          <div [class]="d" class="energy-bar" *ngIf="!!d"></div>
+        </td>
+        <td class="sum-tiers">{{getTiersForStat(statId)}}</td>
       </tr>
       <tr class="legend">
         <td colspan="2">Armor</td>

@@ -56,6 +56,14 @@ export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Intellect]: "Intellect",
   [ArmorStat.Strength]: "Strength"
 }
+export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
+  [ArmorStat.Mobility]: "https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png",
+  [ArmorStat.Resilience]: "https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png",
+  [ArmorStat.Recovery]: "https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png",
+  [ArmorStat.Discipline]: "https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png",
+  [ArmorStat.Intellect]: "https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png",
+  [ArmorStat.Strength]: "https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png"
+}
 
 type Literal<T extends ArmorStat> = `${T}`;
 export type ArmorStatLiteral = Literal<ArmorStat>;
