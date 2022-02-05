@@ -15,7 +15,7 @@ export function calculateTierValueSuper(tier: number, baseValue: number) {
 }
 
 export function calculateTierValueMobility(tier: number, baseValue: number) {
-  return formatTimeMMMSS(Math.round((baseValue + (baseValue * tier * 0.04)) * 100) / 100)
+  return Math.round((baseValue + (baseValue * tier * 0.04)) * 100) / 100;
 }
 
 export function formatTimeMMMSS(seconds: number) {
