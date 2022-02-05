@@ -400,8 +400,8 @@ export class BungieApiService {
 
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
-        if (v.itemType == 19) return true;
-        if (v.itemType == 2) return true;
+        if (v.itemType == 19) return true; // mods
+        if (v.itemType == 2) return true; // armor
         if (v.inventory?.bucketTypeHash == 3448274439) return true; // helmets, required for festival masks
         if (v.inventory?.bucketTypeHash == 3551918588) return true; // gauntlets
         if (v.inventory?.bucketTypeHash == 14239492) return true; // chest
@@ -425,15 +425,26 @@ export class BungieApiService {
             || d.socketTypeHash == 968742181 // head
         }).length || []) > 0)
 
+        const isExotic = (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0;
+        let exoticPerkHash = null;
+        if (isExotic) {
+          const perks = v.sockets?.socketEntries
+            .filter(s => s.socketTypeHash == 965959289)
+            .map(d => d.singleInitialItemHash) || [];
+          exoticPerkHash = perks[0]
+        }
+
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
           watermarkIcon: (v.quality?.displayVersionWatermarkIcons || [null])[0],
           name: v.displayProperties.name,
+          description: v.displayProperties.description,
           clazz: v.classType,
           armor2: isArmor2,
           slot: slot,
-          isExotic: (v.inventory?.tierTypeName == 'Exotic') ? 1 : 0,
+          isExotic: isExotic,
+          exoticPerkHash: exoticPerkHash,
           itemType: v.itemType,
           itemSubType: v.itemSubType,
           investmentStats: v.investmentStats,

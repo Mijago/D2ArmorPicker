@@ -15,6 +15,7 @@ import {ArmorSlot} from "../data/enum/armor-slot";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {NavigationEnd, Router} from "@angular/router";
 import {ResultDefinition} from "../components/authenticated-v2/results/results.component";
+import {IInventoryArmor} from "../data/types/IInventoryArmor";
 
 type info = {
   results: ResultDefinition[],

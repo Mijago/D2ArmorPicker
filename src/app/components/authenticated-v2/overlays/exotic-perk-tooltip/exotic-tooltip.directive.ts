@@ -1,13 +1,13 @@
 import {Directive, Input, TemplateRef, ElementRef, OnInit, HostListener, ComponentRef, OnDestroy} from '@angular/core';
 import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
-import {ArmorTooltipComponent} from "./armor-tooltip-component/armor-tooltip.component";
-import {ResultItem} from "../results/results.component";
+import {ExoticPerkTooltipComponent} from "./exotic-perk-tooltip.component";
+import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 
 @Directive({
-  selector: '[itemTooltip]'
+  selector: '[exoticTooltip]'
 })
-export class TooltipRendererDirective {
+export class ExoticTooltipDirective {
 
   /**
    * This will be used to show tooltip or not
@@ -15,8 +15,8 @@ export class TooltipRendererDirective {
    */
   @Input() showToolTip: boolean = true;
 
-  //If this is specified then specified text will be showin in the tooltip
-  @Input(`itemTooltip`) armor: ResultItem | undefined;
+  //If this is specified then specified text will be show in in the tooltip
+  @Input(`exoticTooltip`) armor: IManifestArmor | undefined;
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
@@ -61,7 +61,7 @@ export class TooltipRendererDirective {
 
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
-      const tooltipRef: ComponentRef<ArmorTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ArmorTooltipComponent));
+      const tooltipRef: ComponentRef<ExoticPerkTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ExoticPerkTooltipComponent));
       tooltipRef.instance.armor = this.armor;
     }
   }

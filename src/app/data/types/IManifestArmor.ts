@@ -6,11 +6,13 @@ export interface IManifestArmor {
   hash: number;
   name: string;
   icon: string;
+  description: string;
   watermarkIcon: string;
   slot: ArmorSlot;
   clazz: DestinyClass;
   perk: ArmorPerkOrSlot;
   isExotic: 1 | 0;
+  exoticPerkHash: number;
   armor2: boolean;
   rawData?: string;
   itemType: number;

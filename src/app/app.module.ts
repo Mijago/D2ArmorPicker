@@ -59,7 +59,7 @@ import {MatTabsModule} from "@angular/material/tabs";
 import {MatChipsModule} from "@angular/material/chips";
 import { SlotLimitationSelectionComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component';
 import { ArmorTooltipComponent } from './components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component';
-import { TooltipRendererDirective } from './components/authenticated-v2/overlays/tooltip-renderer.directive';
+import { ItemTooltipRendererDirective } from './components/authenticated-v2/overlays/armor-tooltip-component/item-tooltip-renderer.directive';
 import { ItemIconComponent } from './components/authenticated-v2/components/item-icon/item-icon.component';
 import { ArmorInvestigationPageComponent } from './components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component';
 import { ChangelogDialogComponent } from './components/authenticated-v2/components/changelog-dialog/changelog-dialog.component';
@@ -68,6 +68,8 @@ import { ChangelogListComponent } from './components/authenticated-v2/components
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { ArmorPerkIconComponent } from './components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component';
+import { ExoticPerkTooltipComponent } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-perk-tooltip.component';
+import { ExoticTooltipDirective } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-tooltip.directive';
 
 
 const routes: Routes = [
@@ -126,13 +128,15 @@ const routes: Routes = [
     TableModDisplayComponent,
     SlotLimitationSelectionComponent,
     ArmorTooltipComponent,
-    TooltipRendererDirective,
+    ItemTooltipRendererDirective,
     ItemIconComponent,
     ArmorInvestigationPageComponent,
     ChangelogDialogComponent,
     ChangelogDialogControllerComponent,
     ChangelogListComponent,
-    ArmorPerkIconComponent
+    ArmorPerkIconComponent,
+    ExoticPerkTooltipComponent,
+    ExoticTooltipDirective
   ],
   imports: [
     FlexLayoutModule,

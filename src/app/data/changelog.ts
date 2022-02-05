@@ -115,6 +115,10 @@ export const CHANGELOG_DATA = [
         text: "The detailed result table now shows the perk of an selected item, if it has one. This also applies to class items, if necessary."
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Hovering over exotics in the exotic selection now displays their perk description."
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
         text: "Clicking on a setting that is already set does not re-trigger the calculation now. For example, selecting T3 recovery when it is already at T3 now does nothing."
       },
