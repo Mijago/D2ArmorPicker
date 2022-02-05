@@ -1,30 +1,38 @@
-<mat-form-field appearance="outline">
-  <mat-label>Class</mat-label>
-  <mat-select [value]="selectedClass" (valueChange)="selectClass($event)">
-    <mat-option *ngFor="let clazz of availableClasses" [value]="clazz">
-      <span *ngIf="clazz == 0">Titan</span>
-      <span *ngIf="clazz == 1">Hunter</span>
-      <span *ngIf="clazz == 2">Warlock</span>
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+<div class="character-container">
+  <div *ngIf="userdata.characters.length == 0" class="character-entry" >
+    Loading characters..
+  </div>
+  <div (click)="selectClass(char.clazz)"
+       *ngFor="let char of userdata.characters"
+       [class.selected]="selectedClass == char.clazz"
+       [style.background-image]="'url(https://bungie.net/'+char.emblemUrl+')'"
+       class="character-entry"
+       style="float: left;">
+    <div class="class-text">
+      <span *ngIf="char.clazz == 0">Titan</span>
+      <span *ngIf="char.clazz == 1">Hunter</span>
+      <span *ngIf="char.clazz == 2">Warlock</span>
+    </div>
+  </div>
+</div>
 
-<a mat-flat-button routerLink="/help"
-   fxShow="false" fxShow.lt-md="true"
-   style="margin-left: 15px;"
-   color="primary">
-  <mat-icon inline>help</mat-icon> Help and Information about D2ArmorPicker
+<a color="primary" fxShow="false"
+   fxShow.lt-md="true" mat-flat-button
+   routerLink="/help"
+   style="margin-left: 15px;">
+  <mat-icon inline>help</mat-icon>
+  Help and Information about D2ArmorPicker
 </a>
 
 <div>
-  <a mat-stroked-button matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
-     color="accent" href="https://ko-fi.com/mijago" target="_blank">
+  <a color="accent" href="https://ko-fi.com/mijago"
+     mat-stroked-button matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!" target="_blank">
     <mat-icon inline>attach_money</mat-icon>
     If you like my work, you can support me here!
   </a>
 
-  <a mat-stroked-button class="discord-btn"
-     color="accent" href="http://discord.d2armorpicker.com" target="_blank">
+  <a class="discord-btn" color="accent"
+     href="http://discord.d2armorpicker.com" mat-stroked-button target="_blank">
     Join my dev Discord!
   </a>
 </div>

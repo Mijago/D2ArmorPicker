@@ -3,6 +3,7 @@ import { Subject } from 'rxjs';
 import {CharacterClass} from "../../../../data/enum/character-Class";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {takeUntil} from "rxjs/operators";
+import {UserdataService} from "../../../../services/userdata.service";
 
 @Component({
   selector: 'app-desired-class-selection',
@@ -14,7 +15,7 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy  {
   @Input() availableClasses: CharacterClass[] = [0,1,2]
   selectedClass = -1;
 
-  constructor(public config: ConfigurationService) {
+  constructor(public config: ConfigurationService, public userdata: UserdataService) {
   }
 
   ngOnInit(): void {

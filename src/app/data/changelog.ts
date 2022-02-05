@@ -88,7 +88,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added Discord and another Ko-Fi link. You can find them in the Character selection."
+        text: "The character selection now shows the existing characters - and their emblems too!"
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Discord and another Ko-Fi link. You can find them in the character selection."
       },
       {
         type: ChangelogEntryType.ADD,

@@ -5,3 +5,42 @@
 ::ng-deep .mat-option-text {
   color: #FFFFFF;
 }
+
+
+.character-container {
+  height:50px;
+}
+
+.character-entry{
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  width: 180px;
+  height: 36px;
+  position: relative;
+
+  margin-right: 7px;
+  margin-bottom: 7px;
+
+  border: rgba(255, 255, 255, 0) solid 2px;
+  opacity: 0.75;
+
+  &:hover {
+    border: rgba(255, 255, 255, 0.41) solid 2px;
+    opacity: 0.98;
+  }
+
+  &.selected {
+    opacity: 1.0;
+    border: white solid 2px;
+  }
+
+}
+
+.class-text {
+  position: absolute;
+  left: 35px;
+  top: 8px;
+  font-size: x-large;
+  text-shadow:  0 0 6px #000000;
+}

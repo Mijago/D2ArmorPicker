@@ -2,13 +2,19 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {environment} from "../../environments/environment";
 import {Router} from "@angular/router";
+import {BehaviorSubject, Observable} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
+  private _logoutEvent: BehaviorSubject<null>;
+  public readonly logoutEvent: Observable<null>;
+
   constructor(private http: HttpClient, private router: Router) {
+    this._logoutEvent = new BehaviorSubject(null)
+    this.logoutEvent = this._logoutEvent.asObservable();
   }
 
   get refreshTokenExpired() {
@@ -156,6 +162,7 @@ export class AuthService {
 
   async logout() {
     try {
+      this._logoutEvent.next(null)
       this.clearManifestInfo();
       this.clearLoginInfo()
     } finally {

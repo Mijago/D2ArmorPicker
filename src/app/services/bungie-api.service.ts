@@ -89,6 +89,7 @@ export class BungieApiService {
       return {
         characterId: d.characterId,
         clazz: d.classType as DestinyClass,
+        emblemUrl: d.emblemBackgroundPath,
         lastPlayed: Date.parse(d.dateLastPlayed)
       }
     }) || [];
