@@ -25,12 +25,15 @@
   border: rgba(255, 255, 255, 0) solid 2px;
   opacity: 0.75;
 
+  cursor: pointer;
+
   &:hover {
     border: rgba(255, 255, 255, 0.41) solid 2px;
     opacity: 0.98;
   }
 
   &.selected {
+    cursor: default;
     opacity: 1.0;
     border: white solid 2px;
   }
