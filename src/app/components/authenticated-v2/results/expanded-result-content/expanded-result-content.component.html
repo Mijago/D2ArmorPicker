@@ -322,7 +322,7 @@
     <span *ngIf="cost['glimmer'] > 0" class="currency-icon-container" matTooltip="Glimmer">
       <img alt="Glimmer" class="currency-icon"
            src="https://bungie.net/common/destiny2_content/icons/36dd52a3005cb28f7f68448f1ab76c1e.png">
-      {{cost["glimmer"]}}
+      {{cost["glimmer"] | number}}
     </span>
 
     <span *ngIf="cost['shards'] > 0" class="currency-icon-container" matTooltip="Legendary Shards">
