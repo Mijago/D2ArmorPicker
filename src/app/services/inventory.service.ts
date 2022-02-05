@@ -6,16 +6,13 @@ import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Configuration} from "../data/configuration";
-import {ArmorStat, StatModifier} from "../data/enum/armor-stat";
+import {ArmorStat} from "../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
 import {BungieApiService} from "./bungie-api.service";
 import {AuthService} from "./auth.service";
-import {EnumDictionary} from "../data/types/EnumDictionary";
 import {ArmorSlot} from "../data/enum/armor-slot";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {NavigationEnd, Router} from "@angular/router";
 import {ResultDefinition} from "../components/authenticated-v2/results/results.component";
-import {IInventoryArmor} from "../data/types/IInventoryArmor";
 
 type info = {
   results: ResultDefinition[],
@@ -223,6 +220,16 @@ export class InventoryService {
   }
 
   public exoticsForClass: Array<IManifestArmor> = [];
+
+  async getItemCountForClass(clazz: CharacterClass, slot?: ArmorSlot) {
+    let pieces = await this.db.inventoryArmor
+      .where("clazz").equals(clazz)
+      .toArray();
+    if (!!slot)
+      pieces = pieces.filter(i => i.slot == slot)
+    console.debug("pieces.length2", pieces.length)
+    return pieces.length
+  }
 
   async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<Array<IManifestArmor>> {
     let armors = await this.db.inventoryArmor
