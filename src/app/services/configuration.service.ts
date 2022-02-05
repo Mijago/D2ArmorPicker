@@ -7,6 +7,7 @@ import {CompressionOptions, DecompressionOptions} from "lzutf8";
 import {environment} from "../../environments/environment";
 import {EnumDictionary} from "../data/types/EnumDictionary";
 import {ArmorStat} from "../data/enum/armor-stat";
+import {ArmorSlot} from "../data/enum/armor-slot";
 
 export interface StoredConfiguration {
   version: string;
@@ -31,7 +32,7 @@ export class ConfigurationService {
   private __configuration: Configuration;
 
   get readonlyConfigurationSnapshot() {
-    return Object.assign(this.__configuration,{});
+    return Object.assign(this.__configuration, {});
   }
 
   private _configuration: BehaviorSubject<Configuration>;
@@ -101,6 +102,28 @@ export class ConfigurationService {
       c.configuration.minimumStatTiers[ArmorStat.Intellect].value = tiers[ArmorStat.Intellect];
       c.configuration.minimumStatTiers[ArmorStat.Strength].value = tiers[ArmorStat.Strength];
       delete (c.configuration as any).minimumStatTier;
+    }
+
+    if (c.configuration.hasOwnProperty("fixedArmorAffinities")) {
+      const affinities = (c.configuration as any).fixedArmorAffinities as any;
+      for (let key in affinities) {
+        let n = (Number.parseInt(key) + 1) as ArmorSlot
+        c.configuration.armorAffinities[n].value = affinities[key];
+      }
+      // It was a default setting back then, so we enforce it when we import old settings.
+      c.configuration.ignoreArmorAffinitiesOnNonMasterworkedItems = true;
+      delete (c.configuration as any).fixedArmorAffinities;
+    }
+
+    if (c.configuration.hasOwnProperty("selectedExoticHash")) {
+      c.configuration.selectedExotics = [(c.configuration as any).selectedExoticHash]
+      delete (c.configuration as any).selectedExoticHash;
+    }
+    if (c.configuration.hasOwnProperty("maximumStatMods")) {
+      let maxMods = (c.configuration as any).maximumStatMods as number;
+      for (let n = maxMods; n < 5; n++)
+        c.configuration.maximumModSlots[1 + n as ArmorSlot].value = 0;
+      delete (c.configuration as any).maximumStatMods;
     }
   }
 
