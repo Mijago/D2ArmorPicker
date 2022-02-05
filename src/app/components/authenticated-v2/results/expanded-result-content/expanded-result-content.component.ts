@@ -24,6 +24,7 @@ import {ModifierType} from "../../../../data/enum/modifierType";
 import {Configuration, FixableSelection} from "../../../../data/configuration";
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
+import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -188,6 +189,26 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       return true;
     })
   }
+
+  calculateRequiredMasterworkCost() {
+    let cost: { [id: string]: number } = {"shards": 0, "glimmer": 0, "core": 0, "prism": 0, "ascshard": 0, "total": 0};
+    let items = this.element?.items.flat() || [];
+    items = items.filter(i =>
+      i.energyLevel < 10
+      && ((i.exotic && this.config_assumeExoticsMasterworked)
+        || (!i.exotic && this.config_assumeLegendariesMasterworked))
+    )
+    for (let item of items) {
+      let costList = item.exotic ? MASTERWORK_COST_EXOTIC : MASTERWORK_COST_LEGENDARY;
+      for (let n = item.energyLevel; n < 10; n++)
+        for (let entryName in costList[n + 1]) {
+          cost[entryName] += costList[n + 1][entryName]
+          cost["total"] ++;
+        }
+    }
+    return cost;
+  }
+
 
   generateDIMLink(c: Configuration): string {
     var data = {

@@ -316,6 +316,41 @@
     </tr>
   </table>
 </div>
+<ng-container *ngVar="calculateRequiredMasterworkCost() as cost">
+  <div *ngIf="cost['total'] > 0" style="margin-top: 10px;">
+    Total material cost:
+    <span *ngIf="cost['glimmer'] > 0" class="currency-icon-container" matTooltip="Glimmer">
+      <img alt="Glimmer" class="currency-icon"
+           src="https://bungie.net/common/destiny2_content/icons/36dd52a3005cb28f7f68448f1ab76c1e.png">
+      {{cost["glimmer"]}}
+    </span>
+
+    <span *ngIf="cost['shards'] > 0" class="currency-icon-container" matTooltip="Legendary Shards">
+      <img alt="Legendary Shards" class="currency-icon"
+           src="https://bungie.net/common/destiny2_content/icons/1ff4a008cb851794ccb588e4eb3918a1.png">
+      {{cost["shards"]}}
+    </span>
+
+    <span *ngIf="cost['core'] > 0" class="currency-icon-container" matTooltip="Enhancement Cores">
+      <img alt="Enhancement Cores" class="currency-icon"
+           src="https://bungie.net/common/destiny2_content/icons/259c571eb7f9f85e56be657f371e303f.jpg">
+      {{cost["core"]}}
+    </span>
+
+    <span *ngIf="cost['prism'] > 0" class="currency-icon-container" matTooltip="Enhancement Prism">
+      <img alt="Enhancement Prism" class="currency-icon"
+           src="https://bungie.net/common/destiny2_content/icons/0397d34d04b687484f73665bb714227b.jpg">
+      {{cost["prism"]}}
+    </span>
+
+    <span *ngIf="cost['ascshard'] > 0" class="currency-icon-container" matTooltip="Ascendant Shard">
+  <img alt="Ascendant Shard" class="currency-icon"
+       src="https://bungie.net/common/destiny2_content/icons/2bd6547fa8f170d8868c8ab24b9fe84a.jpg">
+      {{cost["ascshard"]}}
+  </span>
+  </div>
+</ng-container>
+
 <div class="buttonContainer">
   <ng-container *ngVar="buildItemIdString(element) as text">
     <button (click)="openSnackBar('Copied the DIM search query to your clipboard.')" [cdkCopyToClipboard]="text"
@@ -538,10 +573,10 @@
       <tr *ngFor="let statId of armorStatIds">
         <td>{{ArmorStatNames[statId]}}</td>
         <td>
-          <img alt="{{ArmorStatNames[statId]}}"  style="height: 18px" src="{{ArmorStatIconUrls[statId]}}">
+          <img alt="{{ArmorStatNames[statId]}}" src="{{ArmorStatIconUrls[statId]}}" style="height: 18px">
         </td>
         <td *ngFor="let d of getColumnForStat(statId)">
-          <div [class]="d" class="energy-bar" *ngIf="!!d"></div>
+          <div *ngIf="!!d" [class]="d" class="energy-bar"></div>
         </td>
         <td class="sum-tiers">{{getTiersForStat(statId)}}</td>
       </tr>

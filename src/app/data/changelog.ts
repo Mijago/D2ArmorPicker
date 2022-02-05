@@ -60,6 +60,10 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
+        text: "Show the required material cost for each item. Note that this ignores your class item."
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added a stat summary table to the stat detail view. This allows you to easily share a stat distribution with others."
       },
       {

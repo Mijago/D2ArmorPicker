@@ -51,6 +51,7 @@ export enum ResultItemMoveState {
 
 export interface ResultItem {
   energy: number,
+  energyLevel: number,
   hash: number,
   itemInstanceId: string,
   name: string,

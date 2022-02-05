@@ -1011,6 +1011,7 @@ function handlePermutation(
     items: items.map(i => i.items).flat().reduce((p: any, instance) => {
       p[instance.slot - 1].push({
         energy: instance.energyAffinity,
+        energyLevel: instance.energyLevel,
         hash: instance.hash,
         itemInstanceId: instance.itemInstanceId,
         name: instance.name,
