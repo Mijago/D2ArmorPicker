@@ -32,6 +32,7 @@ var version_tag = production
 
 const data = {
   version: version + version_tag,
+  revision: revision,
   production: production,
   apiKey: process.env.D2AP_BUNGIE_API_KEY,
   clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
