@@ -57,6 +57,7 @@ export class AppV2CoreComponent implements OnInit {
   }
 
   async refreshAll(b: boolean) {
+    console.debug("Trigger refreshAll due to button press")
     await this.inv.refreshAll(b)
   }
 

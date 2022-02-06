@@ -70,6 +70,7 @@ export class InventoryService {
     router.events.subscribe(async val => {
       if (val instanceof NavigationEnd) {
         this.clearResults()
+        console.debug("Trigger refreshAll due to router.events")
         await this.refreshAll(!dataAlreadyFetched);
         dataAlreadyFetched = true;
       }
@@ -89,6 +90,7 @@ export class InventoryService {
         this.ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
 
         isUpdating = true;
+        console.debug("Trigger refreshAll due to config change")
         await this.refreshAll(!dataAlreadyFetched);
         dataAlreadyFetched = true;
 
@@ -114,17 +116,26 @@ export class InventoryService {
     return this.router.url == "/"
   }
 
+  private refreshing: boolean = false;
+
   async refreshAll(force: boolean = false) {
+    if (this.refreshing)
+      return;
+    console.debug("Execute refreshAll")
+    try {
+      this.refreshing = true;
+      let manifestUpdated = await this.updateManifest();
+      let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
 
-    let manifestUpdated = await this.updateManifest();
-    let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
+      // trigger armor update behaviour
+      if (armorUpdated) this._inventory.next(null);
 
-    // trigger armor update behaviour
-    if (armorUpdated) this._inventory.next(null);
-
-    // Do not update results in Help and Cluster pages
-    if (this.shouldCalculateResults()) {
-      this.updateResults()
+      // Do not update results in Help and Cluster pages
+      if (this.shouldCalculateResults()) {
+        this.updateResults()
+      }
+    } finally {
+      this.refreshing = false;
     }
   }
 
