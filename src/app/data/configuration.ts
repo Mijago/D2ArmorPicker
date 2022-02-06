@@ -49,7 +49,7 @@ export class Configuration {
     [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
   }
 
-
+  allowBlueArmorPieces = true;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
@@ -93,6 +93,7 @@ export class Configuration {
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
+      allowBlueArmorPieces: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
       assumeClassItemMasterworked: true,

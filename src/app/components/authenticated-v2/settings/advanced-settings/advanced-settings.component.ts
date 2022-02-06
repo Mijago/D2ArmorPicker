@@ -32,6 +32,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         this.fields2 = {
           // "Events": [
           // ],
+          "Armor selection": [
+            {
+              name: "Allow the usage of armor that is not exotic or legendary.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.allowBlueArmorPieces = v),
+              value: c.allowBlueArmorPieces,
+              disabled: false,
+              impactsResultCount: false,
+              help: "This setting allows the tool to use white, green and blue armor pieces."
+            }
+          ],
           "Masterwork": [
             {
               name: "Assume all legendary items are masterworked",

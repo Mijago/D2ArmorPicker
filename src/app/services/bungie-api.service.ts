@@ -444,6 +444,7 @@ export class BungieApiService {
           armor2: isArmor2,
           slot: slot,
           isExotic: isExotic,
+          rarity: v.inventory?.tierType,
           exoticPerkHash: exoticPerkHash,
           itemType: v.itemType,
           itemSubType: v.itemSubType,

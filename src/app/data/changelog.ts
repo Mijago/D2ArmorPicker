@@ -119,6 +119,10 @@ export const CHANGELOG_DATA = [
         text: "Hovering over exotics in the exotic selection now displays their perk description."
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Added an advanced setting to disable white, green and blue armor."
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
         text: "Clicking on a setting that is already set does not re-trigger the calculation now. For example, selecting T3 recovery when it is already at T3 now does nothing."
       },

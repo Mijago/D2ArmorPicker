@@ -6,7 +6,7 @@ import {FORCE_USE_NO_EXOTIC} from "../data/constants";
 import {ModInformation} from "../data/ModInformation";
 import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {DestinyEnergyType, TierType} from "bungie-api-ts/destiny2";
 
 declare global {
   interface Array<T> {
@@ -332,6 +332,7 @@ addEventListener('message', async ({data}) => {
     .filter(item => selectedExotics.length != 1 || selectedExotics[0].slot != item.slot || selectedExotics[0].hash == item.hash)
     // config.onlyUseMasterworkedItems - only keep masterworked items
     .filter(item => !config.onlyUseMasterworkedItems || item.masterworked)
+    .filter(item => config.allowBlueArmorPieces || item.rarity == TierType.Exotic || item.rarity == TierType.Superior)
     // filter fixed elements
     .filter(item => {
       return !config.armorAffinities[item.slot].fixed
