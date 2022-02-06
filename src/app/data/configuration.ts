@@ -50,6 +50,7 @@ export class Configuration {
   }
 
   allowBlueArmorPieces = true;
+  ignoreSunsetArmor = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
@@ -93,6 +94,7 @@ export class Configuration {
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
+      ignoreSunsetArmor: false,
       allowBlueArmorPieces: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,

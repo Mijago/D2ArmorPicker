@@ -40,6 +40,14 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               disabled: false,
               impactsResultCount: false,
               help: "This setting allows the tool to use white, green and blue armor pieces."
+            },
+            {
+              name: "Ignore sunset armor.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.ignoreSunsetArmor = v),
+              value: c.ignoreSunsetArmor,
+              disabled: false,
+              impactsResultCount: false,
+              help: "Ignore sunset armor in the results."
             }
           ],
           "Masterwork": [

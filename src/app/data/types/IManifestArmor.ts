@@ -15,6 +15,7 @@ export interface IManifestArmor {
   rarity: TierType;
   exoticPerkHash: number;
   armor2: boolean;
+  isSunset: boolean;
   rawData?: string;
   itemType: number;
   itemSubType: number;

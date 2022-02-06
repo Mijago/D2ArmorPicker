@@ -332,7 +332,10 @@ addEventListener('message', async ({data}) => {
     .filter(item => selectedExotics.length != 1 || selectedExotics[0].slot != item.slot || selectedExotics[0].hash == item.hash)
     // config.onlyUseMasterworkedItems - only keep masterworked items
     .filter(item => !config.onlyUseMasterworkedItems || item.masterworked)
+    // non-legendaries and non-exotics
     .filter(item => config.allowBlueArmorPieces || item.rarity == TierType.Exotic || item.rarity == TierType.Superior)
+    // sunset armor
+    .filter(item => !config.ignoreSunsetArmor || !item.isSunset)
     // filter fixed elements
     .filter(item => {
       return !config.armorAffinities[item.slot].fixed

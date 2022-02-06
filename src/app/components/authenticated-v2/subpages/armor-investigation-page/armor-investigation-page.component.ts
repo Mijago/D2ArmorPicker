@@ -7,7 +7,7 @@ import {DatabaseService} from "../../../../services/database.service";
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 
-type LocalArmorInfo = { slot: ArmorSlot, totalSum: number, totalStats: number[]; itemInstanceId: string; mobility: number[]; intellect: number[]; strength: number[]; statPlugHashes: (number)[]; name: string; recovery: number[]; discipline: number[]; resilience: number[]; hash: number };
+type LocalArmorInfo = { isSunset: boolean, slot: ArmorSlot, totalSum: number, totalStats: number[]; itemInstanceId: string; mobility: number[]; intellect: number[]; strength: number[]; statPlugHashes: (number)[]; name: string; recovery: number[]; discipline: number[]; resilience: number[]; hash: number };
 
 @Component({
   selector: 'app-armor-investigation-page',
@@ -73,6 +73,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
         var result = {
           name: i.name,
           hash: i.hash,
+          isSunset: i.isSunset,
           itemInstanceId: i.itemInstanceId,
           statPlugHashes: i.statPlugHashes as number[],
           mobility: [] as number[],

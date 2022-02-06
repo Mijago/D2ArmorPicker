@@ -434,6 +434,16 @@ export class BungieApiService {
           exoticPerkHash = perks[0]
         }
 
+        var sunsetPowerCaps = [
+          1862490585, // 1260
+          1862490584, // 1060
+          1862490584, // 1060
+          1862490583, // 1060
+          2471437758, // 1010
+        ]
+        // if every entry is sunset, so is this item.
+        var isSunset = v.quality?.versions.filter(k => sunsetPowerCaps.includes(k.powerCapHash)).length == v.quality?.versions.length;
+
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
@@ -444,6 +454,7 @@ export class BungieApiService {
           armor2: isArmor2,
           slot: slot,
           isExotic: isExotic,
+          isSunset: isSunset,
           rarity: v.inventory?.tierType,
           exoticPerkHash: exoticPerkHash,
           itemType: v.itemType,
