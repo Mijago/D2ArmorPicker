@@ -1,5 +1,5 @@
-import {EventEmitter} from '@angular/core';
-import {Component, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {ArmorStat} from "../../../../../data/enum/armor-stat";
 
 @Component({
   selector: 'app-stat-tier-selection',
@@ -8,6 +8,7 @@ import {Component, Input, Output} from '@angular/core';
 })
 export class StatTierSelectionComponent {
   readonly TierRange = new Array(11);
+  @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 10;
   @Input() selectedTier: number = 0;
