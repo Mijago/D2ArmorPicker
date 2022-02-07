@@ -250,6 +250,8 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
       }
     }
     if (fixed) bad--;
+  } else if (requiredClassItemType == ArmorPerkOrSlot.None && config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) {
+    requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value
   }
 
   // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
@@ -293,8 +295,7 @@ function prepareConstantModslotRequirement(config: Configuration) {
   constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
   constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
   constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
-  if (!config.armorPerks[ArmorSlot.ArmorSlotClass].fixed)
-    constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
+  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
   return constantElementRequirement;
 }
 
