@@ -34,6 +34,7 @@ const data = {
   version: version + version_tag,
   revision: revision,
   production: production,
+  beta: beta_branch,
   apiKey: process.env.D2AP_BUNGIE_API_KEY,
   clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
   client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
