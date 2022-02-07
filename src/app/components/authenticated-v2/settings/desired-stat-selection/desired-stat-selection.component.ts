@@ -74,8 +74,8 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   setSelectedTier(stat: ArmorStat, value: number) {
-    if (this.config.readonlyConfigurationSnapshot.minimumStatTiers[stat].value == value)
-      return;
+    //if (this.config.readonlyConfigurationSnapshot.minimumStatTiers[stat].value == value)
+    //return;
 
     this.config.modifyConfiguration(c => {
       c.minimumStatTiers[stat].value = value;
