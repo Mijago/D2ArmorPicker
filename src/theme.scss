@@ -25,3 +25,5 @@ $my-theme:  mat.define-dark-theme((
     color: mat-color($primary, default-contrast);
   }
 }
+
+@include mix-app-theme-buttons($my-theme);

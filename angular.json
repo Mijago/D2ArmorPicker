@@ -27,8 +27,16 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
-              "src/styles.scss"
+              {
+                "input": "src/styles.scss",
+                "inject": true,
+                "bundleName": "styles-default"
+              },
+              {
+                "input": "src/theme.scss",
+                "inject": true,
+                "bundleName": "theme-dark"
+              }
             ],
             "scripts": [],
             "webWorkerTsConfig": "tsconfig.worker.json"
