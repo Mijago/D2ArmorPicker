@@ -51,7 +51,6 @@ export function GetArmorStatTierBonus(clazz: CharacterClass): EnumDictionary<Arm
       buildGrenadeCooldown(9, clazz), buildGrenadeCooldown(10, clazz),
     ],
     [ArmorStat.Intellect]: [
-
       buildSuperCooldown(0, clazz), buildSuperCooldown(1, clazz), buildSuperCooldown(2, clazz),
       buildSuperCooldown(3, clazz), buildSuperCooldown(4, clazz), buildSuperCooldown(5, clazz),
       buildSuperCooldown(6, clazz), buildSuperCooldown(7, clazz), buildSuperCooldown(8, clazz),
