@@ -77,6 +77,19 @@ tr.example-detail-row {
   color: red;
 }
 
+.no-found-sadcat-container {
+  width: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.no-found-sadcat {
+  position: absolute;
+  width: 18px;
+  top: -1px;
+}
+
+
 .cdk-column-exotic {
   min-width: 40px;
 }

@@ -128,6 +128,10 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Changed the word 'Permutation' to 'Combination' wherever it has been used."
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Clicking on a setting that is already set does not re-trigger the calculation now. For example, selecting T3 recovery when it is already at T3 now does nothing."
       },
       {

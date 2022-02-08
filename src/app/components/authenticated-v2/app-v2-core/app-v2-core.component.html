@@ -119,7 +119,7 @@
 <span *ngVar="(status.status | async) as stat">
   <mat-card *ngIf="stat.updatingManifest" class="info">Updating the cached manifest. Please wait. <br/>If this takes too long, please logout and login again.</mat-card>
   <mat-card *ngIf="stat.updatingInventory" class="info">Updating the cached inventory. Please wait.</mat-card>
-  <mat-card *ngIf="stat.calculatingPermutations" class="info">Updating armor permutations. Please wait.</mat-card>
+  <mat-card *ngIf="stat.calculatingPermutations" class="info">Updating armor combinations. Please wait.</mat-card>
   <mat-card *ngIf="stat.calculatingResults" class="info">Updating possible results. Please wait.</mat-card>
   <mat-card *ngIf="stat.updatingResultsTable" class="info">Updating result table. Please wait.</mat-card>
 

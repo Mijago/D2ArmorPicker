@@ -5,7 +5,10 @@
       Click on a row to expand it and to see the list of the items required for this build.<br/>
     </ng-container>
     <ng-container *ngIf="this.totalResults == 0">
-      <span class="warning-none-found"><b>No possible permutations found.</b></span>
+      <div class="no-found-sadcat-container">
+        <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat">&nbsp;
+      </div>
+      <span class="warning-none-found"><b>No combinations found.</b></span>
       You should loosen your settings a bit.
     </ng-container>
   </mat-card-subtitle>
@@ -22,7 +25,7 @@
           <input matInput readonly value="{{this.itemCount| number}}">
         </mat-form-field>
         <mat-form-field appearance="outline" class="info-box" fxFlex>
-          <mat-label>Permutations generated</mat-label>
+          <mat-label>Combinations generated</mat-label>
           <input matInput readonly value="{{this.totalResults | number}}">
 
           <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 5e4"
@@ -358,7 +361,7 @@
         </tr>
         <tr *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row" mat-row></tr>
       </table>
-      <mat-paginator [pageSizeOptions]="[10, 20, 50]"
+      <mat-paginator [pageSizeOptions]="[10, 20, 50]" *ngIf="this.totalResults > 0"
                      aria-label="Select page of periodic elements"
                      pageSize="20"
                      showFirstLastButtons>

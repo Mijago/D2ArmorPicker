@@ -127,7 +127,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               value: c.tryLimitWastedStats,
               disabled: false,
               impactsResultCount: false,
-              help: "The tool will try to add minor stat mods to minimize wasted stats. This only works for permutations that fulfill your desired stat combination with enough mods so at least one mod slot is still open."
+              help: "The tool will try to add minor stat mods to minimize wasted stats. This only works for combinations that fulfill your desired stat combination with enough mods so at least one mod slot is still open."
             },
             {
               name: "Only show builds with no wasted stats",
