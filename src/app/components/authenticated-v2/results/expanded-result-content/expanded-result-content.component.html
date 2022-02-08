@@ -55,32 +55,32 @@
                   class="item-stat-value">{{i.stats[ArmorStat.Strength] + bonus}}</span>
           </td>
         </ng-container>
-        <td>
+        <td class="icon-column">
           <!-- Item Icon -->
           <div [itemTooltip]="i" class="item-icon-container">
             <item-icon [itemHash]="i.hash" [masterworked]="i.masterworked" class="item-icon"></item-icon>
           </div>
         </td>
-        <td>
+        <td class="icon-column">
           <img #tooltip="matTooltip"
                *ngIf="i.energy != 0" [src]="getAffinityUrl(i.energy)"
                class="element-icon"
                matTooltip='{{getAffinityName(i.energy)}} affinity'>
         </td>
-        <td>
+        <td class="icon-column">
           <div style="position: relative; width: 25px;">
             <app-armor-perk-icon [perk]="i.perk || 0"></app-armor-perk-icon>
           </div>
         </td>
         <!-- Disable -->
-        <td>
+        <td class="icon-column">
           <button (click)="disableItem(i.itemInstanceId)" class="item-info-menu-btn" mat-icon-button
                   matTooltip="Disable this item from the results. It will not be used to generate results anymore, but you can always undo this.">
             <mat-icon>block</mat-icon>
           </button>
         </td>
         <!-- Moving to inventory -->
-        <td *ngIf="i.transferState == 1 || i.transferState == 2">
+        <td *ngIf="i.transferState == 1 || i.transferState == 2" class="icon-column">
           <mat-progress-spinner
             class="item-loading-spinner"
             color="primary"
