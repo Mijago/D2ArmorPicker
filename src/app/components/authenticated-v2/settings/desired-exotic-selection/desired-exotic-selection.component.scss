@@ -37,3 +37,7 @@
   bottom: 4px;
   right: 5px;
 }
+
+.disabled {
+  filter: grayscale(1.0) contrast(0.6);
+}

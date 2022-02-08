@@ -69,8 +69,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
       this.maximumModSlots = c.maximumModSlots[this.slot].value;
 
       this.disabled = (await this.inventory.getExoticsForClass(c.characterClass))
-        .filter(x => c.selectedExotics.indexOf(x.hash) > -1)
-        .map(e => e.slot)
+        .filter(x => c.selectedExotics.indexOf(x.item.hash) > -1)
+        .map(e => e.item.slot)
         .indexOf(this.slot) > -1;
     })
   }

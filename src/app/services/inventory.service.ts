@@ -242,19 +242,20 @@ export class InventoryService {
     return pieces.length
   }
 
-  async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<Array<IManifestArmor>> {
-    let armors = await this.db.inventoryArmor
-      .where("isExotic").equals(1)
-      .toArray();
-    armors = armors
-      // filter relevant items
-      .filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot))
-      // Remove duplicates, in case the manifest has been inserted twice
-      .filter((thing, index, self) =>
-        index === self.findIndex((t) => (t.hash === thing.hash))
-      )
-    this.exoticsForClass = armors;
-    return armors;
+  async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<{ inInventory: boolean; item: IManifestArmor }[]> {
+    let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray()
+    inventory = inventory.filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot))
+
+    let exotics = await (this.db.manifestArmor.where("isExotic").equals(1).toArray());
+    exotics = exotics.filter(d => (d.clazz == clazz as any) && d.armor2 && (!slot || d.slot == slot));
+
+    this.exoticsForClass = exotics;
+    return exotics.map(ex => {
+      return {
+        item: ex,
+        inInventory: inventory.filter(i => i.hash == ex.hash).length > 0
+      }
+    });
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {

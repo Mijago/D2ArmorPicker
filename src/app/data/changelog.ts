@@ -172,7 +172,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Only show exotics that you have in the inventory or vault."
+        text: "Exotics you do not have in your vault or inventory are now greyed out."
       },
       {
         type: ChangelogEntryType.MODIFIED,

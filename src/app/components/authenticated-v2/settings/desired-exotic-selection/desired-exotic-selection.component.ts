@@ -29,7 +29,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   selectedExotics: number[] = [];
   currentClass: CharacterClass = CharacterClass.Titan;
-  exotics: IManifestArmor[][] = [];
+  exotics: { inInventory: boolean; item: IManifestArmor }[][] = [];
 
   constructor(public inventory: InventoryService, public config: ConfigurationService) {
   }
@@ -66,10 +66,10 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   private async updateExoticsForClass() {
     const armors = await this.inventory.getExoticsForClass(this.currentClass);
     this.exotics = [
-      armors.filter(a => a.slot == ArmorSlot.ArmorSlotHelmet),
-      armors.filter(a => a.slot == ArmorSlot.ArmorSlotGauntlet),
-      armors.filter(a => a.slot == ArmorSlot.ArmorSlotChest),
-      armors.filter(a => a.slot == ArmorSlot.ArmorSlotLegs),
+      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotHelmet),
+      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotGauntlet),
+      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotChest),
+      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotLegs),
     ]
   }
 
