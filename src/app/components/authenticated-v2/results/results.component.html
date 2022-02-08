@@ -361,7 +361,7 @@
         </tr>
         <tr *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row" mat-row></tr>
       </table>
-      <mat-paginator [pageSizeOptions]="[10, 20, 50]" *ngIf="this.totalResults > 0"
+      <mat-paginator [pageSizeOptions]="[10, 20, 50]"
                      aria-label="Select page of periodic elements"
                      pageSize="20"
                      showFirstLastButtons>
