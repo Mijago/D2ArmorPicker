@@ -176,12 +176,35 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   getCategoryName(id: number): string {
     switch (id) {
-      case 1: return "Helmets";
-      case 2: return "Gauntlets";
-      case 3: return "Chest Pieces";
-      case 4: return "Legs";
-      case 5: return "Class Items";
+      case 1:
+        return "Helmets";
+      case 2:
+        return "Gauntlets";
+      case 3:
+        return "Chest Pieces";
+      case 4:
+        return "Legs";
+      case 5:
+        return "Class Items";
     }
     return "Unknown Category"
+  }
+
+  getPlugSum(plugId: number) {
+    var plugInfo = this.plugData[plugId]
+    var total = 0;
+    for (let stat of plugInfo.investmentStats) {
+      switch (stat.statTypeHash) {
+        case 2996146975:
+        case 392767087:
+        case 1943323491:
+        case 1735777505:
+        case 144602215:
+        case 4244567218:
+          total += stat.value;
+          break;
+      }
+    }
+    return total;
   }
 }

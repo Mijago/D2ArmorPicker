@@ -53,7 +53,7 @@
               <td>{{armor.itemInstanceId}}</td>
             </tr>
             <tr>
-              <td>Sunset?</td>
+              <td colspan="2">Sunset?</td>
               <td>{{armor.isSunset}}</td>
             </tr>
             <tr>
@@ -80,14 +80,19 @@
         <mat-card-content>
           Plugs:
           <table>
+            <tr>
+              <td>Plug</td>
+              <td>Total</td>
+              <td>Values</td>
+            </tr>
             <tr *ngFor="let plug of armor.statPlugHashes">
               <td>
                 <a alt="This plug on data.destinysets.com" href="https://data.destinysets.com/i/InventoryItem:{{plug}}"
                    target="_blank">
                   <img src="https://data.destinysets.com/static/media/logo.556bd7bd.svg" style="width: 15px;">
                 </a>
-              </td>
-              <td>{{plug}}</td>
+                {{plug}}</td>
+              <td class="plug-sum-col">{{getPlugSum(plug)}}</td>
               <td>{{getPlugString(plug)}}</td>
             </tr>
           </table>
