@@ -12,7 +12,7 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.2.0",
-    date: "[some day in the future]",
+    date: "Feb 09, 2022",
     entries: [
       // "+ Hotswapping! Added the ability to select two exotics. The tool then gives you a build with both exotics that you can just hotswap, while still having the same base stat selection. It also adds legendaries if the exotics are not in the same slot. Note that the quality of the results HEAVILY varies the less similar your exotics are rolled.",
       // "+ Added a filter for the minimum amount of tiers on a build. You can now say 'Give me only builds with at least 35 tiers'.",  // todo
