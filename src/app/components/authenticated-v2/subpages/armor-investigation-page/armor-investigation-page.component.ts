@@ -15,6 +15,20 @@ type LocalArmorInfo = { isSunset: boolean, slot: ArmorSlot, totalSum: number, to
   styleUrls: ['./armor-investigation-page.component.css']
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
+
+  minMobility: number | null = 0;
+  minResilience: number | null = 0;
+  minRecovery: number | null = 0;
+  minDiscipline: number | null = 0;
+  minIntellect: number | null = 0;
+  minStrength: number | null = 0;
+  anyPlugWithN: number | null = 0;
+  allPlugsBelowN: number | null = 17;
+
+  armorName: string | null = "";
+  armorHash: string | null = "";
+  armorId: string | null = "";
+
   armorItemsPerSlot: Map<ArmorSlot, LocalArmorInfo[]> = new Map();
 
   plugData: { [p: string]: IManifestArmor } = {};
@@ -61,13 +75,13 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     return "[" + info.join(" ") + "]"
   }
 
-  private async updateItems() {
+  async updateItems() {
     let manifestArmor = await this.db.manifestArmor.toArray();
     const modsData = manifestArmor.filter(d => d.itemType == 19)
     let plugData = Object.fromEntries(modsData.map((_) => [_.hash, _]))
     this.plugData = plugData;
 
-    const armorItems = (await this.db.inventoryArmor.toArray() as IInventoryArmor[])
+    let armorItems = (await this.db.inventoryArmor.toArray() as IInventoryArmor[])
       .sort((a, b) => ("" + a.name).localeCompare(b.name))
       .map((i: IInventoryArmor) => {
         var result = {
@@ -158,6 +172,8 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
         return result;
       })
 
+    armorItems = this.filterItems(armorItems)
+
     this.armorItemsPerSlot = armorItems.reduce((p, v) => {
       const slot = !v.slot ? 10 : v.slot;
       if (!p.has(slot)) p.set(slot, [])
@@ -206,5 +222,44 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
       }
     }
     return total;
+  }
+
+  clear() {
+    this.armorName = "";
+    this.armorHash = "";
+    this.armorId = "";
+
+    this.minMobility = 0;
+    this.minResilience = 0;
+    this.minRecovery = 0;
+    this.minDiscipline = 0;
+    this.minIntellect = 0;
+    this.minStrength = 0;
+
+    this.anyPlugWithN = 0;
+    this.allPlugsBelowN = 17;
+  }
+
+  private filterItems(armorItems: LocalArmorInfo[]) {
+    if (!!this.armorName)
+      armorItems = armorItems.filter(i => (i.name?.toLowerCase().indexOf(this.armorName || "") || -1) > -1)
+    if (!!this.armorHash)
+      armorItems = armorItems.filter(i => ((i.hash || 0).toString().indexOf(this.armorHash || "") > -1))
+    if (!!this.armorId)
+      armorItems = armorItems.filter(i => ((i.itemInstanceId || 0).toString().indexOf(this.armorId || "") > -1))
+
+    armorItems = armorItems.filter(i => i.totalStats[0] >= (this.minMobility || 0));
+    armorItems = armorItems.filter(i => i.totalStats[1] >= (this.minResilience || 0));
+    armorItems = armorItems.filter(i => i.totalStats[2] >= (this.minRecovery || 0));
+    armorItems = armorItems.filter(i => i.totalStats[3] >= (this.minDiscipline || 0));
+    armorItems = armorItems.filter(i => i.totalStats[4] >= (this.minIntellect || 0));
+    armorItems = armorItems.filter(i => i.totalStats[5] >= (this.minStrength || 0));
+    if ((this.anyPlugWithN ?? 0) > 0)
+      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) >= (this.anyPlugWithN || 0)).length > 0)
+
+    if ((this.allPlugsBelowN ?? 0) < 17)
+      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) > (this.allPlugsBelowN || 0)).length == 0)
+
+    return armorItems;
   }
 }

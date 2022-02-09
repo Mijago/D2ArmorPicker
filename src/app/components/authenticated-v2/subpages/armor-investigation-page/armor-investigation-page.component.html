@@ -17,6 +17,105 @@
     Please note that this feature is mainly targeted for data nerds and people interested in the basic stats of armor.
     It is just a data visualization. Mobile layout and a search function <i>may</i> happen in the future.
   </mat-card-content>
+  <mat-card-title>
+    Filters
+  </mat-card-title>
+  <mat-card-subtitle>
+    Some filters. Nothing fancy but it works. Sorry ;)
+  </mat-card-subtitle>
+  <mat-card-content>
+
+    <table>
+      <tr>
+        <td colspan="3">
+          <mat-form-field appearance="outline">
+            <mat-label>Item Name</mat-label>
+            <input matInput placeholder="Stronghold" [(ngModel)]="armorName">
+          </mat-form-field>
+        </td>
+        <td colspan="3">
+          <mat-form-field appearance="outline">
+            <mat-label>Item Hash</mat-label>
+            <input matInput  [(ngModel)]="armorHash">
+          </mat-form-field>
+        </td>
+        <td colspan="3">
+          <mat-form-field appearance="outline">
+            <mat-label>Item ID</mat-label>
+            <input matInput  [(ngModel)]="armorId">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Mobility:
+        </td>
+        <td> {{minMobility}}</td>
+        <td>
+          <mat-slider [(value)]="minMobility" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+
+        <td>
+          Resilience:
+        </td>
+        <td> {{minResilience}}</td>
+        <td>
+          <mat-slider [(value)]="minResilience" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+
+        <td>
+          Recovery:
+        </td>
+        <td> {{minRecovery}}</td>
+        <td>
+          <mat-slider [(value)]="minRecovery" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Discipline:
+        </td>
+        <td> {{minDiscipline}}</td>
+        <td>
+          <mat-slider [(value)]="minDiscipline" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+        <td>
+          Intellect:
+        </td>
+        <td> {{minIntellect}}</td>
+        <td>
+          <mat-slider [(value)]="minIntellect" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+        <td>
+          Strength:
+        </td>
+        <td>{{minStrength}}</td>
+        <td>
+          <mat-slider [(value)]="minStrength" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Any plug >=:
+        </td>
+        <td>{{anyPlugWithN}}</td>
+        <td>
+          <mat-slider [(value)]="anyPlugWithN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+        <td>
+          All Plugs <=:
+        </td>
+        <td>{{allPlugsBelowN}}</td>
+        <td>
+          <mat-slider [(value)]="allPlugsBelowN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+      </tr>
+    </table>
+
+    <a mat-raised-button color="primary" (click)="updateItems()">Update</a>&nbsp;
+    <a mat-raised-button color="warn" (click)="clear()">Clear</a>
+
+  </mat-card-content>
 </mat-card>
 
 
@@ -69,7 +168,8 @@
                 <td>{{armor.totalStats[idx1] |number:'1.0-0'}}</td>
                 <td width="100%">
                   <div class="stat-range">
-                    <div *ngFor="let ci of entry; let id2 = index" class="stat-range-bar stat-range-bar{{id2 + (idx1>=3 ? 3: 0)}}"
+                    <div *ngFor="let ci of entry; let id2 = index"
+                         class="stat-range-bar stat-range-bar{{id2 + (idx1>=3 ? 3: 0)}}"
                          style="width:{{ci/32*100}}%"></div>
                   </div>
                 </td>
