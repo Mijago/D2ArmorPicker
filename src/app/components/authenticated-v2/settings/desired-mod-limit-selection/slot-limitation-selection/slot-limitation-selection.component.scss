@@ -95,6 +95,7 @@
 }
 
 .left_line {
+  pointer-events: none;
   height: 15px;
   width: 100%;
   border-left: 1px solid white;
