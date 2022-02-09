@@ -15,11 +15,20 @@
 }
 
 .sidenav-container {
+  position: fixed;
+  top: 0;
+  left: 0;
   height: 100%;
+  z-index: 20;
 }
 
 .sidenav {
   width: 200px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 20;
 }
 
 .sidenav .mat-toolbar {
