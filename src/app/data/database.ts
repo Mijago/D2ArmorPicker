@@ -5,7 +5,7 @@ export function buildDb(onUpgrade: () => void) {
   const db = new Dexie('d2armorpicker-v2');
 
 // Declare tables, IDs and indexes
-  db.version(13).stores({
+  db.version(15).stores({
     manifestArmor: 'id++, hash, isExotic',
     inventoryArmor: 'id++, itemInstanceId, isExotic, hash, name, masterworked, clazz'
   }).upgrade(async tx => {

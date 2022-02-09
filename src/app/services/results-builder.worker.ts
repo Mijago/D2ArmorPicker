@@ -314,11 +314,14 @@ addEventListener('message', async ({data}) => {
   console.debug("START RESULTS BUILDER 2")
   console.time("total")
   const config = data.config as Configuration;
+  console.log("Using config", data.config)
 
   let selectedExotics: IManifestArmor[] = await Promise.all(config.selectedExotics
     .filter(hash => hash != FORCE_USE_NO_EXOTIC)
-    .map(async hash => manifestArmor.where("hash").equals(hash).first()))
+    .map(async hash => await manifestArmor.where("hash").equals(hash).first()))
+  selectedExotics= selectedExotics.filter(i => !!i)
 
+  console.debug("selectedExotics", selectedExotics)
   // let exoticItemInfo = config.selectedExotics.length == 0    ? null    : await inventoryArmor.where("hash").equals(config.selectedExotics[0]).first() as IInventoryArmor
   let items = (await inventoryArmor.where("clazz").equals(config.characterClass)
     .toArray() as IInventoryArmor[])
