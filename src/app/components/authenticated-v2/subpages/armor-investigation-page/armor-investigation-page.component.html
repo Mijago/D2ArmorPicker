@@ -103,6 +103,22 @@
           <mat-slider [(value)]="anyPlugWithN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
         </td>
         <td>
+          Any Plug <=:
+        </td>
+        <td>{{anyPlugBelowN}}</td>
+        <td>
+          <mat-slider [(value)]="anyPlugBelowN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          All plugs >=:
+        </td>
+        <td>{{allPlugsWithN}}</td>
+        <td>
+          <mat-slider [(value)]="allPlugsWithN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
+        </td>
+        <td>
           All Plugs <=:
         </td>
         <td>{{allPlugsBelowN}}</td>

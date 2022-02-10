@@ -23,6 +23,8 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   minIntellect: number | null = 0;
   minStrength: number | null = 0;
   anyPlugWithN: number | null = 0;
+  anyPlugBelowN: number | null = 17;
+  allPlugsWithN: number | null = 0;
   allPlugsBelowN: number | null = 17;
 
   armorName: string | null = "";
@@ -237,7 +239,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     this.minStrength = 0;
 
     this.anyPlugWithN = 0;
-    this.allPlugsBelowN = 17;
+    this.anyPlugBelowN = 17;
   }
 
   private filterItems(armorItems: LocalArmorInfo[]) {
@@ -257,6 +259,11 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     if ((this.anyPlugWithN ?? 0) > 0)
       armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) >= (this.anyPlugWithN || 0)).length > 0)
 
+    if ((this.anyPlugBelowN ?? 0) < 17)
+      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) <= (this.anyPlugBelowN || 0)).length > 0)
+
+    if ((this.allPlugsWithN ?? 0) > 0)
+      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) < (this.allPlugsWithN || 0)).length == 0)
     if ((this.allPlugsBelowN ?? 0) < 17)
       armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) > (this.allPlugsBelowN || 0)).length == 0)
 
