@@ -321,7 +321,6 @@ addEventListener('message', async ({data}) => {
     .map(async hash => await manifestArmor.where("hash").equals(hash).first()))
   selectedExotics= selectedExotics.filter(i => !!i)
 
-  console.debug("selectedExotics", selectedExotics)
   // let exoticItemInfo = config.selectedExotics.length == 0    ? null    : await inventoryArmor.where("hash").equals(config.selectedExotics[0]).first() as IInventoryArmor
   let items = (await inventoryArmor.where("clazz").equals(config.characterClass)
     .toArray() as IInventoryArmor[])
@@ -355,7 +354,6 @@ addEventListener('message', async ({data}) => {
         || config.armorPerks[item.slot].value == ArmorPerkOrSlot.None
         || config.armorPerks[item.slot].value == item.perk
     });
-  console.debug("ITEMS", items.length, items)
   // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
 

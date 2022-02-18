@@ -30,7 +30,6 @@ export class ItemIconServiceService {
     if (!exotic.exoticPerkHash)
       return null;
     let perk = await this.getItemCached(exotic.exoticPerkHash);
-    console.debug("PERK", perk)
     return perk ?? null;
   }
 }

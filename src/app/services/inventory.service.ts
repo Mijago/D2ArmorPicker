@@ -170,7 +170,6 @@ export class InventoryService {
             resultMaximumTiers.push(data.runtime.maximumPossibleTiers)
             for (let elem of data.runtime.statCombo3x100) resultStatCombo3x100.add(elem)
             for (let elem of data.runtime.statCombo4x100) resultStatCombo4x100.add(elem)
-            console.debug("resultMaximumTiers", resultMaximumTiers)
           }
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus(s => s.calculatingResults = false)
@@ -238,7 +237,6 @@ export class InventoryService {
       .toArray();
     if (!!slot)
       pieces = pieces.filter(i => i.slot == slot)
-    console.debug("pieces.length2", pieces.length)
     return pieces.length
   }
 
