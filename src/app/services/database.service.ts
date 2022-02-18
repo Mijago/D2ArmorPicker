@@ -9,7 +9,7 @@ import {IInventoryArmor} from "../data/types/IInventoryArmor";
   providedIn: 'root'
 })
 export class DatabaseService {
-  private readonly db: Dexie;
+  private db: Dexie;
 
   public manifestArmor: Dexie.Table<IManifestArmor, number>;
   public inventoryArmor: Dexie.Table<IInventoryArmor, number>;
@@ -20,5 +20,18 @@ export class DatabaseService {
     })
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
+  }
+
+  private initialize() {
+    this.db = buildDb(async () => {
+      await this.auth.clearManifestInfo();
+    })
+    this.manifestArmor = this.db.table("manifestArmor");
+    this.inventoryArmor = this.db.table("inventoryArmor");
+  }
+
+  async resetDatabase() {
+    await this.db.delete()
+    this.initialize()
   }
 }

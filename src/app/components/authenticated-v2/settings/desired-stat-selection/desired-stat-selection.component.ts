@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ArmorStat} from "../../../../data/enum/armor-stat";
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
-import {FixableSelection, getDefaultStatDict} from "../../../../data/configuration";
+import {FixableSelection, getDefaultStatDict} from "../../../../data/buildConfiguration";
 import {InventoryService} from "../../../../services/inventory.service";
 import {ModInformation} from "../../../../data/ModInformation";
 import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns/cooldowns";

@@ -34,6 +34,10 @@ export class AppV2CoreComponent implements OnInit {
       link: "/investigate",
       name: "Armor Investigation"
     },
+    {
+      link: "/account",
+      name: "Account"
+    },
   ]
 
   constructor(public status: StatusProviderService, private breakpointObserver: BreakpointObserver,

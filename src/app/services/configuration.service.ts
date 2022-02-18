@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Configuration, FixableSelection} from "../data/configuration";
+import {BuildConfiguration, FixableSelection} from "../data/buildConfiguration";
 import {BehaviorSubject, Observable} from "rxjs";
 import {ModOrAbility} from "../data/enum/modOrAbility";
 import * as lzutf8 from "lzutf8";
@@ -12,7 +12,7 @@ import {ArmorSlot} from "../data/enum/armor-slot";
 export interface StoredConfiguration {
   version: string;
   name: string;
-  configuration: Configuration;
+  configuration: BuildConfiguration;
 }
 
 const lzCompOptions = {
@@ -29,14 +29,14 @@ const lzDecompOptions = {
 })
 export class ConfigurationService {
 
-  private __configuration: Configuration;
+  private __configuration: BuildConfiguration;
 
   get readonlyConfigurationSnapshot() {
     return Object.assign(this.__configuration, {});
   }
 
-  private _configuration: BehaviorSubject<Configuration>;
-  public readonly configuration: Observable<Configuration>;
+  private _configuration: BehaviorSubject<BuildConfiguration>;
+  public readonly configuration: Observable<BuildConfiguration>;
 
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
@@ -51,12 +51,12 @@ export class ConfigurationService {
     this.storedConfigurations = this._storedConfigurations.asObservable();
   }
 
-  modifyConfiguration(cb: (configuration: Configuration) => void) {
+  modifyConfiguration(cb: (configuration: BuildConfiguration) => void) {
     cb(this.__configuration);
     this.saveCurrentConfiguration(this.__configuration)
   }
 
-  saveConfiguration(name: string, config: Configuration) {
+  saveConfiguration(name: string, config: BuildConfiguration) {
     let list = this.listSavedConfigurations();
     let c = this.listSavedConfigurations()
       .map((value, index): [StoredConfiguration, number] => [value, index])
@@ -92,7 +92,7 @@ export class ConfigurationService {
   }
 
   checkAndFixOldSavedConfigurations(c: StoredConfiguration) {
-    c.configuration = Object.assign(Configuration.buildEmptyConfiguration(), c.configuration);
+    c.configuration = Object.assign(BuildConfiguration.buildEmptyConfiguration(), c.configuration);
     if (c.configuration.hasOwnProperty("minimumStatTier")) {
       let tiers = (c.configuration as any).minimumStatTier as EnumDictionary<ArmorStat, number>;
       c.configuration.minimumStatTiers[ArmorStat.Mobility].value = tiers[ArmorStat.Mobility];
@@ -163,10 +163,10 @@ export class ConfigurationService {
     this.saveConfiguration(name, this.__configuration);
   }
 
-  saveCurrentConfiguration(configuration: Configuration) {
+  saveCurrentConfiguration(configuration: BuildConfiguration) {
     console.debug("write configuration", configuration)
     // deep copy it
-    this.__configuration = Object.assign(Configuration.buildEmptyConfiguration(), configuration);
+    this.__configuration = Object.assign(BuildConfiguration.buildEmptyConfiguration(), configuration);
     this.__configuration.enabledMods = ([] as ModOrAbility[]).concat(this.__configuration.enabledMods);
     this.__configuration.minimumStatTiers = Object.assign({}, this.__configuration.minimumStatTiers)
 
@@ -211,6 +211,6 @@ export class ConfigurationService {
   }
 
   resetCurrentConfiguration() {
-    this.saveCurrentConfiguration(Configuration.buildEmptyConfiguration())
+    this.saveCurrentConfiguration(BuildConfiguration.buildEmptyConfiguration())
   }
 }

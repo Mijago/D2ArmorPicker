@@ -5,7 +5,7 @@ import {IManifestArmor} from "../data/types/IManifestArmor";
 import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
 import {BehaviorSubject, Observable} from "rxjs";
-import {Configuration} from "../data/configuration";
+import {BuildConfiguration} from "../data/buildConfiguration";
 import {ArmorStat} from "../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
 import {BungieApiService} from "./bungie-api.service";
@@ -48,7 +48,7 @@ export class InventoryService {
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
 
-  private _config: Configuration = Configuration.buildEmptyConfiguration();
+  private _config: BuildConfiguration = BuildConfiguration.buildEmptyConfiguration();
   private updatingResults: boolean = false;
 
   constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
@@ -118,14 +118,14 @@ export class InventoryService {
 
   private refreshing: boolean = false;
 
-  async refreshAll(force: boolean = false) {
+  async refreshAll(forceArmor: boolean = false, forceManifest = false) {
     if (this.refreshing)
       return;
     console.debug("Execute refreshAll")
     try {
       this.refreshing = true;
-      let manifestUpdated = await this.updateManifest();
-      let armorUpdated = await this.updateInventoryItems(manifestUpdated || force);
+      let manifestUpdated = await this.updateManifest(forceManifest);
+      let armorUpdated = await this.updateInventoryItems(manifestUpdated || forceArmor);
 
       // trigger armor update behaviour
       if (armorUpdated) this._inventory.next(null);

@@ -70,6 +70,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { ArmorPerkIconComponent } from './components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component';
 import { ExoticPerkTooltipComponent } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-perk-tooltip.component';
 import { ExoticTooltipDirective } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-tooltip.directive';
+import { AccountConfigPageComponent } from './components/authenticated-v2/subpages/account-config-page/account-config-page.component';
 
 
 const routes: Routes = [
@@ -91,6 +92,10 @@ const routes: Routes = [
       {
         path: 'investigate',
         component: ArmorInvestigationPageComponent
+      },
+      {
+        path: 'account',
+        component: AccountConfigPageComponent
       }
     ]
   },
@@ -136,7 +141,8 @@ const routes: Routes = [
     ChangelogListComponent,
     ArmorPerkIconComponent,
     ExoticPerkTooltipComponent,
-    ExoticTooltipDirective
+    ExoticTooltipDirective,
+    AccountConfigPageComponent
   ],
   imports: [
     FlexLayoutModule,

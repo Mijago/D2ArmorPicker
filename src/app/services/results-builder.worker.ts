@@ -1,4 +1,4 @@
-import {Configuration} from "../data/configuration";
+import {BuildConfiguration} from "../data/buildConfiguration";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {buildDb} from "../data/database";
 import {ArmorSlot} from "../data/enum/armor-slot";
@@ -143,7 +143,7 @@ class ItemCombination {
 }
 
 
-function checkElements(config: Configuration, constantElementRequirements: number[], availableClassElements: Set<DestinyEnergyType>,
+function checkElements(config: BuildConfiguration, constantElementRequirements: number[], availableClassElements: Set<DestinyEnergyType>,
                        helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
   let requirements = constantElementRequirements.slice()
   let wildcard = requirements[0]
@@ -195,7 +195,7 @@ function checkElements(config: Configuration, constantElementRequirements: numbe
   return {valid: bad <= 0, requiredClassItemElement};
 }
 
-function checkSlots(config: Configuration, constantModslotRequirement: number[], availableClassItemTypes: Set<ArmorPerkOrSlot>,
+function checkSlots(config: BuildConfiguration, constantModslotRequirement: number[], availableClassItemTypes: Set<ArmorPerkOrSlot>,
                     helmet: ItemCombination, gauntlet: ItemCombination, chest: ItemCombination, leg: ItemCombination) {
 
   var exoticId = config.selectedExotics[0] || 0
@@ -259,7 +259,7 @@ function checkSlots(config: Configuration, constantModslotRequirement: number[],
   return {valid: bad <= 0, requiredClassItemType};
 }
 
-function prepareConstantStatBonus(config: Configuration) {
+function prepareConstantStatBonus(config: BuildConfiguration) {
   const constantBonus = [0, 0, 0, 0, 0, 0]
   // Apply configurated mods to the stat value
   // Apply mods
@@ -274,7 +274,7 @@ function prepareConstantStatBonus(config: Configuration) {
   return constantBonus;
 }
 
-function prepareConstantElementRequirement(config: Configuration) {
+function prepareConstantElementRequirement(config: BuildConfiguration) {
   let constantElementRequirement = [0, 0, 0, 0, 0, 0, 0]
   //             [0, 2, 1, 1, 0, 0, 1] // 2 arc,  1 solar, 1 void; class item not fixed and stasis
 
@@ -287,7 +287,7 @@ function prepareConstantElementRequirement(config: Configuration) {
   return constantElementRequirement;
 }
 
-function prepareConstantModslotRequirement(config: Configuration) {
+function prepareConstantModslotRequirement(config: BuildConfiguration) {
   let constantElementRequirement = []
   for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantElementRequirement.push(0)
 
@@ -299,7 +299,7 @@ function prepareConstantModslotRequirement(config: Configuration) {
   return constantElementRequirement;
 }
 
-function prepareConstantAvailableModslots(config: Configuration) {
+function prepareConstantAvailableModslots(config: BuildConfiguration) {
   var availableModCost: number[] = [];
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value)
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value)
@@ -313,7 +313,7 @@ addEventListener('message', async ({data}) => {
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2")
   console.time("total")
-  const config = data.config as Configuration;
+  const config = data.config as BuildConfiguration;
   console.log("Using config", data.config)
 
   let selectedExotics: IManifestArmor[] = await Promise.all(config.selectedExotics
@@ -683,7 +683,7 @@ class OrderedList<T> {
  */
 function handlePermutation(
   runtime: any,
-  config: Configuration,
+  config: BuildConfiguration,
   helmet: ItemCombination,
   gauntlet: ItemCombination,
   chest: ItemCombination,
@@ -707,7 +707,7 @@ function handlePermutation(
 
   const stats = getStatSum(items);
   stats[0] += totalStatBonus;
-  stats[1] += totalStatBonus;
+  stats[1] += totalStatBonus + (!items[2].containsExotics && config.addConstent1Resilience ? 1 : 0);
   stats[2] += totalStatBonus;
   stats[3] += totalStatBonus;
   stats[4] += totalStatBonus;

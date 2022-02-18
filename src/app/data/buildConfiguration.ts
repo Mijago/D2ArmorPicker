@@ -22,8 +22,11 @@ export interface FixableSelection<T> {
   fixed: boolean;
 }
 
-export class Configuration {
+export class BuildConfiguration {
   characterClass: CharacterClass = CharacterClass.Titan;
+
+  // Add constant +1 strength
+  addConstent1Resilience = false;
 
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
@@ -87,10 +90,11 @@ export class Configuration {
   ignoreArmorAffinitiesOnNonMasterworkedItems: boolean = false;
 
 
-  static buildEmptyConfiguration(): Configuration {
+  static buildEmptyConfiguration(): BuildConfiguration {
     return {
       enabledMods: [],
       disabledItems: [],
+      addConstent1Resilience: false,
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,

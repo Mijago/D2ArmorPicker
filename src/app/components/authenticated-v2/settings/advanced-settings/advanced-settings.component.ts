@@ -137,6 +137,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               impactsResultCount: true,
               help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results."
             },
+          ],
+          "Data-Science": [
+            {
+              name: "Add a constant +1 resilience to the results with non-exotic chests. For.. reasons..",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.addConstent1Resilience = v),
+              value: c.addConstent1Resilience,
+              disabled: false,
+              impactsResultCount: false,
+              help: "You usually do not want to use this."
+            }
           ]
         }
         this.fieldKeys = Object.keys(this.fields2)

@@ -15,7 +15,7 @@ import {ModInformation} from "../../../data/ModInformation";
 import {ModifierType} from "../../../data/enum/modifierType";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../data/enum/armor-slot";
-import {FixableSelection} from "../../../data/configuration";
+import {FixableSelection} from "../../../data/buildConfiguration";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 

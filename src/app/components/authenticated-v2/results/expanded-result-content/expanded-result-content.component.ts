@@ -21,7 +21,7 @@ import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
-import {Configuration, FixableSelection} from "../../../../data/configuration";
+import {BuildConfiguration, FixableSelection} from "../../../../data/buildConfiguration";
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
@@ -210,7 +210,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   }
 
 
-  generateDIMLink(c: Configuration): string {
+  generateDIMLink(c: BuildConfiguration): string {
     var data = {
       "statConstraints": [
         {
