@@ -11,6 +11,20 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.1",
+    date: "Feb 22, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a debug section to the (new) account settings page. The account settings page does not do much yet, I just wanted to deploy the debug functions."
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor changes in how the database behaves on logout. It now deletes the inventory when you log out, but still keeps the manifest."
+      },
+    ]
+  },
+  {
     version: "2.2.0",
     date: "Feb 09, 2022",
     entries: [
