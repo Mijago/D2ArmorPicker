@@ -7,6 +7,7 @@ export enum ChangelogEntryType {
 export interface ChangelogEntry {
   type: ChangelogEntryType;
   text: string;
+  issues: string[] | undefined;
 }
 
 export const CHANGELOG_DATA = [
@@ -16,11 +17,18 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Added a debug section to the (new) account settings page. The account settings page does not do much yet, I just wanted to deploy the debug functions."
+        text: "Added a debug section to the (new) account settings page. The account settings page does not do much yet, I just wanted to deploy the debug functions.",
+        issues: ["D2AP-23"]
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Minor changes in how the database behaves on logout. It now deletes the inventory when you log out, but still keeps the manifest."
+        text: "Added a minor text to the exotic overview that explains that exotics not in the inventory are shown in grayscale.",
+        issues: ["D2AP-17"]
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor changes in how the database behaves on logout. It now deletes the inventory when you log out, but still keeps the manifest.",
+        issues: ["D2AP-27"]
       },
     ]
   },
