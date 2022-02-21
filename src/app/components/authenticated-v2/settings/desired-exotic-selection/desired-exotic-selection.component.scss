@@ -40,4 +40,8 @@
 
 .disabled {
   filter: grayscale(1.0) contrast(0.6);
+
+  &:hover {
+    cursor: default;
+  }
 }
