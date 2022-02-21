@@ -8,7 +8,7 @@
          src="https://www.bungie.net/{{exotic.item.icon}}"
          [exoticTooltip]="exotic.item"
          [class.disabled]="!exotic.inInventory"
-         (click)="selectExotic(exotic.item.hash, $event)">
+         (click)="exotic.inInventory && selectExotic(exotic.item.hash, $event)">
     <img class="watermarkIcon" *ngIf="exotic.item.watermarkIcon" src="https://www.bungie.net/{{exotic.item.watermarkIcon}}">
   </span>
 
