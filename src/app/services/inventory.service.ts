@@ -1,10 +1,10 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {CharacterClass} from "../data/enum/character-Class";
 import {DatabaseService} from "./database.service";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {BuildConfiguration} from "../data/buildConfiguration";
 import {ArmorStat} from "../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
@@ -68,6 +68,9 @@ export class InventoryService {
     let isUpdating = false;
 
     router.events.subscribe(async val => {
+      if (!auth.isAuthenticated())
+        return;
+
       if (val instanceof NavigationEnd) {
         this.clearResults()
         console.debug("Trigger refreshAll due to router.events")
@@ -85,6 +88,8 @@ export class InventoryService {
           await this.auth.logout();
           return;
         }
+        if (!auth.isAuthenticated())
+          return;
 
         this._config = c;
         this.ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;

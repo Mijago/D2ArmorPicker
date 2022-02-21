@@ -20,6 +20,10 @@ export class DatabaseService {
     })
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
+
+    this.auth.logoutEvent.subscribe(async k => {
+      await this.clearDatabase();
+    })
   }
 
   private initialize() {
@@ -28,6 +32,12 @@ export class DatabaseService {
     })
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
+  }
+
+  private async clearDatabase() {
+    localStorage.removeItem("LastManifestUpdate");
+    localStorage.removeItem("LastArmorUpdate");
+    await this.inventoryArmor.clear()
   }
 
   async resetDatabase(initialize = true) {
