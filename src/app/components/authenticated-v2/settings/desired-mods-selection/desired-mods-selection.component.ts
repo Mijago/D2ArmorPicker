@@ -20,11 +20,13 @@ import {Subject} from "rxjs";
   ]
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
+  ModifierType = ModifierType;
   dataSource: Modifier[];
   displayedColumns = ["name", "cost", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
   private selectedClass: CharacterClass = CharacterClass.None;
-  data: { data: Modifier[]; name: string }[];
+  data: { data: Modifier[]; name: string, group: boolean, type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
+  selectedElement: ModifierType = ModifierType.Void;
 
   constructor(private config: ConfigurationService) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
@@ -38,10 +40,12 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     });
     let combatStyleMods = modifiers.filter(value => value.type == ModifierType.CombatStyleMod);
     let stasisFragments = modifiers.filter(value => value.type == ModifierType.Stasis);
+    let voidFragments = modifiers.filter(value => value.type == ModifierType.Void);
 
     this.data = [
-      {name: "Combat Style Mods", data: combatStyleMods},
-      {name: "Stasis Fragments", data: stasisFragments},
+      {name: "Combat Style Mods", data: combatStyleMods, group: false, type: ModifierType.CombatStyleMod},
+      {name: "Stasis Fragments", data: stasisFragments, group: true, type: ModifierType.Stasis},
+      {name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void},
     ]
 
     this.dataSource = modifiers;
@@ -53,6 +57,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       .subscribe(c => {
         this.selectedMods = c.enabledMods;
         this.selectedClass = c.characterClass;
+        this.selectedElement = c.selectedModElement;
       })
   }
 
@@ -96,6 +101,22 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
 
   getAffinityUrl(id: DestinyEnergyType) {
     return ArmorAffinityIcons[id];
+  }
+
+  setElement(element: ModifierType) {
+    if (this.selectedElement == element)
+      return;
+    this.config.modifyConfiguration(c => {
+      const pos = c.enabledMods
+        .filter(m => ModInformation[m].type != ModifierType.CombatStyleMod && ModInformation[m].type != element)
+
+      c.selectedModElement = element;
+
+      for (let toDisableMods of pos) {
+        const position = c.enabledMods.indexOf(toDisableMods);
+        c.enabledMods.splice(position, 1)
+      }
+    })
   }
 
   private ngUnsubscribe = new Subject();

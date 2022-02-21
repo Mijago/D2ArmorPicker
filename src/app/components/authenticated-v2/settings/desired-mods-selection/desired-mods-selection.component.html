@@ -1,5 +1,18 @@
-<span *ngFor="let d of data">
-  <h3 class="stat-part-title">{{d.name}}</h3>
+<span *ngFor="let d of data; let idx = index">
+  <ng-container *ngIf="idx == 1">
+    <br/>
+    <mat-button-toggle-group [value]="selectedElement">
+          <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
+            Void 3.0
+          </mat-button-toggle>
+          <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
+            Stasis
+          </mat-button-toggle>
+    </mat-button-toggle-group>
+  </ng-container>
+  <ng-container *ngIf="!d.group || d.type == selectedElement">
+
+  <h3 class="stat-part-title" *ngIf="!d.group">{{d.name}}</h3>
   <table [dataSource]="d.data" mat-table>
   <!-- Position Column -->
   <ng-container matColumnDef="name">
@@ -112,6 +125,7 @@
 </table>
 
 
+  </ng-container>
 </span>
 
 <div id="clear-container">

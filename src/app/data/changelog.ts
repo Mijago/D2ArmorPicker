@@ -17,6 +17,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
+        text: "Added a switch to select between Stasis and Void 3.0 fragments. Void 3.0 is enabled per default.",
+        issues: ["D2AP-10"]
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added a debug section to the (new) account settings page. The account settings page does not do much yet, I just wanted to deploy the debug functions.",
         issues: ["D2AP-23"]
       },

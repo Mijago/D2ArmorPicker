@@ -5,6 +5,7 @@ import {CharacterClass} from "./enum/character-Class";
 import {MAXIMUM_STAT_MOD_AMOUNT} from "./constants";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "./enum/armor-slot";
+import {ModifierType} from "./enum/modifierType";
 
 export function getDefaultStatDict(value: number): EnumDictionary<ArmorStat, FixableSelection<number>> {
   return {
@@ -63,6 +64,7 @@ export class BuildConfiguration {
   onlyShowResultsWithNoWastedStats = false;
   showWastedStatsColumn = false;
 
+  selectedModElement: ModifierType = ModifierType.Void;
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = []
 
@@ -108,6 +110,7 @@ export class BuildConfiguration {
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,
+      selectedModElement: ModifierType.Void,
       selectedExotics: [],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: 5},
