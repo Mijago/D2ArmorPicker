@@ -30,8 +30,16 @@ export class DatabaseService {
     this.inventoryArmor = this.db.table("inventoryArmor");
   }
 
-  async resetDatabase() {
+  async resetDatabase(initialize = true) {
+    localStorage.removeItem("LastManifestUpdate");
+    localStorage.removeItem("last-manifest-revision");
+    localStorage.removeItem("last-manifest-db-name");
+
+    localStorage.removeItem("LastArmorUpdate");
+    localStorage.removeItem("last-armor-db-name");
+
     await this.db.delete()
-    this.initialize()
+    if (initialize)
+      this.initialize()
   }
 }

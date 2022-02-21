@@ -41,13 +41,6 @@ export class AccountConfigPageComponent implements OnInit {
   }
 
   async resetDatabase() {
-    localStorage.removeItem("LastManifestUpdate");
-    localStorage.removeItem("last-manifest-revision");
-    localStorage.removeItem("last-manifest-db-name");
-
-    localStorage.removeItem("LastArmorUpdate");
-    localStorage.removeItem("last-armor-db-name");
-
     await this.db.resetDatabase();
     await this.inv.refreshAll(true, true);
   }
