@@ -64,7 +64,7 @@ export class BuildConfiguration {
   onlyShowResultsWithNoWastedStats = false;
   showWastedStatsColumn = false;
 
-  selectedModElement: ModifierType = ModifierType.Void;
+  selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = []
 
@@ -110,7 +110,7 @@ export class BuildConfiguration {
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       characterClass: CharacterClass.Titan,
-      selectedModElement: ModifierType.Void,
+      selectedModElement: ModifierType.Stasis,
       selectedExotics: [],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: 5},
