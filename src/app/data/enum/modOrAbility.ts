@@ -21,4 +21,23 @@ export enum ModOrAbility {
     WhisperOfBonds,
     WhisperOfHunger,
     WhisperOfFractures,
+
+  // VOID
+    EchoOfExpulsion  =1200,
+    EchoOfProvision,
+    EchoOfPersistence ,
+    EchoOfLeeching,
+    EchoOfDomineering,
+    EchoOfDilation,
+    EchoOfUndermining,
+
+    EchoOfInstability, //+10 str
+    EchoOfHarvest,
+    EchoOfObscurity, //+10rec
+    EchoOfStarvation,
+
+
+    //EchoOfExchange ,
+    //EchoOfRemnants,
+    //EchoOfReprisal,
 }

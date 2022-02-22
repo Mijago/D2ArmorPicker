@@ -174,4 +174,104 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2483898431
   },
+  // VOID
+  [ModOrAbility.EchoOfExpulsion]: {
+    id: ModOrAbility.EchoOfExpulsion,
+    name: "Echo of Expulsion",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Intellect, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984665
+  },
+  [ModOrAbility.EchoOfProvision]: {
+    id: ModOrAbility.EchoOfProvision,
+    name: "Echo of Provision",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Strength, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984664
+  },
+  [ModOrAbility.EchoOfPersistence]: {
+    id: ModOrAbility.EchoOfPersistence,
+    name: "Echo of Persistence",
+    type: ModifierType.Void,
+    bonus: [{stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984671
+  },
+  [ModOrAbility.EchoOfLeeching]: {
+    id: ModOrAbility.EchoOfLeeching,
+    name: "Echo of Leeching",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Resilience, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984670
+  },
+  [ModOrAbility.EchoOfDomineering]: {
+    id: ModOrAbility.EchoOfDomineering,
+    name: "Echo of Domineering",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Discipline, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984657
+  },
+  [ModOrAbility.EchoOfDilation]: {
+    id: ModOrAbility.EchoOfDilation,
+    name: "Echo of Dilation",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Mobility, value: 10}, {stat: ArmorStat.Intellect, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984656
+  },
+  [ModOrAbility.EchoOfUndermining]: {
+    id: ModOrAbility.EchoOfUndermining,
+    name: "Echo of Undermining",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Discipline, value: -20}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2272984668
+  },
+  [ModOrAbility.EchoOfInstability]: {
+    id: ModOrAbility.EchoOfInstability,
+    name: "Echo of Instability",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Strength, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2661180600
+  },
+  [ModOrAbility.EchoOfObscurity]: {
+    id: ModOrAbility.EchoOfObscurity,
+    name: "Echo of Obscurity",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Recovery, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2661180602
+  },
+  [ModOrAbility.EchoOfHarvest]: {
+    id: ModOrAbility.EchoOfHarvest,
+    name: "Echo of Harvest",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Intellect, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2661180601
+  },
+  [ModOrAbility.EchoOfStarvation]: {
+    id: ModOrAbility.EchoOfStarvation,
+    name: "Echo of Starvation",
+    type: ModifierType.Void,
+    bonus: [{stat: ArmorStat.Recovery, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2661180603
+  },
 }
