@@ -62,8 +62,12 @@ export class BungieApiService {
     ).toPromise()
       .catch(async err => {
         console.error(err);
+        if (err.error?.ErrorStatus == "SystemDisabled") {
+          console.info("System is disabled. Revoking auth, must re-login")
+          await this.authService.logout();
+        }
         if (err.ErrorStatus != "Internal Server Error") {
-          console.info("Revoking auth, must re-login")
+          console.info("API-Error")
           //await this.authService.logout();
         }
         // TODO: go to login page
