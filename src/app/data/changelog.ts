@@ -35,6 +35,11 @@ export const CHANGELOG_DATA = [
         text: "Minor changes in how the database behaves on logout. It now deletes the inventory when you log out, but still keeps the manifest.",
         issues: ["D2AP-27"]
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Users are now logged out when the Bungie.Net API is down.",
+        issues: ["D2AP-34"]
+      },
     ]
   },
   {
