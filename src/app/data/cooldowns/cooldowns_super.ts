@@ -4,25 +4,25 @@ import {calculateTierValueAbility, calculateTierValueSuper} from "./cooldown_def
 
 export const SuperAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {
   [CharacterClass.Titan]: [
-    "", // 417
+    "Ward of Dawn", // 417
     "", // 455
     "Burning Maul, Thundercrash", // 500
-    "Sentinel Shield ", // 556
-    "Behemoth, Hammer of Sol, Fist of Havoc", // 625
+    "Behemoth, Fist of Havoc, Sentinel Shield", // 556
+    "Hammer of Sol", // 625
   ],
   [CharacterClass.Hunter]: [
     "", // 417
     "Blade Barrage, Shadowshot", // 455
-    "Arc Staff", // 500
-    "Silence & Squall, Golden Gun", // 556  9:16
+    "", // 500
+    "Arc Staff, Silence & Squall, Golden Gun", // 556  9:16
     "Spectral Blades", // 625
   ],
   [CharacterClass.Warlock]: [
     "Well of Radiance", // 417
     "", // 455
     "Nova Bomb", // 500
-    "Daybreak, Nova Warp, Stormtrance, Chaos Reach", // 556
-    "Shadebinder", // 625
+    "Shadebinder, Nova Warp, Stormtrance, Chaos Reach", // 556
+    "Daybreak", // 625
   ],
   [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", "", ""]
 }
