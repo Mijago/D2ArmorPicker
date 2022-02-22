@@ -13,7 +13,8 @@
   <ng-container *ngIf="!d.group || d.type == selectedElement">
 
   <h3 class="stat-part-title" *ngIf="!d.group">{{d.name}}</h3>
-  <table [dataSource]="d.data" mat-table>
+  <span *ngIf="d.data.length == 0">There are no fragments configured yet. Please be patient.</span>
+  <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
   <!-- Position Column -->
   <ng-container matColumnDef="name">
     <th *matHeaderCellDef mat-header-cell>Name</th>
