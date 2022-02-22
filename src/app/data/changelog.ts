@@ -17,7 +17,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Added a switch to select between Stasis and Void 3.0 fragments. Void 3.0 is enabled per default.",
+        text: "Added a switch to select between Stasis and Void 3.0 fragments. Stasis is enabled per default to ensure backwards compatibility of saved configurations. Note that Void Fragments will be added as soon as I get a complete list - I will not create a new version for this but sneak-edit them.",
         issues: ["D2AP-10"]
       },
       {
