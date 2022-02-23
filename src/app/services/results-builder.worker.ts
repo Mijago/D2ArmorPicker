@@ -266,7 +266,7 @@ function prepareConstantStatBonus(config: BuildConfiguration) {
   for (const mod of config.enabledMods) {
     for (const bonus of ModInformation[mod].bonus) {
       var statId = bonus.stat == SpecialArmorStat.ClassAbilityRegenerationStat
-        ? [1, 0, 3][config.characterClass]
+        ? [1, 0, 2][config.characterClass]
         : bonus.stat
       constantBonus[statId] += bonus.value;
     }

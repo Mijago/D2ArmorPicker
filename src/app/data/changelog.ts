@@ -44,6 +44,10 @@ export const CHANGELOG_DATA = [
         text: "Users are now logged out when the Bungie.Net API is down.",
         issues: ["D2AP-34"]
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed Charge Harvester and Echo of Persistence incorrectly reducing Discipline instead of recovery when used on a Warlock."
+      },
     ]
   },
   {
