@@ -27,6 +27,10 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Modified super cooldowns for Witch Queen.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Added a minor text to the exotic overview that explains that exotics not in the inventory are shown in grayscale. You can also no longer select those.",
         issues: ["D2AP-17"]
       },
