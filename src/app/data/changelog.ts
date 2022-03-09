@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.2",
+    date: "Mar 9, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Vow of the Disciple armor.",
+        issues: ["D2AP-35"]
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added 'Uniformed Officer' armor.",
+        issues: ["D2AP-35"]
+      },
+    ]
+  },
+  {
     version: "2.2.1",
     date: "Feb 22, 2022",
     entries: [
