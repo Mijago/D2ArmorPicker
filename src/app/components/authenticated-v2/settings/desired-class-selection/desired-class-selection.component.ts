@@ -24,7 +24,15 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
     this.config.configuration
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
-        c => this.selectedClass = c.characterClass
+        c => {
+          this.selectedClass = c.characterClass
+          if (this.availableClasses.length > 0 && this.availableClasses.indexOf(c.characterClass) == -1) {
+            this.config.modifyConfiguration(d => {
+              d.characterClass = this.availableClasses[0];
+              d.selectedExotics = [];
+            });
+          }
+        }
       )
     this.inv.inventory
       .pipe(takeUntil(this.ngUnsubscribe))
