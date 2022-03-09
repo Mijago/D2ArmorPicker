@@ -35,6 +35,11 @@ export const CHANGELOG_DATA = [
         text: "FIxed Scatter grenades being Tier 3 (were T4 before).",
         issues: ["D2AP-39"]
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the color of the login button.",
+        issues: ["D2AP-37"]
+      },
     ]
   },
   {
