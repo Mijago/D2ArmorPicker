@@ -143,7 +143,7 @@
   <div class="selector-slots">
     <div class="element-list">
       <ng-container
-        *ngFor="let perk of [ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner]">
+        *ngFor="let perk of [ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer]">
         <app-armor-perk-icon (click)="!disabled && setArmorPerk(perk)"
                              [class.disabled]="disabled"
                              [class.selected]="armorPerk == perk"

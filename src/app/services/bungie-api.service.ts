@@ -377,11 +377,15 @@ export class BungieApiService {
       return ArmorPerkOrSlot.SlotGardenOfSalvation;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 4055462131) || []).length > 0)
       return ArmorPerkOrSlot.SlotDeepStoneCrypt;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2447143568) || []).length > 0)
+      return ArmorPerkOrSlot.SlotVowOfTheDisciple;
 
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1180997867) || []).length > 0)
       return ArmorPerkOrSlot.SlotNightmare;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2472875850) || []).length > 0)
       return ArmorPerkOrSlot.PerkIronBanner;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2392155347) || []).length > 0)
+      return ArmorPerkOrSlot.PerkUniformedOfficer;
 
     return ArmorPerkOrSlot.None
   }
