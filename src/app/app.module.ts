@@ -71,6 +71,10 @@ import { ArmorPerkIconComponent } from './components/authenticated-v2/components
 import { ExoticPerkTooltipComponent } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-perk-tooltip.component';
 import { ExoticTooltipDirective } from './components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-tooltip.directive';
 import { AccountConfigPageComponent } from './components/authenticated-v2/subpages/account-config-page/account-config-page.component';
+import { ModDescriptionTooltipComponent } from './components/authenticated-v2/overlays/mod-description-tooltip/mod-description-tooltip.component';
+import {
+  ModTooltipDirective
+} from "./components/authenticated-v2/overlays/mod-description-tooltip/mod-tooltip.directive";
 
 
 const routes: Routes = [
@@ -142,7 +146,10 @@ const routes: Routes = [
     ArmorPerkIconComponent,
     ExoticPerkTooltipComponent,
     ExoticTooltipDirective,
-    AccountConfigPageComponent
+    ModTooltipDirective,
+    ModDescriptionTooltipComponent,
+    AccountConfigPageComponent,
+    ModDescriptionTooltipComponent
   ],
   imports: [
     FlexLayoutModule,

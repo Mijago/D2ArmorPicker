@@ -11,6 +11,7 @@ export interface ModifierValue {
 export interface Modifier {
   id: ModOrAbility,
   name: string;
+  description: string;
   type: ModifierType;
   bonus: ModifierValue[];
   requiredArmorAffinity: DestinyEnergyType;

@@ -18,7 +18,7 @@
   <!-- Position Column -->
   <ng-container matColumnDef="name">
     <th *matHeaderCellDef mat-header-cell>Name</th>
-    <td *matCellDef="let element" mat-cell>
+    <td *matCellDef="let element" mat-cell [modTooltip]="element">
       <mat-slide-toggle
         [checked]="selectedMods.indexOf(element.id) > -1" color="primary" disabled
         style="cursor: pointer !important;">

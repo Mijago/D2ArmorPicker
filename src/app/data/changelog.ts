@@ -17,6 +17,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
+        text: "See what mods do by hovering over their name.",
+        issues: ["D2AP-41"]
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added Vow of the Disciple armor.",
         issues: ["D2AP-35"]
       },
