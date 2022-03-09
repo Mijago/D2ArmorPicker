@@ -25,6 +25,11 @@ export const CHANGELOG_DATA = [
         text: "Added 'Uniformed Officer' armor.",
         issues: ["D2AP-35"]
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "FIxed Scatter grenades being Tier 3 (were T4 before).",
+        issues: ["D2AP-39"]
+      },
     ]
   },
   {

@@ -25,8 +25,8 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
     "Duskfield, Firebolt", // 64
     "Fusion", // 73
     "Axion Bolt, Storm", // 91
-    "Solar, Vortex, Scatter, Pulse", // 105
-    "Arcbolt, Coldsnap", // 121
+    "Solar, Vortex, Pulse", // 105
+    "Arcbolt, Coldsnap, Scatter", // 121
     "Glacier", // 152
     "" // 182
   ],
