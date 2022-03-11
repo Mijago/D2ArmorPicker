@@ -42,8 +42,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "When a selected character class does not exist, the tool will now select the first available class as default.",
-        issues: ["D2AP-37"]
+        text: "When a selected character class does not exist, the tool will now select the first available class as default."
       },
     ]
   },
