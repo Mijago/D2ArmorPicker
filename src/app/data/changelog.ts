@@ -32,12 +32,17 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "FIxed Scatter grenades being Tier 3 (were T4 before).",
+        text: "Fixed Scatter grenades being Tier 3 (were T4 before).",
         issues: ["D2AP-39"]
       },
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Changed the color of the login button.",
+        issues: ["D2AP-37"]
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "When a selected character class does not exist, the tool will now select the first available class as default.",
         issues: ["D2AP-37"]
       },
     ]
