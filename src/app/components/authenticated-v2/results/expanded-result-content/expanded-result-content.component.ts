@@ -15,9 +15,8 @@ import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierValue} from "../../../../data/modifier";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {BungieApiService} from "../../../../services/bungie-api.service";
-import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {DestinyEnergyType,DestinyClass} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
@@ -25,6 +24,7 @@ import {BuildConfiguration, FixableSelection} from "../../../../data/buildConfig
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
+import {AssumeArmorMasterwork, LoadoutParameters, LockArmorEnergyType, UpgradeSpendTier} from '@destinyitemmanager/dim-api-types';
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -211,7 +211,22 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
 
   generateDIMLink(c: BuildConfiguration): string {
-    var data = {
+    const mods: number[] = [];
+
+    // add selected mods
+    for (let mod of this.config_enabledMods) {
+      const modInfo = ModInformation[mod]
+      if (modInfo.type === ModifierType.CombatStyleMod) {
+          mods.push(modInfo.hash)
+      }
+    }
+
+    // add stat mods
+    for (let mod of (this.element?.mods || [])) {
+      mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+    }
+
+    var data: LoadoutParameters = {
       "statConstraints": [
         {
           "statHash": 2996146975,
@@ -244,42 +259,24 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           "maxTier": c.minimumStatTiers[ArmorStat.Strength].fixed ? c.minimumStatTiers[ArmorStat.Strength].value : 10
         }
       ],
-      "mods": [] as number[],
-      //"pinnedItems": {} as any,
-      "items": [] as any,
-      "upgradeSpendTier": 5,
-      "autoStatMods": true,
-      "lockItemEnergyType": false,
-      "assumeMasterworked": false,
-      "query": this.buildItemIdString(this.element)
-    } as any
+      mods,
+      assumeArmorMasterwork: c.assumeLegendariesMasterworked ? c.assumeExoticsMasterworked ? AssumeArmorMasterwork.All : AssumeArmorMasterwork.Legendary : AssumeArmorMasterwork.None,
+      lockArmorEnergyType: c.ignoreArmorAffinitiesOnMasterworkedItems ? c.ignoreArmorAffinitiesOnNonMasterworkedItems ? LockArmorEnergyType.None : LockArmorEnergyType.Masterworked : LockArmorEnergyType.All,
+      query: this.buildItemIdString(this.element)
+    }
 
     if (c.selectedExotics.length == 1) {
-      data["exoticArmorHash"] = c.selectedExotics[0];
+      data.exoticArmorHash = c.selectedExotics[0];
     } else {
       var exos = this.element?.exotic;
       if (exos && exos.length == 1) {
         var exoticHash = exos[0].hash;
         if (!!exoticHash)
-          data["exoticArmorHash"] = exoticHash;
+          data.exoticArmorHash = parseInt(exoticHash, 10);
       }
     }
 
-    for (let itemx of (this.element?.items || [])) {
-      data.items.push(itemx[0].itemInstanceId);
-    }
-
-    // add selected mods
-    for (let mod of this.config_enabledMods) {
-      data.mods.push(ModInformation[mod].hash)
-    }
-
-    // add stat mods
-    for (let mod of (this.element?.mods || [])) {
-      data.mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
-    }
-
-    var url = "https://beta.destinyitemmanager.com/optimizer?class=" + c.characterClass +
+    var url = "https://beta.destinyitemmanager.com/loadouts?class=" + c.characterClass +
       "&p=" + encodeURIComponent(JSON.stringify(data))
 
     return url;
