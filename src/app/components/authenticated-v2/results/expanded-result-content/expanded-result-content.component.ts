@@ -24,7 +24,8 @@ import {BuildConfiguration, FixableSelection} from "../../../../data/buildConfig
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
-import {AssumeArmorMasterwork, LoadoutParameters, LockArmorEnergyType, UpgradeSpendTier} from '@destinyitemmanager/dim-api-types';
+import {AssumeArmorMasterwork, Loadout, LoadoutParameters, LockArmorEnergyType, UpgradeSpendTier} from '@destinyitemmanager/dim-api-types';
+import { CharacterClass } from 'src/app/data/enum/character-Class';
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -212,12 +213,15 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   generateDIMLink(c: BuildConfiguration): string {
     const mods: number[] = [];
+    const fragments: number[] = [];
 
     // add selected mods
     for (let mod of this.config_enabledMods) {
       const modInfo = ModInformation[mod]
       if (modInfo.type === ModifierType.CombatStyleMod) {
           mods.push(modInfo.hash)
+      } else {
+        fragments.push(modInfo.hash)
       }
     }
 
@@ -262,7 +266,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       mods,
       assumeArmorMasterwork: c.assumeLegendariesMasterworked ? c.assumeExoticsMasterworked ? AssumeArmorMasterwork.All : AssumeArmorMasterwork.Legendary : AssumeArmorMasterwork.None,
       lockArmorEnergyType: c.ignoreArmorAffinitiesOnMasterworkedItems ? c.ignoreArmorAffinitiesOnNonMasterworkedItems ? LockArmorEnergyType.None : LockArmorEnergyType.Masterworked : LockArmorEnergyType.All,
-      query: this.buildItemIdString(this.element)
     }
 
     if (c.selectedExotics.length == 1) {
@@ -276,8 +279,53 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       }
     }
 
-    var url = "https://beta.destinyitemmanager.com/loadouts?class=" + c.characterClass +
-      "&p=" + encodeURIComponent(JSON.stringify(data))
+    const loadout: Loadout = {
+      id: "d2ap", // this doesn't matter and will be replaced
+      name: "D2ArmorPicker Loadout",
+      classType: c.characterClass as number,
+      parameters: data,
+      equipped: (this.element?.items || []).map(([i]) => ({ id: i.itemInstanceId, hash: i.hash })),
+      unequipped: [],
+      clearSpace: false,
+    }
+
+    // Configure subclass
+    if (fragments.length) {
+      const socketOverrides = fragments.reduce<{
+        [socketIndex: number]: number;
+      }>((m, hash, i) => {
+        m[i+7] = hash
+        return m
+      }, {})
+
+      const subclassHashes: { [characterClass: number]: { [modifierType: number]: number | undefined } | undefined} = {
+        [CharacterClass.Hunter]: {
+          [ModifierType.Stasis]: 873720784,
+          [ModifierType.Void]: 2453351420,
+        },
+        [CharacterClass.Titan]: {
+          [ModifierType.Stasis]: 613647804,
+          [ModifierType.Void]: 2842471112,
+        },
+        [CharacterClass.Warlock]: {
+          [ModifierType.Stasis]: 3291545503,
+          [ModifierType.Void]: 2849050827,
+        },
+      };
+
+      const subclassHash = subclassHashes[c.characterClass]?.[c.selectedModElement]
+
+      if (subclassHash) {
+        loadout.equipped.push({
+          id: '12345', // This shouldn't need to be specified but right now it does. The value doesn't matter
+          hash: subclassHash,
+          socketOverrides
+        })
+      }
+    }
+
+
+    var url = "https://beta.destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
 
     return url;
   }
