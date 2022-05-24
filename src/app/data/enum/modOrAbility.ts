@@ -36,6 +36,18 @@ export enum ModOrAbility {
     EchoOfObscurity, //+10rec
     EchoOfStarvation,
 
+    // SOLAR
+    EmberOfBenelovence = 1300,
+    EmberOfBeams,
+    EmberOfEmpyrian,
+    EmberOfCombustion,
+    EmberOfChar,
+    EmberOfTempering,
+    EmberOfEruption,
+    EmberOfWonder,
+    EmberOfSearing
+
+
 
     //EchoOfExchange ,
     //EchoOfRemnants,

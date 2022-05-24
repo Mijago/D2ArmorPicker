@@ -26,7 +26,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   private selectedClass: CharacterClass = CharacterClass.None;
   data: { data: Modifier[]; name: string, group: boolean, type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
-  selectedElement: ModifierType = ModifierType.Void;
+  selectedElement: ModifierType = ModifierType.Solar;
 
   constructor(private config: ConfigurationService) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
@@ -41,11 +41,13 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     let combatStyleMods = modifiers.filter(value => value.type == ModifierType.CombatStyleMod);
     let stasisFragments = modifiers.filter(value => value.type == ModifierType.Stasis);
     let voidFragments = modifiers.filter(value => value.type == ModifierType.Void);
+    let solarFragments = modifiers.filter(value => value.type == ModifierType.Solar);
 
     this.data = [
       {name: "Combat Style Mods", data: combatStyleMods, group: false, type: ModifierType.CombatStyleMod},
       {name: "Stasis Fragments", data: stasisFragments, group: true, type: ModifierType.Stasis},
       {name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void},
+      {name: "Solar Fragments", data: solarFragments, group: true, type: ModifierType.Solar},
     ]
 
     this.dataSource = modifiers;

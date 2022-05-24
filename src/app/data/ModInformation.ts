@@ -303,4 +303,96 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2661180603
   },
+  // SOLAR
+  [ModOrAbility.EmberOfBenelovence]: {
+    id: ModOrAbility.EmberOfBenelovence,
+    name: "Ember of Benelovence",
+    description: "Applying restoration, cure, or radiant to allies grants increased grenade, melee, and class ability regeneration for a short duration.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Discipline, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132292
+  },
+  [ModOrAbility.EmberOfBeams]: {
+    id: ModOrAbility.EmberOfBeams,
+    name: "Ember of Beams",
+    description: "Your Solar Super projectiles have stronger target acquisition.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Intellect, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132295
+  },
+  [ModOrAbility.EmberOfEmpyrian]: {
+    id: ModOrAbility.EmberOfEmpyrian,
+    name: "Ember of Empyrian",
+    description: "Solar weapon or ability final blows extend the duration of restoration and radiant effects applied to you.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Resilience, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132294
+  },
+  [ModOrAbility.EmberOfCombustion]: {
+    id: ModOrAbility.EmberOfCombustion,
+    name: "Ember of Combustion",
+    description: "Final blows with your Solar Super cause targets to ignite.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Strength, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132289
+  },
+  [ModOrAbility.EmberOfChar]: {
+    id: ModOrAbility.EmberOfChar,
+    name: "Ember of Char",
+    description: "Your Solar ignitions spread scorch to affected targets.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Discipline, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132291
+  },
+  [ModOrAbility.EmberOfTempering]: { // may be wrong
+    id: ModOrAbility.EmberOfTempering,
+    name: "Ember of Tempering",
+    description: "Solar weapon final blows grant you and your allies increased recovery for a short duration. Stacks 3 times.\n" +
+      "While Ember of Tempering is active, your weapons have increased airborne effectiveness.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Recovery, value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132290
+  },
+  [ModOrAbility.EmberOfEruption]: {
+    id: ModOrAbility.EmberOfEruption,
+    name: "Ember of Eruption",
+    description: "Your Solar ignitions have increased area of effect.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Strength, value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1051276348
+  },
+  [ModOrAbility.EmberOfWonder]: {
+    id: ModOrAbility.EmberOfWonder,
+    name: "Ember of Wonder",
+    description: "Rapidly defeating multiple targets with Solar ignitions generates an Orb of Power.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Resilience , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1051276350
+  },
+  [ModOrAbility.EmberOfSearing]: {
+    id: ModOrAbility.EmberOfSearing,
+    name: "Ember of Searing",
+    description: "Defeating scorched targets grants melee energy.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Recovery , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1051276351
+  },
 }

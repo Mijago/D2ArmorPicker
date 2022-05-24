@@ -2,8 +2,11 @@
   <ng-container *ngIf="idx == 1">
     <br/>
     <mat-button-toggle-group [value]="selectedElement">
+          <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
+            Solar
+          </mat-button-toggle>
           <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
-            Void 3.0
+            Void
           </mat-button-toggle>
           <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
             Stasis
