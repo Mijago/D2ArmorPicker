@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.3",
+    date: "May 24, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Solar 3.0",
+        issues: []
+      },
+    ]
+  },
+  {
     version: "2.2.2",
     date: "Mar 9, 2022",
     entries: [
