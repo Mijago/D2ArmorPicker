@@ -20,6 +20,11 @@ export const CHANGELOG_DATA = [
         text: "Added Solar 3.0",
         issues: []
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted artificer armor to the new Season.",
+        issues: []
+      },
     ]
   },
   {
