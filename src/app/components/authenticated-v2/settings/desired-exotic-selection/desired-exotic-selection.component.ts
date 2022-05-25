@@ -38,12 +38,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     this.config.configuration
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(async c => {
-      if (c.characterClass != this.currentClass || this.exotics.length == 0) {
-        this.currentClass = c.characterClass;
-        await this.updateExoticsForClass();
-      }
-      this.selectedExotics = c.selectedExotics;
-    })
+        if (c.characterClass != this.currentClass || this.exotics.length == 0) {
+          this.currentClass = c.characterClass;
+          await this.updateExoticsForClass();
+        }
+        this.selectedExotics = c.selectedExotics;
+      })
 
     this.inventory.manifest
       .pipe(
@@ -65,11 +65,20 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   private async updateExoticsForClass() {
     const armors = await this.inventory.getExoticsForClass(this.currentClass);
+
+    function uniq(a: {inInventory: boolean, item: IManifestArmor}[]) {
+      var seen : any = {};
+      return a.filter(function (item) {
+        var k = item.item.hash;
+        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+      })
+    }
+
     this.exotics = [
-      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotHelmet),
-      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotGauntlet),
-      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotChest),
-      armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotLegs),
+      uniq(armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotHelmet)),
+      uniq(armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotGauntlet)),
+      uniq(armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotChest)),
+      uniq(armors.filter(a => a.item.slot == ArmorSlot.ArmorSlotLegs)),
     ]
   }
 
