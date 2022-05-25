@@ -30,6 +30,10 @@ export class StatusProviderService {
     this.status = this._status.asObservable();
   }
 
+  getStatus() {
+    return this.__status;
+  }
+
   modifyStatus(cb: (status: Status) => void) {
     cb(this.__status);
     console.log("modifyStatus", this.__status)

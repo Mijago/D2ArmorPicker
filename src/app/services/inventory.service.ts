@@ -262,6 +262,9 @@ export class InventoryService {
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
+    if (this.status.getStatus().updatingManifest)
+      return false;
+
     this.status.modifyStatus(s => s.updatingManifest = true);
     let r = await this.api.updateManifest(force);
     if (!!r) this._manifest.next(null);
