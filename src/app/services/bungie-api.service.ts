@@ -391,13 +391,16 @@ export class BungieApiService {
   }
 
   async updateManifest(force = false) {
+    const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
+    const version = destinyManifest.Response.version;
+
     if (!force && localStorage.getItem("LastManifestUpdate")) {
       if (localStorage.getItem("last-manifest-revision") == environment.revision)
         if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
-          if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24)
-            return;
+          if (localStorage.getItem("last-manifest-version") == version)
+            if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24)
+              return;
     }
-    const destinyManifest = await getDestinyManifest(d => this.$httpWithoutKey(d));
     const manifestTables = await getDestinyManifestSlice(d => this.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
       tableNames: ['DestinyInventoryItemDefinition'],
@@ -478,6 +481,7 @@ export class BungieApiService {
     localStorage.setItem("LastManifestUpdate", Date.now().toString())
     localStorage.setItem("last-manifest-db-name", this.db.manifestArmor.db.name)
     localStorage.setItem("last-manifest-revision", environment.revision)
+    localStorage.setItem("last-manifest-version", version)
 
     return manifestTables;
   }
