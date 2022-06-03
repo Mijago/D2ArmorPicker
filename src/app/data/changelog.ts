@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.4",
+    date: "June 3, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the export to DIM. Thanks to bhollis for the fix!",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The manifest now automatically updates when Bungie updated it too, except just after a fixed timespan.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.3",
     date: "May 24, 2022",
     entries: [
