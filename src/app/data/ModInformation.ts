@@ -324,9 +324,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 362132295
   },
-  [ModOrAbility.EmberOfEmpyrian]: {
-    id: ModOrAbility.EmberOfEmpyrian,
-    name: "Ember of Empyrian",
+  [ModOrAbility.EmberOfEmpyrean]: {
+    id: ModOrAbility.EmberOfEmpyrean,
+    name: "Ember of Empyrean",
     description: "Solar weapon or ability final blows extend the duration of restoration and radiant effects applied to you.",
     type: ModifierType.Solar,
     bonus: [{stat: ArmorStat.Resilience, value: -10}],

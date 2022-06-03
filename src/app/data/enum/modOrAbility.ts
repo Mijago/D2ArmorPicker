@@ -39,7 +39,7 @@ export enum ModOrAbility {
     // SOLAR
     EmberOfBenelovence = 1300,
     EmberOfBeams,
-    EmberOfEmpyrian,
+    EmberOfEmpyrean,
     EmberOfCombustion,
     EmberOfChar,
     EmberOfTempering,
