@@ -15,9 +15,8 @@ import {ModInformation} from "../../../../data/ModInformation";
 import {ModifierValue} from "../../../../data/modifier";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {BungieApiService} from "../../../../services/bungie-api.service";
-import {DestinyClass} from "bungie-api-ts/destiny2/interfaces";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {DestinyEnergyType,DestinyClass} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
@@ -25,6 +24,8 @@ import {BuildConfiguration, FixableSelection} from "../../../../data/buildConfig
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
+import {AssumeArmorMasterwork, Loadout, LoadoutParameters, LockArmorEnergyType, UpgradeSpendTier} from '@destinyitemmanager/dim-api-types';
+import { CharacterClass } from 'src/app/data/enum/character-Class';
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -211,7 +212,25 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
 
   generateDIMLink(c: BuildConfiguration): string {
-    var data = {
+    const mods: number[] = [];
+    const fragments: number[] = [];
+
+    // add selected mods
+    for (let mod of this.config_enabledMods) {
+      const modInfo = ModInformation[mod]
+      if (modInfo.type === ModifierType.CombatStyleMod) {
+          mods.push(modInfo.hash)
+      } else {
+        fragments.push(modInfo.hash)
+      }
+    }
+
+    // add stat mods
+    for (let mod of (this.element?.mods || [])) {
+      mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+    }
+
+    var data: LoadoutParameters = {
       "statConstraints": [
         {
           "statHash": 2996146975,
@@ -244,43 +263,69 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           "maxTier": c.minimumStatTiers[ArmorStat.Strength].fixed ? c.minimumStatTiers[ArmorStat.Strength].value : 10
         }
       ],
-      "mods": [] as number[],
-      //"pinnedItems": {} as any,
-      "items": [] as any,
-      "upgradeSpendTier": 5,
-      "autoStatMods": true,
-      "lockItemEnergyType": false,
-      "assumeMasterworked": false,
-      "query": this.buildItemIdString(this.element)
-    } as any
+      mods,
+      assumeArmorMasterwork: c.assumeLegendariesMasterworked ? c.assumeExoticsMasterworked ? AssumeArmorMasterwork.All : AssumeArmorMasterwork.Legendary : AssumeArmorMasterwork.None,
+      lockArmorEnergyType: c.ignoreArmorAffinitiesOnMasterworkedItems ? c.ignoreArmorAffinitiesOnNonMasterworkedItems ? LockArmorEnergyType.None : LockArmorEnergyType.Masterworked : LockArmorEnergyType.All,
+    }
 
     if (c.selectedExotics.length == 1) {
-      data["exoticArmorHash"] = c.selectedExotics[0];
+      data.exoticArmorHash = c.selectedExotics[0];
     } else {
       var exos = this.element?.exotic;
       if (exos && exos.length == 1) {
         var exoticHash = exos[0].hash;
         if (!!exoticHash)
-          data["exoticArmorHash"] = exoticHash;
+          data.exoticArmorHash = parseInt(exoticHash, 10);
       }
     }
 
-    for (let itemx of (this.element?.items || [])) {
-      data.items.push(itemx[0].itemInstanceId);
+    const loadout: Loadout = {
+      id: "d2ap", // this doesn't matter and will be replaced
+      name: "D2ArmorPicker Loadout",
+      classType: c.characterClass as number,
+      parameters: data,
+      equipped: (this.element?.items || []).map(([i]) => ({ id: i.itemInstanceId, hash: i.hash })),
+      unequipped: [],
+      clearSpace: false,
     }
 
-    // add selected mods
-    for (let mod of this.config_enabledMods) {
-      data.mods.push(ModInformation[mod].hash)
+    // Configure subclass
+    if (fragments.length) {
+      const socketOverrides = fragments.reduce<{
+        [socketIndex: number]: number;
+      }>((m, hash, i) => {
+        m[i+7] = hash
+        return m
+      }, {})
+
+      const subclassHashes: { [characterClass: number]: { [modifierType: number]: number | undefined } | undefined} = {
+        [CharacterClass.Hunter]: {
+          [ModifierType.Stasis]: 873720784,
+          [ModifierType.Void]: 2453351420,
+        },
+        [CharacterClass.Titan]: {
+          [ModifierType.Stasis]: 613647804,
+          [ModifierType.Void]: 2842471112,
+        },
+        [CharacterClass.Warlock]: {
+          [ModifierType.Stasis]: 3291545503,
+          [ModifierType.Void]: 2849050827,
+        },
+      };
+
+      const subclassHash = subclassHashes[c.characterClass]?.[c.selectedModElement]
+
+      if (subclassHash) {
+        loadout.equipped.push({
+          id: '12345', // This shouldn't need to be specified but right now it does. The value doesn't matter
+          hash: subclassHash,
+          socketOverrides
+        })
+      }
     }
 
-    // add stat mods
-    for (let mod of (this.element?.mods || [])) {
-      data.mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
-    }
 
-    var url = "https://beta.destinyitemmanager.com/optimizer?class=" + c.characterClass +
-      "&p=" + encodeURIComponent(JSON.stringify(data))
+    var url = "https://beta.destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
 
     return url;
   }
