@@ -4,7 +4,7 @@ import {DatabaseService} from "./database.service";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {ConfigurationService} from "./configuration.service";
 import {debounceTime} from "rxjs/operators";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject, Observable, ReplaySubject, Subject} from "rxjs";
 import {BuildConfiguration} from "../data/buildConfiguration";
 import {ArmorStat} from "../data/enum/armor-stat";
 import {StatusProviderService} from "./status-provider.service";
@@ -40,9 +40,9 @@ export class InventoryService {
   private ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
 
-  private _manifest: BehaviorSubject<null>;
+  private _manifest: ReplaySubject<null>;
   public readonly manifest: Observable<null>;
-  private _inventory: BehaviorSubject<null>;
+  private _inventory: ReplaySubject<null>;
   public readonly inventory: Observable<null>;
 
   private _armorResults: BehaviorSubject<info>;
@@ -53,9 +53,9 @@ export class InventoryService {
 
   constructor(private db: DatabaseService, private config: ConfigurationService, private status: StatusProviderService,
               private api: BungieApiService, private auth: AuthService, private router: Router) {
-    this._inventory = new BehaviorSubject(null)
+    this._inventory = new ReplaySubject(1)
     this.inventory = this._inventory.asObservable();
-    this._manifest = new BehaviorSubject(null)
+    this._manifest = new ReplaySubject(1)
     this.manifest = this._manifest.asObservable();
 
 
@@ -67,7 +67,14 @@ export class InventoryService {
     let dataAlreadyFetched = false;
     let isUpdating = false;
 
-    router.events.subscribe(async val => {
+    // TODO: This gives a race condition on some parts.
+    router.events.pipe(
+      debounceTime(5)
+    ).subscribe(async val => {
+      if (this.auth.refreshTokenExpired || !await this.auth.autoRegenerateTokens()) {
+        await this.auth.logout();
+        return;
+      }
       if (!auth.isAuthenticated())
         return;
 
