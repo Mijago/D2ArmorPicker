@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   async autoRegenerateTokens() {
-    const timing = 1000 * 3600 * 0.5; // every half hour
+    const timing = 1000 * 3600 * 24 * 14; // every 14 days
     console.log("autoRegenerateTokens", {
       token: this.refreshToken,
       datenow: Date.now(),
