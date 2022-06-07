@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.5",
+    date: "June 7, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added all of the new ability cooldowns.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Completely reworked the ability cooldown tooltips. They now show the difference to the currently selected tier.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.4",
     date: "June 3, 2022",
     entries: [
