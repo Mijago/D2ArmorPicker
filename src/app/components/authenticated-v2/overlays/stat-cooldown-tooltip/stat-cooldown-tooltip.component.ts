@@ -106,6 +106,12 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
       valueFunction: t => 40 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
       formatting: (t) => reformatTimeMMMSS(t)
     },
+    {
+      name: "Bastion Barricade",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => 82 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
+      formatting: (t) => reformatTimeMMMSS(t)
+    },
   ],
   [ArmorStat.Recovery]: [
     {
