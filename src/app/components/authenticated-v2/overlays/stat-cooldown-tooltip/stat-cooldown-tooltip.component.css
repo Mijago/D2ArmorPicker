@@ -1,0 +1,30 @@
+:host {
+  max-width: 420px;
+}
+
+.tooltip-container {
+  border: 1px solid gray;
+  padding: 1px 5px 4px 5px;
+  background: linear-gradient(#484848 0px, #2c2c2c 100%);
+}
+
+.exotic-name {
+  color: #eedb9e;
+}
+
+.good {
+  color: #58b458;
+}
+
+.bad {
+  color: #ff6b6b;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 7px 3px;
+}
+
+th {
+  white-space: nowrap;
+}

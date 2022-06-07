@@ -8,7 +8,9 @@
                      [disabled]="maximumAvailableTier < i"
                      class="select-button"
                      value="{{i}}">
-    <div [matTooltip]="getTooltip(i)" class="stat-button-content" matTooltipClass="allow-cr destiny-symbol">
+    <div class="stat-button-content"
+         statCooldownTooltip [tooltipTier]="i" [tooltipDifferenceTier]="selectedTier" [tooltipStat]="stat"
+    >
       {{i * 10}}
     </div>
   </mat-button-toggle>

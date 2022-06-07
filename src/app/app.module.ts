@@ -75,6 +75,10 @@ import { ModDescriptionTooltipComponent } from './components/authenticated-v2/ov
 import {
   ModTooltipDirective
 } from "./components/authenticated-v2/overlays/mod-description-tooltip/mod-tooltip.directive";
+import { StatCooldownTooltipComponent } from './components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.component';
+import {
+  StatCooldownTooltipDirective
+} from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 
 
 const routes: Routes = [
@@ -147,9 +151,11 @@ const routes: Routes = [
     ExoticPerkTooltipComponent,
     ExoticTooltipDirective,
     ModTooltipDirective,
+    StatCooldownTooltipDirective,
     ModDescriptionTooltipComponent,
     AccountConfigPageComponent,
-    ModDescriptionTooltipComponent
+    ModDescriptionTooltipComponent,
+    StatCooldownTooltipComponent
   ],
   imports: [
     FlexLayoutModule,

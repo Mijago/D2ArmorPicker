@@ -1,0 +1,45 @@
+<div>
+  <div class="tooltip-container">
+    <table>
+      <tr>
+        <td class="exotic-name" colspan="3">{{ArmorStatNames[stat]}} at Tier {{tier}}</td>
+      </tr>
+      <tr>
+        <th style="min-width: 50px">Stat</th>
+        <th style="min-width: 50px">Tier {{tier}}</th>
+        <th style="min-width: 50px" colspan="2" *ngIf="differenceTier != tier">∆ Tier {{differenceTier}}</th>
+      </tr>
+
+      <ng-container *ngFor="let entry of entries">
+
+      <tr *ngIf="entry.description == null || !!entry.description[characterClass]">
+        <ng-container *ngVar="entry.valueFunction(tier) as currentTierValue">
+          <td>{{entry.name}}</td>
+          <td>{{entry.formatting(currentTierValue)}}</td>
+          <ng-container *ngVar="entry.valueFunction(differenceTier) as selectedTierValue">
+            <ng-container *ngVar="getPercentageDifference(currentTierValue, selectedTierValue) as tierDifference">
+
+              <td *ngIf="differenceTier != tier">
+                <span [class.good]="(tierDifference * entry.benefitDirection ) >0"
+                      [class.bad]="(tierDifference * entry.benefitDirection )<0"
+                      *ngVar="- (selectedTierValue - currentTierValue) as dif"                      >
+                  {{dif > 0 ? '+' : ''}}{{entry.formatting(dif)}}
+                </span>
+              </td>
+              <td *ngIf="differenceTier != tier">
+                <span [class.good]="(tierDifference * entry.benefitDirection ) >0"
+                      [class.bad]="(tierDifference * entry.benefitDirection )<0">
+                                    ({{tierDifference > 0 ? '+' : ''}}{{tierDifference * 100 | number:'1.0-0'}}%)
+                </span>
+              </td>
+            </ng-container>
+          </ng-container>
+          <td>
+            {{(entry.description != null) ? entry.description[characterClass] : ""}}
+          </td>
+        </ng-container>
+      </tr>
+      </ng-container>
+    </table>
+  </div>
+</div>

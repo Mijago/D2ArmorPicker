@@ -5,7 +5,6 @@ import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {FixableSelection, getDefaultStatDict} from "../../../../data/buildConfiguration";
 import {InventoryService} from "../../../../services/inventory.service";
 import {ModInformation} from "../../../../data/ModInformation";
-import {GetArmorStatTierBonus, LoadingArmorStatTierBonus} from "../../../../data/cooldowns/cooldowns";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
 
@@ -25,7 +24,6 @@ function calcScore(d: number[]) {
 export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
-  ArmorStatTierBonus: EnumDictionary<ArmorStat, string[]> = LoadingArmorStatTierBonus;
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
@@ -53,8 +51,6 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
           }
           this.statsByMods = tmpStatsByMods;
           this.minimumStatTiers = c.minimumStatTiers;
-
-          this.ArmorStatTierBonus = GetArmorStatTierBonus(c.characterClass);
         }
       )
 

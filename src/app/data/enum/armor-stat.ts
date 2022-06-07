@@ -1,7 +1,4 @@
 import {EnumDictionary} from "../types/EnumDictionary";
-import {CharacterClass} from "./character-Class";
-import {calculateTierValueAbility} from "../cooldowns/cooldown_definitions";
-import {buildMeleeCooldown} from "../cooldowns/cooldowns_melee";
 import {DestinyEnergyType} from "bungie-api-ts/destiny2";
 
 

@@ -10,7 +10,6 @@
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
         [selectedTier]="minimumStatTiers[enum.value].value"
         [locked]="minimumStatTiers[enum.value].fixed"
-        [tooltipTexts]="ArmorStatTierBonus[enum.value]"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
         (lockedChange)="setLockState(enum.value, $event)"
       ></app-stat-tier-selection>

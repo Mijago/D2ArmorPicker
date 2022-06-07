@@ -13,7 +13,6 @@ export class StatTierSelectionComponent {
   @Input() maximumAvailableTier: number = 10;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
-  @Input() tooltipTexts: string[] = [];
   @Output() selectedTierChange = new EventEmitter<number>();
   @Output() lockedChange = new EventEmitter<boolean>();
 
@@ -34,14 +33,6 @@ export class StatTierSelectionComponent {
         // ( index <= this.statsByMods) // on the left
         || (this.selectedTier < this.statsByMods && index <= this.statsByMods)
       )
-  }
-
-  getTooltip(index: number) {
-    let tooltip = (this.tooltipTexts || [])[index];
-    if (this.isAddedByConfigMods(index)) {
-      tooltip += "\n~ This tier is added by selected fragments or mods ~"
-    }
-    return tooltip
   }
 
   toggleLockState() {
