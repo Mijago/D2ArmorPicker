@@ -180,7 +180,8 @@ function checkElements(config: BuildConfiguration, constantElementRequirements: 
     requiredClassItemElement = config.armorAffinities[ArmorSlot.ArmorSlotClass].value;
 
   if (bad == 1
-    && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any) {
+    &&
+    !(config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed && config.armorAffinities[ArmorSlot.ArmorSlotClass].value != DestinyEnergyType.Any)) {
     var fixed = false;
     for (let k of [DestinyEnergyType.Void, DestinyEnergyType.Stasis, DestinyEnergyType.Thermal, DestinyEnergyType.Arc]) {
       if (requirements[k] <= 0) continue;
@@ -282,8 +283,11 @@ function prepareConstantElementRequirement(config: BuildConfiguration) {
   constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotChest].value]++;
   constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotGauntlet].value]++;
   constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotLegs].value]++;
+
   if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed)
     constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]++;
+
+  constantElementRequirement[0]=0
   return constantElementRequirement;
 }
 
