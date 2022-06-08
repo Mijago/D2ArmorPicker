@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.6",
+    date: "June 8, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue where the elemental selection would not give the correct results under very specific conditions.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.5",
     date: "June 7, 2022",
     entries: [
