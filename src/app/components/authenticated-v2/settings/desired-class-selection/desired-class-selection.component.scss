@@ -2,6 +2,20 @@
   margin-left: 15px;
 }
 
+.crayon_logo_container {
+  position: relative;
+  width: 22px;
+  display: inline-block;
+  margin-right: 3px;
+
+  .crayon_logo {
+    position: absolute;
+    width: 22px;
+    top: -14px;
+  }
+}
+
+
 ::ng-deep .mat-option-text {
   color: #FFFFFF;
 }
