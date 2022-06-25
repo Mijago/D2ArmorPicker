@@ -7,6 +7,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import * as lzutf8 from "lzutf8";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {Clipboard} from "@angular/cdk/clipboard";
 
 @Component({
   selector: 'app-load-and-save-settings',
@@ -22,7 +23,7 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
   importTextForm: FormGroup;
 
   constructor(public config: ConfigurationService, private formBuilder: FormBuilder,
-              public dialog: MatDialog, private _snackBar: MatSnackBar) {
+              public dialog: MatDialog, private _snackBar: MatSnackBar, private clipboard: Clipboard) {
     this.settingsNameForm = this.formBuilder.group({name: [null,]});
     this.importTextForm = this.formBuilder.group({content: [null,]});
   }
@@ -118,6 +119,16 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       this.openSnackBar("Invalid input.")
       console.error(e)
     }
+  }
+
+  copySingleSettingToClipboard(element: any) {
+    this.clipboard.copy(this.config.getStoredConfigurationBase64Compressed(element.name));
+    this.openSnackBar('Copied the configuration to your clipboard. You can share it with your friends.')
+  }
+
+  copyAllSettingsToClipboard() {
+    this.clipboard.copy(this.config.getAllStoredConfigurationsBase64Compressed());
+    this.openSnackBar('Exported all configurations to the clipboard. You can then save and share them.')
   }
 
   openSnackBar(message: string) {

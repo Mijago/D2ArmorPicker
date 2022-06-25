@@ -148,22 +148,20 @@
 
     </th>
     <td *matCellDef="let element" mat-cell>
-      <ng-container *ngVar="config.getStoredConfigurationBase64Compressed(element.name) as compressedValue">
-        <button (click)="delete(element.name)" color="warn" mat-icon-button
-                matTooltip="Delete this configuration permanently.">
-          <mat-icon>delete_forever</mat-icon>
-        </button>
-        <button (click)="load(element.name)" color="primary" mat-icon-button
-                matTooltip="Load this configuration. Your current settings will be overwritten.">
-          <mat-icon>check_circle_outline</mat-icon>
-        </button>
-        <button (click)="openSnackBar('Copied the configuration to your clipboard. You can share it with your friends.')"
-                [cdkCopyToClipboard]="compressedValue" color="primary"
-                mat-icon-button
-                matTooltip="Copy this configuration into your clipboard. You will be able to share it with others and import it later.">
-          <mat-icon>get_app</mat-icon>
-        </button>
-      </ng-container>
+      <button (click)="delete(element.name)" color="warn" mat-icon-button
+              matTooltip="Delete this configuration permanently.">
+        <mat-icon>delete_forever</mat-icon>
+      </button>
+      <button (click)="load(element.name)" color="primary" mat-icon-button
+              matTooltip="Load this configuration. Your current settings will be overwritten.">
+        <mat-icon>check_circle_outline</mat-icon>
+      </button>
+      <button (click)="copySingleSettingToClipboard(element)"
+              color="primary"
+              mat-icon-button
+              matTooltip="Copy this configuration into your clipboard. You will be able to share it with others and import it later.">
+        <mat-icon>get_app</mat-icon>
+      </button>
 
     </td>
   </ng-container>
@@ -174,13 +172,11 @@
 
 <ng-container  *ngIf="storedConfigs.length > 0">
   <br>
-  <ng-container *ngVar="config.getAllStoredConfigurationsBase64Compressed() as compressedValue">
     <button color="primary" mat-raised-button
-            [cdkCopyToClipboard]="compressedValue"
+            (click)="copyAllSettingsToClipboard()"
             matTooltip="Export all configurations to the clipboard. You can then save and share them.">
       Copy all saved configurations to the clipboard
     </button>
-  </ng-container>
 </ng-container>
 
 
