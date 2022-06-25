@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.7",
+    date: "June 25, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a link to my Discord bot Crayon.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue where a large number of stored configurations would drastically slow down the app.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.6",
     date: "June 8, 2022",
     entries: [
