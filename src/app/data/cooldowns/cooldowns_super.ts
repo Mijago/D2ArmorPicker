@@ -10,11 +10,11 @@ export const SuperAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "Ward of Dawn", // 6:57
   ],
   [CharacterClass.Hunter]: [
-    "",// 10:25
+    "Spectral Blades",// 10:25
     "Arc Staff, Golden Gun", // 9:16
     "Morbius Quiver", // 8:20
     "Deadfall, Blade Barrage, Silence & Squall", // 7:35
-    "Spectral Blades", // 6:57
+    "", // 6:57
   ],
   [CharacterClass.Warlock]: [
     "Daybreak", // 10:25
