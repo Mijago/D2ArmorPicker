@@ -10,11 +10,15 @@ import {ArmorStat, ArmorStatNames} from "../../../../data/enum/armor-stat";
 export class ArmorTooltipComponent implements OnInit {
   @Input(`itemTooltip`) armor: ResultItem | undefined;
 
-  getArmorStatName(i: number) {
+  getArmorStatName(i: number): string {
     return ArmorStatNames[i as ArmorStat]
   }
 
-  getWidth(stat: number) {
+  getArmorTotalStats(): number | undefined {
+    return this.armor?.stats.reduce((sum, stat) => sum + (this.armor?.masterworked ? stat + 2 : stat), 0)
+  }
+
+  getWidth(stat: number): string {
     return Math.min(100, stat/32*100)+'%'
   }
 
