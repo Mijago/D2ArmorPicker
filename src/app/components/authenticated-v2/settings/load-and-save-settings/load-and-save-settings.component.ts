@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigurationService, StoredConfiguration} from "../../../../services/configuration.service";
-import {FormBuilder, FormGroup} from "@angular/forms";
+import {UntypedFormBuilder, UntypedFormGroup} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmDialogComponent, ConfirmDialogData} from "../../components/confirm-dialog/confirm-dialog.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -19,10 +19,10 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
   storedConfigs: StoredConfiguration[] = [];
   displayedColumns = ["name", "class", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "delete"];
 
-  settingsNameForm: FormGroup;
-  importTextForm: FormGroup;
+  settingsNameForm: UntypedFormGroup;
+  importTextForm: UntypedFormGroup;
 
-  constructor(public config: ConfigurationService, private formBuilder: FormBuilder,
+  constructor(public config: ConfigurationService, private formBuilder: UntypedFormBuilder,
               public dialog: MatDialog, private _snackBar: MatSnackBar, private clipboard: Clipboard) {
     this.settingsNameForm = this.formBuilder.group({name: [null,]});
     this.importTextForm = this.formBuilder.group({content: [null,]});
