@@ -7,7 +7,7 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "", // 1:49
     "Frontal Assault", // 1:46
     "Shield Throw", // 1:40
-    "Throwing Hammer, Hammer Strike, Shield Bash, Seismic Strike, Ballistic Slam", // 1:30
+    "Throwing Hammer, Hammer Strike, Shield Bash, Seismic Strike, Ballistic Slam, Thunderclap", // 1:30
     "", // 1:22
     "", // 0:15
   ],
