@@ -12,6 +12,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.8",
+    date: "August 23, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Arc 3.0 fragments.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed tooltip issues on iOS devices.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an infintie loading issue.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.7",
     date: "June 25, 2022",
     entries: [
