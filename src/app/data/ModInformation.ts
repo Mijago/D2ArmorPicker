@@ -440,7 +440,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.SparkOfVolts]: {
     id: ModOrAbility.SparkOfVolts,
     name: "Spark of Volts",
-    description: "After sprinting for a short time, your class ability regeneration is increased.",
+    description: "Finishers make you amplified.",
     type: ModifierType.Arc,
     bonus: [{stat: ArmorStat.Recovery , value: 10}],
     cost: 1,

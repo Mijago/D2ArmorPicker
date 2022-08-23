@@ -27,7 +27,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Fixed an infintie loading issue.",
+        text: "Fixed an infinite loading issue.",
         issues: []
       }
     ]
