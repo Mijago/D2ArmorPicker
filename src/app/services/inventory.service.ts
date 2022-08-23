@@ -279,10 +279,25 @@ export class InventoryService {
     return !!r;
   }
 
-  async updateInventoryItems(force: boolean = false): Promise<boolean> {
+  async updateInventoryItems(force: boolean = false, errorLoop = 0): Promise<boolean> {
     this.status.modifyStatus(s => s.updatingInventory = true);
-    let r = await this.api.updateArmorItems(force);
-    this.status.modifyStatus(s => s.updatingInventory = false);
-    return !!r;
+
+    try {
+      let r = await this.api.updateArmorItems(force);
+      this.status.modifyStatus(s => s.updatingInventory = false);
+      return !!r;
+    } catch (e) {
+      // After three tries, call it a day.
+      if (errorLoop > 3) {
+        alert("You encountered a strange error with the inventory update. Please log out and log in again. If that does not fix it, please message Mijago.");
+        return false;
+      }
+
+      this.status.modifyStatus(s => s.updatingInventory = false);
+      console.error(e)
+      console.warn("Automatically re-fetching manifest")
+      await this.updateManifest(true);
+      return await this.updateInventoryItems(true, errorLoop++);
+    }
   }
 }
