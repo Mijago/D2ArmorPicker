@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.9",
+    date: "August 23, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated grenade and melee cooldowns for arc.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.8",
     date: "August 23, 2022",
     entries: [
