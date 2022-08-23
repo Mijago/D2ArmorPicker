@@ -395,4 +395,86 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1051276351
   },
+  /** ARC **/
+
+  [ModOrAbility.SparkOfBrilliance]: {
+    id: ModOrAbility.SparkOfBrilliance,
+    name: "Spark of Brilliance",
+    description: "Defeating a blinded target with precision damage creates a blinding explosion.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Intellect , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3277705905
+  },
+  [ModOrAbility.SparkOfFeedback]: {
+    id: ModOrAbility.SparkOfFeedback,
+    name: "Spark of Feedback",
+    description: "Taking melee damage briefly increases your outgoing melee damage.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Resilience , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3277705907
+  },
+  [ModOrAbility.SparkOfDischarge]: {
+    id: ModOrAbility.SparkOfDischarge,
+    name: "Spark of Discharge",
+    description: "Arc weapon final blows have a chance to create an Ionic Trace.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Strength , value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1727069362
+  },
+  [ModOrAbility.SparkOfFocus]: {
+    id: ModOrAbility.SparkOfFocus,
+    name: "Spark of Focus",
+    description: "After sprinting for a short time, your class ability regeneration is increased.",
+    type: ModifierType.Arc,
+    bonus: [{stat: SpecialArmorStat.ClassAbilityRegenerationStat , value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1727069360
+  },
+  [ModOrAbility.SparkOfVolts]: {
+    id: ModOrAbility.SparkOfVolts,
+    name: "Spark of Volts",
+    description: "After sprinting for a short time, your class ability regeneration is increased.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Recovery , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 3277705904
+  },
+  [ModOrAbility.SparkOfResistance]: {
+    id: ModOrAbility.SparkOfResistance,
+    name: "Spark of Resistance",
+    description: "While surrounded by combatants, you are more resistant to incoming damage.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Strength , value: 10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1727069366
+  },
+  [ModOrAbility.SparkOfShock]: {
+    id: ModOrAbility.SparkOfShock,
+    name: "Spark of Shock",
+    description: "Your Arc grenades jolt targets.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Discipline , value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1727069364
+  },
+  [ModOrAbility.SparkOfShock]: {
+    id: ModOrAbility.SparkOfShock,
+    name: "Spark of Shock",
+    description: "Your Arc grenades jolt targets.",
+    type: ModifierType.Arc,
+    bonus: [{stat: ArmorStat.Discipline , value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 1727069364
+  },
 }

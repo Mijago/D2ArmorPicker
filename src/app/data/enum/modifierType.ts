@@ -2,5 +2,7 @@ export enum ModifierType {
     CombatStyleMod,
     Stasis,
     Void,
-    Solar
+    Solar,
+    Arc,
+    Strand
 }

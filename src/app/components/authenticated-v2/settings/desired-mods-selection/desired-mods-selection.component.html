@@ -2,6 +2,9 @@
   <ng-container *ngIf="idx == 1">
     <br/>
     <mat-button-toggle-group [value]="selectedElement">
+          <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
+            Arc
+          </mat-button-toggle>
           <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
             Solar
           </mat-button-toggle>
@@ -10,6 +13,9 @@
           </mat-button-toggle>
           <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
             Stasis
+          </mat-button-toggle>
+          <mat-button-toggle disabled>
+            Strand
           </mat-button-toggle>
     </mat-button-toggle-group>
   </ng-container>

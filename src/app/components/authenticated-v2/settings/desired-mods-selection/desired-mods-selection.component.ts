@@ -42,12 +42,14 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     let stasisFragments = modifiers.filter(value => value.type == ModifierType.Stasis);
     let voidFragments = modifiers.filter(value => value.type == ModifierType.Void);
     let solarFragments = modifiers.filter(value => value.type == ModifierType.Solar);
+    let arcFragments = modifiers.filter(value => value.type == ModifierType.Arc);
 
     this.data = [
       {name: "Combat Style Mods", data: combatStyleMods, group: false, type: ModifierType.CombatStyleMod},
       {name: "Stasis Fragments", data: stasisFragments, group: true, type: ModifierType.Stasis},
       {name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void},
       {name: "Solar Fragments", data: solarFragments, group: true, type: ModifierType.Solar},
+      {name: "Arc Fragments", data: arcFragments, group: true, type: ModifierType.Arc},
     ]
 
     this.dataSource = modifiers;
