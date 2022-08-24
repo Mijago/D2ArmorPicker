@@ -467,14 +467,4 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069364
   },
-  [ModOrAbility.SparkOfShock]: {
-    id: ModOrAbility.SparkOfShock,
-    name: "Spark of Shock",
-    description: "Your Arc grenades jolt targets.",
-    type: ModifierType.Arc,
-    bonus: [{stat: ArmorStat.Discipline , value: -10}],
-    cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 1727069364
-  },
 }
