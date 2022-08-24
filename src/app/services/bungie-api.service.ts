@@ -393,16 +393,17 @@ export class BungieApiService {
   async updateManifest(force = false) {
     var destinyManifest = null;
     if (!force && localStorage.getItem("LastManifestUpdate")) {
-      if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") > 1000 * 3600 * 0.25 ) {
-        destinyManifest = await getDestinyManifest(d => this.$http(d));
-        const version = destinyManifest.Response.version;
-        if (localStorage.getItem("last-manifest-version") == version)
-          return;
-      }
-      if (localStorage.getItem("last-manifest-revision") == environment.revision)
+      if (localStorage.getItem("last-manifest-revision") == environment.revision) {
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") > 1000 * 3600 * 0.25 ) {
+          destinyManifest = await getDestinyManifest(d => this.$http(d));
+          const version = destinyManifest.Response.version;
+          if (localStorage.getItem("last-manifest-version") == version)
+            return;
+        }
         if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
           if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24)
             return;
+      }
     }
 
     if (destinyManifest == null)
