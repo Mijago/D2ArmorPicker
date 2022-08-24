@@ -303,16 +303,19 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [ModifierType.Stasis]: 873720784,
           [ModifierType.Void]: 2453351420,
           [ModifierType.Solar]: 2240888816,
+          [ModifierType.Arc]: 2328211300,
         },
         [CharacterClass.Titan]: {
           [ModifierType.Stasis]: 613647804,
           [ModifierType.Void]: 2842471112,
           [ModifierType.Solar]: 2550323932,
+          [ModifierType.Arc]: 2932390016,
         },
         [CharacterClass.Warlock]: {
           [ModifierType.Stasis]: 3291545503,
           [ModifierType.Void]: 2849050827,
           [ModifierType.Solar]: 3941205951,
+          [ModifierType.Arc]: 3168997075,
         },
       };
 
