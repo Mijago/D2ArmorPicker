@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.8c",
+    date: "August 24, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The manifest is now (again) automatically updated on version changes. This fixes your artificer problems at the beginning of a new season.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added subclass hashes for Arc. This means that it now transfers to DIM.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.8b",
     date: "August 24, 2022",
     entries: [
