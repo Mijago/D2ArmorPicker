@@ -366,7 +366,7 @@ export class BungieApiService {
 
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
-    if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1146) || []).length > 0)
+    if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1181) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtificer;
 
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1679876242) || []).length > 0)

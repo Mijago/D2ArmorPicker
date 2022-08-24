@@ -12,7 +12,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
-    version: "2.2.9",
+    version: "2.2.8b",
+    date: "August 24, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed Artificer modslots. You might need to wait a bit, alternatively delete the database (Account section) or re-log.",
+        issues: []
+      }
+    ]
+  },
+  {
+    version: "2.2.8a",
     date: "August 23, 2022",
     entries: [
       {
