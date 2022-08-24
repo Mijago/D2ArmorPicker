@@ -392,7 +392,7 @@ export class BungieApiService {
 
   async updateManifest(force = false) {
     var destinyManifest = null;
-    if (!force && localStorage.getItem("LastManifestUpdate")) {
+    if (!force && localStorage.getItem("LastManifestUpdate") && localStorage.getItem("last-manifest-revision")) {
       if (localStorage.getItem("last-manifest-revision") == environment.revision) {
         if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") > 1000 * 3600 * 0.25 ) {
           destinyManifest = await getDestinyManifest(d => this.$http(d));
