@@ -17,3 +17,6 @@ body {
   width: 17px;
 }
 
+.mat-tooltip-panel, .overlay-no-pointer-event  {
+  pointer-events: none !important;
+}

@@ -56,6 +56,7 @@ export class ItemTooltipRendererDirective {
       ]);
 
     this._overlayRef = this._overlay.create({positionStrategy});
+    this._overlayRef.addPanelClass("overlay-no-pointer-event")
 
   }
 

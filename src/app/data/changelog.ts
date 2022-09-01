@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.9",
+    date: "September 1, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Tooltips do now not obstruct the clicks of stats. This fixes the iOS stat selection issue.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.8c",
     date: "August 24, 2022",
     entries: [
