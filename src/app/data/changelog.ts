@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.10",
+    date: "September 2, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated Artifice Modslot Hash after the most recent hotfix.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.9",
     date: "September 1, 2022",
     entries: [
