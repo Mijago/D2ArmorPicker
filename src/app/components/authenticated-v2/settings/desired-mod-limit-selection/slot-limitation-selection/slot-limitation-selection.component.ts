@@ -2,12 +2,8 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {
-  ArmorAffinityIcons,
-  ArmorAffinityNames,
-  ArmorPerkOrSlot
-} from "../../../../../data/enum/armor-stat";
+import {DestinyClass, DestinyEnergyType} from "bungie-api-ts/destiny2";
+import {ArmorAffinityIcons, ArmorAffinityNames, ArmorPerkOrSlot} from "../../../../../data/enum/armor-stat";
 import {InventoryService} from "../../../../../services/inventory.service";
 import {DatabaseService} from "../../../../../services/database.service";
 import {Subject} from "rxjs";
@@ -26,6 +22,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
 
   @Input()
   slot: ArmorSlot = ArmorSlot.ArmorSlotHelmet;
+  configSelectedClass  :DestinyClass = DestinyClass.Titan;
   element: DestinyEnergyType = DestinyEnergyType.Any;
   elementLock: boolean = false;
   armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
@@ -35,10 +32,40 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   hoveredSlot: number = -1;
 
   disabled: boolean = false;
+  isPossible: boolean = true;
 
   constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
 
+  public async runPossibilityCheck() {
+    const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.None;
+    const mustCheckArmorElement = this.elementLock && this.element != DestinyEnergyType.Any;
+    if (mustCheckArmorPerk && !mustCheckArmorElement) {
+      var applicablePerk = await this.db.inventoryArmor
+        .where("perk").equals(this.armorPerk)
+        .and(f => f.slot == this.slot)
+        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
+        .count();
+      console.log("applicablePerk", applicablePerk)
+      this.isPossible = (applicablePerk > 0);
+    } else if (mustCheckArmorElement && !mustCheckArmorPerk) {
+      var applicableElement = await this.db.inventoryArmor
+        .where("energyAffinity").equals(this.element)
+        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
+        .count();
+      this.isPossible = (applicableElement > 0);
+    } else if (mustCheckArmorElement && mustCheckArmorPerk) {
+      var applicable = await this.db.inventoryArmor
+        .where("perk").equals(this.armorPerk)
+        .and(f => f.energyAffinity == this.element)
+        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
+        .count();
+      this.isPossible = (applicable > 0);
+    } else {
+      this.isPossible = true;
+    }
+    console.log("this.isPossible", this.isPossible)
+  }
 
   get slotName(): string {
     switch (this.slot) {
@@ -61,18 +88,31 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     this.config.configuration
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(async c => {
-      this.selection = c.maximumModSlots[this.slot].value;
-      this.element = c.armorAffinities[this.slot].value;
-      this.elementLock = c.armorAffinities[this.slot].fixed;
-      this.armorPerk = c.armorPerks[this.slot].value;
-      this.armorPerkLock = c.armorPerks[this.slot].fixed;
-      this.maximumModSlots = c.maximumModSlots[this.slot].value;
+        var mustRunPossibilityCheck =
+            this.configSelectedClass != c.characterClass as unknown as DestinyClass
+          || this.selection != c.maximumModSlots[this.slot].value
+          || this.element != c.armorAffinities[this.slot].value
+          || this.elementLock != c.armorAffinities[this.slot].fixed
+          || this.armorPerk != c.armorPerks[this.slot].value
+          || this.armorPerkLock != c.armorPerks[this.slot].fixed
+          || this.maximumModSlots != c.maximumModSlots[this.slot].value;
 
-      this.disabled = (await this.inventory.getExoticsForClass(c.characterClass))
-        .filter(x => c.selectedExotics.indexOf(x.item.hash) > -1)
-        .map(e => e.item.slot)
-        .indexOf(this.slot) > -1;
-    })
+        this.configSelectedClass = c.characterClass as unknown as DestinyClass;
+        this.selection = c.maximumModSlots[this.slot].value;
+        this.element = c.armorAffinities[this.slot].value;
+        this.elementLock = c.armorAffinities[this.slot].fixed;
+        this.armorPerk = c.armorPerks[this.slot].value;
+        this.armorPerkLock = c.armorPerks[this.slot].fixed;
+        this.maximumModSlots = c.maximumModSlots[this.slot].value;
+
+        this.disabled = (await this.inventory.getExoticsForClass(c.characterClass))
+          .filter(x => c.selectedExotics.indexOf(x.item.hash) > -1)
+          .map(e => e.item.slot)
+          .indexOf(this.slot) > -1;
+
+        if (mustRunPossibilityCheck)
+          await this.runPossibilityCheck();
+      })
   }
 
   toggleElementLock() {

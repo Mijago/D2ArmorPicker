@@ -23,7 +23,8 @@
   position: relative;
   float: right;
   width: 90px;
-  top: -25px;
+  height: 70px;
+  top: -21px;
 
   .lock {
     position: absolute;
@@ -73,6 +74,7 @@
 
   .element-list {
     float: left;
+    height: 70px;
     width: 175px;
     padding-left: 5px;
 
@@ -93,6 +95,11 @@
   }
 }
 
+.impossible {
+  background-color: rgba(255, 0, 0, 0.3);
+  cursor: help;
+}
+
 .left_line {
   pointer-events: none;
   height: 15px;
@@ -100,7 +107,7 @@
   border-left: 1px solid white;
   border-bottom: 1px solid white;
   position: absolute;
-  bottom: 2px;
+  bottom: 0px;
   left: 0;
 }
 

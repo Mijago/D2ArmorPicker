@@ -118,7 +118,10 @@
                        class="select-button {{selection >= i ? 'mat-button-toggle-checked' : ''}}">{{i}}</mat-button-toggle>
   </mat-button-toggle-group>
 
-  <div class="selector-element">
+  <div class="selector-element"
+       [class.impossible]="!isPossible"
+       matTooltip="The chosen slot limitation contains no armor pieces and will yield no results."
+       [matTooltipDisabled]="isPossible">
     <div class="element-list">
       <!-- Item affinity -->
       <img #tooltip="matTooltip" (click)="setArmorElement(1)" [class.selected]="element == 1" [src]="getAffinityUrl(1)"
@@ -140,7 +143,11 @@
     <div class="left_line"></div>
   </div>
 
-  <div class="selector-slots">
+  <div class="selector-slots"
+       [class.impossible]="!isPossible"
+       matTooltip="The chosen slot limitation contains no armor pieces and will yield no results."
+       [matTooltipDisabled]="isPossible"
+  >
     <div class="element-list">
       <ng-container
         *ngFor="let perk of [ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer]">
