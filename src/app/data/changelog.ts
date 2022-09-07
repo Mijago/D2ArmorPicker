@@ -27,6 +27,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "The 'Performance Optimization' settings will now always re-enable after a reload to prevent your browser being stuck in a crash-loop. (This is for you, iOS Safari users)",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Changed wording of the 'Performance Optimization' setting to prevent people from using it incorrectly.",
         issues: []
       }

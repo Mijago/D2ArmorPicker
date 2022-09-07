@@ -104,7 +104,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           ],
           "Performance Optimization": [
             {
-              name: "Use security features to prevent app crashes (Leave this enabled).",
+              name: "Use security features to prevent app crashes (resets on reload).",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.limitParsedResults = v),
               value: c.limitParsedResults,
               disabled: false,

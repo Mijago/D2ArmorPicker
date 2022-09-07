@@ -125,6 +125,9 @@ export class ConfigurationService {
         c.configuration.maximumModSlots[1 + n as ArmorSlot].value = 0;
       delete (c.configuration as any).maximumStatMods;
     }
+
+    // Always reset limitParsedResults on reload
+    c.configuration.limitParsedResults = true;
   }
 
   listSavedConfigurations(): StoredConfiguration[] {
