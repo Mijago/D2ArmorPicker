@@ -144,7 +144,7 @@
     <div class="element-list">
       <ng-container
         *ngFor="let perk of [ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer]">
-        <app-armor-perk-icon (click)="!disabled && setArmorPerk(perk)"
+        <app-armor-perk-icon (click)="setArmorPerk(perk)"
                              [class.disabled]="disabled"
                              [class.selected]="armorPerk == perk"
                              [perk]="perk"
