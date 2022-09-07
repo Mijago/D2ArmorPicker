@@ -12,6 +12,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.11",
+    date: "September 7, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a notification if you create a modslot limitation that yields no results. Note that this will not (yet) show invalid combinations over all armor, just for the given slot you selected it in.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reduced size of exotic icons so that the left side will not grow on Titan class.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed wording of the 'Performance Optimization' setting to prevent people from using it incorrectly.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.10",
     date: "September 2, 2022",
     entries: [
