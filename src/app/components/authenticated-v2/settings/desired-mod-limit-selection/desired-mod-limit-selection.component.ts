@@ -12,10 +12,20 @@ export class DesiredModLimitSelectionComponent implements OnInit {
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
 
+  public possibilityList = [true, true, true, true, true]
+  public allPossible = true;
+
+
   constructor(public config: ConfigurationService) {
   }
 
   ngOnInit(): void {
+  }
+
+
+  updatePossibility(n: number, state: boolean) {
+    this.possibilityList[n] = state;
+    this.allPossible = this.possibilityList.filter(k => !!k).length ==  5
   }
 
   clear() {

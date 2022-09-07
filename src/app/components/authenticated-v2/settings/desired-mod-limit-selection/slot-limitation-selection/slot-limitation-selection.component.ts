@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
@@ -22,6 +22,10 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
 
   @Input()
   slot: ArmorSlot = ArmorSlot.ArmorSlotHelmet;
+  @Output()
+  possible: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+  isPossible: boolean = true;
   configSelectedClass  :DestinyClass = DestinyClass.Titan;
   element: DestinyEnergyType = DestinyEnergyType.Any;
   elementLock: boolean = false;
@@ -32,7 +36,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   hoveredSlot: number = -1;
 
   disabled: boolean = false;
-  isPossible: boolean = true;
 
   constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
@@ -64,6 +67,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     } else {
       this.isPossible = true;
     }
+    this.possible.next(this.isPossible);
     console.log("this.isPossible", this.isPossible)
   }
 
