@@ -26,7 +26,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   possible: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   isPossible: boolean = true;
-  configSelectedClass  :DestinyClass = DestinyClass.Titan;
+  configSelectedClass: DestinyClass = DestinyClass.Titan;
   element: DestinyEnergyType = DestinyEnergyType.Any;
   elementLock: boolean = false;
   armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
@@ -36,6 +36,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   hoveredSlot: number = -1;
 
   disabled: boolean = false;
+  private configIgnoreArmorAffinitiesOnMasterworkedItems: boolean = false;
+  private configIgnoreArmorAffinitiesOnNonMasterworkedItems: boolean = false;
 
   constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
@@ -45,24 +47,30 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     const mustCheckArmorElement = this.elementLock && this.element != DestinyEnergyType.Any;
     if (mustCheckArmorPerk && !mustCheckArmorElement) {
       var applicablePerk = await this.db.inventoryArmor
-        .where("perk").equals(this.armorPerk)
+        .where("clazz").equals(this.configSelectedClass)
         .and(f => f.slot == this.slot)
-        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
-        .count();
-      console.log("applicablePerk", applicablePerk)
+        .and(f => f.perk == this.armorPerk)
+        .count()
       this.isPossible = (applicablePerk > 0);
     } else if (mustCheckArmorElement && !mustCheckArmorPerk) {
+
       var applicableElement = await this.db.inventoryArmor
-        .where("energyAffinity").equals(this.element)
-        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
-        .count();
+        .where("clazz").equals(this.configSelectedClass)
+        .and(f => f.slot == this.slot)
+        .and(f => (this.configIgnoreArmorAffinitiesOnMasterworkedItems && f.masterworked)
+          || (this.configIgnoreArmorAffinitiesOnNonMasterworkedItems && !f.masterworked)
+          || f.energyAffinity == this.element)
+        .count()
       this.isPossible = (applicableElement > 0);
     } else if (mustCheckArmorElement && mustCheckArmorPerk) {
       var applicable = await this.db.inventoryArmor
-        .where("perk").equals(this.armorPerk)
-        .and(f => f.energyAffinity == this.element)
-        .and(f => f.slot == this.slot && f.clazz == this.configSelectedClass)
-        .count();
+        .where("clazz").equals(this.configSelectedClass)
+        .and(f => f.slot == this.slot)
+        .and(f => (this.configIgnoreArmorAffinitiesOnMasterworkedItems && f.masterworked)
+          || (this.configIgnoreArmorAffinitiesOnNonMasterworkedItems && !f.masterworked)
+          || f.energyAffinity == this.element)
+        .and(f => f.perk == this.armorPerk)
+        .count()
       this.isPossible = (applicable > 0);
     } else {
       this.isPossible = true;
@@ -93,7 +101,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(async c => {
         var mustRunPossibilityCheck =
-            this.configSelectedClass != c.characterClass as unknown as DestinyClass
+          this.configSelectedClass != c.characterClass as unknown as DestinyClass
           || this.selection != c.maximumModSlots[this.slot].value
           || this.element != c.armorAffinities[this.slot].value
           || this.elementLock != c.armorAffinities[this.slot].fixed
@@ -101,6 +109,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
           || this.armorPerkLock != c.armorPerks[this.slot].fixed
           || this.maximumModSlots != c.maximumModSlots[this.slot].value;
 
+        this.configIgnoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
+        this.configIgnoreArmorAffinitiesOnNonMasterworkedItems = c.ignoreArmorAffinitiesOnNonMasterworkedItems;
         this.configSelectedClass = c.characterClass as unknown as DestinyClass;
         this.selection = c.maximumModSlots[this.slot].value;
         this.element = c.armorAffinities[this.slot].value;
