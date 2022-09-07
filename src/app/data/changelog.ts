@@ -17,7 +17,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Added a notification if you create a modslot limitation that yields no results. Note that this will not (yet) show invalid combinations over all armor, just for the given slot you selected it in.",
+        text: "Added a notification to warn you when you create a modslot limitation that yields no results. Note that this will not (yet) show invalid combinations over all armor, just for the given slot you selected it in.",
         issues: []
       },
       {
