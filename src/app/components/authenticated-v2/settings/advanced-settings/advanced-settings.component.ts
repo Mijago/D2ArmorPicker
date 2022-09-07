@@ -104,12 +104,12 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           ],
           "Performance Optimization": [
             {
-              name: "Limit the results table to the first 50,000 results",
+              name: "Use security features to prevent app crashes (Leave this enabled).",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.limitParsedResults = v),
               value: c.limitParsedResults,
               disabled: false,
               impactsResultCount: true,
-              help: "Only parse the first 50,000 results. Deactivate this for more accurate results if you need it, but be aware that it may crash your browser. The results will still be limited to 1,000,000 entries."
+              help: "Only parse the first 50,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled."
             },
           ],
           "Wasted Stats": [
