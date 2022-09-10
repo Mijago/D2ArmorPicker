@@ -271,6 +271,20 @@ export class BungieApiService {
       allItems = allItems.concat(i);
     }
 
+    // get amount of materials
+    // 3853748946 enhancement core
+    // 4257549984 enhancement prism
+    // 4257549985 Ascendant Shard
+    var materials = allItems.filter(k => [3853748946, 4257549984, 4257549985].indexOf(k.itemHash!) > -1)
+      .reduce((previousValue, currentValue) => {
+        if (!(currentValue.itemHash.toString() in previousValue)) {
+          previousValue[currentValue.itemHash] = 0;
+        }
+        previousValue[currentValue.itemHash] += currentValue.quantity;
+        return previousValue;
+      }, {} as any);
+    localStorage.setItem("stored-materials", JSON.stringify(materials))
+
 
     let ids = Array.from(new Set(allItems.map(d => d.itemHash)))
     // Do not search directly in the DB, as it is VERY slow.
@@ -394,7 +408,7 @@ export class BungieApiService {
     var destinyManifest = null;
     if (!force && localStorage.getItem("LastManifestUpdate") && localStorage.getItem("last-manifest-revision")) {
       if (localStorage.getItem("last-manifest-revision") == environment.revision) {
-        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") > 1000 * 3600 * 0.25 ) {
+        if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") > 1000 * 3600 * 0.25) {
           destinyManifest = await getDestinyManifest(d => this.$http(d));
           const version = destinyManifest.Response.version;
           if (localStorage.getItem("last-manifest-version") == version)

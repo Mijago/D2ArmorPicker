@@ -76,7 +76,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
       this.isPossible = true;
     }
     this.possible.next(this.isPossible);
-    console.log("this.isPossible", this.isPossible)
   }
 
   get slotName(): string {

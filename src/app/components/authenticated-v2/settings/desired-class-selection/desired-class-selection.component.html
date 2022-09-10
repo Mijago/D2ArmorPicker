@@ -22,6 +22,21 @@
   </div>
 </div>
 
+<div *ngIf="storedMaterials != null">
+  <span class="material-listing" matTooltip="Ascendant Shards: {{storedMaterials['4257549985']}}">
+  <img src="https://www.bungie.net/common/destiny2_content/icons/2bd6547fa8f170d8868c8ab24b9fe84a.jpg" alt="Ascendant Shard">
+    {{storedMaterials["4257549985"]}}
+  </span>
+  <span class="material-listing" matTooltip="Enhancement Prisms: {{storedMaterials['4257549984']}}">
+  <img src="https://www.bungie.net/common/destiny2_content/icons/0397d34d04b687484f73665bb714227b.jpg" alt="Enhancement Prism">
+    {{storedMaterials["4257549984"]}}
+  </span>
+  <span class="material-listing" matTooltip="Enhancement Cores: {{storedMaterials['3853748946']}}">
+   <img src="https://www.bungie.net/common/destiny2_content/icons/259c571eb7f9f85e56be657f371e303f.jpg" alt="Enhancement Core">
+    {{storedMaterials["3853748946"]}}
+  </span>
+</div>
+
 <a color="primary" fxShow="false"
    fxShow.lt-md="true" mat-flat-button
    routerLink="/help"
@@ -44,9 +59,10 @@
   <div>
     Also check out my Discord-Bot
     <div class="crayon_logo_container">
-      <img class="crayon_logo" alt="" src="https://cdn.discordapp.com/emojis/917423317139480586.webp?size=96&quality=lossless">
+      <img class="crayon_logo" alt=""
+           src="https://cdn.discordapp.com/emojis/917423317139480586.webp?size=96&quality=lossless">
     </div>
 
-    <a href="https://mijago.github.io/Crayon"   target="_blank">Crayon</a>, for all your item information needs!
+    <a href="https://mijago.github.io/Crayon" target="_blank">Crayon</a>, for all your item information needs!
   </div>
 </div>

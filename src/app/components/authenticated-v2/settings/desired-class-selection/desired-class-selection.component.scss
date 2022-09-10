@@ -2,6 +2,18 @@
   margin-left: 15px;
 }
 
+.material-listing{
+  position: relative;
+  padding-left: 22px;
+  padding-right: 10px;
+  img {
+    width: 20px;
+    position: absolute;
+    top: -2px;
+    left: 0;
+  }
+}
+
 .crayon_logo_container {
   position: relative;
   width: 22px;
