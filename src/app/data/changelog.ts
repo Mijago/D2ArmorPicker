@@ -13,8 +13,13 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.2.11",
-    date: "September 7, 2022",
+    date: "September 10, 2022",
     entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a display for your owned upgrade materials in the character overview.",
+        issues: []
+      },
       {
         type: ChangelogEntryType.ADD,
         text: "Added a notification to warn you when you create a modslot limitation that yields no results. Note that this will not (yet) show invalid combinations over all armor, just for the given slot you selected it in.",
