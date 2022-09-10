@@ -284,11 +284,12 @@ export class BungieApiService {
         previousValue[currentValue.itemHash] += currentValue.quantity;
         return previousValue;
       }, {} as any);
-    let glimmerEntry = profile.Response.profileCurrencies.data?.items.filter(k => k.itemHash == 3159615086) ||[]
-    if (glimmerEntry.length > 0)
-      materials["3159615086"] = glimmerEntry[0].quantity;
-    else
-      materials["3159615086"] = 0
+    let glimmerEntry = profile.Response.profileCurrencies.data?.items.filter(k => k.itemHash == 3159615086) || []
+    if (glimmerEntry.length > 0) materials["3159615086"] = glimmerEntry[0].quantity;
+    else materials["3159615086"] = 0
+    let legShardEntry = profile.Response.profileCurrencies.data?.items.filter(k => k.itemHash == 1022552290) || []
+    if (legShardEntry.length > 0) materials["1022552290"] = legShardEntry[0].quantity;
+    else materials["1022552290"] = 0
     localStorage.setItem("stored-materials", JSON.stringify(materials))
 
 
