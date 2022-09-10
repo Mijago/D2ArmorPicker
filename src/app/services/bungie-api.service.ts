@@ -250,6 +250,7 @@ export class BungieApiService {
       components: [
         DestinyComponentType.CharacterEquipment,
         DestinyComponentType.CharacterInventories,
+        DestinyComponentType.ProfileCurrencies,
         DestinyComponentType.ProfileInventories,
         DestinyComponentType.ItemStats,
         DestinyComponentType.ItemInstances,
@@ -283,6 +284,11 @@ export class BungieApiService {
         previousValue[currentValue.itemHash] += currentValue.quantity;
         return previousValue;
       }, {} as any);
+    let glimmerEntry = profile.Response.profileCurrencies.data?.items.filter(k => k.itemHash == 3159615086) ||[]
+    if (glimmerEntry.length > 0)
+      materials["3159615086"] = glimmerEntry[0].quantity;
+    else
+      materials["3159615086"] = 0
     localStorage.setItem("stored-materials", JSON.stringify(materials))
 
 
