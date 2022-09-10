@@ -1,5 +1,7 @@
 #card-results {
-  float: left;
+  display: inline-block;
+  vertical-align: top;
+  white-space: normal;
   width: fit-content;
   margin-left: 3px;
 }
@@ -93,6 +95,7 @@ tr.example-detail-row {
 .cdk-column-exotic {
   min-width: 45px;
 }
+
 .cdk-column-waste {
   padding-left: 5px;
 }

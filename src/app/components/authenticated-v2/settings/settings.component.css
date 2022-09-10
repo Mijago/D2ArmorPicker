@@ -1,6 +1,8 @@
 #card-config {
-  float: left;
   width: fit-content;
+  display: inline-block;
+  vertical-align:top;
+  white-space:normal;
   margin-bottom: 20px;
   margin-left: 3px;
   margin-right: 3px;
