@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.12",
+    date: "September 11, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed to loadout to force the settings (left) and results (right) to be next to each other. This means that the page is more mobile approachable. This is also the first step to a more flexible layout.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.11",
     date: "September 10, 2022",
     entries: [
