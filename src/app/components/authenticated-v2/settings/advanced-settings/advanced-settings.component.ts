@@ -112,7 +112,15 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               help: "Only parse the first 50,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled."
             },
           ],
-          "Wasted Stats": [
+          "Extra Columns": [
+            {
+              name: "Show maximum reachable tiers in the Tiers-Column instead of real Tiers. Ignores mod limitations.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.showPotentialTierColumn = v),
+              value: c.showPotentialTierColumn,
+              disabled: false,
+              impactsResultCount: false,
+              help: "Shows an additional column in the table that shows how many tiers this build would have, if all stat mods were used. This is important when builds do not use all 5 stat mods."
+            },
             {
               name: "Show the wasted stats in an extra column.",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.showWastedStatsColumn = v),
@@ -121,6 +129,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               impactsResultCount: false,
               help: "Shows an additional column in the table that shows how many stats are wasted in a build."
             },
+          ],
+          "Wasted Stats": [
             {
               name: "Try to optimize wasted stats",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.tryLimitWastedStats = v),

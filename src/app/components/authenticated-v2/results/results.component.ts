@@ -98,8 +98,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
-  _config_ignoreArmorAffinitiesOnNonMasterworkedItems : boolean = false;
-  _config_ignoreArmorAffinitiesOnMasterworkedItems : boolean = false;
+  _config_ignoreArmorAffinitiesOnNonMasterworkedItems: boolean = false;
+  _config_ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
 
   tableDataSource = new MatTableDataSource<ResultDefinition>()
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -145,11 +145,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._config_modslotLimitation = Object.entries(c.maximumModSlots).filter(v => v[1].value < 5).map(k => k[1]);
 
 
-        if (c.showWastedStatsColumn) {
-          this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "waste", "dropdown",]
-        } else {
-          this.shownColumns = ["exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength", "tiers", "mods", "dropdown",]
-        }
+        let columns = [
+          "exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength",
+          c.showPotentialTierColumn ? "potential_tiers" : "tiers",
+          "mods", "waste"
+        ]
+        if (c.showWastedStatsColumn) columns.push("waste")
+        columns.push("dropdown")
+        this.shownColumns = columns;
       })
 
     this.inventory.armorResults
@@ -184,6 +187,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
           return data.stats[ArmorStat.Strength]
         case 'Tiers':
           return data.tiers
+        case 'Max Tiers':
+          return 10*(data.tiers + (5-data.modCount))
         case 'Waste':
           return data.waste
         case 'Mods':

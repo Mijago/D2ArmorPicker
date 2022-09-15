@@ -63,6 +63,7 @@ export class BuildConfiguration {
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
   showWastedStatsColumn = false;
+  showPotentialTierColumn = false;
 
   selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
@@ -109,6 +110,7 @@ export class BuildConfiguration {
       tryLimitWastedStats: true,
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
+      showPotentialTierColumn: false,
       characterClass: CharacterClass.Titan,
       selectedModElement: ModifierType.Stasis,
       selectedExotics: [],
