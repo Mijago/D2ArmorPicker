@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.13",
+    date: "September 15, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an advanced setting to replace the 'Tiers' column with a 'Max Tiers' column. This is adds the amount of open modslots to the column, but ignores mod limitations at the moment. A T32 build without mods will now show T37.",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.12",
     date: "September 11, 2022",
     entries: [
