@@ -13,7 +13,7 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.2.13",
-    date: "September 15, 2022",
+    date: "September 23, 2022",
     entries: [
       {
         type: ChangelogEntryType.ADD,
@@ -28,7 +28,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Changed to loadout to force the settings (left) and results (right) to be next to each other. This means that the page is more mobile approachable. This is also the first step to a more flexible layout.",
+        text: "Changed the layout to force the settings (left) and results (right) to be next to each other. This means that the page is more mobile approachable. This is also the first step to a more flexible layout.",
         issues: []
       }
     ]
