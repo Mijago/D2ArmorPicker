@@ -148,7 +148,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         let columns = [
           "exotic", "mobility", "resilience", "recovery", "discipline", "intellect", "strength",
           c.showPotentialTierColumn ? "potential_tiers" : "tiers",
-          "mods", "waste"
+          "mods"
         ]
         if (c.showWastedStatsColumn) columns.push("waste")
         columns.push("dropdown")

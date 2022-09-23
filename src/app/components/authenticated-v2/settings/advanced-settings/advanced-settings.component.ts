@@ -114,7 +114,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           ],
           "Extra Columns": [
             {
-              name: "Show maximum reachable tiers in the Tiers-Column instead of real Tiers. Ignores mod limitations.",
+              name: "Show maximum reachable tiers in the Tiers-Column instead of real Tiers.",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.showPotentialTierColumn = v),
               value: c.showPotentialTierColumn,
               disabled: false,
