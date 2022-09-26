@@ -390,7 +390,7 @@ export class BungieApiService {
     if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1183) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtificer;
 
-    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 3344538838) || []).length > 0)
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1728096240) || []).length > 0)
       return ArmorPerkOrSlot.SlotKingsFall;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1679876242) || []).length > 0)
       return ArmorPerkOrSlot.SlotLastWish;
