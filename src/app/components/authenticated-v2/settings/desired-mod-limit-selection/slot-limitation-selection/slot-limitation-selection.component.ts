@@ -2,8 +2,13 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
+import {
+  ArmorAffinityIcons,
+  ArmorAffinityNames,
+  ArmorPerkOrSlot,
+  ArmorPerkOrSlotNames
+} from "../../../../../data/enum/armor-stat";
 import {DestinyClass, DestinyEnergyType} from "bungie-api-ts/destiny2";
-import {ArmorAffinityIcons, ArmorAffinityNames, ArmorPerkOrSlot} from "../../../../../data/enum/armor-stat";
 import {InventoryService} from "../../../../../services/inventory.service";
 import {DatabaseService} from "../../../../../services/database.service";
 import {Subject} from "rxjs";
@@ -16,6 +21,7 @@ import {takeUntil} from "rxjs/operators";
 })
 export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   readonly ArmorSlot = ArmorSlot;
+  readonly ArmorPerkOrSlotNames = ArmorPerkOrSlotNames;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
   readonly ModRange = new Array(MAXIMUM_STAT_MOD_AMOUNT + 1);
   selection: number = MAXIMUM_STAT_MOD_AMOUNT;

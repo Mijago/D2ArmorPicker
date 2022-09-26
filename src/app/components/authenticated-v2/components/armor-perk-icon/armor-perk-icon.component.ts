@@ -9,6 +9,12 @@ import {ArmorPerkOrSlot, ArmorPerkOrSlotIcons, ArmorPerkOrSlotNames} from "../..
 export class ArmorPerkIconComponent implements OnInit {
   ArmorPerkOrSlot = ArmorPerkOrSlot;
 
+  customIconMods = [
+    ArmorPerkOrSlot.SlotKingsFall,
+    ArmorPerkOrSlot.SlotArtificer,
+    ArmorPerkOrSlot.SlotVowOfTheDisciple
+  ]
+
   @Input()
   perk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
 

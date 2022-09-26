@@ -79,6 +79,7 @@ import { StatCooldownTooltipComponent } from './components/authenticated-v2/over
 import {
   StatCooldownTooltipDirective
 } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
+import { SlotLimitationTitleComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component';
 
 
 const routes: Routes = [
@@ -155,7 +156,8 @@ const routes: Routes = [
     ModDescriptionTooltipComponent,
     AccountConfigPageComponent,
     ModDescriptionTooltipComponent,
-    StatCooldownTooltipComponent
+    StatCooldownTooltipComponent,
+    SlotLimitationTitleComponent
   ],
   imports: [
     FlexLayoutModule,

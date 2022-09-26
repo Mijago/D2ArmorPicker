@@ -3,6 +3,9 @@
 </mat-toolbar>
 
 <div class="container">
+  <!-- Title -->
+  <app-slot-limitation-title></app-slot-limitation-title>
+  <!-- /Title -->
   <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotHelmet)" (possible)="updatePossibility(0, $event)"></app-slot-limitation-selection>
   <br/>
   <app-slot-limitation-selection [slot]="$any(ArmorSlot.ArmorSlotGauntlet)" (possible)="updatePossibility(1, $event)"></app-slot-limitation-selection>

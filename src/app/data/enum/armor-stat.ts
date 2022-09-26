@@ -80,11 +80,13 @@ export enum ArmorPerkOrSlot {
   PerkIronBanner,
   PerkUniformedOfficer,
   SlotVowOfTheDisciple,
+  SlotKingsFall,
+  PerkPlunderersTrappings,
   COUNT
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.None]: "None",
   [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
   [ArmorPerkOrSlot.SlotArtificer]: "Artificer Modslot",
   [ArmorPerkOrSlot.SlotLastWish]: "Last Wish Modslot",
@@ -93,20 +95,24 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotVaultOfGlass]: "Vault of Glass Modslot",
   [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "Vow of the Disciple Modslot",
   [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer Perk",
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
+  [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
   [ArmorPerkOrSlot.SlotNightmare]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
-  [ArmorPerkOrSlot.SlotArtificer]: "https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png",
+  [ArmorPerkOrSlot.SlotArtificer]: "https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png",
   [ArmorPerkOrSlot.SlotLastWish]: "https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png",
   [ArmorPerkOrSlot.SlotGardenOfSalvation]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
   [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png",
   [ArmorPerkOrSlot.SlotVaultOfGlass]: "https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png",
-  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png",
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "https://www.bungie.net//common/destiny2_content/icons/1f66fa02b19f40e6ce5d8336c7ed5a00.png",
   [ArmorPerkOrSlot.PerkIronBanner]: "https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png",
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "https://bungie.net/common/destiny2_content/icons/b39b83dd5ea3d9144e4e63f103af8b46.png",
+  [ArmorPerkOrSlot.SlotKingsFall]: "https://www.bungie.net/common/destiny2_content/icons/bc809878e0c2ed8fd32feb62aaae690c.png",
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "https://www.bungie.net/common/destiny2_content/icons/d7ad8979dab2f4544e2cfb66f262f7d1.png",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 
@@ -121,6 +127,8 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "source:vow",
   [ArmorPerkOrSlot.PerkIronBanner]: "perkname:\"iron lord's pride\"",
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "perkname:\"Uniformed Officer\"",
+  [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "perkname:\"plunderer's trappings\"",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 

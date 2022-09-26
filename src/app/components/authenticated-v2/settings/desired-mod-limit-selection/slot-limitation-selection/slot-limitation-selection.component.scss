@@ -59,12 +59,20 @@
 }
 
 
+:host ::ng-deep  .selector-slots .mat-button-toggle{
+  background-color: inherit;
+}
+
+.modslot-selection {
+  width: 180px;
+}
+
 .selector-slots {
   position: relative;
   float: right;
-  width: 177px;
+  width: 155px;
   margin-right: 9px;
-  top: -21px;
+  top: -10px;
 
   .lock {
     position: absolute;
@@ -238,4 +246,12 @@
     }
   }
 
+}
+
+.menuArmorIcon {
+  position: absolute;
+  top: 8px;
+}
+.menuArmorText{
+  padding-left: 35px;
 }

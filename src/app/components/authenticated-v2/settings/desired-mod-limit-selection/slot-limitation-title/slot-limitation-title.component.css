@@ -1,0 +1,19 @@
+.energy {
+  border-bottom: #a1a1a1 1px solid;
+  margin-bottom: 6px;
+}
+
+.selector-element {
+  position: relative;
+  float: right;
+  width: 90px;
+  top: -26px;
+}
+
+.selector-slots {
+  position: relative;
+  float: right;
+  width: 155px;
+  margin-right: 9px;
+  top: -26px;
+}
