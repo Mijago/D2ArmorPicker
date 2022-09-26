@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.2.14",
+    date: "September 26, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "The modslot limitation is now a dropdown. For you it makes it easier to navigate, for me it's now easier to add more modslots!",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.2.13",
     date: "September 23, 2022",
     entries: [
