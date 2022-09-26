@@ -390,6 +390,8 @@ export class BungieApiService {
     if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1183) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtificer;
 
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 3344538838) || []).length > 0)
+      return ArmorPerkOrSlot.SlotKingsFall;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1679876242) || []).length > 0)
       return ArmorPerkOrSlot.SlotLastWish;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 3738398030) || []).length > 0)
@@ -407,6 +409,8 @@ export class BungieApiService {
       return ArmorPerkOrSlot.PerkIronBanner;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2392155347) || []).length > 0)
       return ArmorPerkOrSlot.PerkUniformedOfficer;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 400659041) || []).length > 0)
+      return ArmorPerkOrSlot.PerkPlunderersTrappings;
 
     return ArmorPerkOrSlot.None
   }
