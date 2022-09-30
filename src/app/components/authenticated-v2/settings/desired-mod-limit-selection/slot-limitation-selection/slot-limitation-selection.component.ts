@@ -171,10 +171,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
       this.config.modifyConfiguration(c => {
         c.armorPerks[this.slot].value = perk;
       })
-    else
-      this.config.modifyConfiguration(c => {
-        c.armorPerks[this.slot].value = ArmorPerkOrSlot.None;
-      })
   }
 
   setValue(i: number) {
