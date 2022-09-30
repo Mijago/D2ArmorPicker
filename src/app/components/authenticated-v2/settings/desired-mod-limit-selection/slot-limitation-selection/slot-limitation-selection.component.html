@@ -155,13 +155,9 @@
     </mat-button-toggle>
   </mat-button-toggle-group>
   <mat-menu #dropdownArmorModslot="matMenu">
-    <button mat-menu-item (click)="setArmorPerk(ArmorPerkOrSlot.None)">
-      <app-armor-perk-icon [perk]="ArmorPerkOrSlot.None" class="menuArmorIcon"></app-armor-perk-icon>
-      <span class="menuArmorText">None (clear selection)</span>
-    </button>
     <ng-container
-      *ngFor="let perk of [ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings]">
-      <button mat-menu-item (click)="setArmorPerk(perk)">
+      *ngFor="let perk of [ArmorPerkOrSlot.None, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings]">
+      <button mat-menu-item (click)="setArmorPerk(perk)" [class.selected-menu]="perk == armorPerk">
         <app-armor-perk-icon [perk]="perk" class="menuArmorIcon"></app-armor-perk-icon>
         <span class="menuArmorText">{{ArmorPerkOrSlotNames[perk]}}</span>
       </button>

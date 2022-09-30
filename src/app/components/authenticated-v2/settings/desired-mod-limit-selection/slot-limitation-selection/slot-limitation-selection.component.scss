@@ -255,3 +255,10 @@
 .menuArmorText{
   padding-left: 35px;
 }
+
+.selected-menu {
+  background-color: rgba(137, 178, 255, 0.24);
+  &:hover {
+    background-color: rgba(137, 178, 255, 0.3);
+  }
+}
