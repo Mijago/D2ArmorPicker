@@ -154,7 +154,7 @@
       <mat-icon *ngIf="armorPerkLock">lock</mat-icon>
     </mat-button-toggle>
   </mat-button-toggle-group>
-  <mat-menu #dropdownArmorModslot="matMenu">
+  <mat-menu #dropdownArmorModslot="matMenu" class="modslot-select-scroll-menu">
     <ng-container
       *ngFor="let perk of [ArmorPerkOrSlot.None, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings]">
       <button mat-menu-item (click)="setArmorPerk(perk)" [class.selected-menu]="perk == armorPerk">

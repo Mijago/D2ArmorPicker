@@ -262,3 +262,8 @@
     background-color: rgba(137, 178, 255, 0.3);
   }
 }
+
+::ng-deep .modslot-select-scroll-menu {
+  overflow-y: auto;
+  max-height: 250px !important;
+}
