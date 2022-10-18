@@ -53,6 +53,7 @@ export class BuildConfiguration {
     [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
   }
 
+  useFotlArmor = true;
   allowBlueArmorPieces = true;
   ignoreSunsetArmor = false;
   assumeLegendariesMasterworked = true;
@@ -98,6 +99,7 @@ export class BuildConfiguration {
       enabledMods: [],
       disabledItems: [],
       addConstent1Resilience: false,
+      useFotlArmor: false,
       ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,

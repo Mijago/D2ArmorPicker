@@ -30,8 +30,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
       .subscribe(
       c => {
         this.fields2 = {
-          // "Events": [
-          // ],
+          "Events": [
+            {
+              name: "Enforce the usage of a Festival of the Lost Mask.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.useFotlArmor = v),
+              value: c.useFotlArmor,
+              disabled: false,
+              impactsResultCount: true,
+              help: "Only use a FotL masks. You will not get results if you do not own the mask."
+            },
+          ],
           "Armor selection": [
             {
               name: "Allow the usage of armor that is not exotic or legendary.",

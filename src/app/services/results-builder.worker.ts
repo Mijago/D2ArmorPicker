@@ -287,7 +287,7 @@ function prepareConstantElementRequirement(config: BuildConfiguration) {
   if (!config.armorAffinities[ArmorSlot.ArmorSlotClass].fixed)
     constantElementRequirement[config.armorAffinities[ArmorSlot.ArmorSlotClass].value]++;
 
-  constantElementRequirement[0]=0
+  constantElementRequirement[0] = 0
   return constantElementRequirement;
 }
 
@@ -323,7 +323,7 @@ addEventListener('message', async ({data}) => {
   let selectedExotics: IManifestArmor[] = await Promise.all(config.selectedExotics
     .filter(hash => hash != FORCE_USE_NO_EXOTIC)
     .map(async hash => await manifestArmor.where("hash").equals(hash).first()))
-  selectedExotics= selectedExotics.filter(i => !!i)
+  selectedExotics = selectedExotics.filter(i => !!i)
 
   // let exoticItemInfo = config.selectedExotics.length == 0    ? null    : await inventoryArmor.where("hash").equals(config.selectedExotics[0]).first() as IInventoryArmor
   let items = (await inventoryArmor.where("clazz").equals(config.characterClass)
@@ -362,7 +362,16 @@ addEventListener('message', async ({data}) => {
   // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
 
-  let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet).map(d => new ItemCombination([d]))
+  let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet)
+    .filter(k => {
+      return !config.useFotlArmor
+        || ([
+          199733460, // titan masq
+          2545426109, // warlock
+          3224066584, // hunter
+        ]).indexOf(k.hash) > -1;
+    })
+    .map(d => new ItemCombination([d]))
   let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet).map(d => new ItemCombination([d]))
   let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
   let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
