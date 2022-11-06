@@ -269,21 +269,31 @@ export class InventoryService {
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
-    if (this.status.getStatus().updatingManifest)
+    if (this.status.getStatus().updatingManifest) {
+      console.error("Already updating the manifest - abort")
       return false;
+    }
 
+    console.debug("updateManifest", "Set s.updatingManifest = true")
     this.status.modifyStatus(s => s.updatingManifest = true);
+    console.debug("updateManifest", "Call this.api.updateManifest(force) with force="+force)
     let r = await this.api.updateManifest(force);
+    console.debug("updateManifest", "Result is ", r)
     if (!!r) this._manifest.next(null);
+
+    console.debug("updateManifest", "Set s.updatingManifest = false")
     this.status.modifyStatus(s => s.updatingManifest = false);
     return !!r;
   }
 
   async updateInventoryItems(force: boolean = false, errorLoop = 0): Promise<boolean> {
+    console.debug("updateManifest", "Set s.updatingInventory = true")
     this.status.modifyStatus(s => s.updatingInventory = true);
 
     try {
       let r = await this.api.updateArmorItems(force);
+      console.debug("updateManifest", "Result is ",r)
+      console.debug("updateManifest", "Set s.updatingInventory = false")
       this.status.modifyStatus(s => s.updatingInventory = false);
       return !!r;
     } catch (e) {
