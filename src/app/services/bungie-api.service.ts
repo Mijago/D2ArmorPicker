@@ -188,6 +188,13 @@ export class BungieApiService {
   }
 
   async getMembershipDataForCurrentUser() {
+    var membershipData = JSON.parse(localStorage.getItem("auth-membershipInfo") || "null")
+    var membershipDataAge = JSON.parse(localStorage.getItem("auth-membershipInfo-date") || "0")
+    if (membershipData && (Date.now() - membershipDataAge) < 1000 * 60 * 60 * 24) {
+      console.log("getMembershipDataForCurrentUser -> loading cached! ")
+      return membershipData;
+    }
+
     console.info("BungieApiService", "getMembershipDataForCurrentUser")
     let response = await getMembershipDataForCurrentUser(d => this.$http(d));
     let memberships = response?.Response.destinyMemberships;
@@ -224,12 +231,8 @@ export class BungieApiService {
       console.info("getMembershipDataForCurrentUser", "Selected membership data for the last logged in membership.");
       result = memberships?.[lastLoggedInProfileIndex];
     }
-
-    // If you write abusive chat messages, i do not allow you to use my tool.
-    if (result.membershipType == BungieMembershipType.TigerSteam && result.membershipId == "4611686018482586660") {
-      alert("Yeah, no. You write abusive chat messages, and thus you won't be able to use this tool. Have a good day!")
-      return null; // automatically log out
-    }
+    localStorage.setItem("auth-membershipInfo", JSON.stringify(result))
+    localStorage.setItem("auth-membershipInfo-date", JSON.stringify(Date.now()))
     return result;
   }
 

@@ -30,7 +30,7 @@ export class AuthService {
       lastRefresh: this.lastRefresh,
       "Date.now() > (this.lastRefresh + timing)": Date.now() > (this.lastRefresh + timing),
 
-    } )
+    })
 
     if (this.refreshToken
       && Date.now() < this.refreshTokenExpiringAt
@@ -38,6 +38,15 @@ export class AuthService {
       return await this.generateTokens(true)
     }
     return true;
+  }
+
+  async getCurrentMembershipData(): Promise<any> {
+    const item = JSON.parse(localStorage.getItem("auth-membershipInfo") || "null");
+    if (item == null) {
+      const currentMembershipData = this.getCurrentMembershipData();
+      localStorage.setItem("auth-membershipInfo", JSON.stringify(currentMembershipData))
+      return currentMembershipData;
+    } else return item;
   }
 
   async generateTokens(refresh = false): Promise<boolean> {
@@ -158,6 +167,8 @@ export class AuthService {
     this.authCode = null;
     this.accessToken = null;
     this.refreshToken = null;
+
+    localStorage.removeItem("auth-membershipInfo")
   }
 
   async logout() {
