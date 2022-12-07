@@ -12,12 +12,33 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
-    version: "2.2.14",
-    date: "September 26, 2022",
+    version: "2.2.16",
+    date: "December 7, 2022",
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "The modslot limitation is now a dropdown. For you it makes it easier to navigate, for me it's now easier to add more modslots!",
+        text: "Added a Game2Give message. Let's suppor the little lights together!",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed artificer modslot.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Membership data is cached longer to make things faster and to ease the Bungie API.",
+        issues: []
+      }
+    ]
+  },
+  {
+    version: "2.2.15",
+    date: "October 18, 2022",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added FOTL masks.",
         issues: []
       }
     ]

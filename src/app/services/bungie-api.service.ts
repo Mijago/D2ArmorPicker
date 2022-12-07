@@ -426,13 +426,13 @@ export class BungieApiService {
           destinyManifest = await getDestinyManifest(d => this.$http(d));
           const version = destinyManifest.Response.version;
           if (localStorage.getItem("last-manifest-version") == version) {
-            console.debug("bungieApiService - updateManifest", "Abort updateManifest due to fitting ManifestVersion" )
+            console.debug("bungieApiService - updateManifest", "Abort updateManifest due to fitting ManifestVersion")
             return;
           }
         }
         if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
           if (Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") < 1000 * 3600 * 24) {
-            console.debug("bungieApiService - updateManifest", "Abort updateManifest due to fitting Date" )
+            console.debug("bungieApiService - updateManifest", "Abort updateManifest due to fitting Date")
             return;
           }
       }
