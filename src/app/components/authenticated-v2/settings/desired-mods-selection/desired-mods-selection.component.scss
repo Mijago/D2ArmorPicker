@@ -98,3 +98,18 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 #clear-container {
   padding-top: 10px;
 }
+
+#retrofit-table {
+  .rft-icon-container {
+    width: 22px;
+    display: inline-block;
+    > span {
+      position: relative;
+    }
+    app-stat-icon {
+      position: absolute;
+      top: -22px;
+      left: -10px;
+    }
+  }
+}

@@ -14,19 +14,24 @@ import {Subject} from "rxjs";
 @Component({
   selector: 'app-desired-mods-selection',
   templateUrl: './desired-mods-selection.component.html',
-  styleUrls: ['./desired-mods-selection.component.css'],
+  styleUrls: ['./desired-mods-selection.component.scss'],
   providers: [
     {provide: MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS, useValue: {disableToggleValue: false, disableDragValue: true}},
   ]
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   ModifierType = ModifierType;
+  ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
   displayedColumns = ["name", "cost", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
   private selectedClass: CharacterClass = CharacterClass.None;
   data: { data: Modifier[]; name: string, group: boolean, type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
+  retrofitCount : {[id:string]: number} = {
+    [ModOrAbility.MobileRetrofit]: 0,
+    [ModOrAbility.ResilientRetrofit]: 0,
+  }
 
   constructor(private config: ConfigurationService) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
@@ -105,6 +110,23 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
 
   getAffinityUrl(id: DestinyEnergyType) {
     return ArmorAffinityIcons[id];
+  }
+
+  setRetrofitCount(type: ModOrAbility, count: number) {
+    this.retrofitCount[type] = count;
+    this.config.modifyConfiguration(c => {
+      const pos = c.enabledMods.filter(m => m == type)
+
+      // first, remove all mods of this type
+      for (let toDisableMods of pos) {
+        const position = c.enabledMods.indexOf(toDisableMods);
+        c.enabledMods.splice(position, 1)
+      }
+      // now add count amount of mods
+      for (let i = 0; i < count; i++) {
+        c.enabledMods.push(type);
+      }
+    })
   }
 
   setElement(element: ModifierType) {

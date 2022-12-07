@@ -22,6 +22,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
+        text: "Added Retrofit mods (mobility and resilience).",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added a Game2Give message. Let's suppor the little lights together!",
         issues: []
       },

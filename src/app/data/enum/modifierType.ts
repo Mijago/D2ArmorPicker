@@ -4,5 +4,6 @@ export enum ModifierType {
     Void,
     Solar,
     Arc,
-    Strand
+    Strand,
+    RetrofitMods // Artifact Retrofit mods
 }
