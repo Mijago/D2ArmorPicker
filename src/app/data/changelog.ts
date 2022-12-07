@@ -27,6 +27,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
+        text: "Added armor perk 'Seraph Sensor Array' to the dropdown.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added a Game2Give message. Let's suppor the little lights together!",
         issues: []
       },

@@ -82,6 +82,7 @@ export enum ArmorPerkOrSlot {
   SlotVowOfTheDisciple,
   SlotKingsFall,
   PerkPlunderersTrappings,
+  SeraphSensorArray,
   COUNT
 }
 
@@ -98,6 +99,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
+  [ArmorPerkOrSlot.SeraphSensorArray]: "Seraph Sensor Array",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -114,6 +116,7 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "https://bungie.net/common/destiny2_content/icons/b39b83dd5ea3d9144e4e63f103af8b46.png",
   [ArmorPerkOrSlot.SlotKingsFall]: "https://www.bungie.net/common/destiny2_content/icons/bc809878e0c2ed8fd32feb62aaae690c.png",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "https://www.bungie.net/common/destiny2_content/icons/d7ad8979dab2f4544e2cfb66f262f7d1.png",
+  [ArmorPerkOrSlot.SeraphSensorArray]: "https://www.bungie.net/common/destiny2_content/icons/d7ad8979dab2f4544e2cfb66f262f7d1.png",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 
@@ -130,6 +133,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "perkname:\"Uniformed Officer\"",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "perkname:\"plunderer's trappings\"",
+  [ArmorPerkOrSlot.SeraphSensorArray]: "perkname:\"seraph sensor array\"",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 

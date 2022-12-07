@@ -414,6 +414,8 @@ export class BungieApiService {
       return ArmorPerkOrSlot.PerkUniformedOfficer;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 400659041) || []).length > 0)
       return ArmorPerkOrSlot.PerkPlunderersTrappings;
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 3525583702) || []).length > 0)
+      return ArmorPerkOrSlot.SeraphSensorArray;
 
     return ArmorPerkOrSlot.None
   }
