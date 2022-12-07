@@ -395,6 +395,16 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1051276351
   },
+  [ModOrAbility.EmberOfTorches]: {
+    id: ModOrAbility.EmberOfTorches,
+    name: "Ember of Torches",
+    description: "Powered melee attacks against combatants make you and nearby allies radiant.",
+    type: ModifierType.Solar,
+    bonus: [{stat: ArmorStat.Discipline , value: -10}],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 362132288
+  },
   /** ARC **/
 
   [ModOrAbility.SparkOfBrilliance]: {

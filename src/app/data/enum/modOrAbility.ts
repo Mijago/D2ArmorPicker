@@ -46,6 +46,7 @@ export enum ModOrAbility {
   EmberOfEruption,
   EmberOfWonder,
   EmberOfSearing,
+  EmberOfTorches,
   //EchoOfExchange ,
   //EchoOfRemnants,
   //EchoOfReprisal,
