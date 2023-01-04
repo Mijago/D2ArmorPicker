@@ -379,6 +379,8 @@ export class BungieApiService {
         }
       ) || []
 
+    r = r.filter(k => !k["statPlugHashes"] || (k["statPlugHashes"][0] != null))
+
     // Now add the stuff to the db..
     await this.db.inventoryArmor.clear();
     await this.db.inventoryArmor.bulkAdd(r);
