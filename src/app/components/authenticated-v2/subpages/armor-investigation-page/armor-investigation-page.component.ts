@@ -244,11 +244,11 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   private filterItems(armorItems: LocalArmorInfo[]) {
     if (!!this.armorName)
-      armorItems = armorItems.filter(i => (i.name?.toLowerCase().indexOf(this.armorName || "") || -1) > -1)
+      armorItems = armorItems.filter(i => i.name.toLowerCase().indexOf(this.armorName!) > -1)
     if (!!this.armorHash)
-      armorItems = armorItems.filter(i => ((i.hash || 0).toString().indexOf(this.armorHash || "") > -1))
+      armorItems = armorItems.filter(i => ((i.hash || 0).toString().indexOf(this.armorHash!) > -1))
     if (!!this.armorId)
-      armorItems = armorItems.filter(i => ((i.itemInstanceId || 0).toString().indexOf(this.armorId || "") > -1))
+      armorItems = armorItems.filter(i => ((i.itemInstanceId || 0).toString().indexOf(this.armorId!) > -1))
 
     armorItems = armorItems.filter(i => i.totalStats[0] >= (this.minMobility || 0));
     armorItems = armorItems.filter(i => i.totalStats[1] >= (this.minResilience || 0));
