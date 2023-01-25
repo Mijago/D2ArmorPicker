@@ -3,4 +3,4 @@ export const MINIMUM_STAT_MOD_AMOUNT = 0;
 
 
 export const FORCE_USE_NO_EXOTIC = -1;
-
+export const FORCE_USE_ANY_EXOTIC = -2;

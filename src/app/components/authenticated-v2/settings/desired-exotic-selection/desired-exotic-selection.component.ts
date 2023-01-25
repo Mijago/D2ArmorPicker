@@ -5,7 +5,7 @@ import {CharacterClass} from "../../../../data/enum/character-Class";
 import {animate, query, stagger, style, transition, trigger} from "@angular/animations";
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
-import {FORCE_USE_NO_EXOTIC} from "../../../../data/constants";
+import {FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC} from "../../../../data/constants";
 import {debounceTime, takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 
@@ -89,6 +89,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExotics.splice(index, 1)
     } else if (hash == FORCE_USE_NO_EXOTIC) {
       this.selectedExotics = [FORCE_USE_NO_EXOTIC]
+    } else if (hash == FORCE_USE_ANY_EXOTIC) {
+        this.selectedExotics = [FORCE_USE_ANY_EXOTIC]
     } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
       // if length is 0 or shift is NOT pressed, add the exotic
       this.selectedExotics = [hash]

@@ -2,7 +2,7 @@ import {BuildConfiguration} from "../data/buildConfiguration";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {buildDb} from "../data/database";
 import {ArmorSlot} from "../data/enum/armor-slot";
-import {FORCE_USE_NO_EXOTIC} from "../data/constants";
+import {FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC} from "../data/constants";
 import {ModInformation} from "../data/ModInformation";
 import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
@@ -1014,7 +1014,11 @@ function handlePermutation(
     return null;
 
   const exotic = helmet.containsExotics ? helmet : gauntlet.containsExotics ? gauntlet : chest.containsExotics ? chest : leg.containsExotics ? leg : null
-  return {
+  if (!exotic && config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1) {
+    return null;
+  }
+  
+  return { 
     exotic: exotic == null ? [] : [{
       icon: exotic?.items[0].icon,
       watermark: exotic?.items[0].watermarkIcon,
