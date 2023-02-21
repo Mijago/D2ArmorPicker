@@ -67,6 +67,9 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
         this.selectedMods = c.enabledMods;
         this.selectedClass = c.characterClass;
         this.selectedElement = c.selectedModElement;
+        for (let t of [ModOrAbility.MobileRetrofit, ModOrAbility.ResilientRetrofit]) {
+          this.retrofitCount[t] = c.enabledMods.filter(m => m == t).length;
+        }
       })
   }
 

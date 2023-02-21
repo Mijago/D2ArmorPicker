@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {
   DestinyClass,
   DestinyComponentType,
-  DestinyInventoryItemDefinition,
+  DestinyInventoryItemDefinition, DestinyItemSocketState,
   equipItem,
   getDestinyManifest,
   getDestinyManifestSlice,
@@ -349,15 +349,21 @@ export class BungieApiService {
             }
           }
           if (r.slot != ArmorSlot.ArmorSlotClass) {
-            const sockets = (profile.Response.itemComponents.sockets.data || {})[d.itemInstanceId || ""].sockets;
-            var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
-            r.statPlugHashes = plugs;
-            var plm = plugs.map(k => mods[k || ""]).filter(k => k != null);
-            for (let entry of plm) {
-              for (let newStats of entry.investmentStats) {
-                if (newStats.statTypeHash in investmentStats)
-                  investmentStats[newStats.statTypeHash] += newStats.value;
+            const destinyItemSocketsComponents = profile.Response.itemComponents.sockets.data || {};
+            // check if d.itemInstanceId is in destinyItemSocketsComponents
+            if (d.itemInstanceId && d.itemInstanceId in destinyItemSocketsComponents) {
+              const sockets : DestinyItemSocketState[] = destinyItemSocketsComponents[d.itemInstanceId || ""].sockets;
+              var plugs = [sockets[6].plugHash, sockets[7].plugHash, sockets[8].plugHash, sockets[9].plugHash]
+              r.statPlugHashes = plugs;
+              var plm = plugs.map(k => mods[k || ""]).filter(k => k != null);
+              for (let entry of plm) {
+                for (let newStats of entry.investmentStats) {
+                  if (newStats.statTypeHash in investmentStats)
+                    investmentStats[newStats.statTypeHash] += newStats.value;
+                }
               }
+            } else {
+              console.error("Sockets data does not contain the correct item instance ID", d.itemInstanceId, profile.Response.itemComponents.sockets.data);
             }
           }
           r.mobility = investmentStats[2996146975]
