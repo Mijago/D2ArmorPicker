@@ -104,17 +104,6 @@ export class ConfigurationService {
       delete (c.configuration as any).minimumStatTier;
     }
 
-    if (c.configuration.hasOwnProperty("fixedArmorAffinities")) {
-      const affinities = (c.configuration as any).fixedArmorAffinities as any;
-      for (let key in affinities) {
-        let n = (Number.parseInt(key) + 1) as ArmorSlot
-        c.configuration.armorAffinities[n].value = affinities[key];
-      }
-      // It was a default setting back then, so we enforce it when we import old settings.
-      c.configuration.ignoreArmorAffinitiesOnNonMasterworkedItems = true;
-      delete (c.configuration as any).fixedArmorAffinities;
-    }
-
     if (c.configuration.hasOwnProperty("selectedExoticHash")) {
       c.configuration.selectedExotics = [(c.configuration as any).selectedExoticHash]
       delete (c.configuration as any).selectedExoticHash;

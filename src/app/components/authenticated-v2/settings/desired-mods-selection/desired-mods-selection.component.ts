@@ -23,7 +23,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
-  displayedColumns = ["name", "cost", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
+  displayedColumns = ["name", "mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
   private selectedClass: CharacterClass = CharacterClass.None;
   data: { data: Modifier[]; name: string, group: boolean, type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
@@ -93,10 +93,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       if (pos > -1) {
         c.enabledMods.splice(pos, 1)
       } else {
-        // Do not allow more than 5 stat mods
-        const amountStatMods = c.enabledMods.filter(d => ModInformation[d].requiredArmorAffinity != DestinyEnergyType.Any).length;
-        if (row.requiredArmorAffinity == DestinyEnergyType.Any || amountStatMods < 5)
-          c.enabledMods.push(row.id)
+        c.enabledMods.push(row.id)
       }
     })
   }

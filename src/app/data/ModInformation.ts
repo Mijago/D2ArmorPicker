@@ -15,7 +15,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Mobility, value: 20}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Arc,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1484685887
   },
   [ModOrAbility.RadiantLight]: {
@@ -25,7 +25,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: 20}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Arc,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2979815167
   },
   // NEGATIVE Mods
@@ -36,7 +36,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: -10}],
     cost: 2,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3523075120
   },
   [ModOrAbility.ExtraReserves]: {
@@ -46,7 +46,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Intellect, value: -10}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3523075121
   },
   [ModOrAbility.PreciselyCharged]: {
@@ -56,7 +56,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3523075122
   },
   [ModOrAbility.StacksOnStacks]: {
@@ -66,7 +66,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Recovery, value: -10}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3523075123
   },
   [ModOrAbility.PrecisionCharge]: {
@@ -76,7 +76,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Strength, value: -10}],
     cost: 2,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2263321584
   },
   [ModOrAbility.SurpriseAttack]: {
@@ -86,7 +86,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Intellect, value: -10}],
     cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2263321585
   },
   [ModOrAbility.EnergyConverter]: {
@@ -96,7 +96,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: ArmorStat.Discipline, value: -10}],
     cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2263321586
   },
   [ModOrAbility.ChargeHarvester]: {
@@ -106,7 +106,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     type: ModifierType.CombatStyleMod,
     bonus: [{stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10}],
     cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Void,
+    requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2263321587
   },
   // Positive STASIS

@@ -71,9 +71,6 @@
           <mat-chip #tooltip="matTooltip" *ngIf="_config_tryLimitWastedStats" disableRipple
                     matTooltip="The tool will add minor stat mods to reduce wasted stats.">Reduce wasted stats
           </mat-chip>
-          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledAffinity.length > 0" disableRipple
-                    matTooltip="This setting enforces a specific element for a specific armor slot.">Elemental Affinity
-          </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_modslotLimitation.length > 0" disableRipple
                     matTooltip="This setting limits available stat mod types, like major Intellect or Recovery.">Stat
             Mod Limitation
@@ -87,22 +84,6 @@
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledStasis" disableRipple
                     matTooltip="You enabled stasis fragments that affect stats.">Stasis Fragments
-          </mat-chip>
-          <mat-chip #tooltip="matTooltip"
-                    *ngIf="_config_ignoreArmorAffinitiesOnMasterworkedItems && !_config_ignoreArmorAffinitiesOnNonMasterworkedItems"
-                    disableRipple
-                    matTooltip="Ignore elements of non-masterworked items">Masterworked: IgnoreElements
-          </mat-chip>
-          <mat-chip #tooltip="matTooltip"
-                    *ngIf="_config_ignoreArmorAffinitiesOnNonMasterworkedItems && !_config_ignoreArmorAffinitiesOnMasterworkedItems"
-                    disableRipple
-                    matTooltip="Ignore elements of masterworked items">Non-Masterworked: Ignore Elements
-          </mat-chip>
-          <mat-chip #tooltip="matTooltip"
-                    *ngIf="_config_ignoreArmorAffinitiesOnNonMasterworkedItems && _config_ignoreArmorAffinitiesOnMasterworkedItems"
-                    disableRipple
-                    matTooltip="Ignore all elements of all items."
-                    selected>Ignore all Elements
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyShowResultsWithNoWastedStats" disableRipple
                     matTooltip="This setting means that only builds with no wasted stats are shown."

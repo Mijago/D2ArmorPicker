@@ -53,6 +53,7 @@ export class BuildConfiguration {
     [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
   }
 
+  putArtificerMods = true;
   useFotlArmor = true;
   allowBlueArmorPieces = true;
   ignoreSunsetArmor = false;
@@ -70,15 +71,6 @@ export class BuildConfiguration {
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = []
 
-  armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
-    [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotChest]: {fixed: true, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotClass]: {fixed: true, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotNone]: {fixed: true, value: DestinyEnergyType.Any},
-  };
-
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
     [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: ArmorPerkOrSlot.None},
     [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: ArmorPerkOrSlot.None},
@@ -88,19 +80,14 @@ export class BuildConfiguration {
     [ArmorSlot.ArmorSlotNone]: {fixed: true, value: ArmorPerkOrSlot.None},
   };
 
-  // Ignore armor element affinities.
-  // Note, the tool already ignores affinities of non-masterworked armor.
-  ignoreArmorAffinitiesOnMasterworkedItems: boolean = false;
-  ignoreArmorAffinitiesOnNonMasterworkedItems: boolean = false;
-
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
       enabledMods: [],
       disabledItems: [],
       addConstent1Resilience: false,
+      putArtificerMods: true,
       useFotlArmor: false,
-      ignoreArmorAffinitiesOnMasterworkedItems: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
       ignoreSunsetArmor: false,
@@ -124,15 +111,6 @@ export class BuildConfiguration {
         [ArmorSlot.ArmorSlotClass]: {fixed: false, value: 5},
         [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
       },
-      armorAffinities: {
-        [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotChest]: {fixed: true, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotLegs]: {fixed: true, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotClass]: {fixed: true, value: DestinyEnergyType.Any},
-        [ArmorSlot.ArmorSlotNone]: {fixed: true, value: DestinyEnergyType.Any},
-      },
-      ignoreArmorAffinitiesOnNonMasterworkedItems: false,
       armorPerks: {
         [ArmorSlot.ArmorSlotHelmet]: {fixed: true, value: ArmorPerkOrSlot.None},
         [ArmorSlot.ArmorSlotGauntlet]: {fixed: true, value: ArmorPerkOrSlot.None},

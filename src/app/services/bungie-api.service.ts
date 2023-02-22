@@ -328,8 +328,7 @@ export class BungieApiService {
             masterworked: !!instance.energy && instance.energy.energyCapacity == 10,
             energyLevel: !!instance.energy ? instance.energy.energyCapacity : 0,
             mobility: 0, resilience: 0, recovery: 0,
-            discipline: 0, intellect: 0, strength: 0,
-            energyAffinity: instance.energy?.energyType || 0,
+            discipline: 0, intellect: 0, strength: 0
           }, res[d.itemHash]) as IInventoryArmor
           (r.id as any) = undefined;
 

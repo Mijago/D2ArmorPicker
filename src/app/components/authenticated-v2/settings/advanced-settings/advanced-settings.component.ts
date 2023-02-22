@@ -92,24 +92,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               help: undefined
             },
           ],
-          "Elemental Armor Affinity": [
-            {
-              name: "Ignore armor elemental affinities on masterworked armor",
-              cp: (v: boolean) => this.config.modifyConfiguration(c => c.ignoreArmorAffinitiesOnMasterworkedItems = v),
-              value: c.ignoreArmorAffinitiesOnMasterworkedItems,
-              disabled: false,
-              impactsResultCount: true,
-              help: "Use this toggle to ignore the affinity of masterworked items. This may force you to change the element of exotics, which can be quite expensive. Enabling both settings disables the whole affinity selection."
-            },
-            {
-              name: "Ignore armor elemental affinities on non-masterworked armor",
-              cp: (v: boolean) => this.config.modifyConfiguration(c => c.ignoreArmorAffinitiesOnNonMasterworkedItems = v),
-              value: c.ignoreArmorAffinitiesOnNonMasterworkedItems,
-              disabled: false,
-              impactsResultCount: true,
-              help: "Use this toggle to ignore the affinity of non-masterworked items. Enabling both settings disables the whole affinity selection."
-            },
-          ],
           "Performance Optimization": [
             {
               name: "Use security features to prevent app crashes (resets on reload).",

@@ -94,19 +94,6 @@ These mods add a +5
       </span>
     </td>
   </ng-container>
-
-  <ng-container matColumnDef="cost">
-    <th *matHeaderCellDef mat-header-cell>
-      Element
-    </th>
-    <td *matCellDef="let element" mat-cell>
-        <!-- Item affinity -->
-            <img #tooltip="matTooltip" [src]="getAffinityUrl(element.requiredArmorAffinity)"
-                 class="element-icon"
-                 matTooltip='{{getAffinityName(element.requiredArmorAffinity)}} affinity'>
-    </td>
-  </ng-container>
-
     <!-- Position Column -->
   <ng-container matColumnDef="resilience">
     <th *matHeaderCellDef mat-header-cell>

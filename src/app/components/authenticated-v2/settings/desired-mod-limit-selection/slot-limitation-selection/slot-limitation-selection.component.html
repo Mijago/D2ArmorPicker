@@ -118,27 +118,6 @@
                        class="select-button {{selection >= i ? 'mat-button-toggle-checked' : ''}}">{{i}}</mat-button-toggle>
   </mat-button-toggle-group>
 
-  <div class="selector-element">
-    <div class="element-list">
-      <!-- Item affinity -->
-      <img #tooltip="matTooltip" (click)="setArmorElement(1)" [class.selected]="element == 1" [src]="getAffinityUrl(1)"
-           class="element-icon" matTooltip='{{getAffinityName(1)}} affinity'>
-      <img #tooltip="matTooltip" (click)="setArmorElement(2)" [class.selected]="element == 2" [src]="getAffinityUrl(2)"
-           class="element-icon" matTooltip='{{getAffinityName(2)}} affinity'>
-      <img #tooltip="matTooltip" (click)="setArmorElement(3)" [class.selected]="element == 3" [src]="getAffinityUrl(3)"
-           class="element-icon" matTooltip='{{getAffinityName(3)}} affinity'>
-      <img #tooltip="matTooltip" (click)="setArmorElement(6)" [class.selected]="element == 6" [src]="getAffinityUrl(6)"
-           class="element-icon" matTooltip='{{getAffinityName(6)}} affinity'>
-    </div>
-
-    <button (click)="toggleElementLock()" class="lock" mat-icon-button
-            matTooltip="Force the selected element to be on a {{slotName}}.">
-      <mat-icon *ngIf="!elementLock">lock_open</mat-icon>
-      <mat-icon *ngIf="elementLock">lock</mat-icon>
-    </button>
-
-    <div class="left_line"></div>
-  </div>
 
   <div class="selector-slots">
   <mat-button-toggle-group [class.impossible]="!isPossible">

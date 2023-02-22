@@ -44,21 +44,12 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
   public config_assumeClassItemMasterworked = false;
-  public config_ignoreArmorAffinitiesOnMasterworkedItems = false;
   public config_enabledMods: ModOrAbility[] = [];
   public DIMUrl: string = "";
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
   element: ResultDefinition | null = null;
-  config_armorAffinities: EnumDictionary<ArmorSlot, FixableSelection<DestinyEnergyType>> = {
-    [ArmorSlot.ArmorSlotHelmet]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotGauntlet]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotChest]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotLegs]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotClass]: {fixed: false, value: DestinyEnergyType.Any},
-    [ArmorSlot.ArmorSlotNone]: {fixed: false, value: DestinyEnergyType.Any},
-  };
 
 
   constructor(private config: ConfigurationService, private _snackBar: MatSnackBar, private bungieApi: BungieApiService) {
@@ -69,9 +60,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
 
     let classItemFilters = ["is:classitem"]
-    if (element?.classItem.affinity != DestinyEnergyType.Any) {
-      classItemFilters.push(`is:${ArmorAffinityNames[element?.classItem.affinity || 0]}`)
-    }
     if (element?.classItem.perk != ArmorPerkOrSlot.None && element?.classItem.perk != ArmorPerkOrSlot.COUNT) {
       classItemFilters.push(ArmorPerkOrSlotDIMText[element?.classItem.perk || 0])
     }
@@ -98,8 +86,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
         this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
         this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
         this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
-        this.config_ignoreArmorAffinitiesOnMasterworkedItems = c.ignoreArmorAffinitiesOnMasterworkedItems;
-        this.config_armorAffinities = c.armorAffinities;
         this.config_enabledMods = c.enabledMods;
         this.configValues = c.enabledMods
           .reduce((p, v) => {
@@ -168,17 +154,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     } else {
       this.openSnackBar("Some of the items could not be moved. Make sure that there is enough space in the specific slot. This tool will not move items out of your inventory.")
     }
-  }
-
-  getCountOfItemsWithWrongElement() {
-    if (!this.element) return 0;
-
-    return this.element.items.flat().filter(item => {
-      if (!this.config_armorAffinities[item.slot].fixed) return false;
-      if (this.config_armorAffinities[item.slot].value == DestinyEnergyType.Any) return false;
-
-      return this.config_armorAffinities[item.slot].value != item.energy;
-    }).length
   }
 
   getItemsThatMustBeMasterworked(): ResultItem[] | undefined {
@@ -265,7 +240,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       ],
       mods,
       assumeArmorMasterwork: c.assumeLegendariesMasterworked ? c.assumeExoticsMasterworked ? AssumeArmorMasterwork.All : AssumeArmorMasterwork.Legendary : AssumeArmorMasterwork.None,
-      lockArmorEnergyType: c.ignoreArmorAffinitiesOnMasterworkedItems ? c.ignoreArmorAffinitiesOnNonMasterworkedItems ? LockArmorEnergyType.None : LockArmorEnergyType.Masterworked : LockArmorEnergyType.All,
     }
 
     if (c.selectedExotics.length == 1) {

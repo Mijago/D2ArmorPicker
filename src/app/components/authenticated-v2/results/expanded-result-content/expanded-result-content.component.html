@@ -62,12 +62,6 @@
           </div>
         </td>
         <td class="icon-column">
-          <img #tooltip="matTooltip"
-               *ngIf="i.energy != 0" [src]="getAffinityUrl(i.energy)"
-               class="element-icon"
-               matTooltip='{{getAffinityName(i.energy)}} affinity'>
-        </td>
-        <td class="icon-column">
           <div style="position: relative; width: 25px;">
             <app-armor-perk-icon [perk]="i.perk || 0"></app-armor-perk-icon>
           </div>
@@ -124,13 +118,6 @@
       <td class="text-mw">{{2}}</td>
       <td class="text-mw">{{2}}</td>
       <td></td>
-      <td *ngVar="element?.classItem?.affinity as affinity">
-        <!-- Item affinity -->
-        <img #tooltip="matTooltip"
-             *ngIf="affinity != 0" [src]="getAffinityUrl(affinity)"
-             class="element-icon"
-             matTooltip='{{getAffinityName(affinity)}} affinity'>
-      </td>
       <td>
         <div style="position: relative; width: 25px;">
           <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
@@ -147,13 +134,6 @@
       <td>Any Class Item</td>
       <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>
-      <td *ngVar="element?.classItem?.affinity as affinity">
-        <!-- Item affinity -->
-        <img #tooltip="matTooltip"
-             *ngIf="affinity != 0" [src]="getAffinityUrl(affinity)"
-             class="element-icon"
-             matTooltip='{{getAffinityName(affinity)}} affinity'>
-      </td>
       <td></td>
       <td>
         <button (click)="disableAllItems()" class="item-info-menu-btn report-problem-icon" mat-icon-button
@@ -395,28 +375,6 @@
           Move all related items into your inventory <span *ngIf="config_assumeClassItemMasterworked"> and use a masterworked class item</span>.
         </li>
         <!-- Masterwork and elements -->
-        <li *ngIf="getCountOfItemsWithWrongElement() > 0">
-          Change the element of these items:
-          <ul>
-            <ng-container *ngFor="let item of (element?.items || []); let idx = index">
-              <li
-                *ngIf="$any(config_armorAffinities)[idx+1].fixed && $any(config_armorAffinities)[idx+1].value != 0 && (item[0].energy != $any(config_armorAffinities)[idx+1].value)">
-                {{item[0].name}} must be
-
-                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 1">Arc </span>
-                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 2">Solar </span>
-                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 3">Void </span>
-                <span *ngIf="$any(config_armorAffinities)[idx+1].value == 6">Stasis </span>
-                <!-- Item affinity -->
-                <img #tooltip="matTooltip"
-                     *ngIf="$any(config_armorAffinities)[idx+1].value != 0"
-                     [src]="getAffinityUrl($any(config_armorAffinities)[idx+1].value)"
-                     class="element-icon-mini"
-                     matTooltip='{{getAffinityName($any(config_armorAffinities)[idx+1].value)}} affinity'>
-              </li>
-            </ng-container>
-          </ul>
-        </li>
         <ng-container *ngVar="getItemsThatMustBeMasterworked() as mwItems">
           <li *ngIf="mwItems.length > 0">
             Masterwork these items:
