@@ -254,6 +254,29 @@
         <span *ngIf="count > 0" class="positive">{{count}}×10</span>
       </td>
     </tr>
+    <ng-container *ngVar="element?.artificer as mods">
+      <tr>
+        <td>Artificer Mods</td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_MOBILITY as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_RESILIENCE as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_RECOVERY as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_DISCIPLINE as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_INTELLECT as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+        <td *ngVar="mods | count:StatModifier.ARTIFICER_STRENGTH as count">
+          <span *ngIf="count > 0" class="positive">{{count}}×3</span>
+        </td>
+      </tr>
+    </ng-container>
 
     <!-- Final sum line -->
     <tr *ngVar="element?.stats as stats" class="result-total-all result-total highlight-row">

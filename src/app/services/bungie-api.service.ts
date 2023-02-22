@@ -380,6 +380,11 @@ export class BungieApiService {
             if (!hasPerk)
               r.perk = ArmorPerkOrSlot.None
           }
+
+          // TODO REMOVE
+          //if (!r.isExotic)
+            //r.perk = ArmorPerkOrSlot.SlotArtificer;
+
           return r as IInventoryArmor
         }
       ) || []

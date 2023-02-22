@@ -6,7 +6,7 @@ import {FORCE_USE_NO_EXOTIC} from "../data/constants";
 import {ModInformation} from "../data/ModInformation";
 import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
-import {DestinyEnergyType, TierType} from "bungie-api-ts/destiny2";
+import {TierType} from "bungie-api-ts/destiny2";
 
 declare global {
   interface Array<T> {
@@ -323,95 +323,6 @@ addEventListener('message', async ({data}) => {
   let classItems = items.filter(i => i.slot == ArmorSlot.ArmorSlotClass);
   let availableClassItemPerkTypes = new Set(classItems.map(d => d.perk));
 
-  if (selectedExotics.length > 1) {
-    let armorSlots = [...new Set(selectedExotics.map(i => i.slot))]
-
-    let items1 = items.filter(i => i.hash == selectedExotics[0].hash)
-    let items2 = items.filter(i => i.hash == selectedExotics[1].hash)
-    // handle same socket
-    if (armorSlots.length == 1) {
-      let permutations = []
-      for (let i1 of items1) {
-        for (let i2 of items2) {
-          permutations.push(new ItemCombination([i1, i2]))
-        }
-      }
-
-      switch (armorSlots[0]) {
-        case ArmorSlot.ArmorSlotHelmet:
-          helmets = permutations;
-          gauntlets = gauntlets.filter(d => !d.containsExotics)
-          chests = chests.filter(d => !d.containsExotics)
-          legs = legs.filter(d => !d.containsExotics)
-          break;
-        case ArmorSlot.ArmorSlotGauntlet:
-          gauntlets = permutations;
-          helmets = helmets.filter(d => !d.containsExotics)
-          chests = chests.filter(d => !d.containsExotics)
-          legs = legs.filter(d => !d.containsExotics)
-          break;
-        case ArmorSlot.ArmorSlotChest:
-          chests = permutations;
-          helmets = helmets.filter(d => !d.containsExotics)
-          gauntlets = gauntlets.filter(d => !d.containsExotics)
-          legs = legs.filter(d => !d.containsExotics)
-          break;
-        case ArmorSlot.ArmorSlotLegs:
-          legs = permutations;
-          helmets = helmets.filter(d => !d.containsExotics)
-          gauntlets = gauntlets.filter(d => !d.containsExotics)
-          chests = chests.filter(d => !d.containsExotics)
-          break;
-      }
-    } else if (armorSlots.length == 2) {
-      /**
-       * TODO!!!!
-       * While the current solution works, it is nowhere near perfect!
-       * Currently I only investigate [all skullforts * all leg helmets] vs [all cuirass * all leg chest pieces] (for example).
-       * But I have to use [all skullforts * all leg. chest pieces] vs [all leg helmets * all cuirass].
-       * As those are not in the same slot this will be pain. PAIN. I tell you, future Mijago, this'll be pain.
-       */
-      let legendary1 = items.filter(i => i.slot == selectedExotics[0].slot && !i.isExotic)
-      let legendary2 = items.filter(i => i.slot == selectedExotics[1].slot && !i.isExotic)
-      let permutations1 = []
-      let permutations2 = []
-      for (let i1 of items1) {
-        for (let i2 of legendary2) {
-          permutations1.push(new ItemCombination([i1, i2]))
-        }
-      }
-      for (let i1 of items2) {
-        for (let i2 of legendary1) {
-          permutations2.push(new ItemCombination([i1, i2]))
-        }
-      }
-
-
-      helmets = helmets.filter(d => !d.containsExotics)
-      gauntlets = gauntlets.filter(d => !d.containsExotics)
-      chests = chests.filter(d => !d.containsExotics)
-      legs = legs.filter(d => !d.containsExotics)
-
-      if (armorSlots[0] === ArmorSlot.ArmorSlotHelmet) {
-        helmets = permutations1;
-      } else if (armorSlots[0] === ArmorSlot.ArmorSlotGauntlet) {
-        gauntlets = permutations1;
-      } else if (armorSlots[0] === ArmorSlot.ArmorSlotChest) {
-        chests = permutations1;
-      } else if (armorSlots[0] === ArmorSlot.ArmorSlotLegs) {
-        legs = permutations1;
-      }
-      if (armorSlots[1] === ArmorSlot.ArmorSlotHelmet) {
-        helmets = permutations2;
-      } else if (armorSlots[1] === ArmorSlot.ArmorSlotGauntlet) {
-        gauntlets = permutations2;
-      } else if (armorSlots[1] === ArmorSlot.ArmorSlotChest) {
-        chests = permutations2;
-      } else if (armorSlots[1] === ArmorSlot.ArmorSlotLegs) {
-        legs = permutations2;
-      }
-    }
-  }
   console.debug("items", JSON.stringify({
     helmets: helmets.length,
     gauntlets: gauntlets.length,
@@ -465,7 +376,9 @@ addEventListener('message', async ({data}) => {
             totalResults++;
             if (result !== "DONOTSEND") {
               result["classItem"] = {
-                perk: slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None
+                // TODO really log the perk pls
+                //perk: slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None
+                perk: ArmorPerkOrSlot.SlotArtificer
               }
 
               results.push(result)
@@ -633,6 +546,13 @@ function handlePermutation(
     if (config.minimumStatTiers[n].fixed && (stats[n] / 10) >= config.minimumStatTiers[n].value + 1)
       return null;
 
+  // get the amount of armor with artificer slot
+  let availableArtificerCount = items.filter(d => d.perks.indexOf(ArmorPerkOrSlot.SlotArtificer) > -1).length;
+
+
+  // TODO also log the class item to the frontend
+  availableArtificerCount += 1;
+
   // required mods for each stat
   const requiredMods = [
     Math.ceil(Math.max(0, config.minimumStatTiers[0].value - stats[0] / 10)),
@@ -645,11 +565,12 @@ function handlePermutation(
 
   const requiredModsTotal = requiredMods[0] + requiredMods[1] + requiredMods[2] + requiredMods[3] + requiredMods[4] + requiredMods[5]
   const usedMods: OrderedList<StatModifier> = new OrderedList<StatModifier>(d => STAT_MOD_VALUES[d][2])
+  const usedArtificer: number[] = []
   // only calculate mods if necessary. If we are already above the limit there's no reason to do the rest
-  if (requiredModsTotal > 5) return null;
+  //if (requiredModsTotal > 5) return null;
 
   let availableModCostLen = availableModCost.length;
-  if (requiredModsTotal > availableModCostLen) return null;
+  //if (requiredModsTotal > availableModCostLen) return null;
 
   if (requiredModsTotal > 0) {
     // first, add mods that are necessary
@@ -660,51 +581,103 @@ function handlePermutation(
       // This saves slots AND reduces wasted stats.
       const statDifference = stats[statId] % 10;
       if (statDifference > 0 && statDifference % 10 >= 5) {
-        usedMods.insert((1 + (statId * 2)) as StatModifier)
+        usedMods.insert((1 + (statId * 3)) as StatModifier)
 
         requiredMods[statId]--;
         stats[statId] += 5
       }
       // Now fill the rest with major mods.
       for (let n = 0; n < requiredMods[statId]; n++) {
-        usedMods.insert((2 + (statId * 2)) as StatModifier)
+        usedMods.insert((2 + (statId * 3)) as StatModifier)
         stats[statId] += 10
       }
     }
-    /**
-     *  Now we know how many major mods we need.
-     *  If the modslot limitation forces us to only use N major mods, we can simply replace
-     *  a major mod with two minor mods.
-     *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
-     *  modslot limitations are satisfied.
-     */
-    for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) {
-      const mod = usedMods.list[i];
 
-      const cost = STAT_MOD_VALUES[mod][2];
-      const availableSlots = availableModCost.where(d => d >= cost);
-      if (availableSlots.length == 0) {
-        if (mod % 2 == 0) {
-          // replace a major mod with two minor mods OR abort
-          usedMods.remove(mod)
-          let minorMod = mod - 1 as StatModifier;
-          usedMods.insert(minorMod)
-          usedMods.insert(minorMod)
-          i--;
+    let modsChangedThings = true;
+    while (modsChangedThings) {
+      modsChangedThings = false;
+
+      /**
+       *  Now we know how many major mods we need.
+       *  If the modslot limitation forces us to only use N major mods, we can simply replace
+       *  a major mod with two minor mods.
+       *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
+       *  modslot limitations are satisfied.
+       */
+      for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) { // TODO might have to increase this
+        const mod = usedMods.list[i];
+
+        const cost = STAT_MOD_VALUES[mod][2];
+        const availableSlots = availableModCost.where(d => d >= cost);
+        if (availableSlots.length == 0) {
+          if (mod % 3 == 2) {
+            // replace a major mod with two minor mods OR abort
+            usedMods.remove(mod)
+            let minorMod = mod - 1 as StatModifier;
+            usedMods.insert(minorMod)
+            usedMods.insert(minorMod)
+            i--;
+            modsChangedThings = true;
+          } else {
+            // cannot replace a minor mod, so this build is not possible
+            return null;
+          }
         } else {
-          // cannot replace a minor mod, so this build is not possible
-          return null;
+          // TODO maybe add modsChangedThings = true;
+          availableModCost.splice(availableModCost.indexOf(availableSlots[0]), 1)
+          availableModCostLen--;
         }
-      } else {
-        availableModCost.splice(availableModCost.indexOf(availableSlots[0]), 1)
-        availableModCostLen--;
+      }
+      // replace minor mods if the respective stat % 10 is 1 or 2
+      for (let i = 0; i < usedMods.length && 0 < availableArtificerCount; i++) {
+        const mod = usedMods.list[i];
+        // skip if not minor mod
+        if (mod % 3 == 1) {
+          const stat = STAT_MOD_VALUES[mod][0];
+          const statDist = stats[stat] % 10;
+          if (statDist == 2 || statDist == 3) {
+            usedMods.remove(mod)
+            usedArtificer.push(3 + 3 * stat)
+            availableArtificerCount--;
+            stats[stat] -= 2;
+            i--;
+            modsChangedThings = true;
+          }
+        }
+        else if (mod % 3 == 2) {
+          // Major mods
+          const stat = STAT_MOD_VALUES[mod][0];
+          const statDist = stats[stat] % 10;
+
+          if (statDist == 4 && availableArtificerCount > 1) {
+            usedMods.remove(mod)
+            usedArtificer.push(3 + 3 * stat)
+            usedArtificer.push(3 + 3 * stat)
+            availableArtificerCount -= 2;
+            stats[stat] -= 4;
+            i--;
+            modsChangedThings = true;
+          } else if ((statDist == 3 ||statDist == 2 || statDist == 1) && availableArtificerCount > 2) {
+            usedMods.remove(mod)
+            usedArtificer.push(3 + 3 * stat)
+            usedArtificer.push(3 + 3 * stat)
+            usedArtificer.push(3 + 3 * stat)
+            availableArtificerCount -= 3;
+            stats[stat] -= 1;
+            i--;
+            modsChangedThings = true;
+          }
+        }
+
       }
     }
   }
+
   if (usedMods.length > 5) return null;
 
   // Check if we should add our results at all
   if (config.onlyShowResultsWithNoWastedStats) {
+    // TODO add artificer
     // Definitely return when we encounter stats above 100
     if (stats.where(d => d > 100).length > 0)
       return null;
@@ -725,12 +698,12 @@ function handlePermutation(
 
     for (let i = availableModCostLen - 1; i >= 0; i--) {
       let result = waste
-        .where(t => availableModCost.filter(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 2)) as StatModifier][2]).length > 0)
+        .where(t => availableModCost.filter(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 3)) as StatModifier][2]).length > 0)
         .where(t => t[0] >= 5 && t[2] < 100)
         .sort((a, b) => a[0] - b[0])[0]
       if (!result) break;
 
-      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 2)) as StatModifier][2])[0]
+      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 3)) as StatModifier][2])[0]
       availableModCost.splice(availableModCost.indexOf(modCost), 1);
       availableModCostLen--;
       stats[result[1]] += 5
@@ -744,11 +717,11 @@ function handlePermutation(
   if (usedMods.length > 5)
     return null;
 
-
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
-  const maxBonus = 10 * availableModCostLen
-  const maxBonus1 = 100 - 10 * availableModCostLen
+  const maxArtificerBonus = 3 * availableArtificerCount
+  const maxBonus = 10 * availableModCostLen + maxArtificerBonus
+  const maxBonus1 = 100 - maxBonus
   const possible100 = []
   for (let n = 0; n < 6; n++) {
     let maximum = stats[n]
@@ -759,12 +732,13 @@ function handlePermutation(
 
     // TODO there is a bug here somewhere
     if (maximum + maxBonus >= runtime.maximumPossibleTiers[n]) {
-      let minor = STAT_MOD_VALUES[(1 + (n * 2)) as StatModifier][2]
-      let major = STAT_MOD_VALUES[(2 + (n * 2)) as StatModifier][2]
+      let minor = STAT_MOD_VALUES[(1 + (n * 3)) as StatModifier][2]
+      let major = STAT_MOD_VALUES[(2 + (n * 3)) as StatModifier][2]
       for (let i = 0; i < availableModCostLen && maximum < 100; i++) {
         if (availableModCost[i] >= major) maximum += 10;
         if (availableModCost[i] >= minor && availableModCost[i] < major) maximum += 5;
       }
+      maximum += maxArtificerBonus;
       if (maximum > runtime.maximumPossibleTiers[n])
         runtime.maximumPossibleTiers[n] = maximum
     }
@@ -812,8 +786,8 @@ function handlePermutation(
           continue
         const data = combination[i]
         const id = data[0]
-        let minor = STAT_MOD_VALUES[(1 + (id * 2)) as StatModifier][2]
-        let major = STAT_MOD_VALUES[(2 + (id * 2)) as StatModifier][2]
+        let minor = STAT_MOD_VALUES[(1 + (id * 3)) as StatModifier][2]
+        let major = STAT_MOD_VALUES[(2 + (id * 3)) as StatModifier][2]
 
         const valueToOvercome = Math.max(0, data[1]);
         let amountMajor = ~~(valueToOvercome / 10);
@@ -883,7 +857,7 @@ function handlePermutation(
 
     for (let id = 0; id < availableModCostLen; id++) {
       let result = waste
-        .where(t => availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 2)) as StatModifier][2]).length > 0)
+        .where(t => availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 3)) as StatModifier][2]).length > 0)
         .filter(t => t[0] >= 5 && t[2] < 100)
         .sort((a, b) => a[0] - b[0])[0]
       if (!result) break;
@@ -894,7 +868,7 @@ function handlePermutation(
         continue;
       }
 
-      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 2)) as StatModifier][2])[0]
+      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 3)) as StatModifier][2])[0]
       availableModCost.splice(availableModCost.indexOf(modCost), 1);
       availableModCostLen--;
       stats[result[1]] += 5
@@ -916,6 +890,7 @@ function handlePermutation(
       name: exotic?.items[0].name,
       hash: exotic?.items[0].hash
     }],
+    artificer: usedArtificer,
     modCount: usedMods.length,
     modCost: usedMods.list.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
     mods: usedMods.list,

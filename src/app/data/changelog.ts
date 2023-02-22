@@ -12,6 +12,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.3.0",
+    date: "February 22, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Automatically adds artificer mods to your armor. This replaces minor and major mods where possible. This is not completely done yet (3x100 and 4x100 buttons are disabled)",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the elemental affinity completely.",
+        issues: []
+      },
+    ]
+  },
+  {
     version: "2.2.16",
     date: "December 7, 2022",
     entries: [

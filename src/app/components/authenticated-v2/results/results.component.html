@@ -192,6 +192,8 @@
             Used Mods
           </th>
           <td *matCellDef="let element" mat-cell>
+            {{element.artificer | json}}
+
             <span *ngIf="element.modCount == 0">None</span>
             <!-- MOBILITY -->
             <app-table-mod-display
