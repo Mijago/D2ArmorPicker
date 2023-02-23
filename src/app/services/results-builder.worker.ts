@@ -604,7 +604,7 @@ function handlePermutation(
        *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
        *  modslot limitations are satisfied.
        */
-      for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) { // TODO might have to increase this
+      for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) {
         const mod = usedMods.list[i];
 
         const cost = STAT_MOD_VALUES[mod][2];
@@ -643,8 +643,7 @@ function handlePermutation(
             i--;
             modsChangedThings = true;
           }
-        }
-        else if (mod % 3 == 2) {
+        } else if (mod % 3 == 2) {
           // Major mods
           const stat = STAT_MOD_VALUES[mod][0];
           const statDist = stats[stat] % 10;
@@ -657,7 +656,7 @@ function handlePermutation(
             stats[stat] -= 4;
             i--;
             modsChangedThings = true;
-          } else if ((statDist == 3 ||statDist == 2 || statDist == 1) && availableArtificerCount > 2) {
+          } else if ((statDist == 3 || statDist == 2 || statDist == 1) && availableArtificerCount > 2) {
             usedMods.remove(mod)
             usedArtificer.push(3 + 3 * stat)
             usedArtificer.push(3 + 3 * stat)
@@ -681,40 +680,71 @@ function handlePermutation(
     // Definitely return when we encounter stats above 100
     if (stats.where(d => d > 100).length > 0)
       return null;
-    // definitely return when we encounter stats that can not be fixed
-    if (stats.where(d => d % 5 != 0).length > 0)
+    // Possible zero-waste-rules
+    // BEFORE ARTIFICER:
+    // fixable: 55 -> 1x minor mod                => + 5
+
+    // AFTER ARTIFICER:
+    // fixable: 59 -> 1x minor mod + 2x artificer => +11
+    // fixable: 58 -> 4x artificer                => +12
+    // fixable: 57 -> 1x artificer                => + 3
+    // fixable: 56 -> 1x minor mod + 3x artificer => +14
+    // fixable: 55 -> 1x minor mod                => + 5
+    // fixable: 55 -> 5x artificer                => +15
+    // fixable: 54 -> 2x artificer                => + 6
+    // fixable: 53 -> 1x minor mod + 4x artificer => +17
+    // fixable: 52 -> 1x minor mod + 1x artificer => + 8
+    // fixable: 51 -> 3x artificer                => + 9
+    let requiredChanges = stats.map((val) => {
+      switch (val % 10) {
+        case 1:
+          return [0, 3];
+        case 2:
+          return [1, 1];
+        case 3:
+          return [1, 4];
+        case 4:
+          return [0, 2];
+        case 5:
+          return [1, 0];
+        case 6:
+          return [1, 3];
+        case 7:
+          return [0, 1];
+        case 8:
+          return [0, 4];
+        case 9:
+          return [1, 2];
+        default:
+          return [0, 0];
+      }
+    })
+
+    let sumOfChanges = requiredChanges.reduce((a, b) => [a[0] + b[1], a[1] + b[1]], [0, 0]);
+    if (sumOfChanges[0] > availableModCostLen || sumOfChanges[1] > availableArtificerCount)
       return null;
 
-    // now find out how many mods we need to fix our stats to 0 waste
-    // Yes, this is basically duplicated code. But necessary.
-    let waste = [
-      stats[ArmorStat.Mobility],
-      stats[ArmorStat.Resilience],
-      stats[ArmorStat.Recovery],
-      stats[ArmorStat.Discipline],
-      stats[ArmorStat.Intellect],
-      stats[ArmorStat.Strength]
-    ].map((v, index) => [v % 10, index, v]).sort((a, b) => b[0] - a[0])
+    // add the mods that are required to fix the stats
+    // keep the modslot cost in mind
+    for (let i = 0; i < requiredChanges.length; i++) {
+      const stat = requiredChanges[i];
 
-    for (let i = availableModCostLen - 1; i >= 0; i--) {
-      let result = waste
-        .where(t => availableModCost.filter(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 3)) as StatModifier][2]).length > 0)
-        .where(t => t[0] >= 5 && t[2] < 100)
-        .sort((a, b) => a[0] - b[0])[0]
-      if (!result) break;
-
-      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 3)) as StatModifier][2])[0]
-      availableModCost.splice(availableModCost.indexOf(modCost), 1);
-      availableModCostLen--;
-      stats[result[1]] += 5
-      result[0] -= 5;
-      usedMods.insert(1 + 2 * result[1])
+      for (let j = 0; j < stat[0] && availableModCostLen > 0; j++) {
+        usedMods.insert(1 + (i * 3))
+        stats[i] += 5;
+        availableModCostLen--;
+      }
+      for (let j = 0; j < stat[1] && availableArtificerCount > 0; j++) {
+        usedArtificer.push(3 + (i * 3))
+        stats[i] += 3;
+        availableArtificerCount--;
+      }
     }
-    const waste1 = getWaste(stats);
-    if (waste1 > 0)
+    if (getWaste(stats) > 0) {
       return null;
+    }
   }
-  if (usedMods.length > 5)
+  if (usedMods.length > 5) // TODO: Should never be called, could be removed
     return null;
 
   // get maximum possible stat and write them into the runtime
