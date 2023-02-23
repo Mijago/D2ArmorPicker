@@ -496,6 +496,19 @@ class OrderedList<T> {
   }
 }
 
+const requiredZeroWasteChanges = [
+  [0, 0],
+  [0, 3],
+  [1, 1],
+  [1, 4],
+  [0, 2],
+  [1, 0],
+  [1, 3],
+  [0, 1],
+  [0, 4],
+  [1, 2],
+]
+
 /**
  * Returns null, if the permutation is invalid.
  * This code does not utilize fancy filters and other stuff.
@@ -648,7 +661,16 @@ function handlePermutation(
           const stat = STAT_MOD_VALUES[mod][0];
           const statDist = stats[stat] % 10;
 
-          if (statDist == 4 && availableArtificeCount > 1) {
+          if ((statDist == 2 || statDist == 3 || statDist == 4) && availableArtificeCount > 0) {
+            usedMods.remove(mod)
+            usedMods.insert(mod - 1)
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 1;
+            modsChangedThings = true;
+
+            stats[stat] -= 2;
+            i--;
+          } else if (statDist == 4 && availableArtificeCount > 1) {
             usedMods.remove(mod)
             usedArtifice.push(3 + 3 * stat)
             usedArtifice.push(3 + 3 * stat)
@@ -656,13 +678,22 @@ function handlePermutation(
             stats[stat] -= 4;
             i--;
             modsChangedThings = true;
-          } else if ((statDist == 3 || statDist == 2 || statDist == 1) && availableArtificeCount > 2) {
+          } else if ((statDist == 1) && availableArtificeCount > 1) {
             usedMods.remove(mod)
+            usedMods.insert(mod - 1)
             usedArtifice.push(3 + 3 * stat)
             usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 2;
+            stats[stat] -= 0;
+            i--;
+            modsChangedThings = true;
+          } else if ((statDist == 0) && availableArtificeCount > 1 && !config.onlyShowResultsWithNoWastedStats) {
+            usedMods.remove(mod)
+            usedMods.insert(mod - 1)
             usedArtifice.push(3 + 3 * stat)
-            availableArtificeCount -= 3;
-            stats[stat] -= 1;
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 2;
+            stats[stat] +=1;
             i--;
             modsChangedThings = true;
           }
@@ -689,36 +720,13 @@ function handlePermutation(
     // fixable: 58 -> 4x artifice                => +12
     // fixable: 57 -> 1x artifice                => + 3
     // fixable: 56 -> 1x minor mod + 3x artifice => +14
-    // fixable: 55 -> 1x minor mod                => + 5
+    // fixable: 55 -> 1x minor mod               => + 5
     // fixable: 55 -> 5x artifice                => +15
     // fixable: 54 -> 2x artifice                => + 6
     // fixable: 53 -> 1x minor mod + 4x artifice => +17
     // fixable: 52 -> 1x minor mod + 1x artifice => + 8
     // fixable: 51 -> 3x artifice                => + 9
-    let requiredChanges = stats.map((val) => {
-      switch (val % 10) {
-        case 1:
-          return [0, 3];
-        case 2:
-          return [1, 1];
-        case 3:
-          return [1, 4];
-        case 4:
-          return [0, 2];
-        case 5:
-          return [1, 0];
-        case 6:
-          return [1, 3];
-        case 7:
-          return [0, 1];
-        case 8:
-          return [0, 4];
-        case 9:
-          return [1, 2];
-        default:
-          return [0, 0];
-      }
-    })
+    let requiredChanges = stats.map(val => requiredZeroWasteChanges[val % 10])
 
     let sumOfChanges = requiredChanges.reduce((a, b) => [a[0] + b[1], a[1] + b[1]], [0, 0]);
     if (sumOfChanges[0] > availableModCostLen || sumOfChanges[1] > availableArtificeCount)
@@ -762,13 +770,13 @@ function handlePermutation(
 
     // TODO there is a bug here somewhere
     if (maximum + maxBonus >= runtime.maximumPossibleTiers[n]) {
+      maximum += maxArtificeBonus;
       let minor = STAT_MOD_VALUES[(1 + (n * 3)) as StatModifier][2]
       let major = STAT_MOD_VALUES[(2 + (n * 3)) as StatModifier][2]
       for (let i = 0; i < availableModCostLen && maximum < 100; i++) {
         if (availableModCost[i] >= major) maximum += 10;
         if (availableModCost[i] >= minor && availableModCost[i] < major) maximum += 5;
       }
-      maximum += maxArtificeBonus;
       if (maximum > runtime.maximumPossibleTiers[n])
         runtime.maximumPossibleTiers[n] = maximum
     }
