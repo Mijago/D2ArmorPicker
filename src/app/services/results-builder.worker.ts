@@ -378,7 +378,7 @@ addEventListener('message', async ({data}) => {
               result["classItem"] = {
                 // TODO really log the perk pls
                 //perk: slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None
-                perk: ArmorPerkOrSlot.SlotArtificer
+                perk: ArmorPerkOrSlot.SlotArtifice
               }
 
               results.push(result)
@@ -546,12 +546,12 @@ function handlePermutation(
     if (config.minimumStatTiers[n].fixed && (stats[n] / 10) >= config.minimumStatTiers[n].value + 1)
       return null;
 
-  // get the amount of armor with artificer slot
-  let availableArtificerCount = items.filter(d => d.perks.indexOf(ArmorPerkOrSlot.SlotArtificer) > -1).length;
+  // get the amount of armor with artifice slot
+  let availableArtificeCount = items.filter(d => d.perks.indexOf(ArmorPerkOrSlot.SlotArtifice) > -1).length;
 
 
   // TODO also log the class item to the frontend
-  availableArtificerCount += 1;
+  availableArtificeCount += 1;
 
   // required mods for each stat
   const requiredMods = [
@@ -565,7 +565,7 @@ function handlePermutation(
 
   const requiredModsTotal = requiredMods[0] + requiredMods[1] + requiredMods[2] + requiredMods[3] + requiredMods[4] + requiredMods[5]
   const usedMods: OrderedList<StatModifier> = new OrderedList<StatModifier>(d => STAT_MOD_VALUES[d][2])
-  const usedArtificer: number[] = []
+  const usedArtifice: number[] = []
   // only calculate mods if necessary. If we are already above the limit there's no reason to do the rest
   //if (requiredModsTotal > 5) return null;
 
@@ -629,7 +629,7 @@ function handlePermutation(
         }
       }
       // replace minor mods if the respective stat % 10 is 1 or 2
-      for (let i = 0; i < usedMods.length && 0 < availableArtificerCount; i++) {
+      for (let i = 0; i < usedMods.length && 0 < availableArtificeCount; i++) {
         const mod = usedMods.list[i];
         // skip if not minor mod
         if (mod % 3 == 1) {
@@ -637,8 +637,8 @@ function handlePermutation(
           const statDist = stats[stat] % 10;
           if (statDist == 2 || statDist == 3) {
             usedMods.remove(mod)
-            usedArtificer.push(3 + 3 * stat)
-            availableArtificerCount--;
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount--;
             stats[stat] -= 2;
             i--;
             modsChangedThings = true;
@@ -648,20 +648,20 @@ function handlePermutation(
           const stat = STAT_MOD_VALUES[mod][0];
           const statDist = stats[stat] % 10;
 
-          if (statDist == 4 && availableArtificerCount > 1) {
+          if (statDist == 4 && availableArtificeCount > 1) {
             usedMods.remove(mod)
-            usedArtificer.push(3 + 3 * stat)
-            usedArtificer.push(3 + 3 * stat)
-            availableArtificerCount -= 2;
+            usedArtifice.push(3 + 3 * stat)
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 2;
             stats[stat] -= 4;
             i--;
             modsChangedThings = true;
-          } else if ((statDist == 3 || statDist == 2 || statDist == 1) && availableArtificerCount > 2) {
+          } else if ((statDist == 3 || statDist == 2 || statDist == 1) && availableArtificeCount > 2) {
             usedMods.remove(mod)
-            usedArtificer.push(3 + 3 * stat)
-            usedArtificer.push(3 + 3 * stat)
-            usedArtificer.push(3 + 3 * stat)
-            availableArtificerCount -= 3;
+            usedArtifice.push(3 + 3 * stat)
+            usedArtifice.push(3 + 3 * stat)
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 3;
             stats[stat] -= 1;
             i--;
             modsChangedThings = true;
@@ -676,25 +676,25 @@ function handlePermutation(
 
   // Check if we should add our results at all
   if (config.onlyShowResultsWithNoWastedStats) {
-    // TODO add artificer
+    // TODO add artifice
     // Definitely return when we encounter stats above 100
     if (stats.where(d => d > 100).length > 0)
       return null;
     // Possible zero-waste-rules
-    // BEFORE ARTIFICER:
+    // BEFORE ARTIFICE:
     // fixable: 55 -> 1x minor mod                => + 5
 
-    // AFTER ARTIFICER:
-    // fixable: 59 -> 1x minor mod + 2x artificer => +11
-    // fixable: 58 -> 4x artificer                => +12
-    // fixable: 57 -> 1x artificer                => + 3
-    // fixable: 56 -> 1x minor mod + 3x artificer => +14
+    // AFTER ARTIFICE:
+    // fixable: 59 -> 1x minor mod + 2x artifice => +11
+    // fixable: 58 -> 4x artifice                => +12
+    // fixable: 57 -> 1x artifice                => + 3
+    // fixable: 56 -> 1x minor mod + 3x artifice => +14
     // fixable: 55 -> 1x minor mod                => + 5
-    // fixable: 55 -> 5x artificer                => +15
-    // fixable: 54 -> 2x artificer                => + 6
-    // fixable: 53 -> 1x minor mod + 4x artificer => +17
-    // fixable: 52 -> 1x minor mod + 1x artificer => + 8
-    // fixable: 51 -> 3x artificer                => + 9
+    // fixable: 55 -> 5x artifice                => +15
+    // fixable: 54 -> 2x artifice                => + 6
+    // fixable: 53 -> 1x minor mod + 4x artifice => +17
+    // fixable: 52 -> 1x minor mod + 1x artifice => + 8
+    // fixable: 51 -> 3x artifice                => + 9
     let requiredChanges = stats.map((val) => {
       switch (val % 10) {
         case 1:
@@ -721,7 +721,7 @@ function handlePermutation(
     })
 
     let sumOfChanges = requiredChanges.reduce((a, b) => [a[0] + b[1], a[1] + b[1]], [0, 0]);
-    if (sumOfChanges[0] > availableModCostLen || sumOfChanges[1] > availableArtificerCount)
+    if (sumOfChanges[0] > availableModCostLen || sumOfChanges[1] > availableArtificeCount)
       return null;
 
     // add the mods that are required to fix the stats
@@ -734,10 +734,10 @@ function handlePermutation(
         stats[i] += 5;
         availableModCostLen--;
       }
-      for (let j = 0; j < stat[1] && availableArtificerCount > 0; j++) {
-        usedArtificer.push(3 + (i * 3))
+      for (let j = 0; j < stat[1] && availableArtificeCount > 0; j++) {
+        usedArtifice.push(3 + (i * 3))
         stats[i] += 3;
-        availableArtificerCount--;
+        availableArtificeCount--;
       }
     }
     if (getWaste(stats) > 0) {
@@ -749,8 +749,8 @@ function handlePermutation(
 
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
-  const maxArtificerBonus = 3 * availableArtificerCount
-  const maxBonus = 10 * availableModCostLen + maxArtificerBonus
+  const maxArtificeBonus = 3 * availableArtificeCount
+  const maxBonus = 10 * availableModCostLen + maxArtificeBonus
   const maxBonus1 = 100 - maxBonus
   const possible100 = []
   for (let n = 0; n < 6; n++) {
@@ -768,7 +768,7 @@ function handlePermutation(
         if (availableModCost[i] >= major) maximum += 10;
         if (availableModCost[i] >= minor && availableModCost[i] < major) maximum += 5;
       }
-      maximum += maxArtificerBonus;
+      maximum += maxArtificeBonus;
       if (maximum > runtime.maximumPossibleTiers[n])
         runtime.maximumPossibleTiers[n] = maximum
     }
@@ -920,7 +920,7 @@ function handlePermutation(
       name: exotic?.items[0].name,
       hash: exotic?.items[0].hash
     }],
-    artificer: usedArtificer,
+    artifice: usedArtifice,
     modCount: usedMods.length,
     modCost: usedMods.list.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
     mods: usedMods.list,

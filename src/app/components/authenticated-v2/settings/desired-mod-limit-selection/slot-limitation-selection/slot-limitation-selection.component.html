@@ -135,7 +135,7 @@
   </mat-button-toggle-group>
   <mat-menu #dropdownArmorModslot="matMenu" class="modslot-select-scroll-menu">
     <ng-container
-      *ngFor="let perk of [ArmorPerkOrSlot.None, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtificer, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings, ArmorPerkOrSlot.SeraphSensorArray]">
+      *ngFor="let perk of [ArmorPerkOrSlot.None, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtifice, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings, ArmorPerkOrSlot.SeraphSensorArray]">
       <button mat-menu-item (click)="setArmorPerk(perk)" [class.selected-menu]="perk == armorPerk">
         <app-armor-perk-icon [perk]="perk" class="menuArmorIcon"></app-armor-perk-icon>
         <span class="menuArmorText">{{ArmorPerkOrSlotNames[perk]}}</span>

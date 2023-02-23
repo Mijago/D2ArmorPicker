@@ -26,7 +26,7 @@ export interface ResultDefinition {
     name: string,
     hash: string
   }],
-  artificer: number[],
+  artifice: number[],
   classItem: {
     perk: ArmorPerkOrSlot
   },

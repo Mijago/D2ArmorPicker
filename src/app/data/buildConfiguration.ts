@@ -53,7 +53,7 @@ export class BuildConfiguration {
     [ArmorSlot.ArmorSlotNone]: {fixed: false, value: 5}
   }
 
-  putArtificerMods = true;
+  putArtificeMods = true;
   useFotlArmor = true;
   allowBlueArmorPieces = true;
   ignoreSunsetArmor = false;

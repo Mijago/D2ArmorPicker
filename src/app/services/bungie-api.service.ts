@@ -372,8 +372,8 @@ export class BungieApiService {
           r.intellect = investmentStats[144602215]
           r.strength = investmentStats[4244567218]
 
-          // Take a look if it really has the artificer perk
-          if (r.perk == ArmorPerkOrSlot.SlotArtificer) {
+          // Take a look if it really has the artifice perk
+          if (r.perk == ArmorPerkOrSlot.SlotArtifice) {
             let statData = profile.Response.itemComponents.perks.data || {};
             let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || []
             const hasPerk = perks.filter(p => p.perkHash == 229248542).length > 0;
@@ -403,7 +403,7 @@ export class BungieApiService {
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
     if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1212) || []).length > 0)
-      return ArmorPerkOrSlot.SlotArtificer;
+      return ArmorPerkOrSlot.SlotArtifice;
 
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1728096240) || []).length > 0)
       return ArmorPerkOrSlot.SlotKingsFall;

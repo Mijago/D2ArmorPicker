@@ -17,7 +17,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Automatically adds artificer mods to your armor. This replaces minor and major mods where possible. This is not completely done yet (3x100 and 4x100 buttons are disabled)",
+        text: "Automatically adds artifice mods to your armor. This replaces minor and major mods where possible. This is not completely done yet (3x100 and 4x100 buttons are disabled)",
         issues: []
       },
       {
@@ -53,7 +53,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Fixed artificer modslot.",
+        text: "Fixed artifice modslot.",
         issues: []
       },
       {
@@ -155,7 +155,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "The manifest is now (again) automatically updated on version changes. This fixes your artificer problems at the beginning of a new season.",
+        text: "The manifest is now (again) automatically updated on version changes. This fixes your artifice problems at the beginning of a new season.",
         issues: []
       },
       {
@@ -171,7 +171,7 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Fixed Artificer modslots. You might need to wait a bit, alternatively delete the database (Account section) or re-log.",
+        text: "Fixed Artifice modslots. You might need to wait a bit, alternatively delete the database (Account section) or re-log.",
         issues: []
       }
     ]
@@ -278,7 +278,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Adapted artificer armor to the new Season.",
+        text: "Adapted artifice armor to the new Season.",
         issues: []
       },
     ]
@@ -367,7 +367,7 @@ export const CHANGELOG_DATA = [
       // "~ Improved help texts of advanced settings.", // TODO; Feedback source https://www.reddit.com/r/DestinyTheGame/comments/rxikvo/how_to_minimize_wasted_stat_points_in_your_build/hrj7141/?utm_source=reddit&utm_medium=web2x&context=3
       {
         type: ChangelogEntryType.ADD,
-        text: "Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artificer modslots."
+        text: "Added the ability to select armor perks and 5th slots. Just like the elements you can optionally enforce it to be on a certain slot. Useful if you want to build Iron Banner armor or utilize artifice modslots."
       },
       {
         type: ChangelogEntryType.ADD,
