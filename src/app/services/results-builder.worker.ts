@@ -874,7 +874,7 @@ function handlePermutation(
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste
-  if (config.tryLimitWastedStats && availableModCostLen > 0) {
+  if (config.tryLimitWastedStats && (availableModCostLen > 0 || availableArtificeCount > 0)) {
 
     let waste = [
       stats[ArmorStat.Mobility],
@@ -883,28 +883,61 @@ function handlePermutation(
       stats[ArmorStat.Discipline],
       stats[ArmorStat.Intellect],
       stats[ArmorStat.Strength]
-    ].map((v, i) => [v % 10, i, v]).sort((a, b) => b[0] - a[0])
+    ].map((v, i) => [10 - (v % 10), i, v]).sort((a, b) => a[0] - b[0])
 
-    for (let id = 0; id < availableModCostLen; id++) {
-      let result = waste
-        .where(t => availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (t[1] * 3)) as StatModifier][2]).length > 0)
-        .filter(t => t[0] >= 5 && t[2] < 100)
-        .sort((a, b) => a[0] - b[0])[0]
-      if (!result) break;
+    for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 || availableArtificeCount > 0); i--) {
+      const wasteEntry = waste[i];
+      if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
+      //const cy = (stats[wasteEntry[1]] + 5) / 10 >= config.minimumStatTiers[wasteEntry[1] as ArmorStat].value + 1
 
-      // Ignore this if it would bring us over the fixed stat tier
-      if (config.minimumStatTiers[result[1] as ArmorStat].fixed && (stats[result[1]] + 5) / 10 >= config.minimumStatTiers[result[1] as ArmorStat].value + 1) {
-        result[0] -= 5;
+      if (wasteEntry[0] == 0) continue
+      if (wasteEntry[0] <= 3 && availableArtificeCount > 0) {
+        // add artifice
+        availableArtificeCount--;
+        usedArtifice.push(3 + (3 * wasteEntry[1]));
+        stats[wasteEntry[1]] += 3;
+        wasteEntry[0] -= 3;
         continue;
       }
-
-      const modCost = availableModCost.where(d => d >= STAT_MOD_VALUES[(1 + (result[1] * 3)) as StatModifier][2])[0]
-      availableModCost.splice(availableModCost.indexOf(modCost), 1);
-      availableModCostLen--;
-      stats[result[1]] += 5
-      result[0] -= 5;
-      usedMods.insert(1 + 2 * result[1])
+      if (wasteEntry[0] <= 5 && availableModCostLen > 0) {
+        // can we afford this?
+        const modCost = STAT_MOD_VALUES[(1 + (wasteEntry[1] * 3)) as StatModifier][2];
+        if (availableModCost.where(d => d >= modCost).length > 0) {
+          availableModCost.splice(availableModCost.indexOf(modCost), 1);
+          availableModCostLen--;
+          stats[wasteEntry[1]] += 5
+          wasteEntry[0] -= 5;
+          usedMods.insert(1 + 2 * wasteEntry[1])
+        }
+      }
     }
+
+    // second round, let's fix stuff > 5 with artifice and mod
+    /*
+    for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 && availableArtificeCount > 0); i--) {
+
+      const wasteEntry = waste[i];
+      if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
+
+      if (wasteEntry[0] > 5 && wasteEntry[0] < 8) {
+
+        const modCost = STAT_MOD_VALUES[(1 + (wasteEntry[1] * 3)) as StatModifier][2];
+        if (availableModCost.where(d => d >= modCost).length > 0) {
+          availableModCost.splice(availableModCost.indexOf(modCost), 1);
+          availableModCostLen--;
+          stats[wasteEntry[1]] += 5
+          wasteEntry[0] -= 5;
+          usedMods.insert(1 + 2 * wasteEntry[1])
+
+          availableArtificeCount--;
+          usedArtifice.push(3 + (3 * wasteEntry[1]));
+          stats[wasteEntry[1]] += 3;
+          wasteEntry[0] -=3;
+        }
+      }
+    }
+   */
+
   }
 
 
