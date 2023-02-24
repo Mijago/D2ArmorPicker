@@ -95,6 +95,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_enabledCombatStyleMods: boolean = false;
   _config_onlyUseMasterworkedItems: Boolean = false;
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
+  _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
 
@@ -132,6 +133,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._config_maximumStatMods = c.maximumStatMods;
         this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
         this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
+        this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
         this._config_selectedExotics = c.selectedExotics;
         this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
         this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;

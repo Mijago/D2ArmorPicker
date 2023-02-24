@@ -29,6 +29,9 @@ export class BuildConfiguration {
   // Add constant +1 strength
   addConstent1Resilience = false;
 
+  // TODO REMOVE THIS
+  assumeEveryLegendaryIsArtifice = false;
+
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
 
@@ -86,7 +89,8 @@ export class BuildConfiguration {
       enabledMods: [],
       disabledItems: [],
       addConstent1Resilience: false,
-      putArtificerMods: true,
+      assumeEveryLegendaryIsArtifice: false, // TODO :REMOVE
+      putArtificeMods: true,
       useFotlArmor: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,

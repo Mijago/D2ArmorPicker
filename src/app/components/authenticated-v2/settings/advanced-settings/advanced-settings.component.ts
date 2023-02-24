@@ -146,7 +146,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               disabled: false,
               impactsResultCount: false,
               help: "You usually do not want to use this."
-            }
+            },
+            {
+              name: "Assume every legendary is an artifice armor.",
+              cp: (v: boolean) => this.config.modifyConfiguration(c => c.assumeEveryLegendaryIsArtifice = v),
+              value: c.assumeEveryLegendaryIsArtifice,
+              disabled: false,
+              impactsResultCount: true,
+              help: "This is for debugging purposes. Do not complain if you enable this. Reload after changing this setting."
+            },
+
           ]
         }
         this.fieldKeys = Object.keys(this.fields2)

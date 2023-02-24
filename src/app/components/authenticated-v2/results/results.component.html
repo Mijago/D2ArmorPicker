@@ -89,6 +89,14 @@
                     matTooltip="This setting means that only builds with no wasted stats are shown."
                     selected>Zero Waste
           </mat-chip>
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_assumeEveryLegendaryIsArtifice" disableRipple
+                    matTooltip="EVERY legendary is assumed to be artifice."
+                    selected
+                    color="warn">
+            <mat-icon inline style="height: 100%;">report_problem</mat-icon>
+            &nbsp;Assume everything is artifice&nbsp;
+            <mat-icon inline style="height: 100%;">report_problem</mat-icon>
+          </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyUseMasterworkedItems" disableRipple
                     matTooltip="This setting means that only armor pieces are used that are already masterworked."
                     selected>

@@ -21,13 +21,20 @@ import {IManifestArmor} from "../data/types/IManifestArmor";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {ArmorSlot} from "../data/enum/armor-slot";
 import {ArmorPerkOrSlot} from "../data/enum/armor-stat";
+import {ConfigurationService} from "./configuration.service";
 
 @Injectable({
   providedIn: 'root'
 })
 export class BungieApiService {
 
-  constructor(private authService: AuthService, private http: HttpClient, private db: DatabaseService) {
+  config_assumeEveryLegendaryIsArtifice = false;
+
+  constructor(private authService: AuthService, private http: HttpClient, private db: DatabaseService,
+              private config: ConfigurationService) {
+    this.config.configuration.subscribe(async config => {
+      this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
+    })
   }
 
   async $httpWithoutKey(config: HttpClientConfig) {
@@ -382,8 +389,8 @@ export class BungieApiService {
           }
 
           // TODO REMOVE
-          //if (!r.isExotic)
-            //r.perk = ArmorPerkOrSlot.SlotArtificer;
+          if (!r.isExotic && this.config_assumeEveryLegendaryIsArtifice)
+            r.perk = ArmorPerkOrSlot.SlotArtifice;
 
           return r as IInventoryArmor
         }
