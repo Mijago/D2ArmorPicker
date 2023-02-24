@@ -631,10 +631,12 @@ function handlePermutation(
             usedMods.insert(minorMod)
             i--;
             modsChangedThings = true;
-          } else {
-            // cannot replace a minor mod, so this build is not possible
-            return null;
           }
+          //else {
+            // cannot replace a minor mod, so this build is not possible
+            //console.log("ABOOOOOOOOOOORT",round, usedMods.length, mod)
+            //return null;
+          //}
         } else {
           // TODO maybe add modsChangedThings = true;
           availableModCost.splice(availableModCost.indexOf(availableSlots[0]), 1)
@@ -644,8 +646,8 @@ function handlePermutation(
       // replace minor mods if the respective stat % 10 is 1 or 2
       for (let i = 0; i < usedMods.length && 0 < availableArtificeCount; i++) {
         const mod = usedMods.list[i];
-        // skip if not minor mod
         if (mod % 3 == 1) {
+          // minor mods
           const stat = STAT_MOD_VALUES[mod][0];
           const statDist = stats[stat] % 10;
           if (statDist == 2 || statDist == 3) {
@@ -653,6 +655,17 @@ function handlePermutation(
             usedArtifice.push(3 + 3 * stat)
             availableArtificeCount--;
             stats[stat] -= 2;
+            i--;
+            modsChangedThings = true;
+          } else if ((
+            statDist == 1
+            || (statDist == 0 && !config.onlyShowResultsWithNoWastedStats)
+          ) && availableArtificeCount > 1) {
+            usedMods.remove(mod)
+            usedArtifice.push(3 + 3 * stat)
+            usedArtifice.push(3 + 3 * stat)
+            availableArtificeCount -= 2;
+            stats[stat] += 1;
             i--;
             modsChangedThings = true;
           }
@@ -684,10 +697,11 @@ function handlePermutation(
             usedArtifice.push(3 + 3 * stat)
             usedArtifice.push(3 + 3 * stat)
             availableArtificeCount -= 2;
-            stats[stat] -= 0;
+            stats[stat] += 1;
             i--;
             modsChangedThings = true;
-          } else if ((statDist == 0) && availableArtificeCount > 1 && !config.onlyShowResultsWithNoWastedStats) {
+          }
+          /*else if ((statDist == 0) && availableArtificeCount > 1 && !config.onlyShowResultsWithNoWastedStats) {
             usedMods.remove(mod)
             usedMods.insert(mod - 1)
             usedArtifice.push(3 + 3 * stat)
@@ -697,6 +711,7 @@ function handlePermutation(
             i--;
             modsChangedThings = true;
           }
+          */
         }
 
       }
