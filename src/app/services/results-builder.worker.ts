@@ -906,6 +906,12 @@ function handlePermutation(
         stats[wasteEntry[1]] += 3;
         wasteEntry[0] -= 3;
         continue;
+      } else if ((wasteEntry[0] == 6 || wasteEntry[0] == 5 || wasteEntry[0] == 4) && availableArtificeCount > 1) {
+        availableArtificeCount -= 2;
+        usedArtifice.push(3 + (3 * wasteEntry[1]));
+        usedArtifice.push(3 + (3 * wasteEntry[1]));
+        stats[wasteEntry[1]] += 6;
+        wasteEntry[0] -= 6;
       }
       if (wasteEntry[0] <= 5 && availableModCostLen > 0) {
         // can we afford this?
