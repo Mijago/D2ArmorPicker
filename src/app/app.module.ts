@@ -80,6 +80,7 @@ import {
   StatCooldownTooltipDirective
 } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component';
+import { TheorizerPageComponent } from './components/authenticated-v2/subpages/theorizer-page/theorizer-page.component';
 
 
 const routes: Routes = [
@@ -101,6 +102,10 @@ const routes: Routes = [
       {
         path: 'investigate',
         component: ArmorInvestigationPageComponent
+      },
+      {
+        path: 'theory',
+        component: TheorizerPageComponent
       },
       {
         path: 'account',
@@ -157,7 +162,8 @@ const routes: Routes = [
     AccountConfigPageComponent,
     ModDescriptionTooltipComponent,
     StatCooldownTooltipComponent,
-    SlotLimitationTitleComponent
+    SlotLimitationTitleComponent,
+    TheorizerPageComponent
   ],
   imports: [
     FlexLayoutModule,

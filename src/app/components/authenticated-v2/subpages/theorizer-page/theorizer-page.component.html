@@ -1,0 +1,78 @@
+<div id="container">
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Configuration</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Use armor:</p>
+      <mat-button-toggle-group [(ngModel)]="options.armorType">
+        <mat-button-toggle value="1">Own Armor</mat-button-toggle>
+        <mat-button-toggle value="2">Generated Armor</mat-button-toggle>
+        <mat-button-toggle value="3">Both</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <p>Stats</p>
+      <table class="example-full-width" cellspacing="0">
+        <tr>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Resilience</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.mobility">
+            </mat-form-field>
+          </td>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Resilience</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.resilience">
+            </mat-form-field>
+          </td>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Recovery</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.recovery">
+            </mat-form-field>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Discipline</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.discipline">
+            </mat-form-field>
+          </td>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Intellect</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.intellect">
+            </mat-form-field>
+          </td>
+          <td>
+            <mat-form-field class="example-full-width">
+              <mat-label>Strength</mat-label>
+              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.strength">
+            </mat-form-field>
+          </td>
+        </tr>
+      </table>
+
+
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="run()" [disabled]="!glpk || calculating">Calculate</button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Results</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Status: <span [innerHtml]="result?.result?.status || 'none'"></span> (5 is good)</p>
+      <p>Time (s): {{result?.time}}</p>
+      <p>{{result_items|json}}</p>
+      <p>{{result?.result|json}}</p>
+    </mat-card-content>
+  </mat-card>
+
+</div>
