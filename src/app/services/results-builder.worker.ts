@@ -770,6 +770,8 @@ function handlePermutation(
   if (usedMods.length > 5) // TODO: Should never be called, could be removed
     return null;
 
+  /*
+
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
   const maxArtificeBonus = 3 * availableArtificeCount
@@ -894,6 +896,8 @@ function handlePermutation(
     }
   }
 
+
+   */
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste
@@ -940,33 +944,6 @@ function handlePermutation(
         }
       }
     }
-
-    // second round, let's fix stuff > 5 with artifice and mod
-    /*
-    for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 && availableArtificeCount > 0); i--) {
-
-      const wasteEntry = waste[i];
-      if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
-
-      if (wasteEntry[0] > 5 && wasteEntry[0] < 8) {
-
-        const modCost = STAT_MOD_VALUES[(1 + (wasteEntry[1] * 3)) as StatModifier][2];
-        if (availableModCost.where(d => d >= modCost).length > 0) {
-          availableModCost.splice(availableModCost.indexOf(modCost), 1);
-          availableModCostLen--;
-          stats[wasteEntry[1]] += 5
-          wasteEntry[0] -= 5;
-          usedMods.insert(1 + 2 * wasteEntry[1])
-
-          availableArtificeCount--;
-          usedArtifice.push(3 + (3 * wasteEntry[1]));
-          stats[wasteEntry[1]] += 3;
-          wasteEntry[0] -=3;
-        }
-      }
-    }
-   */
-
   }
 
 
