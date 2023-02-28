@@ -1,10 +1,12 @@
 import {Component, OnInit} from '@angular/core';
 import GLPKConstructor, {GLPK, LP, Result} from "glpk.js";
 
+const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
+
 @Component({
   selector: 'app-theorizer-page',
   templateUrl: './theorizer-page.component.html',
-  styleUrls: ['./theorizer-page.component.css']
+  styleUrls: ['./theorizer-page.component.scss']
 })
 export class TheorizerPageComponent implements OnInit {
   glpk: GLPK | null = null;
@@ -13,18 +15,36 @@ export class TheorizerPageComponent implements OnInit {
 
   // options
   options = {
+    solver: {
+      timeout: 2,
+      presolve: true,
+    },
     armorType: "3",
     stats: {
       desired: {
-        mobility: 40,
-        resilience: 40,
-        recovery: 40,
-        discipline: 40,
-        intellect: 40,
-        strength: 40,
+        mobility: 0,
+        resilience: 0,
+        recovery: 0,
+        discipline: 0,
+        intellect: 0,
+        strength: 0,
+      },
+      constantBoost: {
+        mobility: 0,
+        resilience: 0,
+        recovery: 0,
+        discipline: 0,
+        intellect: 0,
+        strength: 0,
       },
       maxValue: 109,
-      min_tiers: 32
+      minTiers: 28,
+      minPoints: 100,
+      maxWaste: 50,
+    },
+    mods: {
+      maxMods: 5,
+      maxArtifice: 5
     },
     generator: {
       generateExoticsWithIntrinsicStats: true,
@@ -66,8 +86,52 @@ export class TheorizerPageComponent implements OnInit {
   }
   result: Result | null = null;
   result_items: any | null = null;
+  time_progress = 0;
+  private timerId: number = 0;
 
   constructor() {
+  }
+
+
+  sum(l: number[]): number {
+    return l.reduce((a, b) => a + b, 0);
+  }
+
+  slotNameByIndex(index: number): string {
+    switch (index) {
+      case 0:
+        return "Helmet";
+      case 1:
+        return "Gauntlets";
+      case 2:
+        return "Chest Armor";
+      case 3:
+        return "Leg Armor";
+      case 4:
+        return "Class Item";
+      default:
+        return "Unknown";
+    }
+  }
+
+  resultValueToText(value: number): string {
+    // this.GLP_UNDEF=1,this.GLP_FEAS=2,this.GLP_INFEAS=3,this.GLP_NOFEAS=4,this.GLP_OPT=5,this.GLP_UNBND=6,
+    switch (value) {
+      case 1:
+        return "Undefined. Give it more time.";
+      case 2:
+        return "Feasible, but not optimal. Give it more time.";
+      case 3:
+        return "Infeasible. Your configuration is not possible.";
+      case 4:
+        return "Infeasible. Your configuration is not possible.";
+      case 5:
+        return "Optimal solution found.";
+      case 6:
+        return "Unbounded. Your configuration is not possible (actually a Mijago skill issue).";
+      default:
+        return "Unknown result";
+    }
   }
 
   async ngOnInit() {
@@ -76,13 +140,36 @@ export class TheorizerPageComponent implements OnInit {
     console.log(this.glpk)
   }
 
+  startTimer() {
+    this.time_progress = 0;
+    const interval = this.options.solver.timeout / 100 * 1000;
+
+    this.timerId = setInterval(() => {
+      this.time_progress += 1;
+      if (this.time_progress >= 100) {
+        this.stopTimer();
+      }
+    }, interval);
+  }
+
+  stopTimer() {
+    if (this.timerId) {
+      this.time_progress = 100;
+      clearInterval(this.timerId);
+      this.timerId = 0;
+    }
+  }
+
+
   async run() {
-    this.result = null;
+    this.result = this.result_items = null;
     if (!this.glpk) throw new Error("GLPK not initialized yet");
     this.calculating = true;
 
     const lp = this.buildFromConfiguration();
+    this.startTimer();
     const result = await this.glpk.solve(lp);
+    this.stopTimer();
     this.result_items = this.getItemsFromResult(result);
     this.result = result;
     this.calculating = false;
@@ -97,22 +184,30 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
     ];
 
+    const masterwork = [0, 0, 0, 0, 0, 0]
+    const constants = [0, 0, 0, 0, 0, 0]
+
     const statMods = {
       major: [0, 0, 0, 0, 0, 0],
       minor: [0, 0, 0, 0, 0, 0]
     }
     const artificeMods = [0, 0, 0, 0, 0, 0]
 
-    const allMasterworekd = result!.result!.vars["masterwork"] == 1;
-    console.log({allMasterworekd})
-    if (allMasterworekd) {
-      for (let slot = 0; slot < 4; slot++) {
-        for (let stat = 0; stat < 6; stat++) {
-          items[slot][stat] += 2;
-        }
+    const allMasterworked = result!.result!.vars["masterwork"] == 1;
+    console.log("allMasterworked: ", allMasterworked)
+    if (allMasterworked) {
+      for (let stat = 0; stat < 6; stat++) {
+        masterwork[stat] += 10;
       }
     }
 
+    for (let kv in result!.result!.vars) {
+      if (!kv.startsWith("constant_")) continue;
+      if (result!.result!.vars[kv] == 0) continue;
+
+      const [_, stat] = kv.split("_");
+      constants[parseInt(stat)] += result!.result!.vars[kv];
+    }
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("plug_")) continue;
       if (result!.result!.vars[kv] == 0) continue;
@@ -131,7 +226,7 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, type, stat] = kv.split("_");
-      statMods[type == "1" ? "major" : "minor"][parseInt(stat)] += 2 * parseInt(type);
+      statMods[type == "1" ? "minor" : "major"][parseInt(stat)] += result!.result!.vars[kv];
     }
 
     /* ARTIFICE */
@@ -140,9 +235,31 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, stat] = kv.split("_");
-      artificeMods[parseInt(stat)] += 1;
+      artificeMods[parseInt(stat)] += result!.result!.vars[kv];
     }
-    return {items, artificeMods, statMods};
+
+
+    // now sum every stat to get the final value
+    const total = [0, 0, 0, 0, 0, 0]
+    for (let stat = 0; stat < 6; stat++) {
+      for (let slot = 0; slot < 5; slot++) {
+        total[stat] += items[slot][stat];
+      }
+      total[stat] += constants[stat];
+      total[stat] += masterwork[stat];
+      console.log("artificeMods[stat]", stat, artificeMods[stat], "|", total[stat], 10 * statMods.major[stat], 5 * statMods.minor[stat], 3 * artificeMods[stat])
+      total[stat] += 10 * statMods.major[stat] + 5 * statMods.minor[stat] + 3 * artificeMods[stat];
+    }
+
+    // get the tiers for each stat
+    const tiers = total.map(k => Math.floor(k / 10))
+    const waste = total.map(k => k % 10)
+    const tierSum = tiers.reduce((a, b) => a + b, 0)
+
+    return {
+      items, artificeMods, statMods, constants,
+      total, waste, tiers, tierSum, masterwork
+    };
   }
 
   buildFromConfiguration(): LP {
@@ -152,15 +269,13 @@ export class TheorizerPageComponent implements OnInit {
       name: "d2ap_theorizer",
       options: {
         msgLev: this.glpk.GLP_MSG_ERR,
-        presolve: true,
-        tmlim: 30,
+        presolve: this.options.solver.presolve,
+        tmlim: this.options.solver.timeout,
       },
       objective: {
         direction: this.glpk.GLP_MAX,
         name: "objective",
-        vars: [
-          {name: "plug_1_1_1", coef: 1},
-        ],
+        vars: [],
       },
       subjectTo: [
         {
@@ -206,6 +321,15 @@ export class TheorizerPageComponent implements OnInit {
       lp.subjectTo[stat].vars.push({name: `masterwork`, coef: 10});
     }
 
+    //lp.binaries!.push("constant1");
+    for (let stat = 0; stat < 6; stat++) {
+      const val = (this.options.stats as any).constantBoost[statNames[stat]];
+      if (val == 0) continue;
+
+      lp.bounds!.push({name: `constant_${stat}`, type: this.glpk.GLP_FX, ub: val, lb: val});
+      lp.subjectTo![stat].vars.push({name: `constant_${stat}`, coef: 1});
+    }
+
 
     // we have 4 slots
     // we pick four plugs for each slot; a plug has three values
@@ -240,8 +364,20 @@ export class TheorizerPageComponent implements OnInit {
     }
 
 
-    const modSubject = {name: `limit_mods`, vars: [] as any[], bnds: {type: this.glpk.GLP_DB, ub: 5, lb: 0}}
-    const artifSubject = {name: `limit_artif`, vars: [] as any[], bnds: {type: this.glpk.GLP_DB, ub: 5, lb: 0}}
+    const modSubject = {
+      name: `limit_mods`, vars: [] as any[],
+      bnds: {
+        type: this.options.mods.maxMods > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
+        ub: this.options.mods.maxMods, lb: 0
+      }
+    }
+    const artifSubject = {
+      name: `limit_artif`, vars: [] as any[],
+      bnds: {
+        type: this.options.mods.maxArtifice > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
+        ub: this.options.mods.maxArtifice, lb: 0
+      }
+    }
     for (let stat = 0; stat < 6; stat++) {
       // 1 minor, 2 major; and then artifice
       lp.bounds!.push({name: `mod_${1}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
@@ -263,6 +399,102 @@ export class TheorizerPageComponent implements OnInit {
     }
     lp.subjectTo!.push(modSubject);
     lp.subjectTo!.push(artifSubject);
+
+
+    // I want to have the TIERS of the armor stats
+    // for this, I introduce two variables per stat:
+    // - The first is the "waste", which is bound between 0 and 9
+    // - The second is the "tier", which is bound between -5 and 20
+    // We will set these variables as "mobility - waste - 10 tier = 0"
+    for (let stat = 0; stat < 6; stat++) {
+      lp.bounds!.push({name: `waste_${stat}`, type: this.glpk.GLP_DB, ub: 9, lb: 0});
+      lp.bounds!.push({name: `tier_${stat}`, type: this.glpk.GLP_DB, ub: 20, lb: -5});
+      lp.generals!.push(`waste_${stat}`);
+      lp.generals!.push(`tier_${stat}`);
+
+      //lp.objective.vars.push({name: `tier_${stat}`, coef: 2})
+      //lp.objective.vars.push({name: `waste_${stat}`, coef: -100})
+
+
+      const setWasteAndTierSubject = {
+        name: `set_waste_and_tier_${stat}`,
+        vars: [
+          {name: `waste_${stat}`, coef: -1},
+          {name: `tier_${stat}`, coef: -10},
+          ...lp.subjectTo![stat].vars
+        ],
+        bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
+      };
+
+      lp.subjectTo!.push(setWasteAndTierSubject)
+    }
+
+    // set minTiers <= the sum of the tiers
+    const minTierSubject = {
+      name: `require_tier_minimum`,
+      vars: [] as any[],
+      bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
+    }
+    console.log("this.options.stats.minTiers", this.options.stats.minTiers)
+    for (let stat = 0; stat < 6; stat++) {
+      minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
+    }
+    lp.subjectTo!.push(minTierSubject);
+
+
+    // Specify maxWaste
+    const maxWasteSubject = {
+      name: `require_waste_maximum`,
+      vars: [] as any[],
+      bnds: {
+        type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
+        ub: this.options.stats.maxWaste,
+        lb: 0
+      }
+    }
+    for (let stat = 0; stat < 6; stat++) {
+      maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+    }
+    lp.subjectTo!.push(maxWasteSubject);
+
+
+    /* Introduce stat values */
+    for (let stat = 0; stat < 6; stat++) {
+      lp.generals!.push(`val_stat_${stat}`);
+      lp.bounds!.push({name: `val_stat_${stat}`, type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: -50});
+
+      const statSubject = {
+        name: `set_stat_${stat}`,
+        vars: [
+          {name: `val_stat_${stat}`, coef: -1},
+          ...lp.subjectTo![stat].vars
+        ],
+        bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
+      }
+
+      lp.subjectTo!.push(statSubject);
+    }
+
+
+    // minPoints
+    /*
+    const minPointsSubject = {
+      name: `require_points_minimum`,
+      vars: [] as any[],
+      bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minPoints}
+    }
+    for (let stat = 0; stat < 6; stat++) {
+      minPointsSubject.vars.push({name: `val_stat_${stat}`, coef: 1});
+    }
+    lp.subjectTo!.push(minPointsSubject);
+    //*/
+
+
+    for (let stat = 0; stat < 6; stat++) {
+      //lp.objective.vars.push({name: `val_stat_${stat}`, coef: 1e4},)
+      //lp.objective.vars.push({name: `waste_${stat}`, coef: -1},)
+    }
+
 
     return lp;
   }

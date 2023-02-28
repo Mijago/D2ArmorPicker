@@ -1,0 +1,30 @@
+#result-table tr.line-top td {
+    border-top: 1px solid #e0e0e0;
+}
+
+#result-table tr.line-bottom td {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#result-table tr td:last-of-type {
+    border-left: 1px solid #e0e0e0;
+}
+
+#result-table tr td:first-of-type {
+    border-right: 1px solid #e0e0e0;
+}
+
+#result-table td {
+    /* text right align */
+    text-align: right;
+}
+
+
+#container {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+#slider-table mat-slider {
+  width: 300px;
+}
