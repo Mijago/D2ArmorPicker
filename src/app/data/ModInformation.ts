@@ -374,25 +374,4 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069364
   },
-  // Retrofit mods
-  [ModOrAbility.MobileRetrofit]: {
-    id: ModOrAbility.MobileRetrofit,
-    name: "Mobile Retrofit",
-    description: "Adds a constant boost of +5 to your mobility.",
-    type: ModifierType.RetrofitMods,
-    bonus: [{stat: ArmorStat.Mobility , value: 5}],
-    cost: 3,
-    requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 4058375012
-  },
-  [ModOrAbility.ResilientRetrofit]: {
-    id: ModOrAbility.ResilientRetrofit,
-    name: "Resilient Retrofit",
-    description: "Adds a constant boost of +5 to your resilience.",
-    type: ModifierType.RetrofitMods,
-    bonus: [{stat: ArmorStat.Resilience , value: 5}],
-    cost: 4,
-    requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 2092805627
-  },
 }

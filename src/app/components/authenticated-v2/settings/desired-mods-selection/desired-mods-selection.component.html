@@ -1,48 +1,4 @@
 
-<h3 class="stat-part-title">Seasonal Artifact: Retrofit Mods</h3>
-These mods add a +5
-<table id="retrofit-table">
-  <tr>
-    <td>Mobility Retrofit</td>
-    <td>
-      <mat-button-toggle-group [value]="retrofitCount[ModOrAbility.MobileRetrofit]">
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.MobileRetrofit, 0)" [value]="0">
-          None
-        </mat-button-toggle>
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.MobileRetrofit, 1)" [value]="1">
-          x1 | +5
-          <div class="rft-icon-container"><span><app-stat-icon [stat]="0"></app-stat-icon></span></div>
-        </mat-button-toggle>
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.MobileRetrofit, 2)" [value]="2">
-          x2 | +10
-          <div class="rft-icon-container"><span><app-stat-icon [stat]="0"></app-stat-icon></span></div>
-        </mat-button-toggle>
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.MobileRetrofit, 3)" [value]="3">
-          x3 | +15
-          <div class="rft-icon-container"><span><app-stat-icon [stat]="0"></app-stat-icon></span></div>
-        </mat-button-toggle>
-      </mat-button-toggle-group>
-    </td>
-  </tr>
-  <tr>
-    <td>Resilience Retrofit</td>
-    <td>
-      <mat-button-toggle-group [value]="retrofitCount[ModOrAbility.ResilientRetrofit]">
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.ResilientRetrofit, 0)" [value]="0">
-          None
-        </mat-button-toggle>
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.ResilientRetrofit, 1)" [value]="1">
-          x1 | +5
-          <div class="rft-icon-container"><span><app-stat-icon [stat]="1"></app-stat-icon></span></div>
-        </mat-button-toggle>
-        <mat-button-toggle (click)="setRetrofitCount(ModOrAbility.ResilientRetrofit, 2)" [value]="2">
-          x2 | +10
-          <div class="rft-icon-container"><span><app-stat-icon [stat]="1"></app-stat-icon></span></div>
-        </mat-button-toggle>
-      </mat-button-toggle-group>
-    </td>
-  </tr>
-</table>
 
 <span *ngFor="let d of data; let idx = index">
   <ng-container *ngIf="idx == 1">
