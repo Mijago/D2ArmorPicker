@@ -69,6 +69,10 @@ export class BungieApiService {
     ).toPromise()
       .catch(async err => {
         console.error(err);
+        if (environment.offlineMode) {
+          console.debug("Offline mode, ignoring API error")
+          return;
+        }
         if (err.error?.ErrorStatus == "SystemDisabled") {
           console.info("System is disabled. Revoking auth, must re-login")
           await this.authService.logout();
@@ -244,6 +248,11 @@ export class BungieApiService {
   }
 
   async updateArmorItems(force = false) {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "updateArmorItems", "offline mode, skipping")
+      return;
+    }
+
     if (!force && localStorage.getItem("LastArmorUpdate"))
       if (localStorage.getItem("last-armor-db-name") == this.db.inventoryArmor.db.name)
         if (Date.now() - Number.parseInt(localStorage.getItem("LastArmorUpdate") || "0") < 1000 * 3600 / 2)
@@ -440,6 +449,12 @@ export class BungieApiService {
   }
 
   async updateManifest(force = false) {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "updateManifest", "offline mode, skipping")
+      return;
+    }
+
+
     var destinyManifest = null;
     if (!force && localStorage.getItem("LastManifestUpdate") && localStorage.getItem("last-manifest-revision")) {
       if (localStorage.getItem("last-manifest-revision") == environment.revision) {

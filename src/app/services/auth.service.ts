@@ -172,6 +172,10 @@ export class AuthService {
   }
 
   async logout() {
+    if (environment.offlineMode) {
+      console.debug("Offline mode, skipping logout")
+      return;
+    }
     try {
       this._logoutEvent.next(null)
       this.clearManifestInfo();
