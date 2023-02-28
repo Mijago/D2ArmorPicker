@@ -71,7 +71,7 @@
         </tr>
         <tr>
           <td>Minimum Tiers:</td>
-          <td><mat-slider min="10" max="55" step="1" tickInterval="auto" [(ngModel)]="options.stats.minTiers"></mat-slider></td>
+          <td><mat-slider min="0" max="55" step="1" tickInterval="auto" [(ngModel)]="options.stats.minTiers"></mat-slider></td>
           <td>{{options.stats.minTiers}} tiers</td>
         </tr>
         <tr>
@@ -200,6 +200,7 @@
         <mat-card-content>
       <p>{{result_items|json}}</p>
       <p>{{result?.result|json}}</p>
+      <p>{{lp|json}}</p>
     </mat-card-content>
   </mat-card>
 

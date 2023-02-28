@@ -38,9 +38,9 @@ export class TheorizerPageComponent implements OnInit {
         strength: 0,
       },
       maxValue: 109,
-      minTiers: 28,
+      minTiers: 0,
       minPoints: 100,
-      maxWaste: 50,
+      maxWaste: 54,
     },
     mods: {
       maxMods: 5,
@@ -88,6 +88,7 @@ export class TheorizerPageComponent implements OnInit {
   result_items: any | null = null;
   time_progress = 0;
   private timerId: number = 0;
+  lp: LP | null = null;
 
   constructor() {
   }
@@ -167,6 +168,7 @@ export class TheorizerPageComponent implements OnInit {
     this.calculating = true;
 
     const lp = this.buildFromConfiguration();
+    this.lp = lp;
     this.startTimer();
     const result = await this.glpk.solve(lp);
     this.stopTimer();
@@ -401,6 +403,10 @@ export class TheorizerPageComponent implements OnInit {
     lp.subjectTo!.push(artifSubject);
 
 
+
+
+    if (this.options.stats.minTiers > 0 || this.options.stats.maxWaste <54) {
+
     // I want to have the TIERS of the armor stats
     // for this, I introduce two variables per stat:
     // - The first is the "waste", which is bound between 0 and 9
@@ -430,35 +436,42 @@ export class TheorizerPageComponent implements OnInit {
     }
 
     // set minTiers <= the sum of the tiers
-    const minTierSubject = {
-      name: `require_tier_minimum`,
-      vars: [] as any[],
-      bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
+    if (this.options.stats.minTiers > 0) {
+      const minTierSubject = {
+        name: `require_tier_minimum`,
+        vars: [] as any[],
+        bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
+      }
+      console.log("this.options.stats.minTiers", this.options.stats.minTiers)
+      for (let stat = 0; stat < 6; stat++) {
+        minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
+      }
+      lp.subjectTo!.push(minTierSubject);
     }
-    console.log("this.options.stats.minTiers", this.options.stats.minTiers)
-    for (let stat = 0; stat < 6; stat++) {
-      minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
-    }
-    lp.subjectTo!.push(minTierSubject);
 
 
     // Specify maxWaste
-    const maxWasteSubject = {
-      name: `require_waste_maximum`,
-      vars: [] as any[],
-      bnds: {
-        type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
-        ub: this.options.stats.maxWaste,
-        lb: 0
+    if (this.options.stats.maxWaste <54) {
+      const maxWasteSubject = {
+        name: `require_waste_maximum`,
+        vars: [] as any[],
+        bnds: {
+          type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
+          ub: this.options.stats.maxWaste,
+          lb: 0
+        }
       }
+      for (let stat = 0; stat < 6; stat++) {
+        maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+      }
+      lp.subjectTo!.push(maxWasteSubject);
     }
-    for (let stat = 0; stat < 6; stat++) {
-      maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+
     }
-    lp.subjectTo!.push(maxWasteSubject);
 
 
     /* Introduce stat values */
+    /*
     for (let stat = 0; stat < 6; stat++) {
       lp.generals!.push(`val_stat_${stat}`);
       lp.bounds!.push({name: `val_stat_${stat}`, type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: -50});
@@ -474,6 +487,7 @@ export class TheorizerPageComponent implements OnInit {
 
       lp.subjectTo!.push(statSubject);
     }
+    //*/
 
 
     // minPoints
@@ -493,7 +507,9 @@ export class TheorizerPageComponent implements OnInit {
     for (let stat = 0; stat < 6; stat++) {
       //lp.objective.vars.push({name: `val_stat_${stat}`, coef: 1e4},)
       //lp.objective.vars.push({name: `waste_${stat}`, coef: -1},)
+      //lp.objective.vars.push({name: `waste_${stat}`, coef: -1},)
     }
+    //lp.objective.vars.push({name: `masterwork`, coef: 1},)
 
 
     return lp;
