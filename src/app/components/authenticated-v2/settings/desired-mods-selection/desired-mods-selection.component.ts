@@ -50,7 +50,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     let arcFragments = modifiers.filter(value => value.type == ModifierType.Arc);
 
     this.data = [
-      {name: "Combat Style Mods", data: combatStyleMods, group: false, type: ModifierType.CombatStyleMod},
       {name: "Stasis Fragments", data: stasisFragments, group: true, type: ModifierType.Stasis},
       {name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void},
       {name: "Solar Fragments", data: solarFragments, group: true, type: ModifierType.Solar},
