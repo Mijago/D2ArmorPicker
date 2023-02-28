@@ -1,7 +1,7 @@
 
 
 <span *ngFor="let d of data; let idx = index">
-  <ng-container *ngIf="idx == 1">
+  <ng-container *ngIf="idx == 0">
     <br/>
     <mat-button-toggle-group [value]="selectedElement">
           <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
