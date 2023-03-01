@@ -913,10 +913,11 @@ function handlePermutation(
       stats[ArmorStat.Discipline],
       stats[ArmorStat.Intellect],
       stats[ArmorStat.Strength]
-    ].map((v, i) => [10 - (v % 10), i, v]).sort((a, b) => a[0] - b[0])
+    ].map((v, i) => [10-(v % 10), i, v]).sort((a, b) => a[0] - b[0])
 
     for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 || availableArtificeCount > 0); i--) {
       const wasteEntry = waste[i];
+      if (wasteEntry[2] >= 100) continue;
       if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
       //const cy = (stats[wasteEntry[1]] + 5) / 10 >= config.minimumStatTiers[wasteEntry[1] as ArmorStat].value + 1
 
@@ -934,6 +935,7 @@ function handlePermutation(
         usedArtifice.push(3 + (3 * wasteEntry[1]));
         stats[wasteEntry[1]] += 6;
         wasteEntry[0] -= 6;
+        continue;
       }
       if (wasteEntry[0] <= 5 && availableModCostLen > 0) {
         // can we afford this?
@@ -943,7 +945,8 @@ function handlePermutation(
           availableModCostLen--;
           stats[wasteEntry[1]] += 5
           wasteEntry[0] -= 5;
-          usedMods.insert(1 + 2 * wasteEntry[1])
+          usedMods.insert(1 + 3 * wasteEntry[1]);
+          continue;
         }
       }
     }
