@@ -430,7 +430,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     name: "Thread of Warding",
     description: "Picking up an Orb of Power grants Woven Mail.",
     type: ModifierType.Strand,
-    bonus: [{stat: ArmorStat.Recovery, value: -10}],
+    bonus: [{stat: ArmorStat.Resilience, value: -10}],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 4208512222
