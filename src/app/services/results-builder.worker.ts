@@ -342,6 +342,7 @@ addEventListener('message', async ({data}) => {
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
   const constHasOneExoticLength = selectedExotics.length <= 1
+  const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice)
 
 
   let results: any[] = []
@@ -369,7 +370,7 @@ addEventListener('message', async ({data}) => {
           if (!slotCheckResult.valid) continue;
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
-            constantBonus, constantAvailableModslots.slice(), doNotOutput);
+            constantBonus, constantAvailableModslots.slice(), doNotOutput, hasArtificeClassItem);
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
           if (result != null) {
@@ -523,7 +524,8 @@ function handlePermutation(
   leg: ItemCombination,
   constantBonus: number[],
   availableModCost: number[],
-  doNotOutput = false
+  doNotOutput = false,
+  hasArtificeClassItem = false
 ): any {
   const items = [helmet, gauntlet, chest, leg]
 
@@ -563,8 +565,8 @@ function handlePermutation(
   let availableArtificeCount = items.filter(d => d.perks.indexOf(ArmorPerkOrSlot.SlotArtifice) > -1).length;
 
 
-  // TODO also log the class item to the frontend
-  availableArtificeCount += 1;
+  if (hasArtificeClassItem)
+    availableArtificeCount += 1;
 
   const usedMods: OrderedList<StatModifier> = new OrderedList<StatModifier>(d => STAT_MOD_VALUES[d][2])
   const usedArtifice: number[] = []
