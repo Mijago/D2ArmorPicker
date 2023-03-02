@@ -586,7 +586,7 @@ function handlePermutation(
       if (distance % 10 <= 5) {
         // initial minor
         const minorCost = STAT_MOD_VALUES[stat * 3 + 1 as StatModifier][2];
-        let minorIdx = availableModCost.findIndex(d => d >= minorCost && usedModslot[d] == 0);
+        let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
         if (minorIdx > -1) {
           usedMods.insert(stat * 3 + 1 as StatModifier);
           usedModslot[minorIdx] = 1;
