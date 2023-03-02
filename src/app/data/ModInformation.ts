@@ -205,7 +205,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     name: "Echo of Vigilance",
     description: "Defeating a target while your shields are depleted grants you a temporary Void overshield.",
     type: ModifierType.Void,
-    bonus: [{stat: ArmorStat.Resilience, value: -10}],
+    bonus: [{stat: ArmorStat.Recovery, value: -10}],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3854948621
