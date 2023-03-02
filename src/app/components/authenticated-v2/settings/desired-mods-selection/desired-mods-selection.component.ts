@@ -28,10 +28,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   data: { data: Modifier[]; name: string, group: boolean, type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
-  retrofitCount : {[id:string]: number} = {
-    [ModOrAbility.MobileRetrofit]: 0,
-    [ModOrAbility.ResilientRetrofit]: 0,
-  }
 
   constructor(private config: ConfigurationService) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
@@ -50,7 +46,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     let arcFragments = modifiers.filter(value => value.type == ModifierType.Arc);
 
     this.data = [
-      {name: "Combat Style Mods", data: combatStyleMods, group: false, type: ModifierType.CombatStyleMod},
       {name: "Stasis Fragments", data: stasisFragments, group: true, type: ModifierType.Stasis},
       {name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void},
       {name: "Solar Fragments", data: solarFragments, group: true, type: ModifierType.Solar},
@@ -67,9 +62,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
         this.selectedMods = c.enabledMods;
         this.selectedClass = c.characterClass;
         this.selectedElement = c.selectedModElement;
-        for (let t of [ModOrAbility.MobileRetrofit, ModOrAbility.ResilientRetrofit]) {
-          this.retrofitCount[t] = c.enabledMods.filter(m => m == t).length;
-        }
       })
   }
 
@@ -112,22 +104,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     return ArmorAffinityIcons[id];
   }
 
-  setRetrofitCount(type: ModOrAbility, count: number) {
-    this.retrofitCount[type] = count;
-    this.config.modifyConfiguration(c => {
-      const pos = c.enabledMods.filter(m => m == type)
-
-      // first, remove all mods of this type
-      for (let toDisableMods of pos) {
-        const position = c.enabledMods.indexOf(toDisableMods);
-        c.enabledMods.splice(position, 1)
-      }
-      // now add count amount of mods
-      for (let i = 0; i < count; i++) {
-        c.enabledMods.push(type);
-      }
-    })
-  }
 
   setElement(element: ModifierType) {
     if (this.selectedElement == element)

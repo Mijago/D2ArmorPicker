@@ -10,7 +10,7 @@ import {TierType} from "bungie-api-ts/destiny2";
 
 declare global {
   interface Array<T> {
-    where(o: (val: T) => boolean): T[];
+    where(o: (val: T, index: number) => boolean): T[];
 
     addSorted(o: T): T[];
   }
@@ -54,7 +54,7 @@ Array.prototype.where = Array.prototype.where || function (predicate: any) {
   for (; i < len; i++) {
     // @ts-ignore
     var item = this[i];
-    if (predicate(item)) {
+    if (predicate(item, i)) {
       results.push(item);
     }
   }
@@ -219,15 +219,15 @@ function prepareConstantStatBonus(config: BuildConfiguration) {
 }
 
 function prepareConstantModslotRequirement(config: BuildConfiguration) {
-  let constantElementRequirement = []
-  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantElementRequirement.push(0)
+  let constantPerkRequirement = []
+  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantPerkRequirement.push(0)
 
-  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
-  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
-  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
-  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
-  constantElementRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
-  return constantElementRequirement;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
+  return constantPerkRequirement;
 }
 
 function prepareConstantAvailableModslots(config: BuildConfiguration) {
@@ -609,40 +609,6 @@ function handlePermutation(
     let modsChangedThings = true;
     while (modsChangedThings) {
       modsChangedThings = false;
-
-      /**
-       *  Now we know how many major mods we need.
-       *  If the modslot limitation forces us to only use N major mods, we can simply replace
-       *  a major mod with two minor mods.
-       *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
-       *  modslot limitations are satisfied.
-       */
-      for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) {
-        const mod = usedMods.list[i];
-
-        const cost = STAT_MOD_VALUES[mod][2];
-        const availableSlots = availableModCost.where(d => d >= cost);
-        if (availableSlots.length == 0) {
-          if (mod % 3 == 2) {
-            // replace a major mod with two minor mods OR abort
-            usedMods.remove(mod)
-            let minorMod = mod - 1 as StatModifier;
-            usedMods.insert(minorMod)
-            usedMods.insert(minorMod)
-            i--;
-            modsChangedThings = true;
-          }
-          //else {
-            // cannot replace a minor mod, so this build is not possible
-            //console.log("ABOOOOOOOOOOORT",round, usedMods.length, mod)
-            //return null;
-          //}
-        } else {
-          // TODO maybe add modsChangedThings = true;
-          availableModCost.splice(availableModCost.indexOf(availableSlots[0]), 1)
-          availableModCostLen--;
-        }
-      }
       // replace minor mods if the respective stat % 10 is 1 or 2
       for (let i = 0; i < usedMods.length && 0 < availableArtificeCount; i++) {
         const mod = usedMods.list[i];
@@ -716,6 +682,43 @@ function handlePermutation(
 
       }
     }
+
+
+    /**
+     *  Now we know how many major mods we need.
+     *  If the modslot limitation forces us to only use N major mods, we can simply replace
+     *  a major mod with two minor mods.
+     *  We'll do this until we either reach the usedMods length of 5 (the limit), or until all
+     *  modslot limitations are satisfied.
+     */
+    for (let i = 0; i < usedMods.length && usedMods.length <= 5; i++) {
+      const mod = usedMods.list[i];
+
+      const cost = STAT_MOD_VALUES[mod][2];
+      const availableSlots = availableModCost.where(d => d >= cost);
+      if (availableSlots.length == 0) {
+        if (mod % 3 == 2) {
+          // replace a major mod with two minor mods OR abort
+          usedMods.remove(mod)
+          let minorMod = mod - 1 as StatModifier;
+          usedMods.insert(minorMod)
+          usedMods.insert(minorMod)
+          i--;
+          modsChangedThings = true;
+        }
+        //else {
+        // cannot replace a minor mod, so this build is not possible
+        //console.log("ABOOOOOOOOOOORT",round, usedMods.length, mod)
+        //return null;
+        //}
+      } else {
+        // TODO maybe add modsChangedThings = true;
+        availableModCost.splice(availableModCost.indexOf(availableSlots[0]), 1)
+        availableModCostLen--;
+      }
+    }
+
+
   }
 
   if (usedMods.length > 5) return null;
@@ -769,6 +772,8 @@ function handlePermutation(
   }
   if (usedMods.length > 5) // TODO: Should never be called, could be removed
     return null;
+
+  /*
 
   // get maximum possible stat and write them into the runtime
   // Get maximal possible stats and write them in the runtime variable
@@ -894,6 +899,8 @@ function handlePermutation(
     }
   }
 
+
+   */
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste
@@ -906,10 +913,11 @@ function handlePermutation(
       stats[ArmorStat.Discipline],
       stats[ArmorStat.Intellect],
       stats[ArmorStat.Strength]
-    ].map((v, i) => [10 - (v % 10), i, v]).sort((a, b) => a[0] - b[0])
+    ].map((v, i) => [10-(v % 10), i, v]).sort((a, b) => a[0] - b[0])
 
     for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 || availableArtificeCount > 0); i--) {
       const wasteEntry = waste[i];
+      if (wasteEntry[2] >= 100) continue;
       if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
       //const cy = (stats[wasteEntry[1]] + 5) / 10 >= config.minimumStatTiers[wasteEntry[1] as ArmorStat].value + 1
 
@@ -927,6 +935,7 @@ function handlePermutation(
         usedArtifice.push(3 + (3 * wasteEntry[1]));
         stats[wasteEntry[1]] += 6;
         wasteEntry[0] -= 6;
+        continue;
       }
       if (wasteEntry[0] <= 5 && availableModCostLen > 0) {
         // can we afford this?
@@ -936,37 +945,11 @@ function handlePermutation(
           availableModCostLen--;
           stats[wasteEntry[1]] += 5
           wasteEntry[0] -= 5;
-          usedMods.insert(1 + 2 * wasteEntry[1])
+          usedMods.insert(1 + 3 * wasteEntry[1]);
+          continue;
         }
       }
     }
-
-    // second round, let's fix stuff > 5 with artifice and mod
-    /*
-    for (let i = waste.length - 1; i >= 0 && (availableModCostLen > 0 && availableArtificeCount > 0); i--) {
-
-      const wasteEntry = waste[i];
-      if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
-
-      if (wasteEntry[0] > 5 && wasteEntry[0] < 8) {
-
-        const modCost = STAT_MOD_VALUES[(1 + (wasteEntry[1] * 3)) as StatModifier][2];
-        if (availableModCost.where(d => d >= modCost).length > 0) {
-          availableModCost.splice(availableModCost.indexOf(modCost), 1);
-          availableModCostLen--;
-          stats[wasteEntry[1]] += 5
-          wasteEntry[0] -= 5;
-          usedMods.insert(1 + 2 * wasteEntry[1])
-
-          availableArtificeCount--;
-          usedArtifice.push(3 + (3 * wasteEntry[1]));
-          stats[wasteEntry[1]] += 3;
-          wasteEntry[0] -=3;
-        }
-      }
-    }
-   */
-
   }
 
 
