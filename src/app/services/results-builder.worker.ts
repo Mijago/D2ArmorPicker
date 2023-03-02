@@ -370,7 +370,7 @@ addEventListener('message', async ({data}) => {
           if (!slotCheckResult.valid) continue;
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
-            constantBonus, constantAvailableModslots.slice(), doNotOutput, hasArtificeClassItem);
+            constantBonus, constantAvailableModslots, doNotOutput, hasArtificeClassItem);
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
           if (result != null) {
@@ -611,7 +611,7 @@ function handlePermutation(
         continue;
       }
       const minorCost = STAT_MOD_VALUES[stat * 3 + 1 as StatModifier][2];
-      let minorIdx = availableModCost.findIndex(d => d >= minorCost && usedModslot[d] == 0);
+      let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
       if (minorIdx > -1) {
         usedMods.insert(stat * 3 + 1 as StatModifier);
         usedModslot[minorIdx] = 1;
