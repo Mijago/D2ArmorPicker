@@ -186,7 +186,7 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
     ];
 
-    const masterwork = [0, 0, 0, 0, 0, 0]
+    const masterwork = [10, 10, 10, 10, 10, 10]
     const constants = [0, 0, 0, 0, 0, 0]
 
     const statMods = {
@@ -194,14 +194,6 @@ export class TheorizerPageComponent implements OnInit {
       minor: [0, 0, 0, 0, 0, 0]
     }
     const artificeMods = [0, 0, 0, 0, 0, 0]
-
-    const allMasterworked = result!.result!.vars["masterwork"] == 1;
-    console.log("allMasterworked: ", allMasterworked)
-    if (allMasterworked) {
-      for (let stat = 0; stat < 6; stat++) {
-        masterwork[stat] += 10;
-      }
-    }
 
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("constant_")) continue;
@@ -282,32 +274,32 @@ export class TheorizerPageComponent implements OnInit {
       subjectTo: [
         {
           name: "goal_mobility",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.mobility},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.mobility-10},
           vars: [] as any[],
         },
         {
           name: "goal_resilience",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.resilience},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.resilience-10},
           vars: [] as any[],
         },
         {
           name: "goal_recovery",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.recovery},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.recovery-10},
           vars: [] as any[],
         },
         {
           name: "goal_discipline",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.discipline},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.discipline-10},
           vars: [] as any[],
         },
         {
           name: "goal_intellect",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.intellect},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.intellect-10},
           vars: [] as any[],
         },
         {
           name: "goal_strength",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.strength},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.strength-10},
           vars: [] as any[],
         },
       ],
@@ -315,14 +307,6 @@ export class TheorizerPageComponent implements OnInit {
       binaries: [], // binary values
       generals: [] // integers
     } as LP;
-
-    // add masterworks
-    lp.bounds!.push({name: "masterwork", type: this.glpk.GLP_FX, ub: 1, lb: 1});
-    lp.binaries!.push("masterwork");
-    for (let stat = 0; stat < 6; stat++) {
-      lp.subjectTo[stat].vars.push({name: `masterwork`, coef: 10});
-    }
-
     //lp.binaries!.push("constant1");
     for (let stat = 0; stat < 6; stat++) {
       const val = (this.options.stats as any).constantBoost[statNames[stat]];
