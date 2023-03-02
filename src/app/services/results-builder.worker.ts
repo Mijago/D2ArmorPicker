@@ -575,7 +575,8 @@ function handlePermutation(
   for (let stat = 0; stat < 6; stat++) {
     let distance = config.minimumStatTiers[stat as ArmorStat].value * 10 - stats[stat];
     while (distance > 0) {
-      if (distance % 10 <= 3 && availableArtificeCount > 0) {
+      const modulo = distance % 10
+      if (modulo > 0 && modulo <= 3 && availableArtificeCount > 0) {
         // initial artifice artifice mod
         usedArtifice.push(stat * 3 + 3 as StatModifier);
         availableArtificeCount--;
@@ -583,7 +584,7 @@ function handlePermutation(
         distance -= 3;
         continue;
       }
-      if (distance % 10 <= 5) {
+      if (modulo > 0 && modulo <= 5) {
         // initial minor
         const minorCost = STAT_MOD_VALUES[stat * 3 + 1 as StatModifier][2];
         let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
