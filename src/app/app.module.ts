@@ -80,7 +80,7 @@ import {
   StatCooldownTooltipDirective
 } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component';
-import { TheorizerPageComponent } from './components/authenticated-v2/subpages/theorizer-page/theorizer-page.component';
+import {CommonMaterialModule} from "./modules/common-material/common-material.module";
 
 
 const routes: Routes = [
@@ -105,7 +105,8 @@ const routes: Routes = [
       },
       {
         path: 'theory',
-        component: TheorizerPageComponent
+        // load TheorizerPageModule
+        loadChildren: () => import('./components/authenticated-v2/subpages/theorizer-page/theorizer-page.module').then(m => m.TheorizerPageModule)
       },
       {
         path: 'account',
@@ -162,44 +163,15 @@ const routes: Routes = [
     AccountConfigPageComponent,
     ModDescriptionTooltipComponent,
     StatCooldownTooltipComponent,
-    SlotLimitationTitleComponent,
-    TheorizerPageComponent
+    SlotLimitationTitleComponent
   ],
   imports: [
-    FlexLayoutModule,
+    CommonMaterialModule,
     BrowserModule,
     HttpClientModule,
-    BrowserAnimationsModule,
-    MatButtonModule,
     RouterModule.forRoot(routes, {useHash: true}),
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatSliderModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSlideToggleModule,
-    FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatTooltipModule,
-    MatProgressBarModule,
-    MatIconModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatToolbarModule,
-    MatMenuModule,
-    MatButtonToggleModule,
-    MatListModule,
-    MatExpansionModule,
-    MatDialogModule,
     ClipboardModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatTabsModule,
-    MatChipsModule,
     LayoutModule,
-    MatSidenavModule
   ],
   providers: [],
   bootstrap: [AppComponent]

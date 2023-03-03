@@ -150,7 +150,7 @@ export class TheorizerPageComponent implements OnInit {
       if (this.time_progress >= 100) {
         this.stopTimer();
       }
-    }, interval);
+    }, interval) as number;
   }
 
   stopTimer() {
