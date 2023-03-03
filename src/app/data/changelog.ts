@@ -22,6 +22,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
+        text: "Added the amount of used artifice mods to the result table overview (next to the mods).",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added new fragments, including Strand.",
         issues: []
       },
@@ -38,6 +43,11 @@ export const CHANGELOG_DATA = [
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Reduced the maximum limit of reported results from 50,000 to 30,000. Note that D2AP still calculates every result, it just does not report them. This is a major speedup, and you usually should not even realize the change.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Increased the visual contrast of major mods in the results table. This means it is now easier to distinguish major from minor mods.",
         issues: []
       },
       {
