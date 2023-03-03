@@ -81,6 +81,7 @@ import {
 } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from './components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component';
 import {CommonMaterialModule} from "./modules/common-material/common-material.module";
+import {CommonModule} from "@angular/common";
 
 
 const routes: Routes = [
@@ -166,8 +167,11 @@ const routes: Routes = [
     SlotLimitationTitleComponent
   ],
   imports: [
+    CommonModule,
     CommonMaterialModule,
+
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     RouterModule.forRoot(routes, {useHash: true}),
     ClipboardModule,

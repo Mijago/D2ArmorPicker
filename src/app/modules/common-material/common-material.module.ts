@@ -27,13 +27,11 @@ import {MatChipsModule} from "@angular/material/chips";
 import {MatSidenavModule} from "@angular/material/sidenav";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {FlexLayoutModule} from "@angular/flex-layout";
-import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 
 @NgModule({
   declarations: [],
   imports: [
-    CommonModule,
     MatButtonModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -61,11 +59,9 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
     MatSidenavModule,
     ReactiveFormsModule,
     FormsModule,
-    FlexLayoutModule,
-    BrowserAnimationsModule,
+    FlexLayoutModule
   ],
   exports: [
-    BrowserAnimationsModule,
     FlexLayoutModule,
     ReactiveFormsModule,
     FormsModule,
