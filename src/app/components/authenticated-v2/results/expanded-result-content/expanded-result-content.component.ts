@@ -278,18 +278,21 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [ModifierType.Void]: 2453351420,
           [ModifierType.Solar]: 2240888816,
           [ModifierType.Arc]: 2328211300,
+          [ModifierType.Strand]: 3785442599,
         },
         [CharacterClass.Titan]: {
           [ModifierType.Stasis]: 613647804,
           [ModifierType.Void]: 2842471112,
           [ModifierType.Solar]: 2550323932,
           [ModifierType.Arc]: 2932390016,
+          [ModifierType.Strand]: 242419885,
         },
         [CharacterClass.Warlock]: {
           [ModifierType.Stasis]: 3291545503,
           [ModifierType.Void]: 2849050827,
           [ModifierType.Solar]: 3941205951,
           [ModifierType.Arc]: 3168997075,
+          [ModifierType.Strand]: 4204413574,
         },
       };
 
@@ -305,7 +308,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     }
 
 
-    var url = "https://beta.destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
+    var url = "https://destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
 
     return url;
   }
