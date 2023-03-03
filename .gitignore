@@ -50,3 +50,4 @@ environment.ts
 environment.prod.ts
 .env
 .env_dev
+.env_beta
