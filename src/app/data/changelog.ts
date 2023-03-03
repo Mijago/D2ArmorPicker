@@ -17,7 +17,27 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Automatically adds artifice mods to your armor. This replaces minor and major mods where possible. This is not completely done yet (3x100 and 4x100 buttons are disabled)",
+        text: "Automatically adds artifice mods to your armor. This replaces minor and major mods where possible.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Strand fragments.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Introduced more modules for asynchronous loading. This is more a speed improvement than a feature.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted modslot cost of Resilience and Recovery mods.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reduced the maximum limit of reported results from 50,000 to 30,000. Note that D2AP still calculates every result, it just does not report them. This is a major speedup, and you usually should not even realize the change.",
         issues: []
       },
       {
