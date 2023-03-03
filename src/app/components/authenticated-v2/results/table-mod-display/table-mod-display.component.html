@@ -1,4 +1,27 @@
-<div class="container" *ngIf="amount > 0" [matTooltip]="tooltipText" #tooltip="matTooltip">
-  <img class="modIcon" [class.minor]="isMinorMod" [src]="url">
-  <span class="modText" [class.minor]="isMinorMod">×{{amount}}</span>
+<!--<div class="container" [matTooltip]="statName" #tooltip="matTooltip">
+  <img class="modIcon" [class.minor]="true" [src]="ModUrl[1+3*stat]">
+  <span class="modText" [class.minor]="true">×{{amountMinor}}</span>
+</div>
+-->
+
+
+<div class="row-mod">
+  <ng-container *ngVar="(artifice | count) as artificeCount">
+    <div class="container" *ngIf="artificeCount > 0" matTooltip="Artifice" #tooltip="matTooltip">
+      <img class="artificeIcon artifice" [src]="artificeUrl">
+      <span class="modText artifice" >×{{artificeCount}}</span>
+    </div>
+
+  </ng-container>
+
+  <ng-container *ngFor="let stat of modIndex">
+    <ng-container *ngFor="let modType of modTypeIndex">
+      <ng-container *ngVar="(mods | count:(modType+3*stat)) as count">
+        <div class="container" *ngIf="count > 0" [matTooltip]="getStatName(stat)" #tooltip="matTooltip">
+          <img class="modIcon" [class.minor]="modType == 1" [src]="ModUrl[modType+3*stat]">
+          <span class="modText" [class.minor]="modType ==1">×{{count}}</span>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
 </div>

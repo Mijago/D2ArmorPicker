@@ -5,8 +5,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class CountElementInListPipe implements PipeTransform {
 
-  transform(value: any[], searchItem: any): number {
-    return value.filter(d => d == searchItem).length
+  transform(value: any[], searchItem: any = null): number {
+    return value.filter(d => searchItem == null || d == searchItem).length
   }
 
 }

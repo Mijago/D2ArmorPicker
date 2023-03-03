@@ -12,8 +12,8 @@
   width: 50px;
   height: 50px;
 
-  -webkit-filter: contrast(1.7);
-  filter: contrast(1.7);
+  -webkit-filter: contrast(2.3);
+  filter: contrast(2.3);
 
   border: #00000000 solid 2px;
 
@@ -22,8 +22,16 @@
 }
 
 .modIcon.minor {
-  -webkit-filter: contrast(1.5);
-  filter: contrast(1.5);
+  -webkit-filter: contrast(1.3);
+  filter: contrast(1.3);
+}
+
+.artificeIcon {
+  height: 28px;
+  width: 28px;
+
+  -webkit-filter: saturate(40) hue-rotate(40deg);
+  filter: saturate(40) hue-rotate(40deg);
 }
 
 
