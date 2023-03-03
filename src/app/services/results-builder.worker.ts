@@ -385,7 +385,7 @@ addEventListener('message', async ({data}) => {
               results.push(result)
               resultsLength++;
               listedResults++;
-              doNotOutput = doNotOutput || (config.limitParsedResults && listedResults >= 5e4 / threadSplit.count) || listedResults >= 1e6 / threadSplit.count
+              doNotOutput = doNotOutput || (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) || listedResults >= 1e6 / threadSplit.count
             }
           }
           //}

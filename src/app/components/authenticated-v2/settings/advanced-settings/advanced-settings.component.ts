@@ -99,7 +99,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               value: c.limitParsedResults,
               disabled: false,
               impactsResultCount: true,
-              help: "Only parse the first 50,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled."
+              help: "Only parse the first 30,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled."
             },
           ],
           "Extra Columns": [
