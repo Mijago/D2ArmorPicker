@@ -596,6 +596,26 @@ function handlePermutation(
           stats[stat] += 5;
           distance -= 5;
           continue;
+        } else if (stat > 0) {
+          // check if there is an used artifice mod that can be replaced by a minor mod
+          let possibleIdx = usedArtifice.findIndex((d, i) => {
+            const minorCostAr = STAT_MOD_VALUES[d - 2 as StatModifier][2]
+            return availableModCost.findIndex((d, i) => d >= minorCostAr && usedModslot[i] == 0) > -1
+          })
+          if (possibleIdx > -1) {
+            const otherStat = (usedArtifice[possibleIdx] / 3) - 1
+            usedArtifice.splice(possibleIdx, 1)
+            usedArtifice.push(stat * 3 + 3 as StatModifier)
+
+            stats[otherStat] -=3;
+            stats[stat] +=3;
+
+            // restart the loop. this allows the algo to re-shift artifice
+            // the break stops the internal loop
+            // by setting the stat to -1, we force it to start at the changed stat in the next iteration
+            stat = otherStat - 1;
+            break;
+          }
         }
       }
 
@@ -672,14 +692,14 @@ function handlePermutation(
       const minorCost = STAT_MOD_VALUES[statId * 3 + 1 as StatModifier][2];
       while (statxs[i][1] < 100) {
         const majorIdx = availableModCost.findIndex((d, idx) => d >= majorCost
-          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0 );
+          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0);
         if (majorIdx > -1) {
           usedModslotsForCheck[majorIdx] = 1;
           statxs[i][1] += 10;
           continue;
         }
         const minorIdx = availableModCost.findIndex((d, idx) => d >= minorCost
-          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0 );
+          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0);
         if (minorIdx > -1) {
           usedModslotsForCheck[minorIdx] = 1;
           statxs[i][1] += 5;
@@ -739,11 +759,11 @@ function handlePermutation(
         continue
       }
       if (wasteEntry[0] <= 5 && minorIdx > -1) {
-          usedModslot[minorIdx] = 1;
-          usedMods.insert(minorMod);
-          stats[wasteEntry[1]] += 5;
-          wasteEntry[0] -= 5;
-          continue
+        usedModslot[minorIdx] = 1;
+        usedMods.insert(minorMod);
+        stats[wasteEntry[1]] += 5;
+        wasteEntry[0] -= 5;
+        continue
       }
       if (wasteEntry[0] <= 6 && availableArtificeCount > 1) {
         // add artifice
