@@ -659,7 +659,7 @@ function handlePermutation(
     }
   }
 
-  if (false && possible100stats.length >= 3) {
+  if (possible100stats.length >= 3) {
     // check if this build can reach 3x100 or 4x100
     // for this, we have to check if there are enough mods and artifice slots available
     // to reach three 100 stats or even four 100 stats
