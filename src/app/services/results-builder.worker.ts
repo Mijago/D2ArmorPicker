@@ -634,20 +634,77 @@ function handlePermutation(
 
   // find out the max possible stats
   // by using minor, major and artifice mods
+  const possible100stats = []
   for (let stat = 0; stat < 6; stat++) {
-    const minorMod = stat * 3 + 1 as StatModifier;
-    const majorMod = stat * 3 + 2 as StatModifier;
-    const minorModCost = STAT_MOD_VALUES[minorMod][2];
-    const majorModCost = STAT_MOD_VALUES[majorMod][2];
+    let newStat = stats[stat];
+    // Only execute the code if we are below 100. Minor edge case speedup.
+    if (stats[stat] < 100) {
+      const minorMod = stat * 3 + 1 as StatModifier;
+      const majorMod = stat * 3 + 2 as StatModifier;
+      const minorModCost = STAT_MOD_VALUES[minorMod][2];
+      const majorModCost = STAT_MOD_VALUES[majorMod][2];
 
-    const possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == 0).length;
-    const possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == 0).length - possibleMajor;
+      const possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == 0).length;
+      const possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == 0).length - possibleMajor;
 
-    const maxBonus = availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10;
-    const newStat = Math.min(100, stats[stat] + maxBonus);
+      const maxBonus = availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10;
+      newStat = Math.min(100, stats[stat] + maxBonus);
+    }
+
     if (newStat > runtime.maximumPossibleTiers[stat])
       runtime.maximumPossibleTiers[stat] = newStat;
+
+    if (newStat >= 100) {
+      possible100stats.push(stat);
+    }
   }
+
+  if (false && possible100stats.length >= 3) {
+    // check if this build can reach 3x100 or 4x100
+    // for this, we have to check if there are enough mods and artifice slots available
+    // to reach three 100 stats or even four 100 stats
+    const statxs = possible100stats.map(d => [d, stats[d]]).sort((a, b) => b[1] - a[1])
+    // fill every stat to 100 with artifice mods and (available) major and minor mods
+    const usedModslotsForCheck = [0, 0, 0, 0, 0]
+    for (let i = 0; i < statxs.length; i++) {
+      let statId = statxs[i][0];
+      const majorCost = STAT_MOD_VALUES[statId * 3 + 2 as StatModifier][2];
+      const minorCost = STAT_MOD_VALUES[statId * 3 + 1 as StatModifier][2];
+      while (statxs[i][1] < 100) {
+        const majorIdx = availableModCost.findIndex((d, idx) => d >= majorCost
+          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0 );
+        if (majorIdx > -1) {
+          usedModslotsForCheck[majorIdx] = 1;
+          statxs[i][1] += 10;
+          continue;
+        }
+        const minorIdx = availableModCost.findIndex((d, idx) => d >= minorCost
+          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0 );
+        if (minorIdx > -1) {
+          usedModslotsForCheck[minorIdx] = 1;
+          statxs[i][1] += 5;
+          continue;
+        }
+        if (availableArtificeCount > 0) {
+          availableArtificeCount--;
+          statxs[i][1] += 3;
+          continue;
+        }
+        break;
+      }
+    }
+
+    // count 100s
+    const count100s = statxs.filter(d => d[1] >= 100).length;
+    if (count100s >= 3) {
+      runtime.statCombo3x100.add((1 << statxs[0][0]) + (1 << statxs[1][0]) + (1 << statxs[2][0]));
+      if (count100s >= 4) {
+        runtime.statCombo4x100.add((1 << statxs[0][0]) + (1 << statxs[1][0]) + (1 << statxs[2][0]) + (1 << statxs[3][0]));
+      }
+    }
+  }
+
+
   if (doNotOutput) return "DONOTSEND";
 
   // Add mods to reduce stat waste
