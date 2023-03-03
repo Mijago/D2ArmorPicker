@@ -22,7 +22,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added Strand fragments.",
+        text: "Added new fragments, including Strand.",
         issues: []
       },
       {

@@ -308,7 +308,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     }
 
 
-    var url = "https://destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
+    var url = "https://app.destinyitemmanager.com/loadouts?loadout=" + encodeURIComponent(JSON.stringify(loadout))
 
     return url;
   }
