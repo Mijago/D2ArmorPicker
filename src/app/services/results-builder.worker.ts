@@ -669,8 +669,7 @@ function handlePermutation(
             const cstat = STAT_MOD_VALUES[usedModslot[possibleIdx] as StatModifier][0]
             stats[cstat] -= 1
             stats[stat] += 1
-
-            usedModslot[possibleIdx] = stat
+            usedModslot[possibleIdx] = 2+3*stat
 
             for (let n = 0; n < 3; n++) {
               const idx = usedArtifice.findIndex(d => d == artificeId)
