@@ -190,7 +190,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         case 'Mods':
           return (
             + 100 * data.modCount
-            + 40 * data.artifice.length
+            //+ 40 * data.artifice.length
             + data.modCost
           )
       }
