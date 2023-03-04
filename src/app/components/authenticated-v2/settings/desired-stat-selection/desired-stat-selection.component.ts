@@ -28,6 +28,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
   _statCombo3x100: ArmorStat[][] = [];
+  config_zero_waste = false;
 
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
@@ -51,6 +52,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
           }
           this.statsByMods = tmpStatsByMods;
           this.minimumStatTiers = c.minimumStatTiers;
+          this.config_zero_waste = c.onlyShowResultsWithNoWastedStats;
         }
       )
 
