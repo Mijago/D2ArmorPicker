@@ -515,7 +515,7 @@ const requiredZeroWasteChanges = [
  * This code does not utilize fancy filters and other stuff.
  * This results in ugly code BUT it is way way WAY faster!
  */
-function handlePermutation(
+export function handlePermutation(
   runtime: any,
   config: BuildConfiguration,
   helmet: ItemCombination,
@@ -573,8 +573,9 @@ function handlePermutation(
 
 
   const usedModslot = [-1, -1, -1, -1, -1]
+  let fixLimit = 10;
 
-  for (let stat = 0; stat < 6; stat++) {
+  for (let stat = 0; stat < 6 && fixLimit > 0; stat++) {
     let distance = config.minimumStatTiers[stat as ArmorStat].value * 10 - stats[stat];
     while (distance > 0) {
       const modulo = distance % 10
@@ -596,9 +597,11 @@ function handlePermutation(
           stats[stat] += 5;
           distance -= 5;
           continue;
-        } else if (stat > 0) {
+        } else if (fixLimit > 0 && stat > 0) {
           // check if there is an used artifice mod that can be replaced by a minor mod
           let possibleIdx = usedArtifice.findIndex((d, i) => {
+            // only look to the left
+            if ((d / 3) - 1 >= stat) return false;
             const minorCostAr = STAT_MOD_VALUES[d - 2 as StatModifier][2]
             return availableModCost.findIndex((d, i) => d >= minorCostAr && usedModslot[i] == -1) > -1
           })
@@ -606,8 +609,10 @@ function handlePermutation(
             const otherStat = (usedArtifice[possibleIdx] / 3) - 1
             // set the artifice mod
             usedArtifice[possibleIdx] = stat * 3 + 3 as StatModifier;
-            stats[otherStat] -=3;
+            stats[otherStat] -= 3;
             stats[stat] += 3;
+            // introduce a fix limit to prevent infinite loops
+            fixLimit -= 1;
 
             // restart the loop. this allows the algo to re-shift artifice
             // the break stops the internal loop
@@ -649,7 +654,7 @@ function handlePermutation(
       }
 
       // validate if we can shove around some artifice for a major
-      if (true) {
+      if (fixLimit > 0) {
 
         const x = usedArtifice.where(k => k == artificeId).length
         if (x >= 3 && stats[stat] % 10 == 9) {
@@ -673,6 +678,9 @@ function handlePermutation(
               const idx = usedArtifice.findIndex(d => d == artificeId)
               usedArtifice[idx] = (3 + cstat * 3)
             }
+
+            // introduce a fix limit to prevent infinite loops
+            fixLimit -= 1;
 
             //stat = cstat-1;
             continue;
@@ -893,3 +901,5 @@ function getWaste(stats: number[]) {
     + (stats[ArmorStat.Intellect] > 100 ? stats[ArmorStat.Intellect] - 100 : stats[ArmorStat.Intellect] % 10)
     + (stats[ArmorStat.Strength] > 100 ? stats[ArmorStat.Strength] - 100 : stats[ArmorStat.Strength] % 10)
 }
+
+
