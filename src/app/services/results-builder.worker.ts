@@ -662,10 +662,11 @@ export function handlePermutation(
 
           const possibleIdx = availableModCost.findIndex((d, i) => {
             if (usedModslot[i] == -1) return false; // only used slots
-            if (usedModslot[i] == stat) return false; // not the same stat ofc
+            const otherMod = STAT_MOD_VALUES[usedModslot[i] as StatModifier][0]
+            if (otherMod == stat) return false; // not the same stat ofc
             if (d < majorCost) return false;
             const cstat = usedModslot[i]
-            return stats[cstat] % 10 > 1;
+            return (stats[cstat] % 10) > 1;
           })
           if (possibleIdx > -1) {
             const cstat = STAT_MOD_VALUES[usedModslot[possibleIdx] as StatModifier][0]
@@ -683,7 +684,7 @@ export function handlePermutation(
             fixLimit -= 1;
 
             //stat = cstat-1;
-            continue;
+            continue
           }
         }
       }
