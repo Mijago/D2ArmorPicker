@@ -604,19 +604,16 @@ function handlePermutation(
           })
           if (possibleIdx > -1) {
             const otherStat = (usedArtifice[possibleIdx] / 3) - 1
-            usedArtifice.splice(possibleIdx, 1)
-            usedArtifice.push(stat * 3 + 3 as StatModifier)
-
-            usedModslot[possibleIdx] = stat * 3 + 3 as StatModifier;
-
-            stats[otherStat] -= 3;
+            // set the artifice mod
+            usedArtifice[possibleIdx] = stat * 3 + 3 as StatModifier;
+            stats[otherStat] -=3;
             stats[stat] += 3;
 
             // restart the loop. this allows the algo to re-shift artifice
             // the break stops the internal loop
             // by setting the stat to -1, we force it to start at the changed stat in the next iteration
-            //stat = otherStat - 1;
-            continue;
+            stat = otherStat - 1;
+            break;
           }
         }
       }
