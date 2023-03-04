@@ -86,12 +86,89 @@ describe('Results Worker', () => {
     expect(result).toBeDefined()
     expect(result.mods.length).toEqual(5)
     expect(result.artifice.length).toEqual(1)
-    expect(result.stats[0]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Mobility].value*10)
-    expect(result.stats[1]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Resilience].value*10)
-    expect(result.stats[2]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Recovery].value*10)
-    expect(result.stats[3]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Discipline].value*10)
-    expect(result.stats[4]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Intellect].value*10)
-    expect(result.stats[5]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Strength].value*10)
+    expect(result.stats[0]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Mobility].value * 10)
+    expect(result.stats[1]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Resilience].value * 10)
+    expect(result.stats[2]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Recovery].value * 10)
+    expect(result.stats[3]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Discipline].value * 10)
+    expect(result.stats[4]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Intellect].value * 10)
+    expect(result.stats[5]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Strength].value * 10)
+  });
+
+
+  it('should be able to keep plain zero-waste builds', () => {
+    // this is an edge case in which the artifice mod, which initially will be applied to
+    // mobility, must be moved to Recovery. Otherwise, this set would not be possible.
+
+    const runtime = buildRuntime()
+
+    const mockItems: ItemCombination[] = [
+      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [8, 9, 16, 23, 2, 8]),
+      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [2, 9, 20, 26, 6, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotChest, true, [7, 2, 23, 21, 10, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotLegs, true, [3, 20, 11, 20, 2, 8]),
+    ]
+
+    const config = new BuildConfiguration()
+    config.tryLimitWastedStats = true
+    config.onlyShowResultsWithNoWastedStats = true
+
+    let result = handlePermutation(
+      runtime,
+      config, // todo config
+      mockItems[0],
+      mockItems[1],
+      mockItems[2],
+      mockItems[3],
+      [0, 0, 0, 0, 0, 0], // constant bonus
+      [5, 5, 5, 5, 5], // availableModCost
+      false, // doNotOutput
+      true // hasArtificeClassItem
+    )
+    expect(result).toBeDefined()
+    expect(result).not.toBeNull()
+  });
+
+  it('should be able to solve complex zero-waste builds', () => {
+    // this is an edge case in which the artifice mod, which initially will be applied to
+    // mobility, must be moved to Recovery. Otherwise, this set would not be possible.
+
+    const runtime = buildRuntime()
+
+    const mockItems: ItemCombination[] = [
+      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [8, 9, 16, 23, 2, 8]),
+      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [2, 9, 20, 26, 6, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotChest, true, [7, 2, 23, 21, 10, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotLegs, true, [3, 20, 11, 20, 2, 8]),
+    ]
+
+    // the numbers currently sum to 0; now we artifically reduce them to enforce wasted stats calculation
+    mockItems[0].items[0].mobility -= 5 + 3 // a minor mod + artifice mod
+    mockItems[0].items[0].resilience -= 9 // three artifice mods
+    mockItems[0].items[0].recovery -= 5 // minor mod
+    mockItems[0].items[0].discipline -= 5 // minor mod
+    mockItems[0].items[0].intellect -= 5 // minor mod
+    mockItems[0].items[0].strength -= 5 -3 // minor mod + artifice mod
+
+
+    const config = new BuildConfiguration()
+    config.tryLimitWastedStats = true
+    //config.onlyShowResultsWithNoWastedStats = true
+
+    let result = handlePermutation(
+      runtime,
+      config, // todo config
+      mockItems[0],
+      mockItems[1],
+      mockItems[2],
+      mockItems[3],
+      [0, 0, 0, 0, 0, 0], // constant bonus
+      [5, 5, 5, 5, 5], // availableModCost
+      false, // doNotOutput
+      true // hasArtificeClassItem
+    )
+    expect(result).toBeDefined()
+    expect(result).not.toBeNull()
+    expect(result.waste).toEqual(0)
   });
 
 

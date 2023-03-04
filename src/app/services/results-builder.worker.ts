@@ -727,6 +727,7 @@ export function handlePermutation(
     const statxs = possible100stats.map(d => [d, stats[d]]).sort((a, b) => b[1] - a[1])
     // fill every stat to 100 with artifice mods and (available) major and minor mods
     const usedModslotsForCheck = [0, 0, 0, 0, 0]
+    let availableArtificeForCheck = availableArtificeCount
     for (let i = 0; i < statxs.length; i++) {
       let statId = statxs[i][0];
       const majorCost = STAT_MOD_VALUES[statId * 3 + 2 as StatModifier][2];
@@ -746,8 +747,8 @@ export function handlePermutation(
           statxs[i][1] += 5;
           continue;
         }
-        if (availableArtificeCount > 0) {
-          availableArtificeCount--;
+        if (availableArtificeForCheck > 0) {
+          availableArtificeForCheck--;
           statxs[i][1] += 3;
           continue;
         }
@@ -779,12 +780,11 @@ export function handlePermutation(
       stats[ArmorStat.Strength]
     ].map((v, i) => [10 - (v % 10), i, v]).sort((a, b) => b[0] - a[0])
 
-    for (let i = waste.length - 1; i >= 0 && (availableArtificeCount > 0); i--) {
+    for (let i = waste.length - 1; i >= 0; i--) {
       const wasteEntry = waste[i];
       if (wasteEntry[2] >= 100) continue;
       if (config.minimumStatTiers[wasteEntry[1] as ArmorStat].fixed) continue;
-      if (wasteEntry[0] == 0) continue
-
+      if (wasteEntry[0] == 10) continue
 
       // check if we can add a minor mod
       const minorMod = (1 + (wasteEntry[1] * 3)) as StatModifier;
