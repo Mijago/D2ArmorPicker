@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import GLPKConstructor, {GLPK, LP, Result} from "glpk.js";
+import { ModifierType } from 'src/app/data/enum/modifierType';
+import {CharacterClass} from "../../../../data/enum/character-Class";
 
 const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
@@ -9,6 +11,9 @@ const statNames = ["mobility", "resilience", "recovery", "discipline", "intellec
   styleUrls: ['./theorizer-page.component.scss']
 })
 export class TheorizerPageComponent implements OnInit {
+  ModifierType=ModifierType;
+  CharacterClass=CharacterClass;
+
   glpk: GLPK | null = null;
 
   calculating = false;
@@ -41,6 +46,11 @@ export class TheorizerPageComponent implements OnInit {
       minTiers: 0,
       minPoints: 100,
       maxWaste: 54,
+    },
+    fragments: {
+      enableFragmentPicker: false,
+      subclass: -1,
+      class: CharacterClass.None
     },
     mods: {
       maxMods: 5,
@@ -200,7 +210,7 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, stat] = kv.split("_");
-      constants[parseInt(stat)] += result!.result!.vars[kv];
+      constants[parseInt(stat)] += result!.result!.vars[kv] -10;
     }
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("plug_")) continue;
@@ -274,32 +284,44 @@ export class TheorizerPageComponent implements OnInit {
       subjectTo: [
         {
           name: "goal_mobility",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.mobility-10},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.mobility},
           vars: [] as any[],
         },
         {
           name: "goal_resilience",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.resilience-10},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.resilience
+          },
           vars: [] as any[],
         },
         {
           name: "goal_recovery",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.recovery-10},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.recovery},
           vars: [] as any[],
         },
         {
           name: "goal_discipline",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.discipline-10},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.discipline
+          },
           vars: [] as any[],
         },
         {
           name: "goal_intellect",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.intellect-10},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.intellect
+          },
           vars: [] as any[],
         },
         {
           name: "goal_strength",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.strength-10},
+          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.strength},
           vars: [] as any[],
         },
       ],
@@ -307,13 +329,14 @@ export class TheorizerPageComponent implements OnInit {
       binaries: [], // binary values
       generals: [] // integers
     } as LP;
-    //lp.binaries!.push("constant1");
+
+    // add MW and Const Values
     for (let stat = 0; stat < 6; stat++) {
       const val = (this.options.stats as any).constantBoost[statNames[stat]];
-      if (val == 0) continue;
-
-      lp.bounds!.push({name: `constant_${stat}`, type: this.glpk.GLP_FX, ub: val, lb: val});
+      let constVal = 10+val;
+      lp.bounds!.push({name: `constant_${stat}`, type: this.glpk.GLP_FX, ub: constVal, lb: constVal});
       lp.subjectTo![stat].vars.push({name: `constant_${stat}`, coef: 1});
+
     }
 
 
@@ -350,106 +373,114 @@ export class TheorizerPageComponent implements OnInit {
     }
 
 
-    const modSubject = {
-      name: `limit_mods`, vars: [] as any[],
-      bnds: {
-        type: this.options.mods.maxMods > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
-        ub: this.options.mods.maxMods, lb: 0
-      }
-    }
-    const artifSubject = {
-      name: `limit_artif`, vars: [] as any[],
-      bnds: {
-        type: this.options.mods.maxArtifice > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
-        ub: this.options.mods.maxArtifice, lb: 0
-      }
-    }
-    for (let stat = 0; stat < 6; stat++) {
-      // 1 minor, 2 major; and then artifice
-      lp.bounds!.push({name: `mod_${1}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
-      lp.bounds!.push({name: `mod_${2}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
-      lp.bounds!.push({name: `artifice_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+    if (this.options.mods.maxMods > 0) {
 
-      lp.generals!.push(`mod_${1}_${stat}`);
-      lp.generals!.push(`mod_${2}_${stat}`);
-      lp.generals!.push(`artifice_${stat}`);
-
-      lp.subjectTo![stat].vars.push({name: `mod_${1}_${stat}`, coef: 5});
-      lp.subjectTo![stat].vars.push({name: `mod_${2}_${stat}`, coef: 10});
-      lp.subjectTo![stat].vars.push({name: `artifice_${stat}`, coef: 3});
-
-      // only allow a total of 5 mods and 3 artificer mods
-      modSubject.vars.push({name: `mod_${1}_${stat}`, coef: 1});
-      modSubject.vars.push({name: `mod_${2}_${stat}`, coef: 1});
-      artifSubject.vars.push({name: `artifice_${stat}`, coef: 1});
-    }
-    lp.subjectTo!.push(modSubject);
-    lp.subjectTo!.push(artifSubject);
-
-
-
-
-    if (this.options.stats.minTiers > 0 || this.options.stats.maxWaste <54) {
-
-    // I want to have the TIERS of the armor stats
-    // for this, I introduce two variables per stat:
-    // - The first is the "waste", which is bound between 0 and 9
-    // - The second is the "tier", which is bound between -5 and 20
-    // We will set these variables as "mobility - waste - 10 tier = 0"
-    for (let stat = 0; stat < 6; stat++) {
-      lp.bounds!.push({name: `waste_${stat}`, type: this.glpk.GLP_DB, ub: 9, lb: 0});
-      lp.bounds!.push({name: `tier_${stat}`, type: this.glpk.GLP_DB, ub: 20, lb: -5});
-      lp.generals!.push(`waste_${stat}`);
-      lp.generals!.push(`tier_${stat}`);
-
-      //lp.objective.vars.push({name: `tier_${stat}`, coef: 2})
-      //lp.objective.vars.push({name: `waste_${stat}`, coef: -100})
-
-
-      const setWasteAndTierSubject = {
-        name: `set_waste_and_tier_${stat}`,
-        vars: [
-          {name: `waste_${stat}`, coef: -1},
-          {name: `tier_${stat}`, coef: -10},
-          ...lp.subjectTo![stat].vars
-        ],
-        bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
-      };
-
-      lp.subjectTo!.push(setWasteAndTierSubject)
-    }
-
-    // set minTiers <= the sum of the tiers
-    if (this.options.stats.minTiers > 0) {
-      const minTierSubject = {
-        name: `require_tier_minimum`,
-        vars: [] as any[],
-        bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
-      }
-      console.log("this.options.stats.minTiers", this.options.stats.minTiers)
-      for (let stat = 0; stat < 6; stat++) {
-        minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
-      }
-      lp.subjectTo!.push(minTierSubject);
-    }
-
-
-    // Specify maxWaste
-    if (this.options.stats.maxWaste <54) {
-      const maxWasteSubject = {
-        name: `require_waste_maximum`,
-        vars: [] as any[],
+      const modSubject = {
+        name: `limit_mods`, vars: [] as any[],
         bnds: {
-          type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
-          ub: this.options.stats.maxWaste,
-          lb: 0
+          type: this.options.mods.maxMods > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
+          ub: this.options.mods.maxMods, lb: 0
         }
       }
       for (let stat = 0; stat < 6; stat++) {
-        maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+        // 1 minor, 2 major; and then artifice
+        lp.bounds!.push({name: `mod_${1}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+        lp.bounds!.push({name: `mod_${2}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+        lp.generals!.push(`mod_${1}_${stat}`);
+        lp.generals!.push(`mod_${2}_${stat}`);
+
+        lp.subjectTo![stat].vars.push({name: `mod_${1}_${stat}`, coef: 5});
+        lp.subjectTo![stat].vars.push({name: `mod_${2}_${stat}`, coef: 10});
+
+        // only allow a total of 5 mods and 3 artificer mods
+        modSubject.vars.push({name: `mod_${1}_${stat}`, coef: 1});
+        modSubject.vars.push({name: `mod_${2}_${stat}`, coef: 1});
       }
-      lp.subjectTo!.push(maxWasteSubject);
+      lp.subjectTo!.push(modSubject);
     }
+
+
+    if (this.options.mods.maxArtifice > 0) {
+
+      const artifSubject = {
+        name: `limit_artif`, vars: [] as any[],
+        bnds: {
+          type: this.options.mods.maxArtifice > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
+          ub: this.options.mods.maxArtifice, lb: 0
+        }
+      }
+      for (let stat = 0; stat < 6; stat++) {
+        lp.subjectTo![stat].vars.push({name: `artifice_${stat}`, coef: 3});
+        artifSubject.vars.push({name: `artifice_${stat}`, coef: 1});
+
+        lp.bounds!.push({name: `artifice_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+        lp.generals!.push(`artifice_${stat}`);
+      }
+      lp.subjectTo!.push(artifSubject);
+    }
+
+
+    if (this.options.stats.minTiers > 0 || this.options.stats.maxWaste < 54) {
+
+      // I want to have the TIERS of the armor stats
+      // for this, I introduce two variables per stat:
+      // - The first is the "waste", which is bound between 0 and 9
+      // - The second is the "tier", which is bound between -5 and 20
+      // We will set these variables as "mobility - waste - 10 tier = 0"
+      for (let stat = 0; stat < 6; stat++) {
+        lp.bounds!.push({name: `waste_${stat}`, type: this.glpk.GLP_DB, ub: 9, lb: 0});
+        //lp.bounds!.push({name: `tier_${stat}`, type: this.glpk.GLP_DB, ub: 100, lb: -100});
+        lp.generals!.push(`waste_${stat}`);
+        lp.generals!.push(`tier_${stat}`);
+
+        //lp.objective.vars.push({name: `tier_${stat}`, coef: 2})
+        //lp.objective.vars.push({name: `waste_${stat}`, coef: -100})
+
+
+        const setWasteAndTierSubject = {
+          name: `set_waste_and_tier_${stat}`,
+          vars: [
+            {name: `waste_${stat}`, coef: -1},
+            {name: `tier_${stat}`, coef: -10},
+            ...lp.subjectTo![stat].vars
+          ],
+          bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
+        };
+
+        lp.subjectTo!.push(setWasteAndTierSubject)
+      }
+
+      // set minTiers <= the sum of the tiers
+      if (this.options.stats.minTiers > 0) {
+        const minTierSubject = {
+          name: `require_tier_minimum`,
+          vars: [] as any[],
+          bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
+        }
+        console.log("this.options.stats.minTiers", this.options.stats.minTiers)
+        for (let stat = 0; stat < 6; stat++) {
+          minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
+        }
+        lp.subjectTo!.push(minTierSubject);
+      }
+
+
+      // Specify maxWaste
+      if (this.options.stats.maxWaste < 54) {
+        const maxWasteSubject = {
+          name: `require_waste_maximum`,
+          vars: [] as any[],
+          bnds: {
+            type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
+            ub: this.options.stats.maxWaste,
+            lb: 0
+          }
+        }
+        for (let stat = 0; stat < 6; stat++) {
+          maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+        }
+        lp.subjectTo!.push(maxWasteSubject);
+      }
 
     }
 
