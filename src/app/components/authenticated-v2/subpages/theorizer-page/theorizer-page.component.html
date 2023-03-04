@@ -19,56 +19,53 @@
       -->
 
       <h2>Required Stats</h2>
-      <table class="example-full-width" cellspacing="0">
-        <tr>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Mobility</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.mobility">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Resilience</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.resilience">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Recovery</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.recovery">
-            </mat-form-field>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Discipline</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.discipline">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Intellect</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.intellect">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Strength</mat-label>
-              <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.strength">
-            </mat-form-field>
-          </td>
-        </tr>
-      </table>
+
+      <div class="input-list">
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Mobility</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.mobility">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Resilience</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.resilience">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Recovery</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.recovery">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Discipline</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.discipline">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Intellect</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.intellect">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Strength</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.desired.strength">
+          </mat-form-field>
+        </div>
+      </div>
 
       <hr>
       <h2>Required Stats</h2>
-      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker">Enable fragment picking</mat-slide-toggle>
+      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking</mat-slide-toggle>
       <br>
 
       Class:
-      <mat-button-toggle-group [disabled]="!options.fragments.class">
+      <mat-button-toggle-group [(ngModel)]="options.fragments.class" [disabled]="!options.fragments.enableFragmentPicker">
         <mat-button-toggle [value]="CharacterClass.None">Any</mat-button-toggle>
         <mat-button-toggle [value]="CharacterClass.Titan">Titan</mat-button-toggle>
         <mat-button-toggle [value]="CharacterClass.Hunter">Hunter</mat-button-toggle>
@@ -76,7 +73,8 @@
       </mat-button-toggle-group>
       <br>
       Subclass:
-      <mat-button-toggle-group [disabled]="!options.fragments.enableFragmentPicker" [(ngModel)]="options.fragments.subclass">
+      <mat-button-toggle-group [disabled]="!options.fragments.enableFragmentPicker"
+                               [(ngModel)]="options.fragments.subclass">
         <mat-button-toggle [value]="-1">Any</mat-button-toggle>
         <mat-button-toggle [value]="ModifierType.Solar">Solar</mat-button-toggle>
         <mat-button-toggle [value]="ModifierType.Arc">Arc</mat-button-toggle>
@@ -120,51 +118,46 @@
         </tr>
       </table>
 
-
       <h2>Constant Bonus to Stats</h2>
       (use this for theoretical +1 stuff)
-      <table class="example-full-width" cellspacing="0">
-        <tr>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Mobility</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.mobility">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Resilience</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.resilience">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Recovery</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.recovery">
-            </mat-form-field>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Discipline</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.discipline">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Intellect</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.intellect">
-            </mat-form-field>
-          </td>
-          <td>
-            <mat-form-field class="example-full-width">
-              <mat-label>Strength</mat-label>
-              <input matInput type="number" min="-100" max="100" [(ngModel)]="options.stats.constantBoost.strength">
-            </mat-form-field>
-          </td>
-        </tr>
-      </table>
+      <div class="input-list">
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Mobility</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.mobility">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Resilience</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.resilience">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Recovery</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.recovery">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Discipline</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.discipline">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Intellect</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.intellect">
+          </mat-form-field>
+        </div>
+        <div class="input-list-entry">
+          <mat-form-field class="example-full-width">
+            <mat-label>Strength</mat-label>
+            <input matInput type="number" min="-20" max="300" [(ngModel)]="options.stats.constantBoost.strength">
+          </mat-form-field>
+        </div>
+      </div>
 
 
     </mat-card-content>

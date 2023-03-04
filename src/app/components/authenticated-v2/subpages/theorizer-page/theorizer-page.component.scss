@@ -26,5 +26,16 @@
 }
 
 #slider-table mat-slider {
-  width: 300px;
+  width: 200px;
+}
+
+.input-list {
+  max-width: 450px;
+
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .input-list-entry {
+    flex-basis: 33.33333%;
+  }
 }
