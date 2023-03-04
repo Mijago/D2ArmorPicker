@@ -74,7 +74,7 @@ interface MinMaxSum {
 }
 
 // Represents one item, or the combined range of two items
-class ItemCombination {
+export class ItemCombination {
   items: IInventoryArmor[] = [];
 
   mobility: MinMaxSum = {min: 0, max: 0, sum: 0}
