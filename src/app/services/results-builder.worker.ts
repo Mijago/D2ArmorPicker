@@ -572,7 +572,7 @@ function handlePermutation(
   const usedArtifice: number[] = []
 
 
-  const usedModslot = [0, 0, 0, 0, 0]
+  const usedModslot = [-1, -1, -1, -1, -1]
 
   for (let stat = 0; stat < 6; stat++) {
     let distance = config.minimumStatTiers[stat as ArmorStat].value * 10 - stats[stat];
@@ -589,10 +589,10 @@ function handlePermutation(
       if (modulo > 0 && modulo <= 5) {
         // initial minor
         const minorCost = STAT_MOD_VALUES[stat * 3 + 1 as StatModifier][2];
-        let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
+        let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == -1);
         if (minorIdx > -1) {
           usedMods.insert(stat * 3 + 1 as StatModifier);
-          usedModslot[minorIdx] = 1;
+          usedModslot[minorIdx] = stat * 3 + 1 as StatModifier;
           stats[stat] += 5;
           distance -= 5;
           continue;
@@ -600,21 +600,23 @@ function handlePermutation(
           // check if there is an used artifice mod that can be replaced by a minor mod
           let possibleIdx = usedArtifice.findIndex((d, i) => {
             const minorCostAr = STAT_MOD_VALUES[d - 2 as StatModifier][2]
-            return availableModCost.findIndex((d, i) => d >= minorCostAr && usedModslot[i] == 0) > -1
+            return availableModCost.findIndex((d, i) => d >= minorCostAr && usedModslot[i] == -1) > -1
           })
           if (possibleIdx > -1) {
             const otherStat = (usedArtifice[possibleIdx] / 3) - 1
             usedArtifice.splice(possibleIdx, 1)
             usedArtifice.push(stat * 3 + 3 as StatModifier)
 
-            stats[otherStat] -=3;
-            stats[stat] +=3;
+            usedModslot[possibleIdx] = stat * 3 + 3 as StatModifier;
+
+            stats[otherStat] -= 3;
+            stats[stat] += 3;
 
             // restart the loop. this allows the algo to re-shift artifice
             // the break stops the internal loop
             // by setting the stat to -1, we force it to start at the changed stat in the next iteration
-            stat = otherStat - 1;
-            break;
+            //stat = otherStat - 1;
+            continue;
           }
         }
       }
@@ -622,31 +624,65 @@ function handlePermutation(
 
       // find valid slots for major mods
       const majorCost = STAT_MOD_VALUES[stat * 3 + 2 as StatModifier][2];
-      let majorIdx = availableModCost.findIndex((d, idx) => d >= majorCost && usedModslot[idx] == 0);
+      let majorIdx = availableModCost.findIndex((d, idx) => d >= majorCost && usedModslot[idx] == -1);
       if (majorIdx > -1 && distance > 5) {
         usedMods.insert(stat * 3 + 2 as StatModifier);
-        usedModslot[majorIdx] = 1;
+        usedModslot[majorIdx] = stat * 3 + 2 as StatModifier;
         stats[stat] += 10;
         distance -= 10;
         continue;
       }
       const minorCost = STAT_MOD_VALUES[stat * 3 + 1 as StatModifier][2];
-      let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
+      let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == -1);
       if (minorIdx > -1) {
         usedMods.insert(stat * 3 + 1 as StatModifier);
-        usedModslot[minorIdx] = 1;
+        usedModslot[minorIdx] = stat * 3 + 1 as StatModifier;
         stats[stat] += 5;
         distance -= 5;
         continue;
       }
       // artifice
+      const artificeId = stat * 3 + 3 as StatModifier
       if (availableArtificeCount > 0) {
-        usedArtifice.push(stat * 3 + 3 as StatModifier);
+        usedArtifice.push(artificeId);
         availableArtificeCount--;
         stats[stat] += 3;
         distance -= 3;
         continue;
       }
+
+      // validate if we can shove around some artifice for a major
+      if (true) {
+
+        const x = usedArtifice.where(k => k == artificeId).length
+        if (x >= 3 && stats[stat] % 10 == 9) {
+          // we can replace this with a major mod
+
+          const possibleIdx = availableModCost.findIndex((d, i) => {
+            if (usedModslot[i] == -1) return false; // only used slots
+            if (usedModslot[i] == stat) return false; // not the same stat ofc
+            if (d < majorCost) return false;
+            const cstat = usedModslot[i]
+            return stats[cstat] % 10 > 1;
+          })
+          if (possibleIdx > -1) {
+            const cstat = STAT_MOD_VALUES[usedModslot[possibleIdx] as StatModifier][0]
+            stats[cstat] -= 1
+            stats[stat] += 1
+
+            usedModslot[possibleIdx] = stat
+
+            for (let n = 0; n < 3; n++) {
+              const idx = usedArtifice.findIndex(d => d == artificeId)
+              usedArtifice[idx] = (3+cstat*3)
+            }
+
+            //stat = cstat-1;
+            continue;
+          }
+        }
+      }
+
       return
     }
   }
@@ -664,8 +700,8 @@ function handlePermutation(
       const minorModCost = STAT_MOD_VALUES[minorMod][2];
       const majorModCost = STAT_MOD_VALUES[majorMod][2];
 
-      const possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == 0).length;
-      const possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == 0).length - possibleMajor;
+      const possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == -1).length;
+      const possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == -1).length - possibleMajor;
 
       const maxBonus = availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10;
       newStat = Math.min(100, stats[stat] + maxBonus);
@@ -692,14 +728,14 @@ function handlePermutation(
       const minorCost = STAT_MOD_VALUES[statId * 3 + 1 as StatModifier][2];
       while (statxs[i][1] < 100) {
         const majorIdx = availableModCost.findIndex((d, idx) => d >= majorCost
-          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0);
+          && usedModslot[idx] == -1 && usedModslotsForCheck[idx] == 0);
         if (majorIdx > -1) {
           usedModslotsForCheck[majorIdx] = 1;
           statxs[i][1] += 10;
           continue;
         }
         const minorIdx = availableModCost.findIndex((d, idx) => d >= minorCost
-          && usedModslot[idx] == 0 && usedModslotsForCheck[idx] == 0);
+          && usedModslot[idx] == -1 && usedModslotsForCheck[idx] == 0);
         if (minorIdx > -1) {
           usedModslotsForCheck[minorIdx] = 1;
           statxs[i][1] += 5;
@@ -748,7 +784,7 @@ function handlePermutation(
       // check if we can add a minor mod
       const minorMod = (1 + (wasteEntry[1] * 3)) as StatModifier;
       const minorCost = STAT_MOD_VALUES[minorMod][2]
-      let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == 0);
+      let minorIdx = availableModCost.findIndex((d, i) => d >= minorCost && usedModslot[i] == -1);
 
       if (wasteEntry[0] <= 3 && availableArtificeCount > 0) {
         // add artifice
@@ -759,7 +795,7 @@ function handlePermutation(
         continue
       }
       if (wasteEntry[0] <= 5 && minorIdx > -1) {
-        usedModslot[minorIdx] = 1;
+        usedModslot[minorIdx] = minorMod;
         usedMods.insert(minorMod);
         stats[wasteEntry[1]] += 5;
         wasteEntry[0] -= 5;
@@ -779,7 +815,7 @@ function handlePermutation(
         availableArtificeCount -= 1;
         usedArtifice.push(3 + (3 * wasteEntry[1]));
 
-        usedModslot[minorIdx] = 1;
+        usedModslot[minorIdx] = minorMod;
         usedMods.insert(minorMod);
 
         stats[wasteEntry[1]] += 8;
