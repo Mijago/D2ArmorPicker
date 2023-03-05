@@ -494,6 +494,7 @@ class OrderedList<T> {
       this.comparatorList.splice(idx, 1)
       this.length--;
     }
+    return idx != -1;
   }
 }
 
@@ -689,13 +690,11 @@ export function handlePermutation(
                 stats[cstat] += 3
                 usedArtifice.push(3*cstat+3 as StatModifier)
               }
-
             }
 
             // now we overwrite the modslot with a major mod for the current stat
-            usedModslot[possibleIdx] = stat * 3 + 2 as StatModifier;
-            usedMods.remove(usedModslot[possibleIdx] as StatModifier);
             usedMods.insert(stat * 3 + 2 as StatModifier);
+            usedModslot[possibleIdx] = stat * 3 + 2 as StatModifier;
 
             distance -= 1;
 
