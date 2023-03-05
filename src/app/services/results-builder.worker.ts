@@ -693,6 +693,7 @@ export function handlePermutation(
             }
 
             // now we overwrite the modslot with a major mod for the current stat
+            usedMods.remove(usedModslot[possibleIdx])
             usedMods.insert(stat * 3 + 2 as StatModifier);
             usedModslot[possibleIdx] = stat * 3 + 2 as StatModifier;
 
