@@ -8,6 +8,7 @@ import {environment} from "../../environments/environment";
 import {EnumDictionary} from "../data/types/EnumDictionary";
 import {ArmorStat} from "../data/enum/armor-stat";
 import {ArmorSlot} from "../data/enum/armor-slot";
+import {ModInformation} from "../data/ModInformation";
 
 export interface StoredConfiguration {
   version: string;
@@ -114,6 +115,9 @@ export class ConfigurationService {
         c.configuration.maximumModSlots[1 + n as ArmorSlot].value = 0;
       delete (c.configuration as any).maximumStatMods;
     }
+
+    // remove mods that no longer exist
+    c.configuration.enabledMods = c.configuration.enabledMods.filter(v => !!ModInformation[v]);
 
     // Always reset limitParsedResults on reload
     c.configuration.limitParsedResults = true;

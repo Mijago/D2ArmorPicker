@@ -79,12 +79,6 @@
                     matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
             Armor Perk or Slot
           </mat-chip>
-          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledCombatStyleMods" disableRipple
-                    matTooltip="You enabled combat style mods that affect stats.">Combat Style Mods
-          </mat-chip>
-          <mat-chip #tooltip="matTooltip" *ngIf="_config_enabledStasis" disableRipple
-                    matTooltip="You enabled stasis fragments that affect stats.">Stasis Fragments
-          </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_onlyShowResultsWithNoWastedStats" disableRipple
                     matTooltip="This setting means that only builds with no wasted stats are shown."
                     selected>Zero Waste

@@ -91,8 +91,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
-  _config_enabledStasis: boolean = false;
-  _config_enabledCombatStyleMods: boolean = false;
   _config_onlyUseMasterworkedItems: Boolean = false;
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
@@ -127,7 +125,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
         this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
         this._config_tryLimitWastedStats = c.tryLimitWastedStats;
-        this._config_enabledMods = c.enabledMods;
+        this._config_enabledMods = c.enabledMods || [];
         this._config_limitParsedResults = c.limitParsedResults;
 
         this._config_maximumStatMods = c.maximumStatMods;
@@ -135,8 +133,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
         this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
         this._config_selectedExotics = c.selectedExotics;
-        this._config_enabledStasis = c.enabledMods.filter(v => ModInformation[v].type == ModifierType.Stasis).length > 0;
-        this._config_enabledCombatStyleMods = c.enabledMods.filter(v => ModInformation[v].type != ModifierType.Stasis).length > 0;
         this._config_armorPerkLimitation = Object.entries(c.armorPerks).filter(v => v[1].value != ArmorPerkOrSlot.None).map(k => k[1]);
         this._config_modslotLimitation = Object.entries(c.maximumModSlots).filter(v => v[1].value < 5).map(k => k[1]);
 
