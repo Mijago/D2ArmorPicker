@@ -494,6 +494,7 @@ class OrderedList<T> {
       this.comparatorList.splice(idx, 1)
       this.length--;
     }
+    return idx != -1;
   }
 }
 
@@ -660,30 +661,49 @@ export function handlePermutation(
         if (x >= 3 && stats[stat] % 10 == 9) {
           // we can replace this with a major mod
 
+
+          // find a slot on another mod that is %10>0
+          // that means we can add +3/6/9 to it and still bring it to the next tier, while freeing a modslot
           const possibleIdx = availableModCost.findIndex((d, i) => {
             if (usedModslot[i] == -1) return false; // only used slots
-            if (usedModslot[i] == stat) return false; // not the same stat ofc
+            const otherStat = STAT_MOD_VALUES[usedModslot[i] as StatModifier][0]
+            if (otherStat == stat) return false; // not the same stat ofc
             if (d < majorCost) return false;
-            const cstat = usedModslot[i]
-            return stats[cstat] % 10 > 1;
+            if (config.minimumStatTiers[otherStat].fixed)
+              return (stats[otherStat] % 10 > 0) &&
+                ((stats[otherStat] % 10) == 1 || (stats[otherStat] % 10) == 4 || (stats[otherStat] % 10) == 7)
+            else
+              return (stats[otherStat] % 10 > 0);
           })
           if (possibleIdx > -1) {
             const cstat = STAT_MOD_VALUES[usedModslot[possibleIdx] as StatModifier][0]
-            stats[cstat] -= 1
-            stats[stat] += 1
-            distance -= 1
-            usedModslot[possibleIdx] = 2 + 3 * stat
 
+            stats[cstat] -= 10
+            stats[stat] += 10
+            // remove the artifice mods
             for (let n = 0; n < 3; n++) {
               const idx = usedArtifice.findIndex(d => d == artificeId)
-              usedArtifice[idx] = (3 + cstat * 3)
+              usedArtifice.splice(idx, 1)
+              stats[stat] -= 3
+
+              if (n == 0 || stats[cstat] % 10 > 2) {
+                stats[cstat] += 3
+                usedArtifice.push(3*cstat+3 as StatModifier)
+              }
             }
+
+            // now we overwrite the modslot with a major mod for the current stat
+            usedMods.remove(usedModslot[possibleIdx])
+            usedMods.insert(stat * 3 + 2 as StatModifier);
+            usedModslot[possibleIdx] = stat * 3 + 2 as StatModifier;
+
+            distance -= 1;
 
             // introduce a fix limit to prevent infinite loops
             fixLimit -= 1;
 
             //stat = cstat-1;
-            continue;
+            continue
           }
         }
       }
