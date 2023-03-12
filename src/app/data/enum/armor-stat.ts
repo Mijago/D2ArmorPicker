@@ -117,10 +117,10 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
-  [ArmorPerkOrSlot.SlotNightmare]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
+  [ArmorPerkOrSlot.SlotNightmare]: "https://www.bungie.net/common/destiny2_content/icons/94fe19fb98ae33e79921e3a8aa07800f.jpg",
   [ArmorPerkOrSlot.SlotArtifice]: "https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png",
   [ArmorPerkOrSlot.SlotLastWish]: "https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png",
-  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "https://bungie.net/common/destiny2_content/icons/6bf9ba37386b907ddb514ec422fc74c9.png",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "https://www.bungie.net/common/destiny2_content/icons/94fe19fb98ae33e79921e3a8aa07800f.jpg",
   [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "https://bungie.net/common/destiny2_content/icons/3c14e3c3a747a7487c76f38602b9e2fe.png",
   [ArmorPerkOrSlot.SlotVaultOfGlass]: "https://bungie.net/common/destiny2_content/icons/9603e0d01826d7ab97ce1b1bf3eb3c96.png",
   [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "https://www.bungie.net//common/destiny2_content/icons/1f66fa02b19f40e6ce5d8336c7ed5a00.png",
