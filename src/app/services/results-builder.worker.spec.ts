@@ -359,6 +359,7 @@ describe('Results Worker', () => {
           constantBonus1, availableModCost, false, true)
         expect(result).toBeDefined()
         expect(result).not.toBeNull()
+        expect(result.mods.length).toBeLessThanOrEqual(5)
         if (!result) {
           console.log("Failed to find a build with minimumStatTiers", config.minimumStatTiers)
           console.log("RUN", n)
@@ -399,22 +400,37 @@ describe('Results Worker', () => {
     const runtime = buildRuntime()
 
     const mockItems: ItemCombination[] = [
-      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [41, 39, 43, 29, 35, 47], ArmorPerkOrSlot.SlotArtifice),
-      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [0, 0, 0, 0, 0, 0], ArmorPerkOrSlot.SlotArtifice),
-      buildTestItem(ArmorSlot.ArmorSlotChest, true, [0, 0, 0, 0, 0, 0]),
-      buildTestItem(ArmorSlot.ArmorSlotLegs, false, [0, 0, 0, 0, 0, 0]),
+      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [13, 14, 4, 17, 9, 8]),
+      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [8, 16, 11, 22, 4, 14]),
+      buildTestItem(ArmorSlot.ArmorSlotChest, true, [9, 13, 10, 18, 4, 8]),
+      buildTestItem(ArmorSlot.ArmorSlotLegs, false, [19, 4, 9, 12, 4, 17]),
     ]
 
     const config = new BuildConfiguration()
+    config.assumeLegendariesMasterworked = true;
+    config.assumeExoticsMasterworked = true;
+    config.assumeClassItemMasterworked = true;
     config.minimumStatTiers[ArmorStat.Mobility].value = 0
-    config.minimumStatTiers[ArmorStat.Resilience].value = 5
-    config.minimumStatTiers[ArmorStat.Recovery].value = 5
-    config.minimumStatTiers[ArmorStat.Discipline].value = 5
+    config.minimumStatTiers[ArmorStat.Resilience].value = 9
+    config.minimumStatTiers[ArmorStat.Recovery].value = 10
+    config.minimumStatTiers[ArmorStat.Discipline].value = 7
     config.minimumStatTiers[ArmorStat.Intellect].value = 0
-    config.minimumStatTiers[ArmorStat.Strength].value = 10
+    config.minimumStatTiers[ArmorStat.Strength].value = 0
 
-   // const constantBonus = [-10, -10, -10, -10, -10, -10];
-    const constantBonus = [0,0,0,0,0,0];
+    // calculate the stat sum of mockItems
+    const statSum = [
+      mockItems[0].items[0].mobility + mockItems[1].items[0].mobility + mockItems[2].items[0].mobility + mockItems[3].items[0].mobility,
+      mockItems[0].items[0].resilience + mockItems[1].items[0].resilience + mockItems[2].items[0].resilience + mockItems[3].items[0].resilience,
+      mockItems[0].items[0].recovery + mockItems[1].items[0].recovery + mockItems[2].items[0].recovery + mockItems[3].items[0].recovery,
+      mockItems[0].items[0].discipline + mockItems[1].items[0].discipline + mockItems[2].items[0].discipline + mockItems[3].items[0].discipline,
+      mockItems[0].items[0].intellect + mockItems[1].items[0].intellect + mockItems[2].items[0].intellect + mockItems[3].items[0].intellect,
+      mockItems[0].items[0].strength + mockItems[1].items[0].strength + mockItems[2].items[0].strength + mockItems[3].items[0].strength
+    ]
+    console.log("statSum", statSum)
+
+
+    //const constantBonus = [-10, -10, -10, -10, -10, -10];
+    const constantBonus = [-8, -8, -8, -8, -8, -8];
     let result = handlePermutation(
       runtime,
       config, // todo config
@@ -423,11 +439,12 @@ describe('Results Worker', () => {
       mockItems[2],
       mockItems[3],
       constantBonus, // constant bonus
-      [2, 1, 2, 4, 2], // availableModCost
+      [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
       true // hasArtificeClassItem
     )
     expect(result).toBeDefined()
+    expect(result.mods.length).toBeLessThanOrEqual(5)
     console.log(result)
     expect(result.stats[0]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Mobility].value * 10)
     expect(result.stats[1]).toBeGreaterThanOrEqual(config.minimumStatTiers[ArmorStat.Resilience].value * 10)

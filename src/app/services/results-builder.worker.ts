@@ -596,9 +596,10 @@ export function handlePermutation(
   let fixLimit = 15;
 
   for (let stat = 0; stat < 6; stat++) {
-    // log.debug("stat loop", stat)
+    // log.debug("stat loop", stat, "usedmods", usedMods.list, "usedartifice", usedArtifice)
     let distance = config.minimumStatTiers[stat as ArmorStat].value * 10 - stats[stat];
     while (distance > 0) {
+      // log.debug("distance loop", stat, distance, "usedmods", usedMods.list, "usedModslot", usedModslot, "usedartifice", usedArtifice)
       const modulo = distance % 10
       if (modulo > 0 && modulo <= 3 && availableArtificeCount > 0) {
         // initial artifice artifice mod
@@ -619,7 +620,7 @@ export function handlePermutation(
           usedModslot[minorIdx] = stat * 3 + 1 as StatModifier;
           stats[stat] += 5;
           distance -= 5;
-          // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
+          // log.debug(stat, "+", "minor1", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
           continue;
         } else if (fixLimit > 0 && stat > 0) {
           // check if there is an used artifice mod that can be replaced by a minor mod
@@ -683,7 +684,7 @@ export function handlePermutation(
         stats[stat] += 5;
         distance -= 5;
 
-        // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
+        // log.debug(stat, "+", "minor2", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
         continue;
       }
 
@@ -702,7 +703,7 @@ export function handlePermutation(
 
           stats[stat] += 5;
           distance -= 5;
-          // log.debug(stat, "~", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| swapped from minor", usedModslot, "minorIdx")
+          // log.debug(stat, "~", "major3", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| swapped from minor", usedModslot, "minorIdx")
           continue;
         }
 
@@ -759,7 +760,7 @@ export function handlePermutation(
           usedMods.insert(otherStat * 3 + 1 as StatModifier);
           usedModslot[minorIdx] = otherStat * 3 + 1 as StatModifier;
           stats[otherStat] += 5;
-          // log.debug(otherStat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat], usedModslot)
+          // log.debug(otherStat, "+", "minor4", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat], usedModslot)
           fixLimit--;
           continue;
         }
@@ -863,7 +864,7 @@ export function handlePermutation(
           return availableModCost[i] >= majorCost;
         })
         if (minorIdx > -1) {
-          // log.debug(" NIJDAHBGIUOSGOU")
+          // log.debug(" NIJDAHBGIUOSGOU", "usedMods", usedMods.list, "hasAvailableSlotIdx", hasAvailableSlotIdx)
           // we can replace this with a major mod
 
           if (hasAvailableSlotIdx > -1) {
