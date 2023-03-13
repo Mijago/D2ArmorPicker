@@ -857,8 +857,7 @@ export function handlePermutation(
         });
         // find a minor mod in the usedModslot and replace it with a major
         const minorIdx = usedModslot.findIndex((d, i) => {
-          if (d % 3 != 1) return false;
-          if (STAT_MOD_VALUES[d as StatModifier][0] != stat) return false;
+          if (d != stat * 3 + 1) return false;
 
           if (hasAvailableSlotIdx > -1) return true;
           return availableModCost[i] >= majorCost;
@@ -867,8 +866,7 @@ export function handlePermutation(
           // log.debug(" NIJDAHBGIUOSGOU")
           // we can replace this with a major mod
 
-          usedModslot[minorIdx] = -1;
-          if (hasAvailableSlotIdx) {
+          if (hasAvailableSlotIdx > -1) {
             usedModslot[hasAvailableSlotIdx] = stat * 3 + 2 as StatModifier;
             usedModslot[minorIdx] = -1;
           } else {

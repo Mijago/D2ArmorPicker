@@ -41,8 +41,8 @@ const data = {
   nodeEnv: process.env.NODE_ENV,
   offlineMode: false,
   featureFlags: {
-    enableModslotLimitation: !!process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION,
-    enableZeroWaste: !!process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE,
+    enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
+    enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
   }
 }
 
