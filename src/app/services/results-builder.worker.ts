@@ -540,6 +540,7 @@ export function handlePermutation(
   hasArtificeClassItem = false
 ): any {
   const items = [helmet, gauntlet, chest, leg]
+  availableModCost = availableModCost.slice().sort((a, b) => a - b) // sort array
 
   var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
 
