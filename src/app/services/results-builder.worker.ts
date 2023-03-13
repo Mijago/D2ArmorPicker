@@ -575,8 +575,8 @@ export function handlePermutation(
       return null;
 
 
-  let log = {error: console.error, info: console.info, debug: console.debug}
-  log = {error: () => { }, info: () => { }, debug: () => { }}
+  //let log = {error: console.error, info: console.info, debug: console.debug}
+  //log = {error: () => { }, info: () => { }, debug: () => { }}
 
   // get the amount of armor with artifice slot
   let availableArtificeCount = items.filter(d => d.perks.indexOf(ArmorPerkOrSlot.SlotArtifice) > -1).length;
@@ -593,9 +593,10 @@ export function handlePermutation(
   // log.debug("available artifice:", availableArtificeCount)
 
   const usedModslot = [-1, -1, -1, -1, -1]
-  let fixLimit = 10;
+  let fixLimit = 15;
 
-  for (let stat = 0; stat < 6 && fixLimit > 0; stat++) {
+  for (let stat = 0; stat < 6; stat++) {
+    // log.debug("stat loop", stat)
     let distance = config.minimumStatTiers[stat as ArmorStat].value * 10 - stats[stat];
     while (distance > 0) {
       const modulo = distance % 10
@@ -618,7 +619,7 @@ export function handlePermutation(
           usedModslot[minorIdx] = stat * 3 + 1 as StatModifier;
           stats[stat] += 5;
           distance -= 5;
-          // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat])
+          // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
           continue;
         } else if (fixLimit > 0 && stat > 0) {
           // check if there is an used artifice mod that can be replaced by a minor mod
@@ -655,7 +656,7 @@ export function handlePermutation(
         stats[stat] += 6;
         distance -= 6;
 
-        // log.debug(stat, "+", "artifice", "(" + (availableArtificeCount+1) + " left)", "| stat:", stats[stat] - 3)
+        // log.debug(stat, "+", "artifice", "(" + (availableArtificeCount + 1) + " left)", "| stat:", stats[stat] - 3)
         // log.debug(stat, "+", "artifice", "(" + availableArtificeCount + " left)", "| stat:", stats[stat])
         continue;
       }
@@ -670,7 +671,7 @@ export function handlePermutation(
         stats[stat] += 10;
         distance -= 10;
 
-        // log.debug(stat, "+", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat])
+        // log.debug(stat, "+", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
 
         continue;
       }
@@ -682,7 +683,7 @@ export function handlePermutation(
         stats[stat] += 5;
         distance -= 5;
 
-        // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat])
+        // log.debug(stat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], usedModslot)
         continue;
       }
 
@@ -701,7 +702,7 @@ export function handlePermutation(
 
           stats[stat] += 5;
           distance -= 5;
-          // log.debug(stat, "~", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| swapped with major")
+          // log.debug(stat, "~", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| swapped from minor", usedModslot, "minorIdx")
           continue;
         }
 
@@ -721,88 +722,121 @@ export function handlePermutation(
         // remove the minor mod
         usedMods.remove(usedModslot[otherMinorIdx]);
         usedModslot[otherMinorIdx] = -1;
-        // log.debug(stat, "~", "rem", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| replaced a minor with two artifice in stat", otherStat)
+        // log.debug(stat, "~", "rem", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| replaced a minor with two artifice in stat", otherStat, usedModslot)
         continue
       }
 
       // check if we can replace a major mod with three artifice mods somewhere else so we have one more here
-
-      // see if somewhere are two artifice mods that I can replace with a minor mod for myself
-      let swapArtificeId = usedArtifice.reduce((p, b) => {
-        const stat = (b - 3) / 3
-        p[stat]++;
-        return p;
-      }, [0, 0, 0, 0, 0, 0])
-        .findIndex((k, i) => {
-          const otherStat = i
-          if (k < 2) return false;
-          if (stats[otherStat] % 10 == 0) return false;
+      if (fixLimit > 0) {
+        // see if somewhere are two artifice mods that I can replace with a minor mod for myself
+        let swapArtificeId = usedArtifice.reduce((p, b) => {
+          const stat = (b - 3) / 3
+          p[stat]++;
+          return p;
+        }, [0, 0, 0, 0, 0, 0])
+          .findIndex((k, i) => {
+            const otherStat = i
+            if (k < 2) return false;
+            if (stats[otherStat] % 10 == 0) return false;
+            const otherMinorCost = STAT_MOD_VALUES[otherStat * 3 + 1 as StatModifier][2];
+            return k > 2 && i != artificeId && availableModCost.findIndex((d, i) => d >= otherMinorCost && usedModslot[i] == -1) > -1
+          })
+        if (swapArtificeId > -1) {
+          // replace two artifice mods from otherStat with one minor mod
+          const otherStat = swapArtificeId
           const otherMinorCost = STAT_MOD_VALUES[otherStat * 3 + 1 as StatModifier][2];
-          return k > 2 && i != artificeId && availableModCost.findIndex((d, i) => d >= otherMinorCost && usedModslot[i] == -1) > -1
-        })
-      if (swapArtificeId > -1) {
-        // replace two artifice mods from otherStat with one minor mod
-        const otherStat = swapArtificeId
-        const otherMinorCost = STAT_MOD_VALUES[otherStat * 3 + 1 as StatModifier][2];
-        const minorIdx = availableModCost.findIndex((d, i) => d >= otherMinorCost && usedModslot[i] == -1);
+          const minorIdx = availableModCost.findIndex((d, i) => d >= otherMinorCost && usedModslot[i] == -1);
 
 
-        usedArtifice.splice(usedArtifice.findIndex(k => otherStat * 3 + 3), 1)
-        usedArtifice.splice(usedArtifice.findIndex(k => otherStat * 3 + 3), 1)
-        stats[otherStat] -= 6;
-        availableArtificeCount += 2;
-        // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 1) + " left)", "| stat:", stats[otherStat] + 3, "removed for major mod by", stat)
-        // log.debug(otherStat, "-", "artifice", "(" + availableArtificeCount + " left)", "| stat:", stats[otherStat], "removed for major mod by", stat)
+          usedArtifice.splice(usedArtifice.findIndex(k => otherStat * 3 + 3), 1)
+          usedArtifice.splice(usedArtifice.findIndex(k => otherStat * 3 + 3), 1)
+          stats[otherStat] -= 6;
+          availableArtificeCount += 2;
+          // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 1) + " left)", "| stat:", stats[otherStat] + 3, "removed for major mod by", stat)
+          // log.debug(otherStat, "-", "artifice", "(" + availableArtificeCount + " left)", "| stat:", stats[otherStat], "removed for major mod by", stat)
 
-        // add the minor mod
-        usedMods.insert(otherStat * 3 + 1 as StatModifier);
-        usedModslot[minorIdx] = otherStat * 3 + 1 as StatModifier;
-        stats[otherStat] += 5;
-        // log.debug(otherStat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat])
-        continue;
-      }
+          // add the minor mod
+          usedMods.insert(otherStat * 3 + 1 as StatModifier);
+          usedModslot[minorIdx] = otherStat * 3 + 1 as StatModifier;
+          stats[otherStat] += 5;
+          // log.debug(otherStat, "+", "minor", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat], usedModslot)
+          fixLimit--;
+          continue;
+        }
 
-      //*
-      // check if somewhere else are three artifice mods that I can replace with a major mod
-      swapArtificeId = usedArtifice.reduce((p, b) => {
-        const stat = (b - 3) / 3
-        p[stat]++;
-        return p;
-      }, [0, 0, 0, 0, 0, 0])
-        .findIndex((k, i) => {
-          if (k < 3) return false;
-          const otherStat = i
-          // TODO: if fixed stats, make sure this is not 9 or we increase the tier
-          //if (stats[otherStat] % 10 == 9) return false;
+        //*
+        // check if somewhere else are three artifice mods that I can replace with a major mod
+        swapArtificeId = usedArtifice.reduce((p, b) => {
+          const stat = (b - 3) / 3
+          p[stat]++;
+          return p;
+        }, [0, 0, 0, 0, 0, 0])
+          .findIndex((k, i) => {
+            if (k < 3) return false;
+            const otherStat = i
+            // TODO: if fixed stats, make sure this is not 9 or we increase the tier
+            //if (stats[otherStat] % 10 == 9) return false;
+            const otherMajorCost = STAT_MOD_VALUES[otherStat * 3 + 2 as StatModifier][2];
+            return i != artificeId && availableModCost.findIndex((d, i) => d >= otherMajorCost && usedModslot[i] == -1) > -1
+          })
+        if (swapArtificeId > -1) {
+          // replace two artifice mods from otherStat with one minor mod
+          const otherStat = swapArtificeId
           const otherMajorCost = STAT_MOD_VALUES[otherStat * 3 + 2 as StatModifier][2];
-          return i != artificeId && availableModCost.findIndex((d, i) => d >= otherMajorCost && usedModslot[i] == -1) > -1
-        })
-      if (swapArtificeId > -1) {
-        // replace two artifice mods from otherStat with one minor mod
-        const otherStat = swapArtificeId
-        const otherMajorCost = STAT_MOD_VALUES[otherStat * 3 + 2 as StatModifier][2];
-        const majorIdx = availableModCost.findIndex((d, i) => d >= otherMajorCost && usedModslot[i] == -1);
+          const majorIdx = availableModCost.findIndex((d, i) => d >= otherMajorCost && usedModslot[i] == -1);
 
-        usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
-        usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
-        usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
-        stats[otherStat] -= 9;
-        availableArtificeCount += 3;
-        // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 2) + " left)", "| stat:", stats[otherStat] + 6, "removed for major mod by", stat)
-        // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 1) + " left)", "| stat:", stats[otherStat] + 3, "removed for major mod by", stat)
-        // log.debug(otherStat, "-", "artifice", "(" + availableArtificeCount + " left)", "| stat:", stats[otherStat], "removed for major mod by", stat)
+          usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
+          usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
+          usedArtifice.splice(usedArtifice.findIndex(k => k == otherStat * 3 + 3), 1)
+          stats[otherStat] -= 9;
+          availableArtificeCount += 3;
+          // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 2) + " left)", "| stat:", stats[otherStat] + 6, "removed for major mod by", stat)
+          // log.debug(otherStat, "-", "artifice", "(" + (availableArtificeCount + 1) + " left)", "| stat:", stats[otherStat] + 3, "removed for major mod by", stat)
+          // log.debug(otherStat, "-", "artifice", "(" + availableArtificeCount + " left)", "| stat:", stats[otherStat], "removed for major mod by", stat)
 
-        // add the major mod
-        usedMods.insert(otherStat * 3 + 2 as StatModifier);
-        usedModslot[majorIdx] = otherStat * 3 + 2 as StatModifier;
-        stats[otherStat] += 10;
-        // log.debug(otherStat, "+", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat])
+          // add the major mod
+          usedMods.insert(otherStat * 3 + 2 as StatModifier);
+          usedModslot[majorIdx] = otherStat * 3 + 2 as StatModifier;
+          stats[otherStat] += 10;
+          // log.debug(otherStat, "+", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat], usedModslot)
 
-
-        continue;
+          fixLimit--;
+          continue;
+        }
       }
-       //*/
+      //*/
 
+      // check if I can replace a major mod with minor+artifice
+      if (fixLimit > 0 && availableArtificeCount > 0) {
+        // find major mod that can be replaced with minor+artifice (so %10>2)
+        const majorIdx = usedModslot.findIndex((d, i) => {
+          if (d % 3 != 2) return false;
+          const otherStat = STAT_MOD_VALUES[d as StatModifier][0];
+          if (stat == otherStat) return false;
+          if (stats[otherStat] % 10 < 2) return false;
+          return true;
+        })
+        if (majorIdx > -1) {
+          // remove the major mod, add artifice
+          // then set the stat and continue the loop
+          const otherStat = STAT_MOD_VALUES[usedModslot[majorIdx] as StatModifier][0];
+
+          usedMods.remove(usedModslot[majorIdx]);
+          usedModslot[majorIdx] = -1;
+
+          usedArtifice.push(otherStat * 3 + 3);
+          availableArtificeCount--;
+          stats[otherStat] -= 10;
+          stats[otherStat] += 3;
+
+          // log.debug(otherStat, "X", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[otherStat], "removed for artifice by", stat, "fixLimit:", fixLimit)
+          fixLimit -= 1;
+
+          stat = otherStat - 1;
+          break;
+        }
+
+      }
 
       // artifice
       if (availableArtificeCount > 0) {
@@ -816,6 +850,42 @@ export function handlePermutation(
 
       // validate if we can shove around some artifice for a major
       if (fixLimit > 0) {
+
+        const hasAvailableSlotIdx = usedModslot.findIndex((d, i) => {
+          if (d != -1) return false;
+          return availableModCost[i] >= majorCost;
+        });
+        // find a minor mod in the usedModslot and replace it with a major
+        const minorIdx = usedModslot.findIndex((d, i) => {
+          if (d % 3 != 1) return false;
+          if (STAT_MOD_VALUES[d as StatModifier][0] != stat) return false;
+
+          if (hasAvailableSlotIdx > -1) return true;
+          return availableModCost[i] >= majorCost;
+        })
+        if (minorIdx > -1) {
+          // log.debug(" NIJDAHBGIUOSGOU")
+          // we can replace this with a major mod
+
+          usedModslot[minorIdx] = -1;
+          if (hasAvailableSlotIdx) {
+            usedModslot[hasAvailableSlotIdx] = stat * 3 + 2 as StatModifier;
+            usedModslot[minorIdx] = -1;
+          } else {
+            usedModslot[minorIdx] = stat * 3 + 2 as StatModifier;
+          }
+
+
+          usedMods.remove(stat * 3 + 1 as StatModifier);
+          usedMods.insert(stat * 3 + 2 as StatModifier);
+
+          stats[stat] += 5;
+          distance -= 5;
+          // log.debug(stat, "~", "major", "(" + (5 - usedMods.length) + " left)", "| stat:", stats[stat], "| swapped from minor 2", usedModslot, "minorIdx")
+          continue;
+        }
+
+
         const x = usedArtifice.where(k => k == artificeId).length
         if (x >= 3 && stats[stat] % 10 == 9) {
           // we can replace this with a major mod
@@ -892,11 +962,44 @@ export function handlePermutation(
       const minorModCost = STAT_MOD_VALUES[minorMod][2];
       const majorModCost = STAT_MOD_VALUES[majorMod][2];
 
-      const possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == -1).length;
-      const possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == -1).length - possibleMajor;
+      let possibleMajor = availableModCost.filter((d, i) => d >= majorModCost && usedModslot[i] == -1).length;
+      let possibleMinor = availableModCost.filter((d, i) => d >= minorModCost && usedModslot[i] == -1).length - possibleMajor;
 
-      const maxBonus = availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10;
-      newStat = Math.min(100, stats[stat] + maxBonus);
+      if (config.onlyShowResultsWithNoWastedStats) {
+        let internalAvailableArtificeCount = availableArtificeCount;
+
+        if (newStat % 10 != 0) {
+          // add a minor mod if we are at %5 or %5+n*3
+          if ((possibleMajor + possibleMinor) > 0 && (10 - (newStat + 5 % 10)) % 3 == 0) {
+            if (possibleMinor > 0) possibleMinor--;
+            else (possibleMajor--);
+            newStat += 5;
+          }
+
+          if (newStat % 10 == 5 && (possibleMajor + possibleMinor)) {
+            // handle an offset of 5
+            newStat += 5;
+            if (possibleMinor > 0) possibleMinor--;
+            else (possibleMajor--);
+          } else if ((10 - (newStat % 10)) % 3 == 0) {
+            // handle "i can add artifice" to fix zero waste
+            const artificeCount = (10 - (newStat % 10)) / 3;
+            if (artificeCount <= internalAvailableArtificeCount) {
+              newStat += artificeCount * 3;
+              internalAvailableArtificeCount -= artificeCount;
+            }
+          }
+        }
+        newStat += possibleMajor * 10;
+        if (possibleMinor % 2 == 0) newStat += 5 * possibleMinor;
+
+        if (newStat % 10 != 0) continue;
+      } else {
+        const maxBonus = availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10;
+        newStat = Math.min(100, stats[stat] + maxBonus);
+      }
+
+
       //// log.debug("Calculate newstat A", stat, "possibleMajor", possibleMajor, "possibleMinor", possibleMinor, "availableArtificeCount", availableArtificeCount, "stats[stat]", stats[stat], "newStat", newStat, "maxBonus", availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10, "maxPossible", Math.min(100, stats[stat] + availableArtificeCount * 3 + possibleMinor * 5 + possibleMajor * 10))
       //// log.debug("Calculate newstat B", stat, "maxBonus", maxBonus, "newStat", newStat)
     }

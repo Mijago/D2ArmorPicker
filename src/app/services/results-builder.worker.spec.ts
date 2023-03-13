@@ -322,7 +322,7 @@ describe('Results Worker', () => {
     // mobility, must be moved to Recovery. Otherwise, this set would not be possible.
 
 
-    for (let n = 0; n < 1000; n++) {
+    for (let n = 0; n < 100; n++) {
       let runtime = buildRuntime()
       const mockItems = generateRandomBuild()
 
@@ -331,7 +331,15 @@ describe('Results Worker', () => {
       //config.onlyShowResultsWithNoWastedStats = true
 
       const constantBonus1 = [0, 0, 0, 0, 0, 0];
-      const availableModCost = [5, 5, 5, 5, 5];
+      let availableModCost = [
+        // random 0-5
+        Math.floor(Math.random() * 6),
+        Math.floor(Math.random() * 6),
+        Math.floor(Math.random() * 6),
+        Math.floor(Math.random() * 6),
+        Math.floor(Math.random() * 6)
+      ]
+      availableModCost = [5, 5, 5, 5, 5]
       let result = handlePermutation(runtime, config, mockItems[0], mockItems[1], mockItems[2], mockItems[3],
         constantBonus1, availableModCost, false, true)
 
@@ -340,6 +348,7 @@ describe('Results Worker', () => {
       const order = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5)
       console.log(n, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
       console.log(n, "Order", order)
+      console.log(n, "availableModCost", availableModCost)
 
       for (let statId of order) {
         console.log("~~~~~~ stat id", statId, "set to stats", runtime.maximumPossibleTiers.map(x => Math.floor(x / 10)))
@@ -350,28 +359,29 @@ describe('Results Worker', () => {
           constantBonus1, availableModCost, false, true)
         expect(result).toBeDefined()
         expect(result).not.toBeNull()
-        if(!result) {
+        if (!result) {
           console.log("Failed to find a build with minimumStatTiers", config.minimumStatTiers)
           console.log("RUN", n)
+          console.log("availableModCost", availableModCost)
           console.log("base stats", [
-            mockItems[0].items[0].mobility+mockItems[1].items[0].mobility+mockItems[2].items[0].mobility+mockItems[3].items[0].mobility,
-            mockItems[0].items[0].resilience+mockItems[1].items[0].resilience+mockItems[2].items[0].resilience+mockItems[3].items[0].resilience,
-            mockItems[0].items[0].recovery+mockItems[1].items[0].recovery+mockItems[2].items[0].recovery+mockItems[3].items[0].recovery,
-            mockItems[0].items[0].discipline+mockItems[1].items[0].discipline+mockItems[2].items[0].discipline+mockItems[3].items[0].discipline,
-            mockItems[0].items[0].intellect+mockItems[1].items[0].intellect+mockItems[2].items[0].intellect+mockItems[3].items[0].intellect,
-            mockItems[0].items[0].strength+mockItems[1].items[0].strength+mockItems[2].items[0].strength+mockItems[3].items[0].strength
+            10 + mockItems[0].items[0].mobility + mockItems[1].items[0].mobility + mockItems[2].items[0].mobility + mockItems[3].items[0].mobility,
+            10 + mockItems[0].items[0].resilience + mockItems[1].items[0].resilience + mockItems[2].items[0].resilience + mockItems[3].items[0].resilience,
+            10 + mockItems[0].items[0].recovery + mockItems[1].items[0].recovery + mockItems[2].items[0].recovery + mockItems[3].items[0].recovery,
+            10 + mockItems[0].items[0].discipline + mockItems[1].items[0].discipline + mockItems[2].items[0].discipline + mockItems[3].items[0].discipline,
+            10 + mockItems[0].items[0].intellect + mockItems[1].items[0].intellect + mockItems[2].items[0].intellect + mockItems[3].items[0].intellect,
+            10 + mockItems[0].items[0].strength + mockItems[1].items[0].strength + mockItems[2].items[0].strength + mockItems[3].items[0].strength
           ])
           console.log("target stats", [
-            config.minimumStatTiers[ArmorStat.Mobility].value*10,
-            config.minimumStatTiers[ArmorStat.Resilience].value*10,
-            config.minimumStatTiers[ArmorStat.Recovery].value*10,
-            config.minimumStatTiers[ArmorStat.Discipline].value*10,
-            config.minimumStatTiers[ArmorStat.Intellect].value*10,
-            config.minimumStatTiers[ArmorStat.Strength].value*10
-          ] )
+            config.minimumStatTiers[ArmorStat.Mobility].value * 10,
+            config.minimumStatTiers[ArmorStat.Resilience].value * 10,
+            config.minimumStatTiers[ArmorStat.Recovery].value * 10,
+            config.minimumStatTiers[ArmorStat.Discipline].value * 10,
+            config.minimumStatTiers[ArmorStat.Intellect].value * 10,
+            config.minimumStatTiers[ArmorStat.Strength].value * 10
+          ])
           console.log("Available artifice mods",
             mockItems.map(item => item.perks.length > 0 ? 1 : 0).reduce((a, b) => a + b, 0 as number)
-            )
+          )
           console.log("------------------------------------------------------------------------")
           console.log("------------------------------------------------------------------------")
           console.log("------------------------------------------------------------------------")
@@ -382,7 +392,6 @@ describe('Results Worker', () => {
   })
 
 
-
   it('should swap mods around', () => {
     // this is an edge case in which the artifice mod, which initially will be applied to
     // mobility, must be moved to Recovery. Otherwise, this set would not be possible.
@@ -390,21 +399,22 @@ describe('Results Worker', () => {
     const runtime = buildRuntime()
 
     const mockItems: ItemCombination[] = [
-      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [53, 26, 40, 25, 37, 55], ArmorPerkOrSlot.SlotArtifice),
-      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [0,0,0,0,0,0], ArmorPerkOrSlot.SlotArtifice),
-      buildTestItem(ArmorSlot.ArmorSlotChest, true, [0,0,0,0,0,0]),
-      buildTestItem(ArmorSlot.ArmorSlotLegs, false, [0,0,0,0,0,0], ArmorPerkOrSlot.SlotArtifice),
+      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [41, 39, 43, 29, 35, 47], ArmorPerkOrSlot.SlotArtifice),
+      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [0, 0, 0, 0, 0, 0], ArmorPerkOrSlot.SlotArtifice),
+      buildTestItem(ArmorSlot.ArmorSlotChest, true, [0, 0, 0, 0, 0, 0]),
+      buildTestItem(ArmorSlot.ArmorSlotLegs, false, [0, 0, 0, 0, 0, 0]),
     ]
 
     const config = new BuildConfiguration()
-    config.minimumStatTiers[ArmorStat.Mobility].value = 7
-    config.minimumStatTiers[ArmorStat.Resilience].value = 0
-    config.minimumStatTiers[ArmorStat.Recovery].value = 10
-    config.minimumStatTiers[ArmorStat.Discipline].value = 0
-    config.minimumStatTiers[ArmorStat.Intellect].value = 5
-    config.minimumStatTiers[ArmorStat.Strength].value = 0
+    config.minimumStatTiers[ArmorStat.Mobility].value = 0
+    config.minimumStatTiers[ArmorStat.Resilience].value = 5
+    config.minimumStatTiers[ArmorStat.Recovery].value = 5
+    config.minimumStatTiers[ArmorStat.Discipline].value = 5
+    config.minimumStatTiers[ArmorStat.Intellect].value = 0
+    config.minimumStatTiers[ArmorStat.Strength].value = 10
 
-    const constantBonus = [-10,-10,-10,-10,-10,-10];
+   // const constantBonus = [-10, -10, -10, -10, -10, -10];
+    const constantBonus = [0,0,0,0,0,0];
     let result = handlePermutation(
       runtime,
       config, // todo config
@@ -413,7 +423,7 @@ describe('Results Worker', () => {
       mockItems[2],
       mockItems[3],
       constantBonus, // constant bonus
-      [5, 5, 5, 5, 5], // availableModCost
+      [2, 1, 2, 4, 2], // availableModCost
       false, // doNotOutput
       true // hasArtificeClassItem
     )
