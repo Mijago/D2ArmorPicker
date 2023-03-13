@@ -11,6 +11,7 @@ import {InventoryService} from "../../../../../services/inventory.service";
 import {DatabaseService} from "../../../../../services/database.service";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {environment} from "../../../../../../environments/environment";
 
 @Component({
   selector: 'app-slot-limitation-selection',
@@ -18,6 +19,7 @@ import {takeUntil} from "rxjs/operators";
   styleUrls: ['./slot-limitation-selection.component.scss']
 })
 export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
+  readonly featureDisabled = !environment.featureFlags.enableModslotLimitation;
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlotNames = ArmorPerkOrSlotNames;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
@@ -115,6 +117,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   }
 
   setValue(i: number) {
+    if(this.featureDisabled) return;
     if (this.maximumModSlots == i)
       return;
 

@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {ArmorSlot} from 'src/app/data/enum/armor-slot';
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {ArmorPerkOrSlot} from "../../../../data/enum/armor-stat";
+import {environment} from "../../../../../environments/environment";
 
 @Component({
   selector: 'app-desired-mod-selection',
@@ -14,6 +15,7 @@ export class DesiredModLimitSelectionComponent implements OnInit {
 
   public possibilityList = [true, true, true, true, true]
   public allPossible = true;
+  public disabledSlotLimitation = !environment.featureFlags.enableModslotLimitation;
 
 
   constructor(public config: ConfigurationService) {

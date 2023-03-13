@@ -8,18 +8,23 @@
       <div (click)="setValue(5)" (mouseover)="hoveredSlot = 0" class="energy-bar blocked"></div>
       <div (click)="setValue(4)" (mouseover)="hoveredSlot = 1" [class.active]="5-maximumModSlots >= 1"
            [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 1" [class.hovered]="hoveredSlot >= 1"
+           [class.blocked]="featureDisabled"
            class="energy-bar"></div>
       <div (click)="setValue(3)" (mouseover)="hoveredSlot = 2" [class.active]="5-maximumModSlots >= 2"
            [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 2" [class.hovered]="hoveredSlot >= 2"
+           [class.blocked]="featureDisabled"
            class="energy-bar"></div>
       <div (click)="setValue(2)" (mouseover)="hoveredSlot = 3" [class.active]="5-maximumModSlots >= 3"
            [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 3" [class.hovered]="hoveredSlot >= 3"
+           [class.blocked]="featureDisabled"
            class="energy-bar"></div>
       <div (click)="setValue(1)" (mouseover)="hoveredSlot = 4" [class.active]="5-maximumModSlots >= 4"
            [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 4" [class.hovered]="hoveredSlot >= 4"
+           [class.blocked]="featureDisabled"
            class="energy-bar"></div>
       <div (click)="setValue(0)" (mouseover)="hoveredSlot = 5" [class.active]="5-maximumModSlots == 5"
            [class.hovered-higher]="hoveredSlot > -1 && hoveredSlot < 5" [class.hovered]="hoveredSlot == 5"
+           [class.blocked]="featureDisabled"
            class="energy-bar"></div>
     </div>
     <br>

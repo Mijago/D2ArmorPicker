@@ -1,7 +1,12 @@
 import {Component, OnInit} from '@angular/core';
 import GLPKConstructor, {GLPK, LP, Result} from "glpk.js";
-import { ModifierType } from 'src/app/data/enum/modifierType';
+import {ModifierType} from 'src/app/data/enum/modifierType';
 import {CharacterClass} from "../../../../data/enum/character-Class";
+import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
+import {ArmorSlot} from "../../../../data/enum/armor-slot";
+import {DestinyClass} from "bungie-api-ts/destiny2";
+import {buildDb} from "../../../../data/database";
+import {ItemCombination} from "../../../../services/results-builder.worker";
 
 const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
@@ -11,8 +16,8 @@ const statNames = ["mobility", "resilience", "recovery", "discipline", "intellec
   styleUrls: ['./theorizer-page.component.scss']
 })
 export class TheorizerPageComponent implements OnInit {
-  ModifierType=ModifierType;
-  CharacterClass=CharacterClass;
+  ModifierType = ModifierType;
+  CharacterClass = CharacterClass;
 
   glpk: GLPK | null = null;
 
@@ -24,7 +29,7 @@ export class TheorizerPageComponent implements OnInit {
       timeout: 2,
       presolve: true,
     },
-    armorType: "3",
+    armorType: 3,
     stats: {
       desired: {
         mobility: 0,
@@ -177,7 +182,7 @@ export class TheorizerPageComponent implements OnInit {
     if (!this.glpk) throw new Error("GLPK not initialized yet");
     this.calculating = true;
 
-    const lp = this.buildFromConfiguration();
+    const lp = await this.buildFromConfiguration();
     this.lp = lp;
     this.startTimer();
     const result = await this.glpk.solve(lp);
@@ -210,7 +215,7 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, stat] = kv.split("_");
-      constants[parseInt(stat)] += result!.result!.vars[kv] -10;
+      constants[parseInt(stat)] += result!.result!.vars[kv] - 10;
     }
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("plug_")) continue;
@@ -266,7 +271,33 @@ export class TheorizerPageComponent implements OnInit {
     };
   }
 
-  buildFromConfiguration(): LP {
+  async getItems(clazz?: DestinyClass): Promise<IInventoryArmor[]> {
+    const db = buildDb(async () => {
+    })
+    const inventoryArmor = db.table("inventoryArmor");
+
+    let items = await inventoryArmor.where("slot").notEqual(ArmorSlot.ArmorSlotNone)
+      .distinct()
+      .toArray() as IInventoryArmor[];
+
+    if (clazz != undefined) {
+      items = items.filter(item => item.clazz == clazz);
+    }
+
+    // items = items
+    // config.onlyUseMasterworkedItems - only keep masterworked items
+    //.filter(item => !config.onlyUseMasterworkedItems || item.masterworked)
+    // non-legendaries and non-exotics
+    //.filter(item => config.allowBlueArmorPieces || item.rarity == TierType.Exotic || item.rarity == TierType.Superior)
+    // sunset armor
+    //.filter(item => !config.ignoreSunsetArmor || !item.isSunset)
+    // armor perks
+
+    return items;
+
+  }
+
+  async buildFromConfiguration(): Promise<LP> {
     if (!this.glpk) throw new Error("GLPK not initialized yet");
 
     const lp = {
@@ -333,12 +364,55 @@ export class TheorizerPageComponent implements OnInit {
     // add MW and Const Values
     for (let stat = 0; stat < 6; stat++) {
       const val = (this.options.stats as any).constantBoost[statNames[stat]];
-      let constVal = 10+val;
+      let constVal = 10 + val;
       lp.bounds!.push({name: `constant_${stat}`, type: this.glpk.GLP_FX, ub: constVal, lb: constVal});
       lp.subjectTo![stat].vars.push({name: `constant_${stat}`, coef: 1});
 
     }
 
+    const withOwnArmor = (this.options.armorType & 1) > 0;
+    const withGeneratedArmor = (this.options.armorType & 2) > 0;
+
+    /*
+    const items = await this.getItems()
+    let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet).map(d => new ItemCombination([d]))
+    let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet).map(d => new ItemCombination([d]))
+    let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
+    let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
+
+    // (this.options.armorType & 1) -> own armor
+    // (this.options.armorType & 2) -> generate armor
+    if (withOwnArmor) {
+      // add a variable for CLASS
+      const classLimitSubject = {
+        name: `limit_class`, vars: [] as any[],
+        bnds: {
+          type: this.glpk.GLP_FX,
+          ub: 1, lb: 1
+        }
+      }
+
+      const classItemSubject = {
+        name: `item_class`, vars: [] as any[],
+        bnds: {
+          type: this.glpk.GLP_FX,
+          ub: 1, lb: 1
+        }
+      }
+
+      for (let cls of [DestinyClass.Titan, DestinyClass.Warlock, DestinyClass.Hunter]) {
+        lp.generals!.push(`item_class_{cls}`);
+        classLimitSubject.vars.push({name: `item_class_{cls}`, coef: 1});
+      }
+      for (let item of items) {
+        const item_id = item.id;
+        const item_class = item.clazz;
+        const item_slot = item.slot;
+        lp.generals!.push(`item_class_${item_id}`);
+        classSubject.vars.push({name: `item_class_${item.id}`, coef: 1});
+      }
+    }
+    //*/
 
     // we have 4 slots
     // we pick four plugs for each slot; a plug has three values
@@ -347,28 +421,31 @@ export class TheorizerPageComponent implements OnInit {
     // the sum of the first two plugs over all armor pieces represents the total base of mob/res/rec
     // the sum of the second two plugs over all armor pieces represents the total base of dis/int/str
 
+
     for (let slot = 0; slot < 4; slot++) {
       // introduce one binary variable for each plug in each slot
-      for (let plugId = 0; plugId < 4; plugId++) {
-        const subject = {
-          name: `plug_${slot}_${plugId}`,
-          vars: [] as any[],
-          bnds: {type: this.glpk.GLP_FX, ub: 1, lb: 1}
-        }
-        for (let plug = 0; plug < this.options.availablePlugs.length; plug++) {
-          const plugName = `plug_${slot}_${plugId}_${plug}`;
-          lp.binaries!.push(plugName);
-          subject.vars.push({name: plugName, coef: 1});
-
-          // add the plug to the subject which manages the required stats
-          for (let n = 0; n < 3; n++) {
-            let cn = n;
-            if (plugId > 1) cn += 3;
-
-            lp.subjectTo![cn].vars.push({name: plugName, coef: this.options.availablePlugs[plug][n]});
+      if (withGeneratedArmor) {
+        for (let plugId = 0; plugId < 4; plugId++) {
+          const subject = {
+            name: `plug_${slot}_${plugId}`,
+            vars: [] as any[],
+            bnds: {type: this.glpk.GLP_FX, ub: 1, lb: 1}
           }
+          for (let plug = 0; plug < this.options.availablePlugs.length; plug++) {
+            const plugName = `plug_${slot}_${plugId}_${plug}`;
+            lp.binaries!.push(plugName);
+            subject.vars.push({name: plugName, coef: 1});
+
+            // add the plug to the subject which manages the required stats
+            for (let n = 0; n < 3; n++) {
+              let cn = n;
+              if (plugId > 1) cn += 3;
+
+              lp.subjectTo![cn].vars.push({name: plugName, coef: this.options.availablePlugs[plug][n]});
+            }
+          }
+          lp.subjectTo!.push(subject);
         }
-        lp.subjectTo!.push(subject);
       }
     }
 

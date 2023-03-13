@@ -7,6 +7,7 @@ import {ModInformation} from "../data/ModInformation";
 import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
 import {TierType} from "bungie-api-ts/destiny2";
+import {environment} from "../../environments/environment";
 
 declare global {
   interface Array<T> {
@@ -245,6 +246,16 @@ addEventListener('message', async ({data}) => {
   console.debug("START RESULTS BUILDER 2")
   console.time("total")
   const config = data.config as BuildConfiguration;
+
+  // toggle feature flags
+  config.onlyShowResultsWithNoWastedStats = environment.featureFlags.enableZeroWaste && config.onlyShowResultsWithNoWastedStats;
+  if (!environment.featureFlags.enableModslotLimitation) {
+    config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value = 5;
+    config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value = 5;
+    config.maximumModSlots[ArmorSlot.ArmorSlotChest].value = 5;
+    config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value = 5;
+    config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
+  }
   console.log("Using config", data.config)
 
   let selectedExotics: IManifestArmor[] = await Promise.all(config.selectedExotics

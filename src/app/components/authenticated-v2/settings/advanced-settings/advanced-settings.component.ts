@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ConfigurationService} from "../../../../services/configuration.service";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {environment} from "../../../../../environments/environment";
 
 interface AdvancedSettingField {
   name: string;
@@ -132,8 +133,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             {
               name: "Only show builds with no wasted stats",
               cp: (v: boolean) => this.config.modifyConfiguration(c => c.onlyShowResultsWithNoWastedStats = v),
-              value: c.tryLimitWastedStats && c.onlyShowResultsWithNoWastedStats,
-              disabled: !c.tryLimitWastedStats,
+              value: environment.featureFlags.enableZeroWaste && c.tryLimitWastedStats && c.onlyShowResultsWithNoWastedStats,
+              disabled: !c.tryLimitWastedStats || !environment.featureFlags.enableZeroWaste,
               impactsResultCount: true,
               help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results."
             },

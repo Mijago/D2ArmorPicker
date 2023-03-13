@@ -9,15 +9,6 @@
       <mat-card-title>Configuration</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <!--
-      <p>Use armor:</p>
-      <mat-button-toggle-group [(ngModel)]="options.armorType">
-        <mat-button-toggle value="1">Own Armor</mat-button-toggle>
-        <mat-button-toggle value="2">Generated Armor</mat-button-toggle>
-        <mat-button-toggle value="3">Both</mat-button-toggle>
-      </mat-button-toggle-group>
-      -->
-
       <h2>Required Stats</h2>
 
       <div class="input-list">
@@ -60,18 +51,30 @@
       </div>
 
       <hr>
-      <h2>Required Stats</h2>
-      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking</mat-slide-toggle>
+      <h2>Fragment and armor selection</h2>
+      <p>Use armor:
+        <mat-button-toggle-group [(ngModel)]="options.armorType">
+          <mat-button-toggle [value]="3">Both</mat-button-toggle>
+          <mat-button-toggle [value]="1">Own Armor</mat-button-toggle>
+          <mat-button-toggle [value]="2">Generated Armor</mat-button-toggle>
+        </mat-button-toggle-group>
+      </p>
+
+
+      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking
+      </mat-slide-toggle>
       <br>
 
-      Class:
-      <mat-button-toggle-group [(ngModel)]="options.fragments.class" [disabled]="!options.fragments.enableFragmentPicker">
-        <mat-button-toggle [value]="CharacterClass.None">Any</mat-button-toggle>
-        <mat-button-toggle [value]="CharacterClass.Titan">Titan</mat-button-toggle>
-        <mat-button-toggle [value]="CharacterClass.Hunter">Hunter</mat-button-toggle>
-        <mat-button-toggle [value]="CharacterClass.Warlock">Warlock</mat-button-toggle>
-      </mat-button-toggle-group>
-      <br>
+      <p>
+        Class:
+        <mat-button-toggle-group [(ngModel)]="options.fragments.class"
+                                 [disabled]="!options.fragments.enableFragmentPicker">
+          <mat-button-toggle [value]="CharacterClass.None">Any</mat-button-toggle>
+          <mat-button-toggle [value]="CharacterClass.Titan">Titan</mat-button-toggle>
+          <mat-button-toggle [value]="CharacterClass.Hunter">Hunter</mat-button-toggle>
+          <mat-button-toggle [value]="CharacterClass.Warlock">Warlock</mat-button-toggle>
+        </mat-button-toggle-group>
+      </p>
       Subclass:
       <mat-button-toggle-group [disabled]="!options.fragments.enableFragmentPicker"
                                [(ngModel)]="options.fragments.subclass">

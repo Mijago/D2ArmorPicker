@@ -39,7 +39,11 @@ const data = {
   clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
   client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
   nodeEnv: process.env.NODE_ENV,
-  offlineMode: false
+  offlineMode: false,
+  featureFlags: {
+    enableModslotLimitation: !!process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION,
+    enableZeroWaste: !!process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE,
+  }
 }
 
 
