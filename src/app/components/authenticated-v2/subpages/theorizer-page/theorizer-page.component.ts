@@ -6,7 +6,7 @@ import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {DestinyClass} from "bungie-api-ts/destiny2";
 import {buildDb} from "../../../../data/database";
-import {ItemCombination} from "../../../../services/results-builder.worker";
+import {ArmorPerkOrSlot} from "../../../../data/enum/armor-stat";
 
 const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
 
@@ -17,7 +17,6 @@ const statNames = ["mobility", "resilience", "recovery", "discipline", "intellec
 })
 export class TheorizerPageComponent implements OnInit {
   ModifierType = ModifierType;
-  CharacterClass = CharacterClass;
 
   glpk: GLPK | null = null;
 
@@ -55,7 +54,7 @@ export class TheorizerPageComponent implements OnInit {
     fragments: {
       enableFragmentPicker: false,
       subclass: -1,
-      class: CharacterClass.None
+      class: DestinyClass.Unknown
     },
     mods: {
       maxMods: 5,
@@ -187,12 +186,12 @@ export class TheorizerPageComponent implements OnInit {
     this.startTimer();
     const result = await this.glpk.solve(lp);
     this.stopTimer();
-    this.result_items = this.getItemsFromResult(result);
+    this.result_items = await this.getItemsFromResult(result);
     this.result = result;
     this.calculating = false;
   }
 
-  getItemsFromResult(result: Result) {
+  async getItemsFromResult(result: Result) {
     const items = [
       [0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0],
@@ -200,6 +199,10 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
       [0, 0, 0, 0, 0, 0],
     ];
+    // contains if items are generated or not, and if they are not, then the metadata
+    const itemMeta = [
+      null, null, null, null, null
+    ]
 
     const masterwork = [10, 10, 10, 10, 10, 10]
     const constants = [0, 0, 0, 0, 0, 0]
@@ -228,6 +231,33 @@ export class TheorizerPageComponent implements OnInit {
         items[parseInt(slot)][stat + 3 * is2ndHalf] += plugValues[stat];
       }
     }
+    const itemsToGrab = [];
+    for (let kv in result!.result!.vars) {
+      if (!kv.startsWith("item_")) continue;
+      if (result!.result!.vars[kv] == 0) continue;
+
+      const [_, slot, itemId] = kv.split("_");
+      itemsToGrab.push({slot: parseInt(slot), itemId: itemId});
+    }
+    if (itemsToGrab.length > 0) {
+      const db = buildDb(async () => {
+      })
+      const inventoryArmor = db.table("inventoryArmor");
+
+      for (let e of itemsToGrab) {
+        let dbitems = await inventoryArmor.where("itemInstanceId").equals(e.itemId).toArray();
+        if (dbitems.length == 0) continue;
+        const item = dbitems[0]
+        itemMeta[e.slot] = item;
+        items[e.slot][0] += item.mobility;
+        items[e.slot][1] += item.resilience;
+        items[e.slot][2] += item.recovery;
+        items[e.slot][3] += item.discipline;
+        items[e.slot][4] += item.intellect;
+        items[e.slot][5] += item.strength;
+      }
+    }
+
 
     /* STAT MODS */
     for (let kv in result!.result!.vars) {
@@ -267,7 +297,8 @@ export class TheorizerPageComponent implements OnInit {
 
     return {
       items, artificeMods, statMods, constants,
-      total, waste, tiers, tierSum, masterwork
+      total, waste, tiers, tierSum, masterwork,
+      itemMeta
     };
   }
 
@@ -372,47 +403,59 @@ export class TheorizerPageComponent implements OnInit {
 
     const withOwnArmor = (this.options.armorType & 1) > 0;
     const withGeneratedArmor = (this.options.armorType & 2) > 0;
+    const withBothArmorSources = withOwnArmor && withGeneratedArmor;
 
-    /*
     const items = await this.getItems()
-    let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet).map(d => new ItemCombination([d]))
-    let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet).map(d => new ItemCombination([d]))
-    let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest).map(d => new ItemCombination([d]))
-    let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs).map(d => new ItemCombination([d]))
+    let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet)
+    let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet)
+    let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest)
+    let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs)
 
-    // (this.options.armorType & 1) -> own armor
-    // (this.options.armorType & 2) -> generate armor
-    if (withOwnArmor) {
-      // add a variable for CLASS
-      const classLimitSubject = {
-        name: `limit_class`, vars: [] as any[],
-        bnds: {
-          type: this.glpk.GLP_FX,
-          ub: 1, lb: 1
-        }
-      }
-
-      const classItemSubject = {
-        name: `item_class`, vars: [] as any[],
-        bnds: {
-          type: this.glpk.GLP_FX,
-          ub: 1, lb: 1
-        }
-      }
-
-      for (let cls of [DestinyClass.Titan, DestinyClass.Warlock, DestinyClass.Hunter]) {
-        lp.generals!.push(`item_class_{cls}`);
-        classLimitSubject.vars.push({name: `item_class_{cls}`, coef: 1});
-      }
-      for (let item of items) {
-        const item_id = item.id;
-        const item_class = item.clazz;
-        const item_slot = item.slot;
-        lp.generals!.push(`item_class_${item_id}`);
-        classSubject.vars.push({name: `item_class_${item.id}`, coef: 1});
-      }
+    // check class setting
+    if (this.options.fragments.class != DestinyClass.Unknown) {
+      const clazz = this.options.fragments.class
+      helmets = helmets.filter(i => i.clazz == clazz)
+      gauntlets = gauntlets.filter(i => i.clazz == clazz)
+      chests = chests.filter(i => i.clazz == clazz)
+      legs = legs.filter(i => i.clazz == clazz)
     }
-    //*/
+
+    let itemsBySlot = [helmets, gauntlets, chests, legs]
+
+    const classLimitSubject = {
+      name: `classlim`,
+      vars: [] as any[],
+      bnds: {type: this.glpk.GLP_UP, ub: 1, lb: 1}
+    }
+    const classLimitSubjects = []
+    // add a variable for each class. Only one of them may be > 0
+    for (let clazz = 0; clazz < 3; clazz++) {
+      const clazzVar = `class_${clazz}`
+      lp.binaries!.push(clazzVar)
+      classLimitSubject.vars.push({name: clazzVar, coef: 1})
+
+      classLimitSubjects.push({
+        name: `classlim_${clazz}`,
+        vars: [{name: clazzVar, coef: -4}], // TODO I may have to add 0.25 for theoretical armor piece plugs
+        bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+      })
+    }
+
+    // only allow ZERO or ONE exotic
+    const exoticLimitSubject = {
+      name: `exoticlim`,
+      vars: [] as any[],
+      bnds: {type: this.glpk.GLP_DB, ub: 1, lb: 0}
+    }
+
+    if (withOwnArmor) {
+      lp.subjectTo!.push(classLimitSubject)
+      lp.subjectTo!.push(...classLimitSubjects)
+      lp.subjectTo!.push(exoticLimitSubject)
+    }
+
+    const artificeArmorPieces = []
+    const artificeArmorPlugs = []
 
     // we have 4 slots
     // we pick four plugs for each slot; a plug has three values
@@ -420,9 +463,14 @@ export class TheorizerPageComponent implements OnInit {
     // the sum of second two plugs represents dis/int/str
     // the sum of the first two plugs over all armor pieces represents the total base of mob/res/rec
     // the sum of the second two plugs over all armor pieces represents the total base of dis/int/str
-
-
     for (let slot = 0; slot < 4; slot++) {
+      const slotLimitSubject = {
+        name: `slotlim_${slot}`,
+        vars: [] as any[],
+        bnds: {type: this.glpk.GLP_FX, ub: 4, lb: 4}
+      }
+      lp.subjectTo!.push(slotLimitSubject)
+
       // introduce one binary variable for each plug in each slot
       if (withGeneratedArmor) {
         for (let plugId = 0; plugId < 4; plugId++) {
@@ -431,10 +479,27 @@ export class TheorizerPageComponent implements OnInit {
             vars: [] as any[],
             bnds: {type: this.glpk.GLP_FX, ub: 1, lb: 1}
           }
+          if (withBothArmorSources)
+            subject.bnds = {type: this.glpk.GLP_DB, ub: 1, lb: 0}
+
           for (let plug = 0; plug < this.options.availablePlugs.length; plug++) {
             const plugName = `plug_${slot}_${plugId}_${plug}`;
             lp.binaries!.push(plugName);
             subject.vars.push({name: plugName, coef: 1});
+
+            artificeArmorPlugs.push(plugName)
+
+            // 4 plugs per item, so coeff 0.25 for each plug
+            slotLimitSubject.vars.push({name: plugName, coef: 1});
+
+            if (withBothArmorSources) {
+              lp.objective!.vars.push({name: plugName, coef: -100});
+            }
+
+           for (let cl = 0; cl < 3; cl++) {
+             //classLimitSubjects[cl].vars.push({name: plugName, coef: 0.25});
+           }
+
 
             // add the plug to the subject which manages the required stats
             for (let n = 0; n < 3; n++) {
@@ -447,11 +512,43 @@ export class TheorizerPageComponent implements OnInit {
           lp.subjectTo!.push(subject);
         }
       }
+
+      if (withOwnArmor) {
+        // add a variable for each item in each slot
+        for (let item of itemsBySlot[slot]) {
+          const item_id = item.itemInstanceId;
+          const identifier = `item_${slot}_${item_id}`;
+          lp.binaries!.push(identifier);
+          //lp.bounds!.push({name: identifier, type: this.glpk.GLP_DB, ub: 1, lb: 0});
+          lp.subjectTo![0].vars.push({name: identifier, coef: item.mobility});
+          lp.subjectTo![1].vars.push({name: identifier, coef: item.resilience});
+          lp.subjectTo![2].vars.push({name: identifier, coef: item.recovery});
+          lp.subjectTo![3].vars.push({name: identifier, coef: item.discipline});
+          lp.subjectTo![4].vars.push({name: identifier, coef: item.intellect});
+          lp.subjectTo![5].vars.push({name: identifier, coef: item.strength});
+          // limit the number of items per slot to 1
+          slotLimitSubject.vars.push({name: identifier, coef: 4});
+          // Add an objective for each item, which means we want to have as many of our own items as possible
+          if (withBothArmorSources) {
+            lp.objective!.vars.push({name: identifier, coef: 100});
+          }
+
+          // class limit subject
+          classLimitSubjects[item.clazz].vars.push({name: identifier, coef: 1});
+
+          // exotic limit
+          if (item.isExotic) {
+            exoticLimitSubject.vars.push({name: identifier, coef: 1});
+          }
+          if (item.perk == ArmorPerkOrSlot.SlotArtifice) {
+            artificeArmorPieces.push(identifier);
+          }
+        }
+      }
     }
 
 
     if (this.options.mods.maxMods > 0) {
-
       const modSubject = {
         name: `limit_mods`, vars: [] as any[],
         bnds: {
@@ -478,22 +575,35 @@ export class TheorizerPageComponent implements OnInit {
 
 
     if (this.options.mods.maxArtifice > 0) {
-
-      const artifSubject = {
-        name: `limit_artif`, vars: [] as any[],
+      const artifMaxSubject = {
+        name: `limit_artif_max`, vars: [] as any[],
         bnds: {
           type: this.options.mods.maxArtifice > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
           ub: this.options.mods.maxArtifice, lb: 0
         }
       }
+      const artifSlotSubject = {
+        name: `limit_artif_slot`, vars: [] as any[],
+        bnds: {type: this.glpk.GLP_UP, ub: 1, lb: 0} // UB is 1 as we assume our class item is artifice !TODO make this a setting
+      }
+      // add all armor pieces which can be artificed
+      for (let piece of artificeArmorPieces) {
+        artifSlotSubject.vars.push({name: piece, coef: -1});
+      }
+      for (let piece of artificeArmorPlugs) {
+        artifSlotSubject.vars.push({name: piece, coef: -0.25});
+      }
+
       for (let stat = 0; stat < 6; stat++) {
         lp.subjectTo![stat].vars.push({name: `artifice_${stat}`, coef: 3});
-        artifSubject.vars.push({name: `artifice_${stat}`, coef: 1});
+        artifMaxSubject.vars.push({name: `artifice_${stat}`, coef: 1});
+        artifSlotSubject.vars.push({name: `artifice_${stat}`, coef: 1});
 
         lp.bounds!.push({name: `artifice_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
         lp.generals!.push(`artifice_${stat}`);
       }
-      lp.subjectTo!.push(artifSubject);
+      lp.subjectTo!.push(artifMaxSubject);
+      lp.subjectTo!.push(artifSlotSubject);
     }
 
 

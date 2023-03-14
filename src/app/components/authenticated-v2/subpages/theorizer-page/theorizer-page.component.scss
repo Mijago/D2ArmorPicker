@@ -14,6 +14,10 @@
     border-right: 1px solid #e0e0e0;
 }
 
+#result-table tr td:nth-of-type(2) {
+    border-right: 1px solid #e0e0e0;
+}
+
 #result-table td {
     /* text right align */
     text-align: right;

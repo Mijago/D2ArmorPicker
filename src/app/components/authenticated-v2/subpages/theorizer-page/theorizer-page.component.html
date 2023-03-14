@@ -67,12 +67,11 @@
 
       <p>
         Class:
-        <mat-button-toggle-group [(ngModel)]="options.fragments.class"
-                                 [disabled]="!options.fragments.enableFragmentPicker">
-          <mat-button-toggle [value]="CharacterClass.None">Any</mat-button-toggle>
-          <mat-button-toggle [value]="CharacterClass.Titan">Titan</mat-button-toggle>
-          <mat-button-toggle [value]="CharacterClass.Hunter">Hunter</mat-button-toggle>
-          <mat-button-toggle [value]="CharacterClass.Warlock">Warlock</mat-button-toggle>
+        <mat-button-toggle-group [(ngModel)]="options.fragments.class">
+          <mat-button-toggle [value]="3">Any</mat-button-toggle>
+          <mat-button-toggle [value]="0">Titan</mat-button-toggle>
+          <mat-button-toggle [value]="1">Hunter</mat-button-toggle>
+          <mat-button-toggle [value]="2">Warlock</mat-button-toggle>
         </mat-button-toggle-group>
       </p>
       Subclass:
@@ -164,10 +163,6 @@
 
 
     </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="run()" [disabled]="!glpk || calculating">Calculate</button>
-      <mat-progress-bar [value]="time_progress"></mat-progress-bar>
-    </mat-card-actions>
   </mat-card>
 
   <mat-card>
@@ -189,6 +184,10 @@
 
     </mat-card-content>
 
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="run()" [disabled]="!glpk || calculating">Calculate</button>
+      <mat-progress-bar [value]="time_progress"></mat-progress-bar>
+    </mat-card-actions>
   </mat-card>
 
 
@@ -203,6 +202,7 @@
       <table id="result-table" *ngIf="result_items">
         <tr class="line-bottom">
           <td>Type</td>
+          <td>Name</td>
           <td>Mobility</td>
           <td>Resilience</td>
           <td>Recovery</td>
@@ -213,53 +213,63 @@
         </tr>
         <tr *ngFor="let item of result_items['items']; let idx = index">
           <td>{{slotNameByIndex(idx)}}</td>
+          <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
+          <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>
           <td *ngFor="let stat of item">{{stat}}</td>
           <td>{{sum(item)}}</td>
         </tr>
         <!-- Masterwork -->
         <tr class="line-top">
           <td>Masterwork</td>
+          <td></td>
           <td *ngFor="let stat of result_items['masterwork']">{{stat}}</td>
           <td>{{sum(result_items['masterwork']) }}</td>
         </tr>
         <!-- constantBoost -->
         <tr *ngIf="sum(result_items['constants']) > 0">
           <td>Constant Boosts</td>
+          <td></td>
           <td *ngFor="let stat of result_items['constants']">{{stat}}</td>
           <td>{{sum(result_items['constants']) }}</td>
         </tr>
         <!-- Stat Mods -->
         <tr class="line-top">
           <td>Major Mods</td>
+          <td></td>
           <td *ngFor="let stat of result_items['statMods']['major']">{{10 * stat}}</td>
           <td>{{sum(result_items['statMods']['major']) * 10}}</td>
         </tr>
         <tr>
           <td>Minor Mods</td>
-          <td *ngFor="let stat of result_items['statMods']['major']">{{5 * stat}}</td>
-          <td>{{sum(result_items['statMods']['major']) * 5}}</td>
+          <td></td>
+          <td *ngFor="let stat of result_items['statMods']['minor']">{{5 * stat}}</td>
+          <td>{{sum(result_items['statMods']['minor']) * 5}}</td>
         </tr>
         <!-- ARTIFICE -->
         <tr>
           <td>Artifice Mods</td>
+          <td></td>
           <td *ngFor="let stat of result_items['artificeMods']">{{3 * stat}}</td>
           <td>{{sum(result_items['artificeMods']) * 3}}</td>
         </tr>
         <!-- TOTAL -->
         <tr class="line-top line-bottom">
           <td>Total</td>
+          <td></td>
           <td *ngFor="let stat of result_items['total']">{{stat}}</td>
           <td>{{sum(result_items['total'])}}</td>
         </tr>
         <!-- WASTE -->
         <tr>
           <td>Waste</td>
+          <td></td>
           <td *ngFor="let stat of result_items['waste']">{{stat}}</td>
           <td>{{sum(result_items['waste'])}}</td>
         </tr>
         <!-- TIERS -->
         <tr>
           <td>Tiers</td>
+          <td></td>
           <td *ngFor="let stat of result_items['tiers']">{{stat}}</td>
           <td>{{sum(result_items['tiers'])}}</td>
         </tr>
