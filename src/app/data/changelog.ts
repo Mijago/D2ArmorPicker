@@ -13,7 +13,7 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.3.0",
-    date: "February 22, 2023",
+    date: "March 14, 2023",
     entries: [
       {
         type: ChangelogEntryType.ADD,
@@ -22,7 +22,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added the amount of used artifice mods to the result table overview (next to the mods).",
+        text: "Added the amount of used artifice mods to the result table overview (next to the mods). They are not calculated into the 'mod cost' column.",
         issues: []
       },
       {
@@ -32,12 +32,12 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Introduced more modules for asynchronous loading. This is more a speed improvement than a feature.",
+        text: "Adapted modslot cost of Resilience and Recovery mods.",
         issues: []
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Adapted modslot cost of Resilience and Recovery mods.",
+        text: "Introduced more modules for asynchronous loading. This is more a speed improvement than a feature.",
         issues: []
       },
       {
@@ -53,6 +53,16 @@ export const CHANGELOG_DATA = [
       {
         type: ChangelogEntryType.REMOVE,
         text: "Removed the elemental affinity completely.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "DISABLED the 'Zero Waste' feature. It will be re-enabled in the future.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "DISABLED the 'Modslot Limitation' feature. It will be re-enabled in the future.",
         issues: []
       },
     ]
