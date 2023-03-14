@@ -390,9 +390,7 @@ addEventListener('message', async ({data}) => {
             totalResults++;
             if (result !== "DONOTSEND") {
               result["classItem"] = {
-                // TODO really log the perk pls
-                //perk: slotCheckResult.requiredClassItemType ?? ArmorPerkOrSlot.None
-                perk: ArmorPerkOrSlot.SlotArtifice
+                perk: slotCheckResult.requiredClassItemType || (hasArtificeClassItem? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None)
               }
 
               results.push(result)
