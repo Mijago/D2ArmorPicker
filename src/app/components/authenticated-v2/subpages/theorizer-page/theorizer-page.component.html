@@ -64,6 +64,10 @@
       <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking
       </mat-slide-toggle>
       <br>
+      <mat-slide-toggle [(ngModel)]="options.generator.generateExoticsWithIntrinsicStats">Generate exotics with
+        intrinsic stats
+      </mat-slide-toggle>
+      <br>
 
       <p>
         Class:
@@ -186,6 +190,7 @@
 
     <mat-card-actions>
       <button mat-raised-button color="primary" (click)="run()" [disabled]="!glpk || calculating">Calculate</button>
+      <br>
       <mat-progress-bar [value]="time_progress"></mat-progress-bar>
     </mat-card-actions>
   </mat-card>
@@ -211,13 +216,26 @@
           <td>Strength</td>
           <td>Sum</td>
         </tr>
-        <tr *ngFor="let item of result_items['items']; let idx = index">
-          <td>{{slotNameByIndex(idx)}}</td>
-          <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
-          <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>
-          <td *ngFor="let stat of item">{{stat}}</td>
-          <td>{{sum(item)}}</td>
-        </tr>
+        <ng-container *ngFor="let item of result_items['items']; let idx = index">
+          <tr>
+            <td>{{slotNameByIndex(idx)}}</td>
+            <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
+            <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>
+            <td *ngFor="let stat of item">{{stat}}</td>
+            <td>{{sum(item)}}</td>
+          </tr>
+          <tr *ngIf="result_items['itemIntrinsics'][idx]">
+            <td>{{slotNameByIndex(idx)}}</td>
+            <td>intrinsic</td>
+            <td>{{result_items['itemIntrinsics'][idx][0]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx][1]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx][2]}}</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+            <td>{{sum(result_items['itemIntrinsics'][idx])}}</td>
+          </tr>
+        </ng-container>
         <!-- Masterwork -->
         <tr class="line-top">
           <td>Masterwork</td>

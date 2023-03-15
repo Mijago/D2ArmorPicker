@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import GLPKConstructor, {GLPK, LP, Result} from "glpk.js";
 import {ModifierType} from 'src/app/data/enum/modifierType';
-import {CharacterClass} from "../../../../data/enum/character-Class";
 import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {DestinyClass} from "bungie-api-ts/destiny2";
@@ -61,7 +60,7 @@ export class TheorizerPageComponent implements OnInit {
       maxArtifice: 5
     },
     generator: {
-      generateExoticsWithIntrinsicStats: true,
+      generateExoticsWithIntrinsicStats: false,
     },
     availablePlugs: [
       [1, 1, 10], [1, 1, 11], [1, 1, 12], [1, 1, 13], [1, 1, 14], [1, 1, 15],
@@ -81,6 +80,7 @@ export class TheorizerPageComponent implements OnInit {
       [12, 1, 1], [13, 1, 1], [14, 1, 1], [15, 1, 1]
     ],
     possibleBonusStats: [
+      // By class, then by slot, then the first three stats
       // Titan
       [[[0, 1, 1], [0, 2, 0]],
         [[0, 1, 1], [0, 2, 0], [0, 2, 1]],
@@ -203,6 +203,9 @@ export class TheorizerPageComponent implements OnInit {
     const itemMeta = [
       null, null, null, null, null
     ]
+    const itemIntrinsics: (number[] | null)[] = [
+      null, null, null, null, null
+    ]
 
     const masterwork = [10, 10, 10, 10, 10, 10]
     const constants = [0, 0, 0, 0, 0, 0]
@@ -258,6 +261,16 @@ export class TheorizerPageComponent implements OnInit {
       }
     }
 
+    // grab item bonus stats, if set
+    for (let kv in result!.result!.vars) {
+      // intrinsic_${slot}_${clazz}_${i}
+      if (!kv.startsWith("intrinsic_")) continue;
+      if (result!.result!.vars[kv] == 0) continue;
+
+      let [_, slot, clazz, entry] = kv.split("_");
+      itemIntrinsics[parseInt(slot)] = this.options.possibleBonusStats[parseInt(clazz)][parseInt(slot)][parseInt(entry)];
+    }
+
 
     /* STAT MODS */
     for (let kv in result!.result!.vars) {
@@ -283,6 +296,10 @@ export class TheorizerPageComponent implements OnInit {
     for (let stat = 0; stat < 6; stat++) {
       for (let slot = 0; slot < 5; slot++) {
         total[stat] += items[slot][stat];
+
+        if (stat < 3 && itemIntrinsics[slot] != null) {
+          total[stat] += itemIntrinsics[slot]![stat];
+        }
       }
       total[stat] += constants[stat];
       total[stat] += masterwork[stat];
@@ -298,7 +315,7 @@ export class TheorizerPageComponent implements OnInit {
     return {
       items, artificeMods, statMods, constants,
       total, waste, tiers, tierSum, masterwork,
-      itemMeta
+      itemMeta, itemIntrinsics
     };
   }
 
@@ -448,11 +465,9 @@ export class TheorizerPageComponent implements OnInit {
       bnds: {type: this.glpk.GLP_DB, ub: 1, lb: 0}
     }
 
-    if (withOwnArmor) {
-      lp.subjectTo!.push(classLimitSubject)
-      lp.subjectTo!.push(...classLimitSubjects)
-      lp.subjectTo!.push(exoticLimitSubject)
-    }
+    lp.subjectTo!.push(classLimitSubject)
+    lp.subjectTo!.push(...classLimitSubjects)
+    lp.subjectTo!.push(exoticLimitSubject)
 
     const artificeArmorPieces = []
     const artificeArmorPlugs = []
@@ -471,8 +486,66 @@ export class TheorizerPageComponent implements OnInit {
       }
       lp.subjectTo!.push(slotLimitSubject)
 
+
       // introduce one binary variable for each plug in each slot
       if (withGeneratedArmor) {
+        const intrinsicStatSelectionSubject = {
+          name: `allow_intrinsic_${slot}`,
+          vars: [] as any[],
+          bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+        }
+
+        // generateExoticsWithIntrinsicStats
+        if (this.options.generator.generateExoticsWithIntrinsicStats) {
+          // add variables to see if this slot is generated and exotic
+          // only one slot is allowed to be exotic, so we can use this later
+          lp.binaries!.push(`exotic_${slot}`)
+          exoticLimitSubject.vars.push({name: `exotic_${slot}`, coef: 1})
+
+          // add the subject that limits the usage of intrinsic stat plugs to only work when we select 4 plugs
+          lp.subjectTo!.push(intrinsicStatSelectionSubject)
+
+          // add a variable for categories in possibleBonusStats
+          for (let clazz = 0; clazz < 3; clazz++) {
+            const entries = this.options.possibleBonusStats[clazz][slot]
+            for (let i = 0; i < entries.length; i++) {
+              let entry = entries[i];
+              const name = `intrinsic_${slot}_${clazz}_${i}`
+              lp.binaries!.push(name)
+              // add to intrinsicStatSelectionSubject
+              intrinsicStatSelectionSubject.vars.push({name: name, coef: 1})
+
+              // add a limit that it is <= selected class
+              lp.subjectTo!.push({
+                name: `intrinsic_${slot}_${clazz}_classlim`,
+                vars: [{name: name, coef: 1}, {name: `class_${clazz}`, coef: -1}],
+                bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+              })
+
+              // add a limit that it only added when no exotic is selected
+              lp.subjectTo!.push({
+                name: `intrinsic_${slot}_${clazz}_exoticlim`,
+                vars: [{name: name, coef: 1}, {name: `exotic_${slot}`, coef: -1}],
+                bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+              })
+
+              // add the stats
+              for (let statmrr = 0; statmrr < 3; statmrr++) {
+                if (entry[statmrr] > 0)
+                  lp.subjectTo![statmrr].vars.push({name: name, coef: entry[statmrr]})
+              }
+
+              // apply a penalty for using this
+              lp.objective!.vars.push({name: name, coef: -100})
+
+            }
+          }
+          // TODO make sure that we only add them if it is generated
+
+
+
+        }
+
         for (let plugId = 0; plugId < 4; plugId++) {
           const subject = {
             name: `plug_${slot}_${plugId}`,
@@ -487,6 +560,9 @@ export class TheorizerPageComponent implements OnInit {
             lp.binaries!.push(plugName);
             subject.vars.push({name: plugName, coef: 1});
 
+            // add to intrinsicStatSelectionSubject
+            intrinsicStatSelectionSubject.vars.push({name: plugName, coef: -0.25})
+
             artificeArmorPlugs.push(plugName)
 
             // 4 plugs per item, so coeff 0.25 for each plug
@@ -495,11 +571,6 @@ export class TheorizerPageComponent implements OnInit {
             if (withBothArmorSources) {
               lp.objective!.vars.push({name: plugName, coef: -100});
             }
-
-           for (let cl = 0; cl < 3; cl++) {
-             //classLimitSubjects[cl].vars.push({name: plugName, coef: 0.25});
-           }
-
 
             // add the plug to the subject which manages the required stats
             for (let n = 0; n < 3; n++) {
