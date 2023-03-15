@@ -27,7 +27,11 @@ export class TheorizerPageComponent implements OnInit {
       timeout: 2,
       presolve: true,
     },
-    armorType: 3,
+    armor: {
+      // armorType, 1 = own, 2 = generated, 3 = both
+      armorType: 3,
+      requiresExotic: true,
+    },
     stats: {
       desired: {
         mobility: 0,
@@ -420,8 +424,8 @@ export class TheorizerPageComponent implements OnInit {
 
     }
 
-    const withOwnArmor = (this.options.armorType & 1) > 0;
-    const withGeneratedArmor = (this.options.armorType & 2) > 0;
+    const withOwnArmor = (this.options.armor.armorType & 1) > 0;
+    const withGeneratedArmor = (this.options.armor.armorType & 2) > 0;
     const withBothArmorSources = withOwnArmor && withGeneratedArmor;
 
     const items = await this.getItems()
@@ -466,6 +470,12 @@ export class TheorizerPageComponent implements OnInit {
       vars: [] as any[],
       bnds: {type: this.glpk.GLP_DB, ub: 1, lb: 0}
     }
+
+    if (this.options.armor.requiresExotic) {
+      exoticLimitSubject.bnds.lb = 1
+      exoticLimitSubject.bnds.type = this.glpk.GLP_FX;
+    }
+
 
     lp.subjectTo!.push(classLimitSubject)
     lp.subjectTo!.push(...classLimitSubjects)
@@ -612,6 +622,8 @@ export class TheorizerPageComponent implements OnInit {
           // exotic limit
           if (item.isExotic) {
             exoticLimitSubject.vars.push({name: identifier, coef: 1});
+            // also rate this one higher, so that we have more exotics in the results
+            lp.objective!.vars.push({name: identifier, coef: 10});
           }
           if (item.perk == ArmorPerkOrSlot.SlotArtifice) {
             artificeArmorPieces.push(identifier);
