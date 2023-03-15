@@ -45,6 +45,8 @@ export class TheorizerPageComponent implements OnInit {
         intellect: 0,
         strength: 0,
       },
+      // if we must reach the EXACT stats and can not go over them
+      statsAreFixed: false,
       maxValue: 109,
       minTiers: 0,
       minPoints: 100,
@@ -740,6 +742,14 @@ export class TheorizerPageComponent implements OnInit {
         lp.subjectTo!.push(maxWasteSubject);
       }
 
+    }
+
+    // Fix the stats if we enforce them
+    if (this.options.stats.statsAreFixed) {
+      for (let n = 0; n < 6; n++) {
+        lp.subjectTo[n].bnds.ub = lp.subjectTo[n].bnds.lb
+        lp.subjectTo[n].bnds.type = this.glpk.GLP_FX
+      }
     }
 
 

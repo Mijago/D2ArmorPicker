@@ -50,6 +50,9 @@
         </div>
       </div>
 
+
+      <mat-slide-toggle [(ngModel)]="options.stats.statsAreFixed">Stats must be met exactly
+      </mat-slide-toggle>
       <hr>
       <h2>Fragment and armor selection</h2>
       <p>Use armor:
@@ -59,7 +62,6 @@
           <mat-button-toggle [value]="2">Generated Armor</mat-button-toggle>
         </mat-button-toggle-group>
       </p>
-
 
       <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking
       </mat-slide-toggle>
@@ -201,7 +203,12 @@
       <mat-card-title>Results</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <p>Status: {{resultValueToText(result?.result?.status!)}}</p>
+      <p
+        [class.status-undefined]="result?.result?.status! == 1"
+        [class.status-infeasable]="result?.result?.status! == 3 || result?.result?.status! == 4"
+        [class.status-acceptable]="result?.result?.status! == 2"
+        [class.status-optimal]="result?.result?.status! == 5"
+      >Status: {{resultValueToText(result?.result?.status!)}} {{result?.result?.status!}}</p>
       <p>Time (s): {{result?.time}}</p>
 
       <table id="result-table" *ngIf="result_items">
