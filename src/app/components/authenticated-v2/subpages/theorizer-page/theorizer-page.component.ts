@@ -573,12 +573,13 @@ export class TheorizerPageComponent implements OnInit {
           bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
         }
 
+        lp.binaries!.push(`exotic_${slot}`)
+        exoticLimitSubject.vars.push({name: `exotic_${slot}`, coef: 1})
+
         // generateExoticsWithIntrinsicStats
         if (this.options.generator.generateExoticsWithIntrinsicStats) {
           // add variables to see if this slot is generated and exotic
           // only one slot is allowed to be exotic, so we can use this later
-          lp.binaries!.push(`exotic_${slot}`)
-          exoticLimitSubject.vars.push({name: `exotic_${slot}`, coef: 1})
 
           // add the subject that limits the usage of intrinsic stat plugs to only work when we select 4 plugs
           lp.subjectTo!.push(intrinsicStatSelectionSubject)
