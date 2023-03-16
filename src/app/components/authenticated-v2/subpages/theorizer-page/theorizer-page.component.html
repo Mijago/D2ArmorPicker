@@ -239,14 +239,20 @@
           </tr>
           <tr *ngIf="result_items['itemIntrinsics'][idx]">
             <td>{{slotNameByIndex(idx)}}</td>
-            <td>intrinsic</td>
-            <td>{{result_items['itemIntrinsics'][idx][0]}}</td>
-            <td>{{result_items['itemIntrinsics'][idx][1]}}</td>
-            <td>{{result_items['itemIntrinsics'][idx][2]}}</td>
+            <td>
+              intrinsic on&nbsp;
+              <img class="icon-item"
+                   [matTooltip]="item.name"
+                   [src]="'https://bungie.net/'+item.icon"
+                   *ngFor="let item of result_items['itemIntrinsics'][idx]['items']">
+            </td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][0]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][1]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][2]}}</td>
             <td>0</td>
             <td>0</td>
             <td>0</td>
-            <td>{{sum(result_items['itemIntrinsics'][idx])}}</td>
+            <td>{{sum(result_items['itemIntrinsics'][idx]['entry']['stats'])}}</td>
           </tr>
         </ng-container>
         <!-- Masterwork -->

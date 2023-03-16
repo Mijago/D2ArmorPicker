@@ -6,8 +6,80 @@ import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {DestinyClass} from "bungie-api-ts/destiny2";
 import {buildDb} from "../../../../data/database";
 import {ArmorPerkOrSlot} from "../../../../data/enum/armor-stat";
+import {Table} from "dexie";
+import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 
 const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
+
+const intrinsicExoticArmorByClassAndSlot = {
+  [DestinyClass.Titan]: {
+    [ArmorSlot.ArmorSlotHelmet]: [
+      {stats: [0, 1, 1], armor: [3216110440, 106575079, 2578771006]},
+      {stats: [0, 2, 0], armor: [2808156426, 3883866764]},
+    ],
+    [ArmorSlot.ArmorSlotGauntlet]: [
+      {stats: [0, 1, 1], armor: [1734844651, 241462141, 241462142]},
+      {stats: [0, 2, 0], armor: [1734844650, 1848640623, 2240152949, 2563444729]},
+    ],
+    [ArmorSlot.ArmorSlotChest]: [
+      {stats: [2, 1, 0], armor: [1192890598, 1341951177, 3874247549]},
+      {stats: [1, 1, 1], armor: [1591207518, 1591207519]},
+      {stats: [1, 2, 0], armor: [1654461647]},
+    ],
+    [ArmorSlot.ArmorSlotLegs]: [
+      {stats: [1, 1, 0], armor: [3539357319, 2255796155, 136355432, 1160559849]},
+      {stats: [1, 0, 1], armor: [2423243921]},
+      {stats: [0, 2, 0], armor: [3539357318]},
+    ],
+  },
+  [DestinyClass.Hunter]: {
+    [ArmorSlot.ArmorSlotHelmet]: [
+      {stats: [2, 0, 0], armor: [896224899]},
+      {stats: [1, 1, 0], armor: [2757274117, 1053737370, 1321354572, 1321354573]},
+      {stats: [1, 0, 1], armor: [3562696927, 2773056939]},
+    ],
+    [ArmorSlot.ArmorSlotGauntlet]: [
+      {stats: [1, 1, 1], armor: [3942036043]},
+      {stats: [0, 1, 1], armor: [475652357]},
+      {stats: [1, 0, 1], armor: [691578978]},
+      {stats: [1, 1, 0], armor: [691578979, 1688602431]},
+      {stats: [2, 0, 0], armor: [193869523, 1734144409, 4165919945]},
+    ],
+    [ArmorSlot.ArmorSlotChest]: [
+      {stats: [2, 0, 1], armor: [978537162]},
+      {stats: [2, 1, 0], armor: [903984858, 1474735276, 2766109872]},
+      {stats: [1, 1, 1], armor: [1474735277]},
+      {stats: [1, 2, 0], armor: [2766109874, 3070555693]},
+    ],
+    [ArmorSlot.ArmorSlotLegs]: [
+      {stats: [2, 0, 0], armor: [193869520, 609852545]},
+      {stats: [1, 1, 0], armor: [193869522]},
+    ],
+  },
+  [DestinyClass.Warlock]: {
+    [ArmorSlot.ArmorSlotHelmet]: [
+      {stats: [0, 1, 1], armor: [3381022971, 1030017949, 1096253259, 2384488862]},
+      {stats: [0, 0, 2], armor: [3381022970, 2177524718, 2428181146]},
+      {stats: [1, 0, 1], armor: [3381022969, 3948284065]},
+    ],
+    [ArmorSlot.ArmorSlotGauntlet]: [
+      {stats: [0, 0, 2], armor: [1906093346, 3288917178, 3844826443]},
+      {stats: [0, 2, 1], armor: [2950045886]},
+      {stats: [0, 1, 1], armor: [3084282676, 3844826440]},
+      {stats: [1, 0, 1], armor: [3627185503, 3787517196]},
+    ],
+    [ArmorSlot.ArmorSlotChest]: [
+      {stats: [2, 0, 1], armor: [370930766, 4057299719]},
+      {stats: [0, 2, 1], armor: [1725917554, 4057299718]},
+      {stats: [0, 1, 2], armor: [2082483156]},
+    ],
+    [ArmorSlot.ArmorSlotLegs]: [
+      {stats: [0, 1, 2], armor: [121305948]},
+      {stats: [1, 0, 1], armor: [138282166]},
+      {stats: [0, 1, 1], armor: [4136768282]},
+    ],
+  },
+}
 
 @Component({
   selector: 'app-theorizer-page',
@@ -84,24 +156,6 @@ export class TheorizerPageComponent implements OnInit {
       [8, 6, 1], [8, 7, 1], [9, 1, 5], [9, 1, 6], [9, 5, 1], [9, 6, 1],
       [10, 1, 1], [10, 1, 5], [10, 5, 1], [11, 1, 1], [11, 1, 5], [11, 5, 1],
       [12, 1, 1], [13, 1, 1], [14, 1, 1], [15, 1, 1]
-    ],
-    possibleBonusStats: [
-      // By class, then by slot, then the first three stats
-      // Titan
-      [[[0, 1, 1], [0, 2, 0]],
-        [[0, 1, 1], [0, 2, 0], [0, 2, 1]],
-        [[2, 1, 0], [1, 1, 1], [0, 2, 1]],
-        [[1, 1, 0], [1, 0, 1], [0, 2, 0]]],
-      // Hunter
-      [[[2, 0, 0], [1, 1, 0], [1, 0, 1]],
-        [[1, 1, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0], [2, 0, 0]],
-        [[2, 0, 1], [2, 1, 0], [1, 1, 1], [1, 2, 0]],
-        [[2, 1, 0], [2, 0, 0], [1, 1, 0]]],
-      // Warlock
-      [[[0, 1, 1], [0, 0, 2], [1, 0, 1]],
-        [[0, 0, 2], [0, 2, 1], [0, 1, 1], [1, 0, 1]],
-        [[2, 0, 1], [0, 2, 1], [0, 1, 2]],
-        [[0, 1, 2], [1, 0, 1], [0, 1, 1]]]
     ]
   }
   result: Result | null = null;
@@ -109,8 +163,14 @@ export class TheorizerPageComponent implements OnInit {
   time_progress = 0;
   private timerId: number = 0;
   lp: LP | null = null;
+  private inventoryArmor: Table<IInventoryArmor>;
+  private manifestArmor: Table<IManifestArmor>;
 
   constructor() {
+    const db = buildDb(async () => {
+    })
+    this.inventoryArmor = db.table("inventoryArmor");
+    this.manifestArmor = db.table("manifestArmor");
   }
 
 
@@ -209,7 +269,7 @@ export class TheorizerPageComponent implements OnInit {
     const itemMeta = [
       null, null, null, null, null
     ]
-    const itemIntrinsics: (number[] | null)[] = [
+    const itemIntrinsics: (any | null)[] = [
       null, null, null, null, null
     ]
 
@@ -273,8 +333,18 @@ export class TheorizerPageComponent implements OnInit {
       if (!kv.startsWith("intrinsic_")) continue;
       if (result!.result!.vars[kv] == 0) continue;
 
-      let [_, slot, clazz, entry] = kv.split("_");
-      itemIntrinsics[parseInt(slot)] = this.options.possibleBonusStats[parseInt(clazz)][parseInt(slot)][parseInt(entry)];
+      let [_, slot, clazz, entryId] = kv.split("_");
+      const entry = (intrinsicExoticArmorByClassAndSlot as any)[parseInt(clazz)][parseInt(slot) + 1][parseInt(entryId)];
+
+      const entryArmor = await Promise.all(entry.armor.map(async (k: number) => {
+        return await this.manifestArmor.where("hash").equals(k).first()
+      }))
+
+
+      itemIntrinsics[parseInt(slot)] = {
+        entry: entry,
+        items: entryArmor
+      };
     }
 
 
@@ -304,7 +374,7 @@ export class TheorizerPageComponent implements OnInit {
         total[stat] += items[slot][stat];
 
         if (stat < 3 && itemIntrinsics[slot] != null) {
-          total[stat] += itemIntrinsics[slot]![stat];
+          total[stat] += itemIntrinsics[slot]["entry"]["stats"][stat];
         }
       }
       total[stat] += constants[stat];
@@ -326,11 +396,7 @@ export class TheorizerPageComponent implements OnInit {
   }
 
   async getItems(clazz?: DestinyClass): Promise<IInventoryArmor[]> {
-    const db = buildDb(async () => {
-    })
-    const inventoryArmor = db.table("inventoryArmor");
-
-    let items = await inventoryArmor.where("slot").notEqual(ArmorSlot.ArmorSlotNone)
+    let items = await this.inventoryArmor.where("slot").notEqual(ArmorSlot.ArmorSlotNone)
       .distinct()
       .toArray() as IInventoryArmor[];
 
@@ -519,7 +585,7 @@ export class TheorizerPageComponent implements OnInit {
 
           // add a variable for categories in possibleBonusStats
           for (let clazz = 0; clazz < 3; clazz++) {
-            const entries = this.options.possibleBonusStats[clazz][slot]
+            const entries = (intrinsicExoticArmorByClassAndSlot as any)[clazz][slot + 1]
             for (let i = 0; i < entries.length; i++) {
               let entry = entries[i];
               const name = `intrinsic_${slot}_${clazz}_${i}`
@@ -543,8 +609,8 @@ export class TheorizerPageComponent implements OnInit {
 
               // add the stats
               for (let statmrr = 0; statmrr < 3; statmrr++) {
-                if (entry[statmrr] > 0)
-                  lp.subjectTo![statmrr].vars.push({name: name, coef: entry[statmrr]})
+                if (entry.stats[statmrr] > 0)
+                  lp.subjectTo![statmrr].vars.push({name: name, coef: entry.stats[statmrr]})
               }
 
               // apply a penalty for using this
@@ -553,7 +619,6 @@ export class TheorizerPageComponent implements OnInit {
             }
           }
           // TODO make sure that we only add them if it is generated
-
 
 
         }
