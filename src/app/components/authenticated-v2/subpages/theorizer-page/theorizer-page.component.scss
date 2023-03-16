@@ -60,3 +60,15 @@
     flex-basis: 33.33333%;
   }
 }
+
+.row-masterwork {
+  td:not(:first-of-type) {
+    color: goldenrod;
+  }
+}
+
+.theoretic, .intrinsic {
+  td:not(:first-of-type) {
+    color: lightcoral;
+  }
+}

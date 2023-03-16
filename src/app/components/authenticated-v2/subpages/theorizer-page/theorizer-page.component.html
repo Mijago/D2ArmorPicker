@@ -224,14 +224,14 @@
           <td>Sum</td>
         </tr>
         <ng-container *ngFor="let item of result_items['items']; let idx = index">
-          <tr>
+          <tr [class.theoretic]="!result_items['itemMeta'][idx]" [class.real]="!result_items['itemMeta'][idx]">
             <td>{{slotNameByIndex(idx)}}</td>
             <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
             <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>
             <td *ngFor="let stat of item">{{stat}}</td>
             <td>{{sum(item)}}</td>
           </tr>
-          <tr *ngIf="result_items['itemIntrinsics'][idx]">
+          <tr *ngIf="result_items['itemIntrinsics'][idx]" class="intrinsic">
             <td>{{slotNameByIndex(idx)}}</td>
             <td>intrinsic</td>
             <td>{{result_items['itemIntrinsics'][idx][0]}}</td>
@@ -244,7 +244,7 @@
           </tr>
         </ng-container>
         <!-- Masterwork -->
-        <tr class="line-top">
+        <tr class="line-top row-masterwork">
           <td>Masterwork</td>
           <td></td>
           <td *ngFor="let stat of result_items['masterwork']">{{stat}}</td>
