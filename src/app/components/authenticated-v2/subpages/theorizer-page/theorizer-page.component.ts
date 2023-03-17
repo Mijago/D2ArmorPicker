@@ -272,6 +272,9 @@ export class TheorizerPageComponent implements OnInit {
     const itemIntrinsics: (any | null)[] = [
       null, null, null, null, null
     ]
+    const itemExotic : (boolean | null)[] = [
+      null, null, null, null, null
+    ]
 
     const masterwork = [10, 10, 10, 10, 10, 10]
     const constants = [0, 0, 0, 0, 0, 0]
@@ -299,6 +302,11 @@ export class TheorizerPageComponent implements OnInit {
       for (let stat = 0; stat < 3; stat++) {
         items[parseInt(slot)][stat + 3 * is2ndHalf] += plugValues[stat];
       }
+
+      // check if exotic_${slot} is 1
+      if (result!.result!.vars[`exotic_${slot}`] == 1) {
+        itemExotic[parseInt(slot)] = true;
+      }
     }
     const itemsToGrab = [];
     for (let kv in result!.result!.vars) {
@@ -324,6 +332,8 @@ export class TheorizerPageComponent implements OnInit {
         items[e.slot][3] += item.discipline;
         items[e.slot][4] += item.intellect;
         items[e.slot][5] += item.strength;
+
+        itemExotic[e.slot] = item.isExotic;
       }
     }
 
@@ -391,7 +401,7 @@ export class TheorizerPageComponent implements OnInit {
     return {
       items, artificeMods, statMods, constants,
       total, waste, tiers, tierSum, masterwork,
-      itemMeta, itemIntrinsics
+      itemMeta, itemIntrinsics, itemExotic
     };
   }
 

@@ -230,7 +230,11 @@
           <td>Sum</td>
         </tr>
         <ng-container *ngFor="let item of result_items['items']; let idx = index">
-          <tr [class.theoretic]="!result_items['itemMeta'][idx]" [class.real]="!result_items['itemMeta'][idx]">
+          <tr
+            [class.exotic]="result_items['itemExotic'][idx]"
+            [class.theoretic]="!result_items['itemMeta'][idx]"
+            [class.real]="!result_items['itemMeta'][idx]"
+          >
             <td>{{slotNameByIndex(idx)}}</td>
             <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
             <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>

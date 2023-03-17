@@ -69,11 +69,17 @@
 
 .theoretic, .intrinsic {
   td:not(:first-of-type) {
-    color: lightcoral;
+    color: #ecb5b5;
   }
 }
 
 
 .icon-item {
   height: 24px;
+}
+
+.exotic {
+  td:nth-of-type(2) {
+    color: #e6d4b8;
+  }
 }
