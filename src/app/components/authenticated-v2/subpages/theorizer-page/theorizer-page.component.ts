@@ -96,7 +96,7 @@ export class TheorizerPageComponent implements OnInit {
   // options
   options = {
     solver: {
-      timeout: 2,
+      timeout: 5,
       presolve: true,
     },
     armor: {
@@ -178,10 +178,11 @@ export class TheorizerPageComponent implements OnInit {
     return l.reduce((a, b) => a + b, 0);
   }
 
-  getPerkName(perk:number) {
+  getPerkName(perk: number) {
     return ArmorPerkOrSlotNames[perk as ArmorPerkOrSlot]
   }
-  getPerkIconUrl(perk:number) {
+
+  getPerkIconUrl(perk: number) {
     return ArmorPerkOrSlotIcons[perk as ArmorPerkOrSlot]
   }
 
@@ -273,15 +274,11 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
     ];
     // contains if items are generated or not, and if they are not, then the metadata
-    const itemMeta = [
-      null, null, null, null, null
-    ]
-    const itemIntrinsics: (any | null)[] = [
-      null, null, null, null, null
-    ]
-    const itemExotic : (boolean | null)[] = [
-      null, null, null, null, null
-    ]
+    const itemMeta = [null, null, null, null, null]
+    const itemIntrinsics: (any | null)[] = [null, null, null, null, null]
+    const itemExotic: (boolean | null)[] = [null, null, null, null, null]
+    const itemArtifice: (boolean)[] = [false, false, false, false, false]
+    let artificeCount = 0;
 
     const masterwork = [10, 10, 10, 10, 10, 10]
     const constants = [0, 0, 0, 0, 0, 0]
@@ -341,6 +338,8 @@ export class TheorizerPageComponent implements OnInit {
         items[e.slot][5] += item.strength;
 
         itemExotic[e.slot] = item.isExotic;
+        itemArtifice[e.slot] = item.perk == ArmorPerkOrSlot.SlotArtifice;
+        artificeCount += itemArtifice[e.slot] ? 1 : 0
       }
     }
 
@@ -375,14 +374,30 @@ export class TheorizerPageComponent implements OnInit {
     }
 
     /* ARTIFICE */
+    let requiredArtificeArmor = 0;
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("artifice_")) continue;
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, stat] = kv.split("_");
       artificeMods[parseInt(stat)] += result!.result!.vars[kv];
+      requiredArtificeArmor++;
     }
 
+    // class item is artifice too
+    if (artificeCount < requiredArtificeArmor) {
+      // set class item to be artifice
+      itemArtifice[4] = true;
+      artificeCount++;
+    }
+
+    for (let slot = 0; slot < 4 && artificeCount < requiredArtificeArmor; slot++) {
+      if (itemArtifice[slot]) continue;
+      if (itemExotic[slot]) continue;
+      if (itemMeta[slot] != null) continue;
+      itemArtifice[slot] = true;
+      artificeCount++;
+    }
 
     // now sum every stat to get the final value
     const total = [0, 0, 0, 0, 0, 0]
@@ -408,7 +423,7 @@ export class TheorizerPageComponent implements OnInit {
     return {
       items, artificeMods, statMods, constants,
       total, waste, tiers, tierSum, masterwork,
-      itemMeta, itemIntrinsics, itemExotic
+      itemMeta, itemIntrinsics, itemExotic, itemArtifice
     };
   }
 

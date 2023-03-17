@@ -214,15 +214,13 @@
         [class.status-infeasable]="result?.result?.status! == 3 || result?.result?.status! == 4"
         [class.status-acceptable]="result?.result?.status! == 2"
         [class.status-optimal]="result?.result?.status! == 5"
-      >Status: {{resultValueToText(result?.result?.status!)}} {{result?.result?.status!}}</p>
+      >Status Code {{result?.result?.status!}}: {{resultValueToText(result?.result?.status!)}}</p>
       <p>Time (s): {{result?.time}}</p>
 
       <table id="result-table" *ngIf="result_items">
         <tr class="line-bottom">
           <td>Type</td>
-          <td>Name</td>
-          <td></td>
-          <td></td>
+          <td colspan="3">Item Definition</td>
           <td>Mobility</td>
           <td>Resilience</td>
           <td>Recovery</td>
@@ -236,6 +234,7 @@
             [class.exotic]="result_items['itemExotic'][idx]"
             [class.theoretic]="!result_items['itemMeta'][idx] && idx < 4"
             [class.real]="!result_items['itemMeta'][idx] && idx < 4"
+            class="item-row"
           >
             <td>{{slotNameByIndex(idx)}}</td>
             <td *ngIf="idx < 4 &&  result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
@@ -246,9 +245,15 @@
               <img class="icon-item" *ngIf="result_items['itemMeta'][idx]"
                    [matTooltip]="result_items['itemMeta'][idx].icon"
                    [src]="'https://bungie.net/'+result_items['itemMeta'][idx].icon">
+              <img class="icon-item" *ngIf="!result_items['itemMeta'][idx]"
+                   matTooltip="Generated"
+                   src="https://www.bungie.net/common/destiny2_content/icons/6c13fd357e95348a3ab1892fc22ba3ac.png">
             </td>
             <td>
-              <img class="icon-item" *ngIf="result_items['itemMeta'][idx] && result_items['itemMeta'][idx].perk != 0"
+              <img class="icon-item" *ngIf="result_items['itemArtifice'][idx]"
+                   [matTooltip]="getPerkName(2)"
+                   [src]="getPerkIconUrl(2)">
+              <img class="icon-item" *ngIf="!result_items['itemArtifice'][idx] && result_items['itemMeta'][idx] && result_items['itemMeta'][idx].perk != 0"
                    [matTooltip]="getPerkName(result_items['itemMeta'][idx].perk)"
                    [src]="getPerkIconUrl(result_items['itemMeta'][idx].perk)">
             </td>
@@ -258,15 +263,13 @@
           </tr>
           <tr *ngIf="result_items['itemIntrinsics'][idx]" class="intrinsic">
             <td>{{slotNameByIndex(idx)}}</td>
-            <td>
+            <td colspan="3">
               intrinsic on&nbsp;
               <img class="icon-item"
                    [matTooltip]="item.name"
                    [src]="'https://bungie.net/'+item.icon"
                    *ngFor="let item of result_items['itemIntrinsics'][idx]['items']">
             </td>
-            <td></td>
-            <td></td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][0]}}</td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][1]}}</td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][2]}}</td>
@@ -279,71 +282,55 @@
         <!-- Masterwork -->
         <tr class="line-top row-masterwork">
           <td>Masterwork</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['masterwork']">{{stat}}</td>
           <td>{{sum(result_items['masterwork']) }}</td>
         </tr>
         <!-- constantBoost -->
         <tr *ngIf="sum(result_items['constants']) > 0">
           <td>Constant Boosts</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['constants']">{{stat}}</td>
           <td>{{sum(result_items['constants']) }}</td>
         </tr>
         <!-- Stat Mods -->
         <tr class="line-top">
           <td>Major Mods</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['statMods']['major']">{{10 * stat}}</td>
           <td>{{sum(result_items['statMods']['major']) * 10}}</td>
         </tr>
         <tr>
           <td>Minor Mods</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['statMods']['minor']">{{5 * stat}}</td>
           <td>{{sum(result_items['statMods']['minor']) * 5}}</td>
         </tr>
         <!-- ARTIFICE -->
         <tr>
           <td>Artifice Mods</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['artificeMods']">{{3 * stat}}</td>
           <td>{{sum(result_items['artificeMods']) * 3}}</td>
         </tr>
         <!-- TOTAL -->
         <tr class="line-top line-bottom">
           <td>Total</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['total']">{{stat}}</td>
           <td>{{sum(result_items['total'])}}</td>
         </tr>
         <!-- WASTE -->
         <tr>
           <td>Waste</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['waste']">{{stat}}</td>
           <td>{{sum(result_items['waste'])}}</td>
         </tr>
         <!-- TIERS -->
         <tr>
           <td>Tiers</td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td colspan="3"></td>
           <td *ngFor="let stat of result_items['tiers']">{{stat}}</td>
           <td>{{sum(result_items['tiers'])}}</td>
         </tr>

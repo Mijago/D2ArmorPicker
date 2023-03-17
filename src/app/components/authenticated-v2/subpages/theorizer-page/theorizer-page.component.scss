@@ -14,7 +14,10 @@
   border-right: 1px solid #e0e0e0;
 }
 
-#result-table tr td:nth-of-type(4) {
+#result-table tr.item-row td:nth-of-type(4) {
+  border-right: 1px solid #e0e0e0;
+}
+#result-table tr:not(.item-row) td:nth-of-type(2) {
   border-right: 1px solid #e0e0e0;
 }
 
@@ -75,7 +78,7 @@
 
 
 .icon-item {
-  height: 24px;
+  height: 20px;
 }
 
 .exotic {
