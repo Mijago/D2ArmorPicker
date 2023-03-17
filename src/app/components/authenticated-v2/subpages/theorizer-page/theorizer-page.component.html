@@ -54,22 +54,14 @@
       <mat-slide-toggle [(ngModel)]="options.stats.statsAreFixed">Stats must be met exactly
       </mat-slide-toggle>
       <hr>
-      <h2>Fragment and armor selection</h2>
+      <h2>Armor Selection</h2>
       <p>Use armor:
-        <mat-button-toggle-group [(ngModel)]="options.armorType">
+        <mat-button-toggle-group [(ngModel)]="options.armor.armorType">
           <mat-button-toggle [value]="3">Both</mat-button-toggle>
           <mat-button-toggle [value]="1">Own Armor</mat-button-toggle>
           <mat-button-toggle [value]="2">Generated Armor</mat-button-toggle>
         </mat-button-toggle-group>
       </p>
-
-      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking
-      </mat-slide-toggle>
-      <br>
-      <mat-slide-toggle [(ngModel)]="options.generator.generateExoticsWithIntrinsicStats">Generate exotics with
-        intrinsic stats
-      </mat-slide-toggle>
-      <br>
 
       <p>
         Class:
@@ -80,6 +72,20 @@
           <mat-button-toggle [value]="2">Warlock</mat-button-toggle>
         </mat-button-toggle-group>
       </p>
+
+      <mat-slide-toggle [(ngModel)]="options.armor.requiresExotic">Require an exotic armor piece
+      </mat-slide-toggle>
+      <br>
+      <mat-slide-toggle [(ngModel)]="options.generator.generateExoticsWithIntrinsicStats">Generate exotics with
+        intrinsic stats
+      </mat-slide-toggle>
+      <br>
+
+      <hr>
+      <h2>Fragment selection</h2>
+      <mat-slide-toggle [(ngModel)]="options.fragments.enableFragmentPicker" disabled>Enable fragment picking
+      </mat-slide-toggle>
+      <br>
       Subclass:
       <mat-button-toggle-group [disabled]="!options.fragments.enableFragmentPicker"
                                [(ngModel)]="options.fragments.subclass">
@@ -233,14 +239,20 @@
           </tr>
           <tr *ngIf="result_items['itemIntrinsics'][idx]" class="intrinsic">
             <td>{{slotNameByIndex(idx)}}</td>
-            <td>intrinsic</td>
-            <td>{{result_items['itemIntrinsics'][idx][0]}}</td>
-            <td>{{result_items['itemIntrinsics'][idx][1]}}</td>
-            <td>{{result_items['itemIntrinsics'][idx][2]}}</td>
+            <td>
+              intrinsic on&nbsp;
+              <img class="icon-item"
+                   [matTooltip]="item.name"
+                   [src]="'https://bungie.net/'+item.icon"
+                   *ngFor="let item of result_items['itemIntrinsics'][idx]['items']">
+            </td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][0]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][1]}}</td>
+            <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][2]}}</td>
             <td>0</td>
             <td>0</td>
             <td>0</td>
-            <td>{{sum(result_items['itemIntrinsics'][idx])}}</td>
+            <td>{{sum(result_items['itemIntrinsics'][idx]['entry']['stats'])}}</td>
           </tr>
         </ng-container>
         <!-- Masterwork -->
