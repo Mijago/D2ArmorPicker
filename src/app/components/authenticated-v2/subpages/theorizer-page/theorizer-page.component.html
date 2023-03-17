@@ -221,6 +221,8 @@
         <tr class="line-bottom">
           <td>Type</td>
           <td>Name</td>
+          <td></td>
+          <td></td>
           <td>Mobility</td>
           <td>Resilience</td>
           <td>Recovery</td>
@@ -232,12 +234,25 @@
         <ng-container *ngFor="let item of result_items['items']; let idx = index">
           <tr
             [class.exotic]="result_items['itemExotic'][idx]"
-            [class.theoretic]="!result_items['itemMeta'][idx]"
-            [class.real]="!result_items['itemMeta'][idx]"
+            [class.theoretic]="!result_items['itemMeta'][idx] && idx < 4"
+            [class.real]="!result_items['itemMeta'][idx] && idx < 4"
           >
             <td>{{slotNameByIndex(idx)}}</td>
-            <td *ngIf="result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
-            <td *ngIf="!result_items['itemMeta'][idx]">THEORETICAL</td>
+            <td *ngIf="idx < 4 &&  result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
+            <td *ngIf="idx < 4 && !result_items['itemMeta'][idx]">THEORETICAL</td>
+            <td *ngIf="idx == 4"></td>
+
+            <td>
+              <img class="icon-item" *ngIf="result_items['itemMeta'][idx]"
+                   [matTooltip]="result_items['itemMeta'][idx].icon"
+                   [src]="'https://bungie.net/'+result_items['itemMeta'][idx].icon">
+            </td>
+            <td>
+              <img class="icon-item" *ngIf="result_items['itemMeta'][idx] && result_items['itemMeta'][idx].perk != 0"
+                   [matTooltip]="getPerkName(result_items['itemMeta'][idx].perk)"
+                   [src]="getPerkIconUrl(result_items['itemMeta'][idx].perk)">
+            </td>
+
             <td *ngFor="let stat of item">{{stat}}</td>
             <td>{{sum(item)}}</td>
           </tr>
@@ -250,6 +265,8 @@
                    [src]="'https://bungie.net/'+item.icon"
                    *ngFor="let item of result_items['itemIntrinsics'][idx]['items']">
             </td>
+            <td></td>
+            <td></td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][0]}}</td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][1]}}</td>
             <td>{{result_items['itemIntrinsics'][idx]['entry']['stats'][2]}}</td>
@@ -263,12 +280,16 @@
         <tr class="line-top row-masterwork">
           <td>Masterwork</td>
           <td></td>
+          <td></td>
+          <td></td>
           <td *ngFor="let stat of result_items['masterwork']">{{stat}}</td>
           <td>{{sum(result_items['masterwork']) }}</td>
         </tr>
         <!-- constantBoost -->
         <tr *ngIf="sum(result_items['constants']) > 0">
           <td>Constant Boosts</td>
+          <td></td>
+          <td></td>
           <td></td>
           <td *ngFor="let stat of result_items['constants']">{{stat}}</td>
           <td>{{sum(result_items['constants']) }}</td>
@@ -277,11 +298,15 @@
         <tr class="line-top">
           <td>Major Mods</td>
           <td></td>
+          <td></td>
+          <td></td>
           <td *ngFor="let stat of result_items['statMods']['major']">{{10 * stat}}</td>
           <td>{{sum(result_items['statMods']['major']) * 10}}</td>
         </tr>
         <tr>
           <td>Minor Mods</td>
+          <td></td>
+          <td></td>
           <td></td>
           <td *ngFor="let stat of result_items['statMods']['minor']">{{5 * stat}}</td>
           <td>{{sum(result_items['statMods']['minor']) * 5}}</td>
@@ -290,12 +315,16 @@
         <tr>
           <td>Artifice Mods</td>
           <td></td>
+          <td></td>
+          <td></td>
           <td *ngFor="let stat of result_items['artificeMods']">{{3 * stat}}</td>
           <td>{{sum(result_items['artificeMods']) * 3}}</td>
         </tr>
         <!-- TOTAL -->
         <tr class="line-top line-bottom">
           <td>Total</td>
+          <td></td>
+          <td></td>
           <td></td>
           <td *ngFor="let stat of result_items['total']">{{stat}}</td>
           <td>{{sum(result_items['total'])}}</td>
@@ -304,12 +333,16 @@
         <tr>
           <td>Waste</td>
           <td></td>
+          <td></td>
+          <td></td>
           <td *ngFor="let stat of result_items['waste']">{{stat}}</td>
           <td>{{sum(result_items['waste'])}}</td>
         </tr>
         <!-- TIERS -->
         <tr>
           <td>Tiers</td>
+          <td></td>
+          <td></td>
           <td></td>
           <td *ngFor="let stat of result_items['tiers']">{{stat}}</td>
           <td>{{sum(result_items['tiers'])}}</td>

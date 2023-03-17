@@ -5,7 +5,7 @@ import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {DestinyClass} from "bungie-api-ts/destiny2";
 import {buildDb} from "../../../../data/database";
-import {ArmorPerkOrSlot} from "../../../../data/enum/armor-stat";
+import {ArmorPerkOrSlot, ArmorPerkOrSlotIcons, ArmorPerkOrSlotNames} from "../../../../data/enum/armor-stat";
 import {Table} from "dexie";
 import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 
@@ -176,6 +176,13 @@ export class TheorizerPageComponent implements OnInit {
 
   sum(l: number[]): number {
     return l.reduce((a, b) => a + b, 0);
+  }
+
+  getPerkName(perk:number) {
+    return ArmorPerkOrSlotNames[perk as ArmorPerkOrSlot]
+  }
+  getPerkIconUrl(perk:number) {
+    return ArmorPerkOrSlotIcons[perk as ArmorPerkOrSlot]
   }
 
   slotNameByIndex(index: number): string {
@@ -548,8 +555,8 @@ export class TheorizerPageComponent implements OnInit {
     }
 
     if (this.options.armor.requiresExotic) {
-      exoticLimitSubject.bnds.lb = 1
-      exoticLimitSubject.bnds.type = this.glpk.GLP_FX;
+      console.log("requiring exotic")
+      exoticLimitSubject.bnds = {type: this.glpk.GLP_FX, ub: 1, lb: 1}
     }
 
 
@@ -634,6 +641,14 @@ export class TheorizerPageComponent implements OnInit {
 
         }
 
+        // only allow this slot to be exotic if it is also generated and used
+        let exoticGenlimSlot = {
+          name: `exotic_${slot}_genlim`,
+          vars: [{name: `exotic_${slot}`, coef: 1}],
+          bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+        };
+        lp.subjectTo!.push(exoticGenlimSlot);
+
         for (let plugId = 0; plugId < 4; plugId++) {
           const subject = {
             name: `plug_${slot}_${plugId}`,
@@ -650,6 +665,7 @@ export class TheorizerPageComponent implements OnInit {
 
             // add to intrinsicStatSelectionSubject
             intrinsicStatSelectionSubject.vars.push({name: plugName, coef: -0.25})
+            exoticGenlimSlot.vars.push({name: plugName, coef: -0.25})
 
             artificeArmorPlugs.push(plugName)
 
@@ -699,7 +715,7 @@ export class TheorizerPageComponent implements OnInit {
           if (item.isExotic) {
             exoticLimitSubject.vars.push({name: identifier, coef: 1});
             // also rate this one higher, so that we have more exotics in the results
-            lp.objective!.vars.push({name: identifier, coef: 10});
+            lp.objective!.vars.push({name: identifier, coef: 40});
           }
           if (item.perk == ArmorPerkOrSlot.SlotArtifice) {
             artificeArmorPieces.push(identifier);
@@ -845,49 +861,6 @@ export class TheorizerPageComponent implements OnInit {
         lp.subjectTo[n].bnds.type = this.glpk.GLP_FX
       }
     }
-
-
-    /* Introduce stat values */
-    /*
-    for (let stat = 0; stat < 6; stat++) {
-      lp.generals!.push(`val_stat_${stat}`);
-      lp.bounds!.push({name: `val_stat_${stat}`, type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: -50});
-
-      const statSubject = {
-        name: `set_stat_${stat}`,
-        vars: [
-          {name: `val_stat_${stat}`, coef: -1},
-          ...lp.subjectTo![stat].vars
-        ],
-        bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
-      }
-
-      lp.subjectTo!.push(statSubject);
-    }
-    //*/
-
-
-    // minPoints
-    /*
-    const minPointsSubject = {
-      name: `require_points_minimum`,
-      vars: [] as any[],
-      bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minPoints}
-    }
-    for (let stat = 0; stat < 6; stat++) {
-      minPointsSubject.vars.push({name: `val_stat_${stat}`, coef: 1});
-    }
-    lp.subjectTo!.push(minPointsSubject);
-    //*/
-
-
-    for (let stat = 0; stat < 6; stat++) {
-      //lp.objective.vars.push({name: `val_stat_${stat}`, coef: 1e4},)
-      //lp.objective.vars.push({name: `waste_${stat}`, coef: -1},)
-      //lp.objective.vars.push({name: `waste_${stat}`, coef: -1},)
-    }
-    //lp.objective.vars.push({name: `masterwork`, coef: 1},)
-
 
     return lp;
   }
