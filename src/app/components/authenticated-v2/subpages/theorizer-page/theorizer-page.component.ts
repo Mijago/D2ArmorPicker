@@ -199,13 +199,13 @@ export class TheorizerPageComponent implements OnInit {
     // this.GLP_UNDEF=1,this.GLP_FEAS=2,this.GLP_INFEAS=3,this.GLP_NOFEAS=4,this.GLP_OPT=5,this.GLP_UNBND=6,
     switch (value) {
       case 1:
-        return "Undefined. Give it more time.";
+        return "Undefined. Might be unsolvable. Give it more time.";
       case 2:
         return "Feasible, but not optimal. Give it more time.";
       case 3:
         return "Infeasible. Your configuration is not possible.";
       case 4:
-        return "Infeasible. Your configuration is not possible.";
+        return "No feasible solution found. Your configuration may not be possible.";
       case 5:
         return "Optimal solution found.";
       case 6:
@@ -743,6 +743,12 @@ export class TheorizerPageComponent implements OnInit {
       }
       for (let piece of artificeArmorPlugs) {
         artifSlotSubject.vars.push({name: piece, coef: -0.25});
+      }
+      // add 1 in case we generated an exotic armor
+      if (withGeneratedArmor) {
+        for (let slot = 0; slot < 4; slot++) {
+          artifSlotSubject.vars.push({name: `exotic_${slot}`, coef: 1});
+        }
       }
 
       for (let stat = 0; stat < 6; stat++) {
