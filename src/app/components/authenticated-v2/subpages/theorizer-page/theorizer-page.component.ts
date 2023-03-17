@@ -381,7 +381,7 @@ export class TheorizerPageComponent implements OnInit {
 
       const [_, stat] = kv.split("_");
       artificeMods[parseInt(stat)] += result!.result!.vars[kv];
-      requiredArtificeArmor++;
+      requiredArtificeArmor += result!.result!.vars[kv];
     }
 
     // class item is artifice too
@@ -393,7 +393,7 @@ export class TheorizerPageComponent implements OnInit {
 
     for (let slot = 0; slot < 4 && artificeCount < requiredArtificeArmor; slot++) {
       if (itemArtifice[slot]) continue;
-      if (itemExotic[slot]) continue;
+      if (itemExotic[slot] == false) continue;
       if (itemMeta[slot] != null) continue;
       itemArtifice[slot] = true;
       artificeCount++;
@@ -579,6 +579,7 @@ export class TheorizerPageComponent implements OnInit {
     lp.subjectTo!.push(...classLimitSubjects)
     lp.subjectTo!.push(exoticLimitSubject)
 
+    const penalty = 20;
     const artificeArmorPieces = []
     const artificeArmorPlugs = []
 
@@ -648,7 +649,6 @@ export class TheorizerPageComponent implements OnInit {
 
               // apply a penalty for using this
               lp.objective!.vars.push({name: name, coef: -100})
-
             }
           }
           // TODO make sure that we only add them if it is generated
@@ -697,6 +697,9 @@ export class TheorizerPageComponent implements OnInit {
               if (plugId > 1) cn += 3;
 
               lp.subjectTo![cn].vars.push({name: plugName, coef: this.options.availablePlugs[plug][n]});
+              // add a penalty for every stat point. This means the solver will try to minimize the number of generated stat points
+              if (penalty > 0)
+                lp.objective!.vars.push({name: plugName, coef: -penalty * this.options.availablePlugs[plug][n]})
             }
           }
           lp.subjectTo!.push(subject);
