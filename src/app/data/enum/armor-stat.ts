@@ -37,24 +37,24 @@ export enum ArmorStat {
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {
   [StatModifier.NONE]: [ArmorStat.Strength, 0, 0, 0],
-  [StatModifier.MINOR_MOBILITY]: [ArmorStat.Mobility, 5, 1, 204137529],
-  [StatModifier.MAJOR_MOBILITY]: [ArmorStat.Mobility, 10, 3, 3961599962],
-  [StatModifier.ARTIFICE_MOBILITY]: [ArmorStat.Mobility, 3, 0, 0],
-  [StatModifier.MINOR_RESILIENCE]: [ArmorStat.Resilience, 5, 2, 3682186345],
-  [StatModifier.MAJOR_RESILIENCE]: [ArmorStat.Resilience, 10, 4, 2850583378],
-  [StatModifier.ARTIFICE_RESILIENCE]: [ArmorStat.Resilience, 3, 0, 0],
-  [StatModifier.MINOR_RECOVERY]: [ArmorStat.Recovery, 5, 2, 555005975],
-  [StatModifier.MAJOR_RECOVERY]: [ArmorStat.Recovery, 10, 4, 2645858828],
-  [StatModifier.ARTIFICE_RECOVERY]: [ArmorStat.Recovery, 3, 0, 0],
-  [StatModifier.MINOR_DISCIPLINE]: [ArmorStat.Discipline, 5, 1, 2623485440],
-  [StatModifier.MAJOR_DISCIPLINE]: [ArmorStat.Discipline, 10, 3, 4048838440],
-  [StatModifier.ARTIFICE_DISCIPLINE]: [ArmorStat.Discipline, 3, 0, 0],
-  [StatModifier.MINOR_INTELLECT]: [ArmorStat.Intellect, 5, 2, 1227870362],
-  [StatModifier.MAJOR_INTELLECT]: [ArmorStat.Intellect, 10, 4, 3355995799],
-  [StatModifier.ARTIFICE_INTELLECT]: [ArmorStat.Intellect, 3, 0, 0],
-  [StatModifier.MINOR_STRENGTH]: [ArmorStat.Strength, 5, 1, 3699676109],
-  [StatModifier.MAJOR_STRENGTH]: [ArmorStat.Strength, 10, 3, 3253038666],
-  [StatModifier.ARTIFICE_STRENGTH]: [ArmorStat.Strength, 3, 0, 0]
+  [StatModifier.MINOR_MOBILITY]: [ArmorStat.Mobility, 5, 1, 1703647492],
+  [StatModifier.MAJOR_MOBILITY]: [ArmorStat.Mobility, 10, 3, 4183296050],
+  [StatModifier.ARTIFICE_MOBILITY]: [ArmorStat.Mobility, 3, 0, 2322202118],
+  [StatModifier.MINOR_RESILIENCE]: [ArmorStat.Resilience, 5, 2, 2532323436],
+  [StatModifier.MAJOR_RESILIENCE]: [ArmorStat.Resilience, 10, 4, 1180408010],
+  [StatModifier.ARTIFICE_RESILIENCE]: [ArmorStat.Resilience, 3, 0, 199176566],
+  [StatModifier.MINOR_RECOVERY]: [ArmorStat.Recovery, 5, 2, 1237786518],
+  [StatModifier.MAJOR_RECOVERY]: [ArmorStat.Recovery, 10, 4, 4204488676],
+  [StatModifier.ARTIFICE_RECOVERY]: [ArmorStat.Recovery, 3, 0, 539459624],
+  [StatModifier.MINOR_DISCIPLINE]: [ArmorStat.Discipline, 5, 1, 4021790309],
+  [StatModifier.MAJOR_DISCIPLINE]: [ArmorStat.Discipline, 10, 3, 1435557120],
+  [StatModifier.ARTIFICE_DISCIPLINE]: [ArmorStat.Discipline, 3, 0, 617569843],
+  [StatModifier.MINOR_INTELLECT]: [ArmorStat.Intellect, 5, 2, 350061697],
+  [StatModifier.MAJOR_INTELLECT]: [ArmorStat.Intellect, 10, 4, 2724608735],
+  [StatModifier.ARTIFICE_INTELLECT]: [ArmorStat.Intellect, 3, 0, 3160845295],
+  [StatModifier.MINOR_STRENGTH]: [ArmorStat.Strength, 5, 1, 2639422088],
+  [StatModifier.MAJOR_STRENGTH]: [ArmorStat.Strength, 10, 3, 4287799666],
+  [StatModifier.ARTIFICE_STRENGTH]: [ArmorStat.Strength, 3, 0, 2507624050]
 }
 
 export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
