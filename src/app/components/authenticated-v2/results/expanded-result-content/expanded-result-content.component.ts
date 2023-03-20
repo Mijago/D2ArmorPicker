@@ -201,8 +201,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     }
 
     // add stat mods
-    for (let mod of (this.element?.mods || [])) {
-      mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+    if (this.element) {
+      for (let mod of this.element.mods.concat(this.element.artifice)) {
+        mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+      }
     }
 
     var data: LoadoutParameters = {
