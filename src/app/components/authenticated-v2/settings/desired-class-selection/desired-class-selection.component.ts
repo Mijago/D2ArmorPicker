@@ -27,7 +27,7 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
           this.selectedClass = c.characterClass;
 
           // find valid
-          const classAvailable = this.userdata.characters.findIndex(c => c.clazz == c.characterClass) != -1;
+          const classAvailable = this.userdata.characters.findIndex(chr => chr.clazz == c.characterClass) != -1;
           if (this.userdata.characters.length > 0 && !classAvailable) {
             this.config.modifyConfiguration(d => {
               d.characterClass = this.userdata.characters[0].clazz;
