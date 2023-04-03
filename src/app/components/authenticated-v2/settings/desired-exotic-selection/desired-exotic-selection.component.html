@@ -1,6 +1,10 @@
 <span><b>For the FotL mask, scroll down to the "Advanced Settings".</b></span>
 
 <div *ngFor="let itemGroup of exotics; let i = index" [@listAnimation]="itemGroup.length">
+  <img class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}" *ngIf="i == 0"
+       src="https://www.bungie.net/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg"
+       matTooltip="Force to use ANY exotic" #tooltip="matTooltip"
+       (click)="selectExotic(-2, $event)">
   <img class="exoticIcon {{ selectedExotics.indexOf(-1) > -1 ? 'selected' : '' }}" *ngIf="i == 0"
        src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
        matTooltip="Force to use NO exotic at all" #tooltip="matTooltip"

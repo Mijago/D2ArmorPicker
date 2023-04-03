@@ -2,7 +2,7 @@ import {BuildConfiguration} from "../data/buildConfiguration";
 import {IInventoryArmor} from "../data/types/IInventoryArmor";
 import {buildDb} from "../data/database";
 import {ArmorSlot} from "../data/enum/armor-slot";
-import {FORCE_USE_NO_EXOTIC} from "../data/constants";
+import {FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC} from "../data/constants";
 import {ModInformation} from "../data/ModInformation";
 import {ArmorPerkOrSlot, ArmorStat, SpecialArmorStat, STAT_MOD_VALUES, StatModifier} from "../data/enum/armor-stat";
 import {IManifestArmor} from "../data/types/IManifestArmor";
@@ -354,7 +354,7 @@ addEventListener('message', async ({data}) => {
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
   const constHasOneExoticLength = selectedExotics.length <= 1
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice)
-
+  const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1
 
   let results: any[] = []
   let resultsLength = 0;
@@ -371,6 +371,7 @@ addEventListener('message', async ({data}) => {
         if (constHasOneExoticLength && (helmet.containsExotics || gauntlet.containsExotics) && chest.containsExotics) continue;
         for (let leg of legs) {
           if (constHasOneExoticLength && (helmet.containsExotics || gauntlet.containsExotics || chest.containsExotics) && leg.containsExotics) continue;
+          if (requiresAtLeastOneExotic && !(helmet.containsExotics || gauntlet.containsExotics || chest.containsExotics || leg.containsExotics)) continue;
           /**
            *  At this point we already have:
            *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
