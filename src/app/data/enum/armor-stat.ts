@@ -95,6 +95,8 @@ export enum ArmorPerkOrSlot {
   SlotKingsFall,
   PerkPlunderersTrappings,
   SeraphSensorArray,
+  SlotRootOfNightmares,
+  PerkQueensFavor,
   COUNT
 }
 
@@ -112,6 +114,8 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.SeraphSensorArray]: "Seraph Sensor Array",
+  [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
+  [ArmorPerkOrSlot.PerkQueensFavor]: "Queen's Favor",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -129,6 +133,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotKingsFall]: "https://www.bungie.net/common/destiny2_content/icons/bc809878e0c2ed8fd32feb62aaae690c.png",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "https://www.bungie.net/common/destiny2_content/icons/d7ad8979dab2f4544e2cfb66f262f7d1.png",
   [ArmorPerkOrSlot.SeraphSensorArray]: "https://www.bungie.net/common/destiny2_content/icons/d7ad8979dab2f4544e2cfb66f262f7d1.png",
+  [ArmorPerkOrSlot.SlotRootOfNightmares]: "https://www.bungie.net/common/destiny2_content/icons/9694158ef08d416ab091062629b6b7ec.png",
+  [ArmorPerkOrSlot.PerkQueensFavor]: "https://www.bungie.net/common/destiny2_content/icons/d64dc503b9a88c179635e777c30db86c.png",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 
@@ -146,6 +152,8 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "perkname:\"plunderer's trappings\"",
   [ArmorPerkOrSlot.SeraphSensorArray]: "perkname:\"seraph sensor array\"",
+  [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
+  [ArmorPerkOrSlot.PerkQueensFavor]: "perkname:\"queen's favor\"",
   [ArmorPerkOrSlot.COUNT]: "",
 }
 

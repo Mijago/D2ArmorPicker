@@ -12,7 +12,8 @@ export class ArmorPerkIconComponent implements OnInit {
   customIconMods = [
     ArmorPerkOrSlot.SlotKingsFall,
     ArmorPerkOrSlot.SlotArtifice,
-    ArmorPerkOrSlot.SlotVowOfTheDisciple
+    ArmorPerkOrSlot.SlotVowOfTheDisciple,
+    ArmorPerkOrSlot.SlotRootOfNightmares
   ]
 
   @Input()

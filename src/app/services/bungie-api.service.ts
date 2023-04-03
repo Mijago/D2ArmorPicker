@@ -421,6 +421,8 @@ export class BungieApiService {
     if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1259) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtifice;
 
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 4144354978) || []).length > 0)
+      return ArmorPerkOrSlot.SlotRootOfNightmares;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1728096240) || []).length > 0)
       return ArmorPerkOrSlot.SlotKingsFall;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1679876242) || []).length > 0)
@@ -434,6 +436,8 @@ export class BungieApiService {
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2447143568) || []).length > 0)
       return ArmorPerkOrSlot.SlotVowOfTheDisciple;
 
+    if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1101259514) || []).length > 0)
+      return ArmorPerkOrSlot.PerkQueensFavor;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 1180997867) || []).length > 0)
       return ArmorPerkOrSlot.SlotNightmare;
     if ((v.sockets?.socketEntries.filter(d => d.singleInitialItemHash == 2472875850) || []).length > 0)
