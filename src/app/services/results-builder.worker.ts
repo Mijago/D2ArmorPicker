@@ -383,7 +383,7 @@ addEventListener('message', async ({data}) => {
 
           const result = handlePermutation(runtime, config, helmet, gauntlet, chest, leg,
             constantBonus, constantAvailableModslots, doNotOutput,
-            hasArtificeClassItem && !slotCheckResult.requiredClassItemType
+            hasArtificeClassItem && (!slotCheckResult.requiredClassItemType || slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice)
            );
           // Only add 50k to the list if the setting is activated.
           // We will still calculate the rest so that we get accurate results for the runtime values
