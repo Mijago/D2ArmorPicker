@@ -12,8 +12,6 @@ import {InventoryService} from "../../../../services/inventory.service";
   styleUrls: ['./desired-class-selection.component.scss']
 })
 export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
-
-  @Input() availableClasses: CharacterClass[] = [0, 1, 2]
   itemCounts: (null | number)[] = [null, null, null]
   selectedClass = -1;
   public storedMaterials: { "3853748946": number; "4257549985": number; "4257549984": number, "3159615086": number, "1022552290": number } | null = null;
@@ -26,10 +24,13 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(
         c => {
-          this.selectedClass = c.characterClass
-          if (this.availableClasses.length > 0 && this.availableClasses.indexOf(c.characterClass) == -1) {
+          this.selectedClass = c.characterClass;
+
+          // find valid
+          const classAvailable = this.userdata.characters.findIndex(c => c.clazz == c.characterClass) != -1;
+          if (this.userdata.characters.length > 0 && !classAvailable) {
             this.config.modifyConfiguration(d => {
-              d.characterClass = this.availableClasses[0];
+              d.characterClass = this.userdata.characters[0].clazz;
               d.selectedExotics = [];
             });
           }
