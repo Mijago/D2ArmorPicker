@@ -16,7 +16,7 @@ import {ModifierValue} from "../../../../data/modifier";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {BungieApiService} from "../../../../services/bungie-api.service";
 import {ModOrAbility} from "../../../../data/enum/modOrAbility";
-import {DestinyEnergyType,DestinyClass} from "bungie-api-ts/destiny2";
+import {DestinyEnergyType, DestinyClass} from "bungie-api-ts/destiny2";
 import {ArmorSlot} from "../../../../data/enum/armor-slot";
 import {EnumDictionary} from "../../../../data/types/EnumDictionary";
 import {ModifierType} from "../../../../data/enum/modifierType";
@@ -24,8 +24,14 @@ import {BuildConfiguration, FixableSelection} from "../../../../data/buildConfig
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY} from "../../../../data/masterworkCost";
-import {AssumeArmorMasterwork, Loadout, LoadoutParameters, LockArmorEnergyType, UpgradeSpendTier} from '@destinyitemmanager/dim-api-types';
-import { CharacterClass } from 'src/app/data/enum/character-Class';
+import {
+  AssumeArmorMasterwork,
+  Loadout,
+  LoadoutParameters,
+  LockArmorEnergyType,
+  UpgradeSpendTier
+} from '@destinyitemmanager/dim-api-types';
+import {CharacterClass} from 'src/app/data/enum/character-Class';
 
 @Component({
   selector: 'app-expanded-result-content',
@@ -179,7 +185,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       for (let n = item.energyLevel; n < 10; n++)
         for (let entryName in costList[n + 1]) {
           cost[entryName] += costList[n + 1][entryName]
-          cost["total"] ++;
+          cost["total"]++;
         }
     }
     return cost;
@@ -194,15 +200,17 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     for (let mod of this.config_enabledMods) {
       const modInfo = ModInformation[mod]
       if (modInfo.type === ModifierType.CombatStyleMod) {
-          mods.push(modInfo.hash)
+        mods.push(modInfo.hash)
       } else {
         fragments.push(modInfo.hash)
       }
     }
 
     // add stat mods
-    for (let mod of (this.element?.mods || [])) {
-      mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+    if (this.element) {
+      for (let mod of (this.element?.mods || [])) {
+        mods.push(STAT_MOD_VALUES[mod as StatModifier][3])
+      }
     }
 
     var data: LoadoutParameters = {
@@ -258,7 +266,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       name: "D2ArmorPicker Loadout",
       classType: c.characterClass as number,
       parameters: data,
-      equipped: (this.element?.items || []).map(([i]) => ({ id: i.itemInstanceId, hash: i.hash })),
+      equipped: (this.element?.items || []).map(([i]) => ({id: i.itemInstanceId, hash: i.hash})),
       unequipped: [],
       clearSpace: false,
     }
@@ -268,11 +276,11 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       const socketOverrides = fragments.reduce<{
         [socketIndex: number]: number;
       }>((m, hash, i) => {
-        m[i+7] = hash
+        m[i + 7] = hash
         return m
       }, {})
 
-      const subclassHashes: { [characterClass: number]: { [modifierType: number]: number | undefined } | undefined} = {
+      const subclassHashes: { [characterClass: number]: { [modifierType: number]: number | undefined } | undefined } = {
         [CharacterClass.Hunter]: {
           [ModifierType.Stasis]: 873720784,
           [ModifierType.Void]: 2453351420,
