@@ -12,6 +12,47 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.3.1",
+    date: "April 2, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Feature: Added the possibility to only show builds that contain an exotic.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added 'Root of Nightmares' modslot filter.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added 'Queen's Favor' seasonal perk filter.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added text indicating that only fragments that affect stats are shown.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed deprecated mods being sent when opening the loadout in DIM. Also adds artifice mods now.",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue where the tool did not put artifice mods on the class item if you forced the class item to be artifice.....",
+        issues: []
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue where the default selection was the titan class, even if you had no titan characters.",
+        issues: []
+      },
+    ]
+  },
+  {
     version: "2.3.0",
     date: "March 14, 2023",
     entries: [
