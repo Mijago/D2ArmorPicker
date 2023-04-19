@@ -1,6 +1,6 @@
 html, body {
   height: 100%;
-  background-color: #292929;
+  background-color: #292929 !important;
   color: white;
 }
 
@@ -17,6 +17,6 @@ body {
   width: 17px;
 }
 
-.mat-tooltip-panel, .overlay-no-pointer-event  {
+.mat-tooltip-panel, .overlay-no-pointer-event {
   pointer-events: none !important;
 }

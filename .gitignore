@@ -50,3 +50,5 @@ environment.ts
 environment.prod.ts
 .env
 .env_dev
+
+.vscode/
