@@ -91,19 +91,19 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "PvE Damage Reduction",
       benefitDirection: BenefitDirection.Positive,
-      valueFunction: t => ([0, 1, 2, 3, 4, 8, 14, 20, 26, 32, 40][t] / 100),
+      valueFunction: t => ([0, 2, 3, 5, 9, 14, 17, 20, 24, 27, 30][t] / 100),
       formatting: t => Math.floor(t * 100) + "%"
     },
     {
       name: "Rally Barricade",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => 32 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
+      valueFunction: t => 38 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
       formatting: (t) => reformatTimeMMMSS(t)
     },
     {
       name: "Towering Barricade",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => 40 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
+      valueFunction: t => 48 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
       formatting: (t) => reformatTimeMMMSS(t)
     },
     {
@@ -125,13 +125,19 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
       benefitDirection: BenefitDirection.Negative,
       valueFunction: t => 82 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
       formatting: (t) => reformatTimeMMMSS(t)
+    },
+    {
+      name: "Phoenix Dive",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => 55 * CLASS_COOLDOWN_RATIO_PER_TIER[t],
+      formatting: (t) => reformatTimeMMMSS(t)
     }
   ],
   [ArmorStat.Discipline]: [
     {
       name: "Tier 1",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(182 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(152 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -143,7 +149,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 2",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(152 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(121 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -155,7 +161,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 3",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(121 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(105 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -167,7 +173,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 4",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(105 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(91 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -179,7 +185,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 5",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round( 91* ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(73 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -191,7 +197,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 6",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(82 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(64 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -200,37 +206,12 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
         [CharacterClass.Titan]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Titan][5],
       }
     },
-    {
-      name: "Tier 7",
-      benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(73 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
-      formatting: t => reformatTimeMMMSS(t),
-      description: {
-        [CharacterClass.None]: "",
-        [CharacterClass.Hunter]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Hunter][6],
-        [CharacterClass.Warlock]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Warlock][6],
-        [CharacterClass.Titan]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Titan][6],
-      }
-    },
-    {
-      name: "Tier 8",
-      benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(64 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
-      formatting: t => reformatTimeMMMSS(t),
-      description: {
-        [CharacterClass.None]: "",
-        [CharacterClass.Hunter]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Hunter][7],
-        [CharacterClass.Warlock]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Warlock][7],
-        [CharacterClass.Titan]: GrenadeAbilitiesPerClassAndTier[CharacterClass.Titan][7],
-      }
-    },
-
   ],
   [ArmorStat.Intellect]: [
     {
       name: "Tier 1",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(625 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(556 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -242,7 +223,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 2",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(556 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(500 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -254,7 +235,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 3",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(500 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(455 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -266,25 +247,13 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 4",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(455 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(417 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
         [CharacterClass.Hunter]: SuperAbilitiesPerClassAndTier[CharacterClass.Hunter][3],
         [CharacterClass.Warlock]: SuperAbilitiesPerClassAndTier[CharacterClass.Warlock][3],
         [CharacterClass.Titan]: SuperAbilitiesPerClassAndTier[CharacterClass.Titan][3],
-      }
-    },
-    {
-      name: "Tier 5",
-      benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(417 * SUPER_COOLDOWN_RATIO_PER_TIER[t]),
-      formatting: t => reformatTimeMMMSS(t),
-      description: {
-        [CharacterClass.None]: "",
-        [CharacterClass.Hunter]: SuperAbilitiesPerClassAndTier[CharacterClass.Hunter][4],
-        [CharacterClass.Warlock]: SuperAbilitiesPerClassAndTier[CharacterClass.Warlock][4],
-        [CharacterClass.Titan]: SuperAbilitiesPerClassAndTier[CharacterClass.Titan][4],
       }
     },
   ],
@@ -372,6 +341,78 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
         [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][6],
         [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][6],
         [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][6],
+      }
+    },
+    {
+      name: "Tier 8",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][7],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][7],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][7],
+      }
+    },
+    {
+      name: "Tier 9",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][8],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][8],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][8],
+      }
+    },
+    {
+      name: "Tier 10",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][9],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][9],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][9],
+      }
+    },
+    {
+      name: "Tier 11",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][10],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][10],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][10],
+      }
+    },
+    {
+      name: "Tier 12",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][11],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][11],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][11],
+      }
+    },
+    {
+      name: "Tier 13",
+      benefitDirection: BenefitDirection.Negative,
+      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      formatting: t => reformatTimeMMMSS(t),
+      description: {
+        [CharacterClass.None]: "",
+        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][12],
+        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][12],
+        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][12],
       }
     },
   ],
