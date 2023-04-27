@@ -23,10 +23,12 @@ Visit the page here: https://d2armorpicker.com
 - To build a production package, set the environment flag `PRODUCTION=1`.
 - To build a beta package, set the environment flag `BETA=1`.
 
+Then you can use `npm run build`.
+
 ## Deployment
 You can also deploy the page to a "github pages" page. Please note that I strongly discourage hosting alternative D2AP installations, let's make this one as awesome as possible.
 
 1. Set the environment flag `BETA=1` or `PRODUCTION=1`.
-1. Modify the  `deploy` script in `package.json` and remove`--base-href=/ --cname=d2armorpicker.com`. The same for the beta command. 
+1. Modify the  `deploy` script in `package.json` and remove`--base-href=/ --cname=d2armorpicker.com`. The same for the beta command. If you deploy to `yourname.github.io/fancyrepo`, then you may have to set `--base-href=/fancyrepo`.
 2. `npm run deploy` (given you forked the repository first).
 
