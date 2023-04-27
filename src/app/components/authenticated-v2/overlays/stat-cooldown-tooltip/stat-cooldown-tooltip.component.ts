@@ -262,7 +262,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 1",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(113 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(137 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -274,7 +274,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 2",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(109 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(125 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -286,7 +286,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 3",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(106 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(114 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -298,7 +298,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 4",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(100 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(113 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -310,7 +310,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 5",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(90 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(112 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -322,7 +322,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 6",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(82 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(111 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -334,7 +334,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 7",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(101 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -346,7 +346,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 8",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(100 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -358,7 +358,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 9",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(91 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -370,7 +370,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 10",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(83 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -382,7 +382,7 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 11",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(82 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
@@ -394,25 +394,13 @@ const CooldownInfo: EnumDictionary<ArmorStat, CooldownEntry[]> = {
     {
       name: "Tier 12",
       benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
+      valueFunction: t => Math.round(40 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
       formatting: t => reformatTimeMMMSS(t),
       description: {
         [CharacterClass.None]: "",
         [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][11],
         [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][11],
         [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][11],
-      }
-    },
-    {
-      name: "Tier 13",
-      benefitDirection: BenefitDirection.Negative,
-      valueFunction: t => Math.round(45 * ABILITY_COOLDOWN_RATIO_PER_TIER[t]),
-      formatting: t => reformatTimeMMMSS(t),
-      description: {
-        [CharacterClass.None]: "",
-        [CharacterClass.Hunter]: MeleeAbilitiesPerClassAndTier[CharacterClass.Hunter][12],
-        [CharacterClass.Warlock]: MeleeAbilitiesPerClassAndTier[CharacterClass.Warlock][12],
-        [CharacterClass.Titan]: MeleeAbilitiesPerClassAndTier[CharacterClass.Titan][12],
       }
     },
   ],
