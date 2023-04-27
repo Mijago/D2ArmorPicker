@@ -20,6 +20,7 @@ Visit the page here: https://d2armorpicker.com
     - Ignore the "invalid certificate" error your browser will give you. You need HTTPS to be able to use the Bungie Authentification.
 
 ## Building Production and Beta packages
+- Copy `.env_dev` to `.env` and/or `.env_beta`.
 - To build a production package, set the environment flag `PRODUCTION=1`.
 - To build a beta package, set the environment flag `BETA=1`.
 
