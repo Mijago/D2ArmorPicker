@@ -7,7 +7,7 @@ Visit the page here: https://d2armorpicker.com
 # Contribution
 
 ## Development
-1. Run `npm install` to install dependencies.
+1. Run `npx husky-init && npm install` to install dependencies.
 2. Duplicate the `.env_example` to `.env_dev`. 
 3. Create a Bungie API key. For this, head over to https://www.bungie.net/en/Application and create a new application. 
     - Set the OAuth Client Type to `Confidential` and the redirect URL to `https://localhost:4200/`. 
@@ -33,3 +33,6 @@ You can also deploy the page to a "github pages" page. Please note that I strong
 1. Modify the  `deploy` script in `package.json` and remove`--base-href=/ --cname=d2armorpicker.com`. The same for the beta command. If you deploy to `yourname.github.io/fancyrepo`, then you may have to set `--base-href=/fancyrepo`.
 2. `npm run deploy` (given you forked the repository first).
 
+## Guidelines
+- We use [husky](https://github.com/typicode/husky) to execute some commit hooks.
+- We are using [commitlint](https://github.com/conventional-changelog/commitlint) to make sure we all have the same commit structure. The template used is [@commitlint/config-angular](https://github.com/conventional-changelog/commitlint/tree/master/@commitlint/config-angular).
