@@ -1,6 +1,6 @@
 # D2ArmorPicker
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 D2ArmorPicker is a small tool to min-max your armor stats with only a few clicks.
@@ -51,6 +51,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Mijago"><img src="https://avatars.githubusercontent.com/u/3903469?v=4?s=100" width="100px;" alt="Markus"/><br /><sub><b>Markus</b></sub></a><br /><a href="https://github.com/Mijago/D2ArmorPicker/commits?author=Mijago" title="Code">💻</a> <a href="https://github.com/Mijago/D2ArmorPicker/commits?author=Mijago" title="Documentation">📖</a> <a href="#maintenance-Mijago" title="Maintenance">🚧</a> <a href="#projectManagement-Mijago" title="Project Management">📆</a> <a href="https://github.com/Mijago/D2ArmorPicker/pulls?q=is%3Apr+reviewed-by%3AMijago" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TheYeshir13"><img src="https://avatars.githubusercontent.com/u/88265590?v=4?s=100" width="100px;" alt="TheYeshir"/><br /><sub><b>TheYeshir</b></sub></a><br /><a href="#projectManagement-TheYeshir13" title="Project Management">📆</a> <a href="#ideas-TheYeshir13" title="Ideas, Planning, & Feedback">🤔</a> <a href="#userTesting-TheYeshir13" title="User Testing">📓</a> <a href="#question-TheYeshir13" title="Answering Questions">💬</a></td>
     </tr>
   </tbody>
   <tfoot>
