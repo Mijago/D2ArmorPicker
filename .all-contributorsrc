@@ -34,6 +34,18 @@
         "userTesting",
         "question"
       ]
+    },
+    {
+      "login": "TheMojoDojo",
+      "name": "Mojo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/99927863?v=4",
+      "profile": "https://github.com/TheMojoDojo",
+      "contributions": [
+        "projectManagement",
+        "ideas",
+        "userTesting",
+        "question"
+      ]
     }
   ],
   "contributorsPerLine": 7,
