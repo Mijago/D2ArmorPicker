@@ -1,88 +1,87 @@
 #result-table tr.line-top td {
-  border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #e0e0e0;
 }
 
 #result-table tr.line-bottom td {
-  border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 #result-table tr td:last-of-type {
-  border-left: 1px solid #e0e0e0;
+    border-left: 1px solid #e0e0e0;
 }
 
 #result-table tr td:first-of-type {
-  border-right: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
 }
 
 #result-table tr.item-row td:nth-of-type(4) {
-  border-right: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
 }
 #result-table tr:not(.item-row) td:nth-of-type(2) {
-  border-right: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
 }
 
 .status-optimal {
-  color: #4caf50;
+    color: #4caf50;
 }
 
 .status-acceptable {
-  color: #ff9800;
+    color: #ff9800;
 }
 
 .status-infeasable {
-  color: #f44336;
+    color: #f44336;
 }
 
 .status-undefined {
-  color: #9e9e9e;
+    color: #9e9e9e;
 }
 
 #result-table td {
-  /* text right align */
-  text-align: right;
+    /* text right align */
+    text-align: right;
 }
 
-
 #container {
-  margin-bottom: 20px;
-  margin-top: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
 }
 
 #slider-table mat-slider {
-  width: 200px;
+    width: 200px;
 }
 
 .input-list {
-  max-width: 450px;
+    max-width: 450px;
 
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 
-  .input-list-entry {
-    flex-basis: 33.33333%;
-  }
+    .input-list-entry {
+        flex-basis: 33.33333%;
+    }
 }
 
 .row-masterwork {
-  td:not(:first-of-type) {
-    color: goldenrod;
-  }
+    td:not(:first-of-type) {
+        color: goldenrod;
+    }
 }
 
-.theoretic, .intrinsic {
-  td:not(:first-of-type) {
-    color: #ecb5b5;
-  }
+.theoretic,
+.intrinsic {
+    td:not(:first-of-type) {
+        color: #ecb5b5;
+    }
 }
-
 
 .icon-item {
-  height: 20px;
+    height: 20px;
 }
 
 .exotic {
-  td:nth-of-type(2) {
-    color: #e6d4b8;
-  }
+    td:nth-of-type(2) {
+        color: #e6d4b8;
+    }
 }

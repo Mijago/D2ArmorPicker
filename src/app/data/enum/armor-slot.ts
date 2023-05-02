@@ -1,8 +1,8 @@
 export enum ArmorSlot {
-  ArmorSlotNone,
-  ArmorSlotHelmet,
-  ArmorSlotGauntlet,
-  ArmorSlotChest,
-  ArmorSlotLegs,
-  ArmorSlotClass,
+    ArmorSlotNone,
+    ArmorSlotHelmet,
+    ArmorSlotGauntlet,
+    ArmorSlotChest,
+    ArmorSlotLegs,
+    ArmorSlotClass,
 }

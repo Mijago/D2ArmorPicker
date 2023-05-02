@@ -1,5 +1,13 @@
 <div *ngIf="item" class="item-icon-container">
-  <img class="item-icon" src="https://bungie.net/{{item.icon}}" *ngIf="item.icon"  #tooltip="matTooltip"  matTooltip="{{item.name}}">
-  <img class="item-icon-overlay" src="https://bungie.net/{{item.watermarkIcon}}" *ngIf="item.watermarkIcon">
-  <div *ngIf="masterworked" class="item-icon-masterwork-overlay"></div>
+    <img
+        class="item-icon"
+        src="https://bungie.net/{{ item.icon }}"
+        *ngIf="item.icon"
+        #tooltip="matTooltip"
+        matTooltip="{{ item.name }}" />
+    <img
+        class="item-icon-overlay"
+        src="https://bungie.net/{{ item.watermarkIcon }}"
+        *ngIf="item.watermarkIcon" />
+    <div *ngIf="masterworked" class="item-icon-masterwork-overlay"></div>
 </div>

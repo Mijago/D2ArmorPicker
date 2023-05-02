@@ -1,3 +1,1 @@
-export class AccountConfiguration {
-
-}
+export class AccountConfiguration {}

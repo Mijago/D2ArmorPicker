@@ -1,126 +1,162 @@
-<mat-sidenav #drawer [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'" [opened]="false"
-             class="sidenav"
-             fixedInViewport
-             mode="over">
-  <mat-toolbar>
-    <button
-      (click)="drawer.toggle()"
-      aria-label="Toggle sidenav"
-      mat-stroked-button
-      type="button">
-      <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      Close Menu
-    </button>
-  </mat-toolbar>
-  <hr>
-  <mat-nav-list>
-    <a (click)="drawer.toggle()"
-       *ngFor="let link of navLinks; let idx = index"
-       [class.active]="activeLinkIndex === idx" [routerLink]="link.link"
-       mat-list-item>
-      {{link.name}}
-    </a>
-    <hr>
-    <a href="https://ko-fi.com/mijago" mat-list-item>
-      <a color="primary"
-         mat-raised-button
-         matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!" target="_blank">
-        <mat-icon inline>attach_money</mat-icon>
-        Buy me a coffee!
-      </a>
-    </a>
-    <a (click)="changelog.openChangelogDialog()" mat-list-item>
-      <a mat-raised-button>
-        Open changelog
-      </a>
-    </a>
-    <hr>
-
-  </mat-nav-list>
-
+<mat-sidenav
+    #drawer
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [opened]="false"
+    class="sidenav"
+    fixedInViewport
+    mode="over">
+    <mat-toolbar>
+        <button
+            (click)="drawer.toggle()"
+            aria-label="Toggle sidenav"
+            mat-stroked-button
+            type="button">
+            <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            Close Menu
+        </button>
+    </mat-toolbar>
+    <hr />
+    <mat-nav-list>
+        <a
+            (click)="drawer.toggle()"
+            *ngFor="let link of navLinks; let idx = index"
+            [class.active]="activeLinkIndex === idx"
+            [routerLink]="link.link"
+            mat-list-item>
+            {{ link.name }}
+        </a>
+        <hr />
+        <a href="https://ko-fi.com/mijago" mat-list-item>
+            <a
+                color="primary"
+                mat-raised-button
+                matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
+                target="_blank">
+                <mat-icon inline>attach_money</mat-icon>
+                Buy me a coffee!
+            </a>
+        </a>
+        <a (click)="changelog.openChangelogDialog()" mat-list-item>
+            <a mat-raised-button> Open changelog </a>
+        </a>
+        <hr />
+    </mat-nav-list>
 </mat-sidenav>
 
 <mat-toolbar id="header" role="heading">
-  <button
-    (click)="drawer.toggle()"
-    *ngIf="isHandset$ | async"
-    aria-label="Toggle sidenav"
-    mat-icon-button
-    type="button">
-    <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-  </button>
-  <span>D2ArmorPicker <small> by Mijago</small>
+    <button
+        (click)="drawer.toggle()"
+        *ngIf="isHandset$ | async"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        type="button">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+    </button>
+    <span
+        >D2ArmorPicker <small> by Mijago</small>
         <a href="https://twitter.com/MijagoCoding/" matTooltip="Birb App" target="_blank">
-          <img alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png">
+            <img alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png" />
         </a>
-        <a href="https://ko-fi.com/mijago" matTooltip="If you like my work, you can always buy me a coffee!"
-           target="_blank">
-          <img alt="Ko-Fi" class="logo-twitter" src="assets/logo-kofi.png">
+        <a
+            href="https://ko-fi.com/mijago"
+            matTooltip="If you like my work, you can always buy me a coffee!"
+            target="_blank">
+            <img alt="Ko-Fi" class="logo-twitter" src="assets/logo-kofi.png" />
         </a>
-        <a href="http://discord.d2armorpicker.com/" matTooltip="Visit me at the development & support discord."
-           target="_blank">
-          <img alt="Discord" class="logo-twitter" src="assets/logo-discord.png">
+        <a
+            href="http://discord.d2armorpicker.com/"
+            matTooltip="Visit me at the development & support discord."
+            target="_blank">
+            <img alt="Discord" class="logo-twitter" src="assets/logo-discord.png" />
         </a>
-      </span>
+    </span>
 
-  <span class="header-spacer"></span>
-  <div fxHide.lt-md="true" fxShow="true">
-    <nav id="navbar" mat-tab-nav-bar>
-      <a *ngFor="let link of navLinks; let idx = index"
-         [active]="activeLinkIndex === idx"
-         [routerLink]="link.link"
-         mat-tab-link>
-        {{link.name}}
-      </a>
-    </nav>
-  </div>
+    <span class="header-spacer"></span>
+    <div fxHide.lt-md="true" fxShow="true">
+        <nav id="navbar" mat-tab-nav-bar>
+            <a
+                *ngFor="let link of navLinks; let idx = index"
+                [active]="activeLinkIndex === idx"
+                [routerLink]="link.link"
+                mat-tab-link>
+                {{ link.name }}
+            </a>
+        </nav>
+    </div>
 
-  <span class="header-spacer"></span>
-  <div id="buttonContainer">
+    <span class="header-spacer"></span>
+    <div id="buttonContainer">
+        <span
+            class="changelogText"
+            fxShow="false"
+            fxShow.gt-md="true"
+            matTooltip="Click to show the changelog dialog.">
+            <a (click)="changelog.openChangelogDialog()">v{{ version }}&nbsp;</a>
+        </span>
 
-          <span class="changelogText" fxShow="false" fxShow.gt-md="true"
-                matTooltip="Click to show the changelog dialog.">
-            <a (click)="changelog.openChangelogDialog()">v{{version}}&nbsp;</a>
-          </span>
+        <a
+            color="accent"
+            fxHide.lt-md="true"
+            fxShow="true"
+            href="https://ko-fi.com/mijago"
+            mat-stroked-button
+            matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
+            target="_blank">
+            <mat-icon inline>attach_money</mat-icon>
+            Buy me a coffee!
+        </a>
 
-    <a color="accent" fxHide.lt-md="true" fxShow="true"
-       href="https://ko-fi.com/mijago"
-       mat-stroked-button
-       matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!" target="_blank">
-      <mat-icon inline>attach_money</mat-icon>
-      Buy me a coffee!
-    </a>
-
-
-    <button (click)="refreshAll(true)" aria-label="Refresh" class="example-icon" mat-icon-button
+        <button
+            (click)="refreshAll(true)"
+            aria-label="Refresh"
+            class="example-icon"
+            mat-icon-button
             matTooltip="Reload all items from the API.">
-      <mat-icon>refresh</mat-icon>
-    </button>
+            <mat-icon>refresh</mat-icon>
+        </button>
 
-    <button (click)="logout()" aria-label="Logout" class="example-icon" color="warn" mat-icon-button
+        <button
+            (click)="logout()"
+            aria-label="Logout"
+            class="example-icon"
+            color="warn"
+            mat-icon-button
             matTooltip="Logout">
-      <mat-icon>logout</mat-icon>
-    </button>
-  </div>
-
+            <mat-icon>logout</mat-icon>
+        </button>
+    </div>
 </mat-toolbar>
 <router-outlet></router-outlet>
 
-<span *ngVar="(status.status | async) as stat">
-  <mat-progress-bar
-    *ngIf="stat.updatingResultsTable || stat.calculatingResults || stat.calculatingPermutations || stat.updatingInventory || stat.updatingManifest"
-    id="loading"
-    mode="indeterminate"
-  ></mat-progress-bar>
+<span *ngVar="status.status | async as stat">
+    <mat-progress-bar
+        *ngIf="
+            stat.updatingResultsTable ||
+            stat.calculatingResults ||
+            stat.calculatingPermutations ||
+            stat.updatingInventory ||
+            stat.updatingManifest
+        "
+        id="loading"
+        mode="indeterminate"></mat-progress-bar>
 </span>
 
-
-<span *ngVar="(status.status | async) as stat">
-  <mat-card *ngIf="stat.updatingManifest" class="info">Updating the cached manifest. Please wait. <br/>If this takes too long, please logout and login again.</mat-card>
-  <mat-card *ngIf="stat.updatingInventory" class="info">Updating the cached inventory. Please wait.</mat-card>
-  <mat-card *ngIf="stat.calculatingPermutations" class="info">Updating armor combinations. Please wait.</mat-card>
-  <mat-card *ngIf="stat.calculatingResults" class="info">Updating possible results. Please wait.</mat-card>
-  <mat-card *ngIf="stat.updatingResultsTable" class="info">Updating result table. Please wait.</mat-card>
-
+<span *ngVar="status.status | async as stat">
+    <mat-card *ngIf="stat.updatingManifest" class="info"
+        >Updating the cached manifest. Please wait. <br />If this takes too long, please logout and
+        login again.</mat-card
+    >
+    <mat-card *ngIf="stat.updatingInventory" class="info"
+        >Updating the cached inventory. Please wait.</mat-card
+    >
+    <mat-card *ngIf="stat.calculatingPermutations" class="info"
+        >Updating armor combinations. Please wait.</mat-card
+    >
+    <mat-card *ngIf="stat.calculatingResults" class="info"
+        >Updating possible results. Please wait.</mat-card
+    >
+    <mat-card *ngIf="stat.updatingResultsTable" class="info"
+        >Updating result table. Please wait.</mat-card
+    >
 </span>
 <app-changelog-dialog-controller></app-changelog-dialog-controller>

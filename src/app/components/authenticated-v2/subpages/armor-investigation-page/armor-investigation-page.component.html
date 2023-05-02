@@ -1,219 +1,288 @@
 <mat-card id="description">
-  <mat-card-title>
-    Armor Investigation
-  </mat-card-title>
-  <mat-card-subtitle>
-    A visualization tool for data scientists.
-  </mat-card-subtitle>
-  <mat-card-content>
-    This part of the D2ArmorPicker lists all of your armor items.
-    For each armor it shows how it is generated.
-    It shows every used <i>"plug"</i>, as well as the intrinsic stats of exotics.
-    For more information about plugs, see <a
-    href="https://www.reddit.com/r/DestinyTheGame/comments/mpaopq/how_armor_stats_roll_an_advanced_insight_into/"
-    target="_blank">here</a>.
-    Make sure to give the author an upvote for the hard work!
-    <br><br>
-    Please note that this feature is mainly targeted for data nerds and people interested in the basic stats of armor.
-    It is just a data visualization. Mobile layout and a search function <i>may</i> happen in the future.
-  </mat-card-content>
-  <mat-card-title>
-    Filters
-  </mat-card-title>
-  <mat-card-subtitle>
-    Some filters. Nothing fancy but it works. Sorry ;)
-  </mat-card-subtitle>
-  <mat-card-content>
+    <mat-card-title> Armor Investigation </mat-card-title>
+    <mat-card-subtitle> A visualization tool for data scientists. </mat-card-subtitle>
+    <mat-card-content>
+        This part of the D2ArmorPicker lists all of your armor items. For each armor it shows how it
+        is generated. It shows every used <i>"plug"</i>, as well as the intrinsic stats of exotics.
+        For more information about plugs, see
+        <a
+            href="https://www.reddit.com/r/DestinyTheGame/comments/mpaopq/how_armor_stats_roll_an_advanced_insight_into/"
+            target="_blank"
+            >here</a
+        >. Make sure to give the author an upvote for the hard work! <br /><br />
+        Please note that this feature is mainly targeted for data nerds and people interested in the
+        basic stats of armor. It is just a data visualization. Mobile layout and a search function
+        <i>may</i> happen in the future.
+    </mat-card-content>
+    <mat-card-title> Filters </mat-card-title>
+    <mat-card-subtitle> Some filters. Nothing fancy but it works. Sorry ;) </mat-card-subtitle>
+    <mat-card-content>
+        <table>
+            <tr>
+                <td colspan="3">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Item Name</mat-label>
+                        <input matInput placeholder="Stronghold" [(ngModel)]="armorName" />
+                    </mat-form-field>
+                </td>
+                <td colspan="3">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Item Hash</mat-label>
+                        <input matInput [(ngModel)]="armorHash" />
+                    </mat-form-field>
+                </td>
+                <td colspan="3">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Item ID</mat-label>
+                        <input matInput [(ngModel)]="armorId" />
+                    </mat-form-field>
+                </td>
+            </tr>
+            <tr>
+                <td> Mobility: </td>
+                <td> {{ minMobility }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minMobility"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
 
-    <table>
-      <tr>
-        <td colspan="3">
-          <mat-form-field appearance="outline">
-            <mat-label>Item Name</mat-label>
-            <input matInput placeholder="Stronghold" [(ngModel)]="armorName">
-          </mat-form-field>
-        </td>
-        <td colspan="3">
-          <mat-form-field appearance="outline">
-            <mat-label>Item Hash</mat-label>
-            <input matInput  [(ngModel)]="armorHash">
-          </mat-form-field>
-        </td>
-        <td colspan="3">
-          <mat-form-field appearance="outline">
-            <mat-label>Item ID</mat-label>
-            <input matInput  [(ngModel)]="armorId">
-          </mat-form-field>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Mobility:
-        </td>
-        <td> {{minMobility}}</td>
-        <td>
-          <mat-slider [(value)]="minMobility" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
+                <td> Resilience: </td>
+                <td> {{ minResilience }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minResilience"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
 
-        <td>
-          Resilience:
-        </td>
-        <td> {{minResilience}}</td>
-        <td>
-          <mat-slider [(value)]="minResilience" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
+                <td> Recovery: </td>
+                <td> {{ minRecovery }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minRecovery"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+            </tr>
+            <tr>
+                <td> Discipline: </td>
+                <td> {{ minDiscipline }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minDiscipline"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+                <td> Intellect: </td>
+                <td> {{ minIntellect }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minIntellect"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+                <td> Strength: </td>
+                <td>{{ minStrength }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="minStrength"
+                        max="32"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+            </tr>
+            <tr>
+                <td> Any plug >=: </td>
+                <td>{{ anyPlugWithN }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="anyPlugWithN"
+                        max="17"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+                <td> Any Plug <=: </td>
+                <td>{{ anyPlugBelowN }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="anyPlugBelowN"
+                        max="17"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+            </tr>
+            <tr>
+                <td> All plugs >=: </td>
+                <td>{{ allPlugsWithN }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="allPlugsWithN"
+                        max="17"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+                <td> All Plugs <=: </td>
+                <td>{{ allPlugsBelowN }}</td>
+                <td>
+                    <mat-slider
+                        [(value)]="allPlugsBelowN"
+                        max="17"
+                        min="0"
+                        step="1"
+                        thumbLabel
+                        tickInterval="1"></mat-slider>
+                </td>
+            </tr>
+        </table>
 
-        <td>
-          Recovery:
-        </td>
-        <td> {{minRecovery}}</td>
-        <td>
-          <mat-slider [(value)]="minRecovery" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Discipline:
-        </td>
-        <td> {{minDiscipline}}</td>
-        <td>
-          <mat-slider [(value)]="minDiscipline" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-        <td>
-          Intellect:
-        </td>
-        <td> {{minIntellect}}</td>
-        <td>
-          <mat-slider [(value)]="minIntellect" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-        <td>
-          Strength:
-        </td>
-        <td>{{minStrength}}</td>
-        <td>
-          <mat-slider [(value)]="minStrength" max="32" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Any plug >=:
-        </td>
-        <td>{{anyPlugWithN}}</td>
-        <td>
-          <mat-slider [(value)]="anyPlugWithN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-        <td>
-          Any Plug <=:
-        </td>
-        <td>{{anyPlugBelowN}}</td>
-        <td>
-          <mat-slider [(value)]="anyPlugBelowN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          All plugs >=:
-        </td>
-        <td>{{allPlugsWithN}}</td>
-        <td>
-          <mat-slider [(value)]="allPlugsWithN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-        <td>
-          All Plugs <=:
-        </td>
-        <td>{{allPlugsBelowN}}</td>
-        <td>
-          <mat-slider [(value)]="allPlugsBelowN" max="17" min="0" step="1" thumbLabel tickInterval="1"></mat-slider>
-        </td>
-      </tr>
-    </table>
-
-    <a mat-raised-button color="primary" (click)="updateItems()">Update</a>&nbsp;
-    <a mat-raised-button color="warn" (click)="clear()">Clear</a>
-
-  </mat-card-content>
+        <a mat-raised-button color="primary" (click)="updateItems()">Update</a>&nbsp;
+        <a mat-raised-button color="warn" (click)="clear()">Clear</a>
+    </mat-card-content>
 </mat-card>
 
+<ng-container *ngFor="let armorItems of armorItemsPerSlot | keyvalue">
+    <mat-toolbar>
+        {{ getCategoryName(armorItems.key) }}
+    </mat-toolbar>
+    <br />
 
-<ng-container *ngFor="let armorItems of armorItemsPerSlot |keyvalue">
-
-  <mat-toolbar>
-    {{getCategoryName(armorItems.key)}}
-  </mat-toolbar>
-  <br/>
-
-  <div class="armor-container"
-       fxLayout="row"
-       fxLayout.xs="column"
-       fxLayoutGap="10px">
-    <ng-container *ngFor="let armor of armorItems.value; let idx = index">
-      <mat-card class="cluster-item">
-        <mat-card-title>
-          {{armor.name}}
-        </mat-card-title>
-        <mat-card-content>
-          <table>
-            <tr>
-              <td colspan="2">Hash:</td>
-              <td>
-                <a alt="This armor on data.destinysets.com"
-                   href="https://data.destinysets.com/i/InventoryItem:{{armor.hash}}"
-                   target="_blank">
-                  <img src="https://data.destinysets.com/static/media/logo.556bd7bd.svg" style="width: 15px;">
-                </a>
-                {{armor.hash}}</td>
-            </tr>
-            <tr>
-              <td colspan="2">ItemInstanceId:</td>
-              <td>{{armor.itemInstanceId}}</td>
-            </tr>
-            <tr>
-              <td colspan="2">Sunset?</td>
-              <td>{{armor.isSunset}}</td>
-            </tr>
-            <tr>
-              <td>Total</td>
-              <td>{{armor.totalSum}}</td>
-            </tr>
-            <ng-container
-              *ngFor="let entry of [armor.mobility, armor.resilience, armor.recovery, armor.discipline, armor.intellect, armor.strength];let idx1 = index">
-              <tr [matTooltip]="['Mobility', 'Resilience','Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]">
-                <td>
-                  {{['Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intellect', 'Strength'][idx1]}}
-                </td>
-                <td>{{armor.totalStats[idx1] |number:'1.0-0'}}</td>
-                <td width="100%">
-                  <div class="stat-range">
-                    <div *ngFor="let ci of entry; let id2 = index"
-                         class="stat-range-bar stat-range-bar{{id2 + (idx1>=3 ? 3: 0)}}"
-                         style="width:{{ci/32*100}}%"></div>
-                  </div>
-                </td>
-              </tr>
-            </ng-container>
-          </table>
-        </mat-card-content>
-        <mat-card-content>
-          Plugs:
-          <table>
-            <tr>
-              <td>Plug</td>
-              <td>Total</td>
-              <td>Values</td>
-            </tr>
-            <tr *ngFor="let plug of armor.statPlugHashes">
-              <td>
-                <a alt="This plug on data.destinysets.com" href="https://data.destinysets.com/i/InventoryItem:{{plug}}"
-                   target="_blank">
-                  <img src="https://data.destinysets.com/static/media/logo.556bd7bd.svg" style="width: 15px;">
-                </a>
-                {{plug}}</td>
-              <td class="plug-sum-col">{{getPlugSum(plug)}}</td>
-              <td>{{getPlugString(plug)}}</td>
-            </tr>
-          </table>
-        </mat-card-content>
-      </mat-card>
-    </ng-container>
-  </div>
+    <div class="armor-container" fxLayout="row" fxLayout.xs="column" fxLayoutGap="10px">
+        <ng-container *ngFor="let armor of armorItems.value; let idx = index">
+            <mat-card class="cluster-item">
+                <mat-card-title>
+                    {{ armor.name }}
+                </mat-card-title>
+                <mat-card-content>
+                    <table>
+                        <tr>
+                            <td colspan="2">Hash:</td>
+                            <td>
+                                <a
+                                    alt="This armor on data.destinysets.com"
+                                    href="https://data.destinysets.com/i/InventoryItem:{{
+                                        armor.hash
+                                    }}"
+                                    target="_blank">
+                                    <img
+                                        src="https://data.destinysets.com/static/media/logo.556bd7bd.svg"
+                                        style="width: 15px" />
+                                </a>
+                                {{ armor.hash }}</td
+                            >
+                        </tr>
+                        <tr>
+                            <td colspan="2">ItemInstanceId:</td>
+                            <td>{{ armor.itemInstanceId }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Sunset?</td>
+                            <td>{{ armor.isSunset }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total</td>
+                            <td>{{ armor.totalSum }}</td>
+                        </tr>
+                        <ng-container
+                            *ngFor="
+                                let entry of [
+                                    armor.mobility,
+                                    armor.resilience,
+                                    armor.recovery,
+                                    armor.discipline,
+                                    armor.intellect,
+                                    armor.strength
+                                ];
+                                let idx1 = index
+                            ">
+                            <tr
+                                [matTooltip]="
+                                    [
+                                        'Mobility',
+                                        'Resilience',
+                                        'Recovery',
+                                        'Discipline',
+                                        'Intellect',
+                                        'Strength'
+                                    ][idx1]
+                                ">
+                                <td>
+                                    {{
+                                        [
+                                            "Mobility",
+                                            "Resilience",
+                                            "Recovery",
+                                            "Discipline",
+                                            "Intellect",
+                                            "Strength"
+                                        ][idx1]
+                                    }}
+                                </td>
+                                <td>{{ armor.totalStats[idx1] | number : "1.0-0" }}</td>
+                                <td width="100%">
+                                    <div class="stat-range">
+                                        <div
+                                            *ngFor="let ci of entry; let id2 = index"
+                                            class="stat-range-bar stat-range-bar{{
+                                                id2 + (idx1 >= 3 ? 3 : 0)
+                                            }}"
+                                            style="width:{{ (ci / 32) * 100 }}%"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </table>
+                </mat-card-content>
+                <mat-card-content>
+                    Plugs:
+                    <table>
+                        <tr>
+                            <td>Plug</td>
+                            <td>Total</td>
+                            <td>Values</td>
+                        </tr>
+                        <tr *ngFor="let plug of armor.statPlugHashes">
+                            <td>
+                                <a
+                                    alt="This plug on data.destinysets.com"
+                                    href="https://data.destinysets.com/i/InventoryItem:{{ plug }}"
+                                    target="_blank">
+                                    <img
+                                        src="https://data.destinysets.com/static/media/logo.556bd7bd.svg"
+                                        style="width: 15px" />
+                                </a>
+                                {{ plug }}</td
+                            >
+                            <td class="plug-sum-col">{{ getPlugSum(plug) }}</td>
+                            <td>{{ getPlugString(plug) }}</td>
+                        </tr>
+                    </table>
+                </mat-card-content>
+            </mat-card>
+        </ng-container>
+    </div>
 </ng-container>

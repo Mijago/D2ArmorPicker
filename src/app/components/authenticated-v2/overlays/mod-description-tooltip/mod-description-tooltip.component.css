@@ -1,13 +1,13 @@
 :host {
-  width: 350px;
+    width: 350px;
 }
 
 .tooltip-container {
-  border: 1px solid gray;
-  padding: 1px 5px 4px 5px;
-  background: linear-gradient(#484848 0px, #2c2c2c 100%);
+    border: 1px solid gray;
+    padding: 1px 5px 4px 5px;
+    background: linear-gradient(#484848 0px, #2c2c2c 100%);
 }
 
 .exotic-name {
-  color: #eedb9e;
+    color: #eedb9e;
 }

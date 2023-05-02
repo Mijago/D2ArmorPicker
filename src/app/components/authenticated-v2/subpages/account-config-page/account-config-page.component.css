@@ -1,19 +1,19 @@
 .returnbutton {
-  margin-top: 5px;
-  margin-bottom: 15px;
-  width: 100%;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
 #account-config-container {
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 mat-card {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 .btn-download {
-  margin-right: 10px;
+    margin-right: 10px;
 }

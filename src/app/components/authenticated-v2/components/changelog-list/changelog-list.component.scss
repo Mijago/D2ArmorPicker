@@ -1,17 +1,17 @@
 :host ::ng-deep .mat-line {
-  word-wrap: break-word !important;
-  white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    white-space: pre-wrap !important;
 }
 
 :host ::ng-deep .mat-list .mat-list-item {
-  height: initial !important;
+    height: initial !important;
 }
 
 .title {
-  text-decoration: underline;
-  font-size: 20px;
+    text-decoration: underline;
+    font-size: 20px;
 }
 
 .e > p:first-child {
-  padding-top: 12px;
+    padding-top: 12px;
 }

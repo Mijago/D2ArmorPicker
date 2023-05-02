@@ -5,5 +5,5 @@ export enum ModifierType {
     Solar,
     Arc,
     Strand,
-    RetrofitMods // Artifact Retrofit mods
+    RetrofitMods, // Artifact Retrofit mods
 }

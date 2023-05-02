@@ -1,20 +1,20 @@
 .tooltip-container {
-  border: 1px solid gray;
-  padding: 1px 5px 4px 5px;
-  background: linear-gradient(#484848 0px, #2c2c2c 100%);
+    border: 1px solid gray;
+    padding: 1px 5px 4px 5px;
+    background: linear-gradient(#484848 0px, #2c2c2c 100%);
 }
 
 .stat-display {
-  width: 70px;
-  height: 20px;
-  background-color: #2c2c2c;
+    width: 70px;
+    height: 20px;
+    background-color: #2c2c2c;
 }
 .stat-display-bar {
-  height: 100%;
-  background-color: #a1a1a1;
-  float: left;
+    height: 100%;
+    background-color: #a1a1a1;
+    float: left;
 }
 
 .masterwork {
-  background-color: #eedb9e;
+    background-color: #eedb9e;
 }

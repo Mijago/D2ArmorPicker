@@ -1,21 +1,21 @@
 $icon-with: 40px;
 .item-icon {
-  width: $icon-with;
+    width: $icon-with;
 }
 
 .item-icon:hover {
-  filter: brightness(0.8) hue-rotate(350deg) saturate(3) blur(2px) contrast(0.6);
-  cursor: not-allowed;
+    filter: brightness(0.8) hue-rotate(350deg) saturate(3) blur(2px) contrast(0.6);
+    cursor: not-allowed;
 }
 
 .item-sub {
-  margin-right: 3px;
+    margin-right: 3px;
 }
 
 .item-icon-container {
-  position: relative;
-  contain: layout paint style;
-  box-sizing: border-box;
-  width: var(--item-size);
-  transition: opacity 0.2s, transform 0.2s;
+    position: relative;
+    contain: layout paint style;
+    box-sizing: border-box;
+    width: var(--item-size);
+    transition: opacity 0.2s, transform 0.2s;
 }

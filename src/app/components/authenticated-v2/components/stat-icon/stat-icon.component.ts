@@ -1,16 +1,14 @@
-import {Component, Input} from '@angular/core';
-import {ArmorStat} from "../../../../data/enum/armor-stat";
+import { Component, Input } from "@angular/core";
+import { ArmorStat } from "../../../../data/enum/armor-stat";
 
 @Component({
-  selector: 'app-stat-icon',
-  templateUrl: './stat-icon.component.html',
-  styleUrls: ['./stat-icon.component.css']
+    selector: "app-stat-icon",
+    templateUrl: "./stat-icon.component.html",
+    styleUrls: ["./stat-icon.component.css"],
 })
 export class StatIconComponent {
+    @Input()
+    stat: ArmorStat = ArmorStat.Mobility;
 
-  @Input()
-  stat: ArmorStat = ArmorStat.Mobility;
-
-  constructor() { }
-
+    constructor() {}
 }

@@ -1,58 +1,47 @@
-const writeFile = require("fs").writeFile
+const writeFile = require("fs").writeFile;
 
-const production = process.env.PRODUCTION === "1"
-const beta_branch = process.env.BETA === "1"
-const version = "2.3.0"
+const production = process.env.PRODUCTION === "1";
+const beta_branch = process.env.BETA === "1";
+const version = "2.3.0";
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
-  ? './src/environments/environment.prod.ts'
-  : beta_branch
-    ? './src/environments/environment.prod.ts'
-    : './src/environments/environment.ts';
+    ? "./src/environments/environment.prod.ts"
+    : beta_branch
+    ? "./src/environments/environment.prod.ts"
+    : "./src/environments/environment.ts";
 // Load node modules
 
-require('dotenv').config({
-  path: production
-    ? ".env"
-    : beta_branch
-      ? ".env_beta"
-      : ".env_dev"
+require("dotenv").config({
+    path: production ? ".env" : beta_branch ? ".env_beta" : ".env_dev",
 });
 
-const revision = require('child_process')
-  .execSync('git rev-parse --short HEAD')
-  .toString().trim()
+const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
 
-var version_tag = production
-  ? ""
-  : beta_branch
-    ? "-beta-" + revision
-    : "-dev-" + revision
+var version_tag = production ? "" : beta_branch ? "-beta-" + revision : "-dev-" + revision;
 
 const data = {
-  version: version + version_tag,
-  revision: revision,
-  production: production,
-  beta: beta_branch,
-  apiKey: process.env.D2AP_BUNGIE_API_KEY,
-  clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
-  client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
-  nodeEnv: process.env.NODE_ENV,
-  offlineMode: false,
-  featureFlags: {
-    enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
-    enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
-  }
-}
-
+    version: version + version_tag,
+    revision: revision,
+    production: production,
+    beta: beta_branch,
+    apiKey: process.env.D2AP_BUNGIE_API_KEY,
+    clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
+    client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
+    nodeEnv: process.env.NODE_ENV,
+    offlineMode: false,
+    featureFlags: {
+        enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
+        enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
+    },
+};
 
 // `environment.ts` file structure
 const envConfigFile = `export const environment = ${JSON.stringify(data, null, 2)};`;
 writeFile(targetPath, envConfigFile, (err: NodeJS.ErrnoException | null) => {
-  if (err) {
-    throw console.error(err);
-  } else {
-    console.log(`Angular environment.ts file generated correctly at ${targetPath} \n`);
-  }
+    if (err) {
+        throw console.error(err);
+    } else {
+        console.log(`Angular environment.ts file generated correctly at ${targetPath} \n`);
+    }
 });

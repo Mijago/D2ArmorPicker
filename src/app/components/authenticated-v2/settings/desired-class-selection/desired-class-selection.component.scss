@@ -1,99 +1,96 @@
 .discord-btn {
-  margin-left: 15px;
+    margin-left: 15px;
 }
 
-.material-listing{
-  position: relative;
-  padding-left: 22px;
-  padding-right: 10px;
-  img {
-    width: 20px;
-    position: absolute;
-    top: -2px;
-    left: 0;
-  }
+.material-listing {
+    position: relative;
+    padding-left: 22px;
+    padding-right: 10px;
+    img {
+        width: 20px;
+        position: absolute;
+        top: -2px;
+        left: 0;
+    }
 }
 
 .crayon_logo_container {
-  position: relative;
-  width: 22px;
-  display: inline-block;
-  margin-right: 3px;
-
-  .crayon_logo {
-    position: absolute;
+    position: relative;
     width: 22px;
-    top: -14px;
-  }
-}
+    display: inline-block;
+    margin-right: 3px;
 
+    .crayon_logo {
+        position: absolute;
+        width: 22px;
+        top: -14px;
+    }
+}
 
 ::ng-deep .mat-option-text {
-  color: #FFFFFF;
+    color: #ffffff;
 }
-
 
 .character-container {
-  height:50px;
+    height: 50px;
 }
 
-.character-entry{
-  color: white;
+.character-entry {
+    color: white;
 
-  background-size: cover;
-  background-position: left center;
-  background-repeat: no-repeat;
-  width: 180px;
-  height: 36px;
-  position: relative;
+    background-size: cover;
+    background-position: left center;
+    background-repeat: no-repeat;
+    width: 180px;
+    height: 36px;
+    position: relative;
 
-  margin-right: 7px;
-  margin-bottom: 7px;
+    margin-right: 7px;
+    margin-bottom: 7px;
 
-  border: rgba(255, 255, 255, 0) solid 2px;
-  opacity: 0.75;
+    border: rgba(255, 255, 255, 0) solid 2px;
+    opacity: 0.75;
 
-  cursor: pointer;
+    cursor: pointer;
 
-  &:hover {
-    border: rgba(255, 255, 255, 0.41) solid 2px;
-    opacity: 0.98;
-  }
+    &:hover {
+        border: rgba(255, 255, 255, 0.41) solid 2px;
+        opacity: 0.98;
+    }
 
-  &.selected {
-    cursor: default;
-    opacity: 1.0;
-    border: white solid 2px;
-  }
-
+    &.selected {
+        cursor: default;
+        opacity: 1;
+        border: white solid 2px;
+    }
 }
 
 .class-text {
-  position: absolute;
-  left: 35px;
-  top: 8px;
-  font-size: x-large;
-  text-shadow:  0 0 6px #000000;
+    position: absolute;
+    left: 35px;
+    top: 8px;
+    font-size: x-large;
+    text-shadow: 0 0 6px #000000;
 }
 
 .head-icon {
-  height: 25px;
-  top: 6px;
-  right: 30px;
-  position: absolute;
-  filter: invert(1) drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.25)) !important;
+    height: 25px;
+    top: 6px;
+    right: 30px;
+    position: absolute;
+    filter: invert(1) drop-shadow(1px 1px 3px rgba(0, 0, 0, 0.25)) !important;
 }
 
 .armor-text {
-  position: absolute;
-  right: 4px;
-  top: 9px;
-  text-shadow:  0 0 6px #000000;
-  font-size: small;
+    position: absolute;
+    right: 4px;
+    top: 9px;
+    text-shadow: 0 0 6px #000000;
+    font-size: small;
 }
 a {
-  color: #99afe3;
+    color: #99afe3;
 }
 a:visited {
-  color: #7294dc;
+    color: #7294dc;
 }
