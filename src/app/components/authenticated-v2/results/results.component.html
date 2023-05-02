@@ -4,7 +4,7 @@
     <ng-container *ngIf="this.totalResults > 0">
       Click on a row to expand it and to see the list of the items required for this build.<br/>
     </ng-container>
-    <ng-container *ngIf="this.totalResults == 0">
+    <ng-container *ngIf="this.totalResults === 0">
       <div class="no-found-sadcat-container">
         <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat">&nbsp;
       </div>
@@ -28,13 +28,13 @@
           <mat-label>Combinations generated</mat-label>
           <input matInput readonly value="{{this.totalResults | number}}">
 
-          <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 5e4"
+          <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 5e4"
                     class="report-problem-icon"
                     matSuffix
                     matTooltip="Note: To speed up the whole process, only {{this.parsedResults | number}} results are listed in this table.
                         If you need more entries, disable the limitation in the advanced settings.">report_problem
           </mat-icon>
-          <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults != this.totalResults && this.parsedResults == 1e6"
+          <mat-icon #tooltip="matTooltip" *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 1e6"
                     class="report-problem-icon"
                     matSuffix
                     matTooltip="Note: To prevent Out-Of-Memory crashes, only {{this.parsedResults | number}} results are listed in this table.
@@ -55,17 +55,17 @@
                     matTooltip="This setting enforces that all exotics are ignored.">No Exotic
           </mat-chip>
           <mat-chip #tooltip="matTooltip"
-                    *ngIf="_config_selectedExotics.length == 1 && _config_selectedExotics.indexOf(-1) == -1 "
+                    *ngIf="_config_selectedExotics.length === 1 && _config_selectedExotics.indexOf(-1) === -1 "
                     disableRipple
                     matTooltip="This setting enforces that only one specific exotic is used.">Exotic
           </mat-chip>
           <mat-chip #tooltip="matTooltip"
-                    *ngIf="_config_selectedExotics.length > 1 && _config_selectedExotics.indexOf(-1) == -1 "
+                    *ngIf="_config_selectedExotics.length > 1 && _config_selectedExotics.indexOf(-1) === -1 "
                     disableRipple
                     matTooltip="The tool will try to fulfill your settings for all the selected exotics. If you select exotics in different slots then it will search for legendary items to allow hotswapping with the same stats.">
             Multiple Exotics
           </mat-chip>
-          <mat-chip #tooltip="matTooltip" *ngIf="_config_maximumStatMods == 0" disableRipple
+          <mat-chip #tooltip="matTooltip" *ngIf="_config_maximumStatMods === 0" disableRipple
                     matTooltip="You enforced that no stat mods are used.">No stat mods
           </mat-chip>
           <mat-chip #tooltip="matTooltip" *ngIf="_config_tryLimitWastedStats" disableRipple
@@ -213,7 +213,7 @@
                    src="https://bungie.net/{{exo.icon}}">
               <img class="itemIconWatermark" src="https://bungie.net/{{exo.watermark}}">
             </ng-container>
-            <img *ngIf="element.exotic.length == 0" class="itemIcon"
+            <img *ngIf="element.exotic.length === 0" class="itemIcon"
                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png">
           </td>
         </ng-container>
@@ -267,7 +267,7 @@
         <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
         <ng-container matColumnDef="expandedDetail">
           <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
-            <div [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
+            <div [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
                  class="example-element-detail">
               <app-expanded-result-content [element]="element"></app-expanded-result-content>
             </div>

@@ -1,17 +1,17 @@
 <div class="character-container">
-  <div *ngIf="userdata.characters.length == 0" class="character-entry">
+  <div *ngIf="userdata.characters.length === 0" class="character-entry">
     Loading characters..
   </div>
   <div (click)="selectClass(char.clazz)"
        *ngFor="let char of userdata.characters; let idx = index"
-       [class.selected]="selectedClass == char.clazz"
+       [class.selected]="selectedClass === char.clazz"
        [style.background-image]="'url(https://bungie.net/'+char.emblemUrl+')'"
        class="character-entry"
        style="float: left;">
     <div class="class-text">
-      <span *ngIf="char.clazz == 0">Titan</span>
-      <span *ngIf="char.clazz == 1">Hunter</span>
-      <span *ngIf="char.clazz == 2">Warlock</span>
+      <span *ngIf="char.clazz === 0">Titan</span>
+      <span *ngIf="char.clazz === 1">Hunter</span>
+      <span *ngIf="char.clazz === 2">Warlock</span>
     </div>
     <div *ngIf="!!itemCounts[idx]">
       <img class="head-icon"
@@ -22,7 +22,7 @@
   </div>
 </div>
 
-<div *ngIf="storedMaterials != null">
+<div *ngIf="storedMaterials !== null">
   <span class="material-listing" matTooltip="Ascendant Shards: {{storedMaterials['4257549985']}}">
   <img src="https://www.bungie.net/common/destiny2_content/icons/2bd6547fa8f170d8868c8ab24b9fe84a.jpg" alt="Ascendant Shard">
     {{storedMaterials["4257549985"] | number:'1.0-0'}}

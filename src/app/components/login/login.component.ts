@@ -6,12 +6,9 @@ import {environment} from "../../../environments/environment";
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
 
   constructor() {
-  }
-
-  ngOnInit(): void {
   }
 
   startLogin() {

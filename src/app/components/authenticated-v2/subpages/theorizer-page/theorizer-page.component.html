@@ -210,10 +210,10 @@
     </mat-card-header>
     <mat-card-content>
       <p
-        [class.status-undefined]="result?.result?.status! == 1"
-        [class.status-infeasable]="result?.result?.status! == 3 || result?.result?.status! == 4"
-        [class.status-acceptable]="result?.result?.status! == 2"
-        [class.status-optimal]="result?.result?.status! == 5"
+        [class.status-undefined]="result?.result?.status! === 1"
+        [class.status-infeasable]="result?.result?.status! === 3 || result?.result?.status! === 4"
+        [class.status-acceptable]="result?.result?.status! === 2"
+        [class.status-optimal]="result?.result?.status! === 5"
       >Status Code {{result?.result?.status!}}: {{resultValueToText(result?.result?.status!)}}</p>
       <p>Time (s): {{result?.time}}</p>
 
@@ -239,7 +239,7 @@
             <td>{{slotNameByIndex(idx)}}</td>
             <td *ngIf="idx < 4 &&  result_items['itemMeta'][idx]">{{result_items['itemMeta'][idx]["name"]}}</td>
             <td *ngIf="idx < 4 && !result_items['itemMeta'][idx]">THEORETICAL</td>
-            <td *ngIf="idx == 4"></td>
+            <td *ngIf="idx === 4"></td>
 
             <td>
               <img class="icon-item" *ngIf="result_items['itemMeta'][idx]"
@@ -253,7 +253,7 @@
               <img class="icon-item" *ngIf="result_items['itemArtifice'][idx]"
                    [matTooltip]="getPerkName(2)"
                    [src]="getPerkIconUrl(2)">
-              <img class="icon-item" *ngIf="!result_items['itemArtifice'][idx] && result_items['itemMeta'][idx] && result_items['itemMeta'][idx].perk != 0"
+              <img class="icon-item" *ngIf="!result_items['itemArtifice'][idx] && result_items['itemMeta'][idx] && result_items['itemMeta'][idx].perk !== 0"
                    [matTooltip]="getPerkName(result_items['itemMeta'][idx].perk)"
                    [src]="getPerkIconUrl(result_items['itemMeta'][idx].perk)">
             </td>

@@ -7,7 +7,7 @@ import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 @Directive({
   selector: '[exoticTooltip]'
 })
-export class ExoticTooltipDirective {
+export class ExoticTooltipDirective implements OnInit, OnDestroy {
 
   /**
    * This will be used to show tooltip or not
@@ -16,7 +16,7 @@ export class ExoticTooltipDirective {
   @Input() showToolTip: boolean = true;
 
   //If this is specified then specified text will be show in in the tooltip
-  @Input(`exoticTooltip`) armor: IManifestArmor | undefined;
+  @Input() exoticTooltip: IManifestArmor | undefined;
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
@@ -71,7 +71,7 @@ export class ExoticTooltipDirective {
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
       const tooltipRef: ComponentRef<ExoticPerkTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ExoticPerkTooltipComponent));
-      tooltipRef.instance.armor = this.armor;
+      tooltipRef.instance.armor = this.exoticTooltip;
     }
   }
 

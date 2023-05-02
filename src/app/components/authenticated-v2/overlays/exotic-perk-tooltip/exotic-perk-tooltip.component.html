@@ -3,7 +3,7 @@
     <table>
       <tr>
         <td class="perk-icon-col" rowspan="2">
-          <img *ngIf="exoticPerk" alt="{{exoticPerk?.name}}" class="perk-icon" src="https://bungie.net/{{exoticPerk?.icon}}">
+          <img *ngIf="exoticPerk" alt="{{exoticPerk.name}}" class="perk-icon" src="https://bungie.net/{{exoticPerk.icon}}">
         </td>
         <td class="exotic-name">{{armor?.name}}</td>
       </tr>
@@ -15,13 +15,12 @@
       </tr>
       <tr *ngIf="exoticPerk">
         <td>
-
-          <span>{{exoticPerk?.name}}</span>
+          <span>{{exoticPerk.name}}</span>
         </td>
       </tr>
       <tr *ngIf="exoticPerk">
         <td colspan="2">
-          {{exoticPerk?.description}}
+          {{exoticPerk.description}}
         </td>
       </tr>
     </table>

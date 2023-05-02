@@ -7,8 +7,8 @@ import {ArmorStat, ArmorStatNames} from "../../../../data/enum/armor-stat";
   templateUrl: './armor-tooltip.component.html',
   styleUrls: ['./armor-tooltip.component.css']
 })
-export class ArmorTooltipComponent implements OnInit {
-  @Input(`itemTooltip`) armor: ResultItem | undefined;
+export class ArmorTooltipComponent {
+  @Input() itemTooltip: ResultItem | undefined;
 
   getArmorStatName(i: number) {
     return ArmorStatNames[i as ArmorStat]
@@ -20,8 +20,4 @@ export class ArmorTooltipComponent implements OnInit {
 
   constructor() {
   }
-
-  ngOnInit(): void {
-  }
-
 }

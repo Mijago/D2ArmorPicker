@@ -5,11 +5,8 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './slot-limitation-title.component.html',
   styleUrls: ['./slot-limitation-title.component.css']
 })
-export class SlotLimitationTitleComponent implements OnInit {
+export class SlotLimitationTitleComponent {
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
 
 }

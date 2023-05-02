@@ -1,7 +1,7 @@
 <mat-button-toggle-group appearance="standard" name="fontStyle">
   <mat-button-toggle (click)="setValue(i)"
                      *ngFor="let tier of TierRange; let i = index"
-                     [checked]="selectedTier == i"
+                     [checked]="selectedTier === i"
                      [class.isFromMod]="isAddedByConfigMods(i)"
                      [class.mat-button-toggle-checked]="selectedTier>=i"
                      [class.not-checked]="selectedTier<i"

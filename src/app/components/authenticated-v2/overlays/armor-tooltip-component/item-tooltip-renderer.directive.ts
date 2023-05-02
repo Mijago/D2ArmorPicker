@@ -7,7 +7,7 @@ import {ResultItem} from "../../results/results.component";
 @Directive({
   selector: '[itemTooltip]'
 })
-export class ItemTooltipRendererDirective {
+export class ItemTooltipRendererDirective implements OnInit, OnDestroy {
 
   /**
    * This will be used to show tooltip or not
@@ -16,7 +16,7 @@ export class ItemTooltipRendererDirective {
   @Input() showToolTip: boolean = true;
 
   //If this is specified then specified text will be showin in the tooltip
-  @Input(`itemTooltip`) armor: ResultItem | undefined;
+  @Input() itemTooltip: ResultItem | undefined;
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
@@ -71,7 +71,7 @@ export class ItemTooltipRendererDirective {
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
       const tooltipRef: ComponentRef<ArmorTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ArmorTooltipComponent));
-      tooltipRef.instance.armor = this.armor;
+      tooltipRef.instance.itemTooltip = this.itemTooltip;
     }
   }
 

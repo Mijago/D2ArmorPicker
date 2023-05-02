@@ -8,7 +8,7 @@ import {ModDescriptionTooltipComponent} from "./mod-description-tooltip.componen
 @Directive({
   selector: '[modTooltip]'
 })
-export class ModTooltipDirective {
+export class ModTooltipDirective implements OnInit, OnDestroy {
 
   //If this is specified then specified text will be show in in the tooltip
   @Input(`modTooltip`) mod: Modifier | undefined;

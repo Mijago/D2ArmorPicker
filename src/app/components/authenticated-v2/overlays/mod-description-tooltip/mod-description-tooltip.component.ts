@@ -6,12 +6,9 @@ import {Modifier} from "../../../../data/modifier";
   templateUrl: './mod-description-tooltip.component.html',
   styleUrls: ['./mod-description-tooltip.component.css']
 })
-export class ModDescriptionTooltipComponent implements OnInit {
-  @Input(`mod`) mod: Modifier | undefined;
+export class ModDescriptionTooltipComponent {
+  @Input() mod: Modifier | undefined;
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
 
 }

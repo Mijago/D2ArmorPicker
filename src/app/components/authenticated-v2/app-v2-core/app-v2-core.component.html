@@ -16,7 +16,7 @@
   <mat-nav-list>
     <a (click)="drawer.toggle()"
        *ngFor="let link of navLinks; let idx = index"
-       [class.active]="activeLinkIndex == idx" [routerLink]="link.link"
+       [class.active]="activeLinkIndex === idx" [routerLink]="link.link"
        mat-list-item>
       {{link.name}}
     </a>
@@ -67,7 +67,7 @@
   <div fxHide.lt-md="true" fxShow="true">
     <nav id="navbar" mat-tab-nav-bar>
       <a *ngFor="let link of navLinks; let idx = index"
-         [active]="activeLinkIndex == idx"
+         [active]="activeLinkIndex === idx"
          [routerLink]="link.link"
          mat-tab-link>
         {{link.name}}

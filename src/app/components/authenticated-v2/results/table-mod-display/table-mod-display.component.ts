@@ -34,7 +34,7 @@ const ModUrl: { [k: number]: string } = {
   templateUrl: './table-mod-display.component.html',
   styleUrls: ['./table-mod-display.component.css']
 })
-export class TableModDisplayComponent implements OnInit {
+export class TableModDisplayComponent {
   artificeUrl = ArmorPerkOrSlotIcons[ArmorPerkOrSlot.SlotArtifice];
   modIndex = [0,1,2,3,4,5]
   modTypeIndex = [1, 2]
@@ -46,9 +46,6 @@ export class TableModDisplayComponent implements OnInit {
   artifice: number[] = [];
 
   constructor() {
-  }
-
-  ngOnInit(): void {
   }
 
   getStatName(stat: number) {

@@ -7,26 +7,26 @@
       <tr>
         <th style="min-width: 50px">Stat</th>
         <th style="min-width: 50px">Tier {{tier}}</th>
-        <th style="min-width: 50px" colspan="2" *ngIf="differenceTier != tier">∆ Tier {{differenceTier}}</th>
+        <th style="min-width: 50px" colspan="2" *ngIf="differenceTier !== tier">∆ Tier {{differenceTier}}</th>
       </tr>
 
       <ng-container *ngFor="let entry of entries">
 
-      <tr *ngIf="entry.description == null || !!entry.description[characterClass]">
+      <tr *ngIf="entry.description === null || entry.description === undefined || !!entry.description[characterClass]">
         <ng-container *ngVar="entry.valueFunction(tier) as currentTierValue">
           <td>{{entry.name}}</td>
           <td>{{entry.formatting(currentTierValue)}}</td>
           <ng-container *ngVar="entry.valueFunction(differenceTier) as selectedTierValue">
             <ng-container *ngVar="getPercentageDifference(currentTierValue, selectedTierValue) as tierDifference">
 
-              <td *ngIf="differenceTier != tier">
+              <td *ngIf="differenceTier !== tier">
                 <span [class.good]="(tierDifference * entry.benefitDirection ) >0"
                       [class.bad]="(tierDifference * entry.benefitDirection )<0"
                       *ngVar="- (selectedTierValue - currentTierValue) as dif"                      >
                   {{dif > 0 ? '+' : ''}}{{entry.formatting(dif)}}
                 </span>
               </td>
-              <td *ngIf="differenceTier != tier">
+              <td *ngIf="differenceTier !== tier">
                 <span [class.good]="(tierDifference * entry.benefitDirection ) >0"
                       [class.bad]="(tierDifference * entry.benefitDirection )<0">
                                     ({{tierDifference > 0 ? '+' : ''}}{{tierDifference * 100 | number:'1.0-0'}}%)
@@ -35,7 +35,7 @@
             </ng-container>
           </ng-container>
           <td>
-            {{(entry.description != null) ? entry.description[characterClass] : ""}}
+            {{(!!entry.description) ? entry.description[characterClass] : ""}}
           </td>
         </ng-container>
       </tr>

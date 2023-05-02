@@ -5,11 +5,8 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './armor-picker-page.component.html',
   styleUrls: ['./armor-picker-page.component.css']
 })
-export class ArmorPickerPageComponent implements OnInit {
+export class ArmorPickerPageComponent{
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
 
 }

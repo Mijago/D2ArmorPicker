@@ -18,8 +18,8 @@
     <ng-container *ngFor="let modType of modTypeIndex">
       <ng-container *ngVar="(mods | count:(modType+3*stat)) as count">
         <div class="container" *ngIf="count > 0" [matTooltip]="getStatName(stat)" #tooltip="matTooltip">
-          <img class="modIcon" [class.minor]="modType == 1" [src]="ModUrl[modType+3*stat]">
-          <span class="modText" [class.minor]="modType ==1">×{{count}}</span>
+          <img class="modIcon" [class.minor]="modType === 1" [src]="ModUrl[modType+3*stat]">
+          <span class="modText" [class.minor]="modType === 1">×{{count}}</span>
         </div>
       </ng-container>
     </ng-container>

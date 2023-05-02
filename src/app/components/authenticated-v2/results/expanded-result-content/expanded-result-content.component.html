@@ -22,7 +22,7 @@
     </thead>
     <!-- Items -->
     <ng-container *ngFor="let items of element?.items">
-      <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 == 0">
+      <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 === 0">
         <td>
           <u #tooltip="matTooltip" *ngIf="i.masterworked" class="item-name-mw"
              matTooltip='This item is already masterworked.'>{{i.name}}</u>
@@ -58,7 +58,7 @@
         <td class="icon-column">
           <!-- Item Icon -->
           <div [itemTooltip]="i" class="item-icon-container">
-            <item-icon [itemHash]="i.hash" [masterworked]="i.masterworked" class="item-icon"></item-icon>
+            <app-item-icon [itemHash]="i.hash" [masterworked]="i.masterworked" class="item-icon"></app-item-icon>
           </div>
         </td>
         <td class="icon-column">
@@ -74,7 +74,7 @@
           </button>
         </td>
         <!-- Moving to inventory -->
-        <td *ngIf="i.transferState == 1 || i.transferState == 2" class="icon-column">
+        <td *ngIf="i.transferState === 1 || i.transferState === 2" class="icon-column">
           <mat-progress-spinner
             class="item-loading-spinner"
             color="primary"
@@ -82,14 +82,14 @@
             mode="indeterminate">
           </mat-progress-spinner>
         </td>
-        <td *ngIf="i.transferState == 3">
+        <td *ngIf="i.transferState === 3">
           <mat-icon #tooltip="matTooltip" aria-hidden="false" aria-label="Success"
                     class="item-moved-icon"
                     inline
                     matTooltip="Item successfully moved to inventory."> check_circle_outline
           </mat-icon>
         </td>
-        <td *ngIf="i.transferState == 4">
+        <td *ngIf="i.transferState === 4">
           <mat-icon #tooltip="matTooltip" aria-hidden="false" aria-label="Error"
                     class="report-problem-icon"
                     inline
@@ -185,27 +185,27 @@
     <!-- Config Mods -->
     <tr class="result-config">
       <td>Configuration</td>
-      <td><span *ngIf="this.configValues[ArmorStat.Mobility] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Mobility] !== 0"
                 [class]="this.configValues[ArmorStat.Mobility] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Mobility] > 0">+</span>{{this.configValues[ArmorStat.Mobility]}}
       </span></td>
-      <td><span *ngIf="this.configValues[ArmorStat.Resilience] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Resilience] !== 0"
                 [class]="this.configValues[ArmorStat.Resilience] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Resilience] > 0">+</span>{{this.configValues[ArmorStat.Resilience]}}
       </span></td>
-      <td><span *ngIf="this.configValues[ArmorStat.Recovery] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Recovery] !== 0"
                 [class]="this.configValues[ArmorStat.Recovery] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Recovery] > 0">+</span>{{this.configValues[ArmorStat.Recovery]}}
       </span></td>
-      <td><span *ngIf="this.configValues[ArmorStat.Discipline] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Discipline] !== 0"
                 [class]="this.configValues[ArmorStat.Discipline] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Discipline] > 0">+</span>{{this.configValues[ArmorStat.Discipline]}}
       </span></td>
-      <td><span *ngIf="this.configValues[ArmorStat.Intellect] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Intellect] !== 0"
                 [class]="this.configValues[ArmorStat.Intellect] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Intellect] > 0">+</span>{{this.configValues[ArmorStat.Intellect]}}
       </span></td>
-      <td><span *ngIf="this.configValues[ArmorStat.Strength] != 0"
+      <td><span *ngIf="this.configValues[ArmorStat.Strength] !== 0"
                 [class]="this.configValues[ArmorStat.Strength] > 0 ? 'positive' : 'negative'">
         <span *ngIf="this.configValues[ArmorStat.Strength] > 0">+</span>{{this.configValues[ArmorStat.Strength]}}
       </span></td>
@@ -493,17 +493,17 @@
           <ul>
             <ng-container *ngFor="let mod of config_enabledMods">
               <ng-container *ngVar="ModInformation[mod] as info">
-                <li *ngIf="info.type == ModifierType.CombatStyleMod">
+                <li *ngIf="info.type === ModifierType.CombatStyleMod">
                   Equip the mod {{info.name}}
-                  <span *ngIf="info.requiredArmorAffinity != 0">
+                  <span *ngIf="info.requiredArmorAffinity !== 0">
                 ( {{info.cost}}
-                    <span *ngIf="info.requiredArmorAffinity == 1"> Arc </span>
-                <span *ngIf="info.requiredArmorAffinity == 2"> Solar </span>
-                <span *ngIf="info.requiredArmorAffinity == 3"> Void </span>
-                <span *ngIf="info.requiredArmorAffinity == 6"> Stasis </span>
+                    <span *ngIf="info.requiredArmorAffinity === 1"> Arc </span>
+                <span *ngIf="info.requiredArmorAffinity === 2"> Solar </span>
+                <span *ngIf="info.requiredArmorAffinity === 3"> Void </span>
+                <span *ngIf="info.requiredArmorAffinity === 6"> Stasis </span>
                     <!-- Item affinity -->
                 <img #tooltip="matTooltip"
-                     *ngIf="info.requiredArmorAffinity != 0" [src]="getAffinityUrl(info.requiredArmorAffinity)"
+                     *ngIf="info.requiredArmorAffinity !== 0" [src]="getAffinityUrl(info.requiredArmorAffinity)"
                      class="element-icon-mini"
                      matTooltip='{{getAffinityName(info.requiredArmorAffinity)}} affinity'>
                   )
@@ -513,7 +513,7 @@
             </ng-container>
             <ng-container *ngFor="let mod of config_enabledMods">
               <ng-container *ngVar="ModInformation[mod] as info">
-                <li *ngIf="info.type == ModifierType.Stasis">
+                <li *ngIf="info.type === ModifierType.Stasis">
                   Equip the stasis fragment {{info.name}}
                 </li>
               </ng-container>

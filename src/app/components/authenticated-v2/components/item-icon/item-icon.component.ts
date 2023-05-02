@@ -3,7 +3,7 @@ import {IManifestArmor} from "../../../../data/types/IManifestArmor";
 import {ItemIconServiceService} from "../../../../services/item-icon-service.service";
 
 @Component({
-  selector: 'item-icon',
+  selector: 'app-item-icon',
   templateUrl: './item-icon.component.html',
   styleUrls: ['./item-icon.component.scss']
 })

@@ -7,12 +7,8 @@ import {ChangelogEntry} from "../../../../data/changelog";
   templateUrl: './changelog-dialog.component.html',
   styleUrls: ['./changelog-dialog.component.css']
 })
-export class ChangelogDialogComponent implements OnInit {
+export class ChangelogDialogComponent {
   constructor(public changelog: ChangelogService) {
-  }
-
-
-  ngOnInit(): void {
   }
 
 }

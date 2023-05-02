@@ -7,7 +7,7 @@
     <img class="overlay-icon" *ngIf="customIconMods.indexOf(perk)> -1"
          src="{{url}}">
   </ng-container>
-  <ng-container *ngIf="customIconMods.indexOf(perk) == -1">
+  <ng-container *ngIf="customIconMods.indexOf(perk) === -1">
       <img #tooltip="matTooltip"
            class="element-icon"
            matTooltip='{{name}}'

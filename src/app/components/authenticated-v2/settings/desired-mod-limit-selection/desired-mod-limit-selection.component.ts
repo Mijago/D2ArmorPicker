@@ -9,7 +9,7 @@ import {environment} from "../../../../../environments/environment";
   templateUrl: './desired-mod-limit-selection.component.html',
   styleUrls: ['./desired-mod-limit-selection.component.scss']
 })
-export class DesiredModLimitSelectionComponent implements OnInit {
+export class DesiredModLimitSelectionComponent {
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
 
@@ -20,10 +20,6 @@ export class DesiredModLimitSelectionComponent implements OnInit {
 
   constructor(public config: ConfigurationService) {
   }
-
-  ngOnInit(): void {
-  }
-
 
   updatePossibility(n: number, state: boolean) {
     this.possibilityList[n] = state;

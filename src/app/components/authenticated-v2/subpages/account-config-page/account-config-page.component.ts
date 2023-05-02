@@ -8,12 +8,9 @@ import {AuthService} from "../../../../services/auth.service";
   templateUrl: './account-config-page.component.html',
   styleUrls: ['./account-config-page.component.css']
 })
-export class AccountConfigPageComponent implements OnInit {
+export class AccountConfigPageComponent {
 
   constructor(private db: DatabaseService, public inv: InventoryService, private loginService: AuthService) {
-  }
-
-  ngOnInit(): void {
   }
 
   async downloadArmorInformation() {

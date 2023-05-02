@@ -8,7 +8,7 @@ import {ArmorStat} from "../../../../data/enum/armor-stat";
 @Directive({
   selector: '[statCooldownTooltip]'
 })
-export class StatCooldownTooltipDirective {
+export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
 
   /**
    * This will be used to show tooltip or not
@@ -16,9 +16,9 @@ export class StatCooldownTooltipDirective {
    */
   @Input() showToolTip: boolean = true;
 
-  @Input(`tooltipTier`) tier: number = 0;
-  @Input(`tooltipStat`) stat: ArmorStat = ArmorStat.Mobility;
-  @Input(`tooltipDifferenceTier`) differenceTier: number = 0; // the tier we use to show a difference for
+  @Input() tooltipTier: number = 0;
+  @Input() tooltipStat: ArmorStat = ArmorStat.Mobility;
+  @Input() tooltipDifferenceTier: number = 0; // the tier we use to show a difference for
 
 
   //If this is specified then specified template will be rendered in the tooltip
@@ -74,9 +74,9 @@ export class StatCooldownTooltipDirective {
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
       const tooltipRef: ComponentRef<StatCooldownTooltipComponent> = this._overlayRef.attach(new ComponentPortal(StatCooldownTooltipComponent));
-      tooltipRef.instance.tier = this.tier;
-      tooltipRef.instance.differenceTier = this.differenceTier;
-      tooltipRef.instance.stat = this.stat;
+      tooltipRef.instance.tier = this.tooltipTier;
+      tooltipRef.instance.differenceTier = this.tooltipDifferenceTier;
+      tooltipRef.instance.stat = this.tooltipStat;
     }
   }
 

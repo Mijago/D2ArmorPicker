@@ -33,11 +33,11 @@
       <td>
         <mat-form-field appearance="outline">
           <mat-label>Load saved configuration</mat-label>
-          <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length == 0">
+          <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length === 0">
             <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
-              <span>(<span *ngIf="element.configuration.characterClass == 0">Titan</span>
-                <span *ngIf="element.configuration.characterClass == 1">Hunter</span>
-                <span *ngIf="element.configuration.characterClass == 2">Warlock</span>)
+              <span>(<span *ngIf="element.configuration.characterClass === 0">Titan</span>
+                <span *ngIf="element.configuration.characterClass === 1">Hunter</span>
+                <span *ngIf="element.configuration.characterClass === 2">Warlock</span>)
               </span>
               <span> {{element.name}}</span>
             </mat-option>
@@ -45,13 +45,13 @@
         </mat-form-field>
       </td>
       <td>
-        <button (click)="load(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0" color="primary"
+        <button (click)="load(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length === 0" color="primary"
                 mat-raised-button
                 matTooltip="Load the currently selected configuration.">Load
         </button>
       </td>
       <td>
-        <button (click)="delete(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length == 0" color="warn"
+        <button (click)="delete(selectedEntry)" [disabled]="!selectedEntry || storedConfigs.length === 0" color="warn"
                 mat-stroked-button
                 matTooltip="Delete the currently selected configuration. Can not be undone.">Delete
         </button>
@@ -74,9 +74,9 @@
       Class
     </th>
     <td *matCellDef="let element" mat-cell>
-      <span *ngIf="element.configuration.characterClass == 0">Titan</span>
-      <span *ngIf="element.configuration.characterClass == 1">Hunter</span>
-      <span *ngIf="element.configuration.characterClass == 2">Warlock</span>
+      <span *ngIf="element.configuration.characterClass === 0">Titan</span>
+      <span *ngIf="element.configuration.characterClass === 1">Hunter</span>
+      <span *ngIf="element.configuration.characterClass === 2">Warlock</span>
     </td>
   </ng-container>
 

@@ -6,7 +6,7 @@ import {ArmorPerkOrSlot, ArmorPerkOrSlotIcons, ArmorPerkOrSlotNames} from "../..
   templateUrl: './armor-perk-icon.component.html',
   styleUrls: ['./armor-perk-icon.component.scss']
 })
-export class ArmorPerkIconComponent implements OnInit {
+export class ArmorPerkIconComponent {
   ArmorPerkOrSlot = ArmorPerkOrSlot;
 
   customIconMods = [
@@ -20,9 +20,6 @@ export class ArmorPerkIconComponent implements OnInit {
   perk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
 
   constructor() { }
-
-  ngOnInit(): void {
-  }
 
   get name() {
     return ArmorPerkOrSlotNames[this.perk];
