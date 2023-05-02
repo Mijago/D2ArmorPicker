@@ -9,9 +9,9 @@
 D2ArmorPicker is a small tool to min-max your armor stats with only a few clicks.
 Visit the page here: https://d2armorpicker.com
 
-# Contribution
+## Contribution
 
-## Development
+### Development
 
 1. Run `npx husky-init && npm install` to install dependencies.
 2. Duplicate the `.env_example` to `.env_dev`.
@@ -23,9 +23,9 @@ Visit the page here: https://d2armorpicker.com
     - Copy the OAuth client_id and paste it to `D2AP_BUNGIE_CLIENT_ID` in the `.env_dev` file.
     - Copy the OAuth client_secrety and paste it to `D2AP_BUNGIE_CLIENT_SECRET` in the `.env_dev` file.
 4. Start the development server with `npm start` (or `npm run start`). The server will be available at https://localhost:4200/. This page will automatically update whenever you change anything in the code.
-    - Ignore the "invalid certificate" error your browser will give you. You need HTTPS to be able to use the Bungie Authentification.
+    - Ignore the "invalid certificate" error your browser will show you. You need HTTPS to be able to use the Bungie Authentification.
 
-## Building Production and Beta packages
+### Building Production and Beta packages
 
 -   Copy `.env_dev` to `.env` and/or `.env_beta`.
 -   To build a production package, set the environment flag `PRODUCTION=1`.
@@ -33,7 +33,7 @@ Visit the page here: https://d2armorpicker.com
 
 Then you can use `npm run build`.
 
-## Deployment
+### Deployment
 
 You can also deploy the page to a "github pages" page. Please note that I strongly discourage hosting alternative D2AP installations, let's make this one as awesome as possible.
 
@@ -41,12 +41,14 @@ You can also deploy the page to a "github pages" page. Please note that I strong
 1. Modify the `deploy` script in `package.json` and remove`--base-href=/ --cname=d2armorpicker.com`. The same for the beta command. If you deploy to `yourname.github.io/fancyrepo`, then you may have to set `--base-href=/fancyrepo`.
 1. `npm run deploy` (given you forked the repository first).
 
-## Guidelines
+### Guidelines
 
 -   We use [husky](https://github.com/typicode/husky) to execute some commit hooks.
+-   We use [eslint](https://eslint.org) to make sure we have the same code style.
+-   We use [prettier](https://prettier.io/docs/en/) to make sure we have the same code formatting.
 -   We are using [commitlint](https://github.com/conventional-changelog/commitlint) to make sure we all have the same commit structure. The template used is [@commitlint/config-angular](https://github.com/conventional-changelog/commitlint/tree/master/@commitlint/config-angular).
 
-## Contributors ✨
+### Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
