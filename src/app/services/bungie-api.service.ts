@@ -437,7 +437,6 @@ export class BungieApiService {
                         if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
                     }
 
-                    // TODO REMOVE
                     if (!r.isExotic && this.config_assumeEveryLegendaryIsArtifice)
                         r.perk = ArmorPerkOrSlot.SlotArtifice;
 
