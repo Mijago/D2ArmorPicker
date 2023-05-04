@@ -12,14 +12,18 @@
   "contributors": [
     {
       "login": "Mijago",
-      "name": "Markus",
+      "name": "Mijago",
       "avatar_url": "https://avatars.githubusercontent.com/u/3903469?v=4",
       "profile": "https://github.com/Mijago",
       "contributions": [
         "code",
+        "ideas",
+        "infra",
+        "test",
         "doc",
         "maintenance",
         "projectManagement",
+        "userTesting",
         "review"
       ]
     },
@@ -31,6 +35,7 @@
       "contributions": [
         "projectManagement",
         "ideas",
+        "review",
         "userTesting",
         "question"
       ]

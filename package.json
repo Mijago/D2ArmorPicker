@@ -12,7 +12,8 @@
         "test": "ng test",
         "prepare": "husky install",
         "lint": "ng lint --fix --max-warnings=0",
-        "format": "prettier . --write"
+        "format": "prettier . --write",
+        "contributors": "all-contributors generate"
     },
     "private": true,
     "dependencies": {
