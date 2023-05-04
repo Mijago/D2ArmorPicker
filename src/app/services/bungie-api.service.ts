@@ -418,6 +418,10 @@ export class BungieApiService {
 
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
+    // Guardian Games
+    if (environment.featureFlags.enableGuardianGamesFeatures && ( v.hash === 1013401891 || v.hash === 366019830 || v.hash == 537041732) )
+     return ArmorPerkOrSlot.GuardianGamesClassItem;
+
     if ((v.sockets?.socketEntries.filter(d => d.reusablePlugSetHash == 1259) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtifice;
 

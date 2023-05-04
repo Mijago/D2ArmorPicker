@@ -97,11 +97,14 @@ export enum ArmorPerkOrSlot {
   SeraphSensorArray,
   SlotRootOfNightmares,
   PerkQueensFavor,
+  // A special case just for guardian games class items.
+  GuardianGamesClassItem,
   COUNT
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
+  [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
   [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
   [ArmorPerkOrSlot.SlotArtifice]: "Artifice Modslot",
   [ArmorPerkOrSlot.SlotLastWish]: "Last Wish Modslot",
@@ -121,6 +124,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
+  [ArmorPerkOrSlot.GuardianGamesClassItem]: "https://www.bungie.net/common/destiny2_content/icons/DestinyEventCardDefinition_ce6c2cf855dce694bcc89803b6bc44b7.png",
   [ArmorPerkOrSlot.SlotNightmare]: "https://www.bungie.net/common/destiny2_content/icons/94fe19fb98ae33e79921e3a8aa07800f.jpg",
   [ArmorPerkOrSlot.SlotArtifice]: "https://bungie.net/common/destiny2_content/icons/74aeb2f3d7bc16a31a6924822f850184.png",
   [ArmorPerkOrSlot.SlotLastWish]: "https://bungie.net/common/destiny2_content/icons/c70116144be386def9e675d76dacfe64.png",
@@ -140,6 +144,7 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
   [ArmorPerkOrSlot.SlotNightmare]: "modslot:nightmare",
   [ArmorPerkOrSlot.SlotArtifice]: "perkname:\"artifice armor\"",
   [ArmorPerkOrSlot.SlotLastWish]: "modslot:lastwish",

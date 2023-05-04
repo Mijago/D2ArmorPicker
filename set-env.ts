@@ -43,6 +43,7 @@ const data = {
   featureFlags: {
     enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
     enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
+    enableGuardianGamesFeatures: process.env.D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES == "1",
   }
 }
 
