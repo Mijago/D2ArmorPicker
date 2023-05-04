@@ -85,14 +85,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
         } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
             // if length is 0 or shift is NOT pressed, add the exotic
             this.selectedExotics = [hash];
-        } else {
-            if (false) {
-                // TODO: finish this feature and enable this code
-                // here length is 1 and shift is pressed.
-                if (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) > -1) return; // ignore
-                if (this.selectedExotics.length == 1) this.selectedExotics.push(hash);
-                else this.selectedExotics[1] = hash;
-            }
         }
         this.config.modifyConfiguration((c) => {
             c.selectedExotics = this.selectedExotics;

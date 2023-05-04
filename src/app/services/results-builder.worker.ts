@@ -300,7 +300,6 @@ addEventListener("message", async ({ data }) => {
     );
     selectedExotics = selectedExotics.filter((i) => !!i);
 
-    // let exoticItemInfo = config.selectedExotics.length == 0    ? null    : await inventoryArmor.where("hash").equals(config.selectedExotics[0]).first() as IInventoryArmor
     let items = (await inventoryArmor
         .where("clazz")
         .equals(config.characterClass)
