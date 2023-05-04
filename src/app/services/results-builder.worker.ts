@@ -15,174 +15,47 @@ import { IManifestArmor } from "../data/types/IManifestArmor";
 import { TierType } from "bungie-api-ts/destiny2";
 import { environment } from "../../environments/environment";
 
-declare global {
-    interface Array<T> {
-        where(o: (val: T, index: number) => boolean): T[];
-
-        addSorted(o: T): T[];
-    }
-}
-
-Array.prototype.addSorted = function (element: any) {
-    var i = 0;
-    var j = this.length;
-    var h;
-    var c = false;
-    if (element > this[j]) {
-        this.push(element);
-        return this;
-    }
-    if (element < this[i]) {
-        this.splice(i, 0, element);
-        return this;
-    }
-    while (c == false) {
-        h = ~~((i + j) / 2); //a faster h=Math.floor((i+j)/2);
-        if (element > this[h]) {
-            i = h;
-        } else {
-            j = h;
-        }
-        if (j - i <= 1) {
-            this.splice(j, 0, element);
-            c = true;
-        }
-    }
-    return this;
-};
-
-Array.prototype.where =
-    Array.prototype.where ||
-    function (predicate: any) {
-        var results = [],
-            // @ts-ignore
-            len = this.length,
-            i = 0;
-
-        for (; i < len; i++) {
-            // @ts-ignore
-            var item = this[i];
-            if (predicate(item, i)) {
-                results.push(item);
-            }
-        }
-
-        return results;
-    };
-
 const db = buildDb(async () => {});
 const inventoryArmor = db.table("inventoryArmor");
 const manifestArmor = db.table("manifestArmor");
-
-interface MinMaxSum {
-    min: number;
-    max: number;
-    sum: number;
-}
-
-// Represents one item, or the combined range of two items
-export class ItemCombination {
-    items: IInventoryArmor[] = [];
-
-    mobility: MinMaxSum = { min: 0, max: 0, sum: 0 };
-    resilience: MinMaxSum = { min: 0, max: 0, sum: 0 };
-    recovery: MinMaxSum = { min: 0, max: 0, sum: 0 };
-    discipline: MinMaxSum = { min: 0, max: 0, sum: 0 };
-    intellect: MinMaxSum = { min: 0, max: 0, sum: 0 };
-    strength: MinMaxSum = { min: 0, max: 0, sum: 0 };
-
-    readonly containsExotics: boolean = false;
-    readonly containsLegendaries: boolean = false;
-    readonly allMasterworked: boolean = false;
-    readonly perks: ArmorPerkOrSlot[] = [];
-    readonly allSameElement: boolean = true;
-
-    constructor(items: IInventoryArmor[]) {
-        this.items = items;
-
-        const mobility = this.items.map((d) => d.mobility);
-        const resilience = this.items.map((d) => d.resilience);
-        const recovery = this.items.map((d) => d.recovery);
-        const discipline = this.items.map((d) => d.discipline);
-        const intellect = this.items.map((d) => d.intellect);
-        const strength = this.items.map((d) => d.strength);
-
-        this.mobility.min = Math.min(...mobility);
-        this.mobility.sum = mobility.reduce((p, v) => p + v, 0);
-
-        this.resilience.min = Math.min(...resilience);
-        this.resilience.sum = resilience.reduce((p, v) => p + v, 0);
-
-        this.recovery.min = Math.min(...recovery);
-        this.recovery.sum = recovery.reduce((p, v) => p + v, 0);
-
-        this.discipline.min = Math.min(...discipline);
-        this.discipline.sum = discipline.reduce((p, v) => p + v, 0);
-
-        this.intellect.min = Math.min(...intellect);
-        this.intellect.sum = intellect.reduce((p, v) => p + v, 0);
-
-        this.strength.min = Math.min(...strength);
-        this.strength.sum = strength.reduce((p, v) => p + v, 0);
-
-        this.containsExotics = this._containsExotics;
-        this.containsLegendaries = this._containsLegendaries;
-        this.allMasterworked = this._allMasterworked;
-
-        this.perks = items.map((d) => d.perk);
-        this.allSameElement = new Set(items).size == 1;
-    }
-
-    private get _containsExotics() {
-        return this.items.filter((i) => i.isExotic).length > 0;
-    }
-
-    private get _containsLegendaries() {
-        return this.items.filter((i) => !i.isExotic).length > 0;
-    }
-
-    private get _allMasterworked() {
-        return this.items.filter((i) => i.masterworked).length == this.items.length;
-    }
-}
 
 function checkSlots(
     config: BuildConfiguration,
     constantModslotRequirement: number[],
     availableClassItemTypes: Set<ArmorPerkOrSlot>,
-    helmet: ItemCombination,
-    gauntlet: ItemCombination,
-    chest: ItemCombination,
-    leg: ItemCombination
+    helmet: IInventoryArmor,
+    gauntlet: IInventoryArmor,
+    chest: IInventoryArmor,
+    leg: IInventoryArmor
 ) {
     var exoticId = config.selectedExotics[0] || 0;
     let requirements = constantModslotRequirement.slice();
     if (
-        (exoticId <= 0 || helmet.items[0].hash != exoticId) &&
+        (exoticId <= 0 || helmet.hash != exoticId) &&
         config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
         config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
-        config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perks[0]
+        config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
     )
         return { valid: false };
     if (
-        (exoticId <= 0 || gauntlet.items[0].hash != exoticId) &&
+        (exoticId <= 0 || gauntlet.hash != exoticId) &&
         config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
         config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
-        config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perks[0]
+        config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
     )
         return { valid: false };
     if (
-        (exoticId <= 0 || chest.items[0].hash != exoticId) &&
+        (exoticId <= 0 || chest.hash != exoticId) &&
         config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
         config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
-        config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perks[0]
+        config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
     )
         return { valid: false };
     if (
-        (exoticId <= 0 || leg.items[0].hash != exoticId) &&
+        (exoticId <= 0 || leg.hash != exoticId) &&
         config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
         config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
-        config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perks[0]
+        config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
     )
         return { valid: false };
     // also return if we can not find the correct class item. pepepoint.
@@ -193,21 +66,17 @@ function checkSlots(
     )
         return { valid: false };
 
-    requirements[helmet.perks[0]]--;
-    requirements[gauntlet.perks[0]]--;
-    requirements[chest.perks[0]]--;
-    requirements[leg.perks[0]]--;
+    requirements[helmet.perk]--;
+    requirements[gauntlet.perk]--;
+    requirements[chest.perk]--;
+    requirements[leg.perk]--;
 
     // ignore exotic selection
     if (exoticId > 0) {
-        if (helmet.items[0].hash == exoticId)
-            requirements[config.armorPerks[helmet.items[0].slot].value]--;
-        else if (gauntlet.items[0].hash == exoticId)
-            requirements[config.armorPerks[gauntlet.items[0].slot].value]--;
-        else if (chest.items[0].hash == exoticId)
-            requirements[config.armorPerks[chest.items[0].slot].value]--;
-        else if (leg.items[0].hash == exoticId)
-            requirements[config.armorPerks[leg.items[0].slot].value]--;
+        if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
+        else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
+        else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
+        else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
     }
 
     let bad = 0;
@@ -272,7 +141,7 @@ function prepareConstantAvailableModslots(config: BuildConfiguration) {
     availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
     availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
     availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
-    return availableModCost.where((d) => d > 0).sort();
+    return availableModCost.filter((d) => d > 0).sort();
 }
 
 addEventListener("message", async ({ data }) => {
@@ -354,18 +223,10 @@ addEventListener("message", async ({ data }) => {
                     3224066584, // hunter
                 ].indexOf(k.hash) > -1
             );
-        })
-        .map((d) => new ItemCombination([d]));
-    let gauntlets = items
-        .filter((i) => i.slot == ArmorSlot.ArmorSlotGauntlet)
-        .map((d) => new ItemCombination([d]));
-    let chests = items
-        .filter((i) => i.slot == ArmorSlot.ArmorSlotChest)
-        .map((d) => new ItemCombination([d]));
-    let legs = items
-        .filter((i) => i.slot == ArmorSlot.ArmorSlotLegs)
-        .map((d) => new ItemCombination([d]));
-    // new Set(items.filter(i => i.slot == ArmorSlot.ArmorSlotClass).map(i => [i.energyAffinity, i.perk]))
+        });
+    let gauntlets = items.filter((i) => i.slot == ArmorSlot.ArmorSlotGauntlet);
+    let chests = items.filter((i) => i.slot == ArmorSlot.ArmorSlotChest);
+    let legs = items.filter((i) => i.slot == ArmorSlot.ArmorSlotLegs);
 
     // Support multithreading. find the largest set and split it by N.
     const threadSplit = data.threadSplit as { count: number; current: number };
@@ -376,7 +237,7 @@ addEventListener("message", async ({ data }) => {
                 [gauntlets, gauntlets.length],
                 [chests, chests.length],
                 [legs, legs.length],
-            ] as [ItemCombination[], number][]
+            ] as [IInventoryArmor[], number][]
         ).sort((a, b) => a[1] - b[1])[0][0];
         var keepLength = Math.floor(splitEntry.length / threadSplit.count);
         var startIndex = keepLength * threadSplit.current; // we can delete everything before this
@@ -430,32 +291,24 @@ addEventListener("message", async ({ data }) => {
     console.time("tm");
     for (let helmet of helmets) {
         for (let gauntlet of gauntlets) {
-            if (constHasOneExoticLength && helmet.containsExotics && gauntlet.containsExotics)
-                continue;
+            if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
             for (let chest of chests) {
                 if (
                     constHasOneExoticLength &&
-                    (helmet.containsExotics || gauntlet.containsExotics) &&
-                    chest.containsExotics
+                    (helmet.isExotic || gauntlet.isExotic) &&
+                    chest.isExotic
                 )
                     continue;
                 for (let leg of legs) {
                     if (
                         constHasOneExoticLength &&
-                        (helmet.containsExotics ||
-                            gauntlet.containsExotics ||
-                            chest.containsExotics) &&
-                        leg.containsExotics
+                        (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
+                        leg.isExotic
                     )
                         continue;
                     if (
                         requiresAtLeastOneExotic &&
-                        !(
-                            helmet.containsExotics ||
-                            gauntlet.containsExotics ||
-                            chest.containsExotics ||
-                            leg.containsExotics
-                        )
+                        !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
                     )
                         continue;
                     /**
@@ -475,6 +328,9 @@ addEventListener("message", async ({ data }) => {
                     );
                     if (!slotCheckResult.valid) continue;
 
+                    const canUseArtificeClassItem =
+                        !slotCheckResult.requiredClassItemType ||
+                        slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
                     const result = handlePermutation(
                         runtime,
                         config,
@@ -485,10 +341,7 @@ addEventListener("message", async ({ data }) => {
                         constantBonus,
                         constantAvailableModslots,
                         doNotOutput,
-                        hasArtificeClassItem &&
-                            (!slotCheckResult.requiredClassItemType ||
-                                slotCheckResult.requiredClassItemType ==
-                                    ArmorPerkOrSlot.SlotArtifice)
+                        hasArtificeClassItem && canUseArtificeClassItem
                     );
                     // Only add 50k to the list if the setting is activated.
                     // We will still calculate the rest so that we get accurate results for the runtime values
@@ -513,7 +366,6 @@ addEventListener("message", async ({ data }) => {
                                 listedResults >= 1e6 / threadSplit.count;
                         }
                     }
-                    //}
                     if (resultsLength >= 5000) {
                         // @ts-ignore
                         postMessage({ runtime, results, done: false, total: 0 });
@@ -526,9 +378,6 @@ addEventListener("message", async ({ data }) => {
     }
     console.timeEnd("tm");
     console.timeEnd("total");
-
-    //for (let n = 0; n < 6; n++)
-    //  runtime.maximumPossibleTiers[n] = Math.floor(Math.min(100, runtime.maximumPossibleTiers[n]) / 10)
 
     // @ts-ignore
     postMessage({
@@ -543,65 +392,15 @@ addEventListener("message", async ({ data }) => {
     });
 });
 
-function getStatSum(items: ItemCombination[]): [number, number, number, number, number, number] {
-    let count = 0;
-    for (let idx = 0; idx < items.length; idx++) {
-        count += items[idx].items.length > 1 ? 1 : 0;
-    }
-
-    if (count <= 1)
-        return [
-            items[0].mobility.min +
-                items[1].mobility.min +
-                items[2].mobility.min +
-                items[3].mobility.min,
-            items[0].resilience.min +
-                items[1].resilience.min +
-                items[2].resilience.min +
-                items[3].resilience.min,
-            items[0].recovery.min +
-                items[1].recovery.min +
-                items[2].recovery.min +
-                items[3].recovery.min,
-            items[0].discipline.min +
-                items[1].discipline.min +
-                items[2].discipline.min +
-                items[3].discipline.min,
-            items[0].intellect.min +
-                items[1].intellect.min +
-                items[2].intellect.min +
-                items[3].intellect.min,
-            items[0].strength.min +
-                items[1].strength.min +
-                items[2].strength.min +
-                items[3].strength.min,
-        ];
-    else {
-        let normal = items.filter((d) => d.items.length == 1);
-        let special: [number, number, number, number, number, number] = items
-            .filter((d) => d.items.length > 1)
-            .reduce(
-                (p, v) => {
-                    p[0] = v.mobility.sum < p[0] ? v.mobility.sum : p[0];
-                    p[1] = v.resilience.sum < p[1] ? v.resilience.sum : p[1];
-                    p[2] = v.recovery.sum < p[2] ? v.recovery.sum : p[2];
-                    p[3] = v.discipline.sum < p[3] ? v.discipline.sum : p[3];
-                    p[4] = v.intellect.sum < p[4] ? v.intellect.sum : p[4];
-                    p[5] = v.strength.sum < p[5] ? v.strength.sum : p[5];
-                    return p;
-                },
-                [200, 200, 200, 200, 200, 200]
-            );
-        for (let n of normal) {
-            special[0] += n.mobility.min;
-            special[1] += n.resilience.min;
-            special[2] += n.recovery.min;
-            special[3] += n.discipline.min;
-            special[4] += n.intellect.min;
-            special[5] += n.strength.min;
-        }
-        return special;
-    }
+function getStatSum(items: IInventoryArmor[]): [number, number, number, number, number, number] {
+    return [
+        items[0].mobility + items[1].mobility + items[2].mobility + items[3].mobility,
+        items[0].resilience + items[1].resilience + items[2].resilience + items[3].resilience,
+        items[0].recovery + items[1].recovery + items[2].recovery + items[3].recovery,
+        items[0].discipline + items[1].discipline + items[2].discipline + items[3].discipline,
+        items[0].intellect + items[1].intellect + items[2].intellect + items[3].intellect,
+        items[0].strength + items[1].strength + items[2].strength + items[3].strength,
+    ];
 }
 
 class OrderedList<T> {
@@ -645,19 +444,6 @@ class OrderedList<T> {
     }
 }
 
-const requiredZeroWasteChanges = [
-    [0, 0],
-    [0, 3],
-    [1, 1],
-    [1, 4],
-    [0, 2],
-    [1, 0],
-    [1, 3],
-    [0, 1],
-    [0, 4],
-    [1, 2],
-];
-
 /**
  * Returns null, if the permutation is invalid.
  * This code does not utilize fancy filters and other stuff.
@@ -666,10 +452,10 @@ const requiredZeroWasteChanges = [
 export function handlePermutation(
     runtime: any,
     config: BuildConfiguration,
-    helmet: ItemCombination,
-    gauntlet: ItemCombination,
-    chest: ItemCombination,
-    leg: ItemCombination,
+    helmet: IInventoryArmor,
+    gauntlet: IInventoryArmor,
+    chest: IInventoryArmor,
+    leg: IInventoryArmor,
     constantBonus: number[],
     availableModCost: number[],
     doNotOutput = false,
@@ -683,25 +469,16 @@ export function handlePermutation(
     for (let i = 0; i < items.length; i++) {
         let item = items[i]; // add masterworked value, if necessary
         if (
-            item.allMasterworked ||
-            (item.containsExotics &&
-                !item.containsLegendaries &&
-                config.assumeExoticsMasterworked) ||
-            (!item.containsExotics &&
-                item.containsLegendaries &&
-                config.assumeLegendariesMasterworked) ||
-            (item.containsExotics &&
-                item.containsLegendaries &&
-                config.assumeLegendariesMasterworked &&
-                config.assumeExoticsMasterworked)
+            item.masterworked ||
+            (item.isExotic && config.assumeExoticsMasterworked) ||
+            (!item.isExotic && config.assumeLegendariesMasterworked)
         )
             totalStatBonus += 2;
     }
 
     const stats = getStatSum(items);
     stats[0] += totalStatBonus;
-    stats[1] +=
-        totalStatBonus + (!items[2].containsExotics && config.addConstent1Resilience ? 1 : 0);
+    stats[1] += totalStatBonus + (!items[2].isExotic && config.addConstent1Resilience ? 1 : 0);
     stats[2] += totalStatBonus;
     stats[3] += totalStatBonus;
     stats[4] += totalStatBonus;
@@ -727,9 +504,7 @@ export function handlePermutation(
     //log = {error: () => { }, info: () => { }, debug: () => { }}
 
     // get the amount of armor with artifice slot
-    let availableArtificeCount = items.filter(
-        (d) => d.perks.indexOf(ArmorPerkOrSlot.SlotArtifice) > -1
-    ).length;
+    let availableArtificeCount = items.filter((d) => d.perk == ArmorPerkOrSlot.SlotArtifice).length;
 
     if (hasArtificeClassItem) availableArtificeCount += 1;
 
@@ -1084,7 +859,7 @@ export function handlePermutation(
                     continue;
                 }
 
-                const x = usedArtifice.where((k) => k == artificeId).length;
+                const x = usedArtifice.filter((k) => k == artificeId).length;
                 if (x >= 3 && stats[stat] % 10 == 9) {
                     // we can replace this with a major mod
 
@@ -1353,13 +1128,13 @@ export function handlePermutation(
     const waste1 = getWaste(stats);
     if (config.onlyShowResultsWithNoWastedStats && waste1 > 0) return null;
 
-    const exotic = helmet.containsExotics
+    const exotic = helmet.isExotic
         ? helmet
-        : gauntlet.containsExotics
+        : gauntlet.isExotic
         ? gauntlet
-        : chest.containsExotics
+        : chest.isExotic
         ? chest
-        : leg.containsExotics
+        : leg.isExotic
         ? leg
         : null;
     return {
@@ -1368,10 +1143,10 @@ export function handlePermutation(
                 ? []
                 : [
                       {
-                          icon: exotic?.items[0].icon,
-                          watermark: exotic?.items[0].watermarkIcon,
-                          name: exotic?.items[0].name,
-                          hash: exotic?.items[0].hash,
+                          icon: exotic?.icon,
+                          watermark: exotic?.watermarkIcon,
+                          name: exotic?.name,
+                          hash: exotic?.hash,
                       },
                   ],
         artifice: usedArtifice,
@@ -1382,35 +1157,32 @@ export function handlePermutation(
         statsNoMods: statsWithoutMods,
         tiers: getSkillTier(stats),
         waste: waste1,
-        items: items
-            .map((i) => i.items)
-            .flat()
-            .reduce(
-                (p: any, instance) => {
-                    p[instance.slot - 1].push({
-                        energyLevel: instance.energyLevel,
-                        hash: instance.hash,
-                        itemInstanceId: instance.itemInstanceId,
-                        name: instance.name,
-                        exotic: !!instance.isExotic,
-                        masterworked: instance.masterworked,
-                        mayBeBugged: instance.mayBeBugged,
-                        slot: instance.slot,
-                        perk: instance.perk,
-                        transferState: 0, // TRANSFER_NONE
-                        stats: [
-                            instance.mobility,
-                            instance.resilience,
-                            instance.recovery,
-                            instance.discipline,
-                            instance.intellect,
-                            instance.strength,
-                        ],
-                    });
-                    return p;
-                },
-                [[], [], [], []]
-            ),
+        items: items.reduce(
+            (p: any, instance) => {
+                p[instance.slot - 1].push({
+                    energyLevel: instance.energyLevel,
+                    hash: instance.hash,
+                    itemInstanceId: instance.itemInstanceId,
+                    name: instance.name,
+                    exotic: !!instance.isExotic,
+                    masterworked: instance.masterworked,
+                    mayBeBugged: instance.mayBeBugged,
+                    slot: instance.slot,
+                    perk: instance.perk,
+                    transferState: 0, // TRANSFER_NONE
+                    stats: [
+                        instance.mobility,
+                        instance.resilience,
+                        instance.recovery,
+                        instance.discipline,
+                        instance.intellect,
+                        instance.strength,
+                    ],
+                });
+                return p;
+            },
+            [[], [], [], []]
+        ),
     };
 }
 
