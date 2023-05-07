@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {MAXIMUM_STAT_MOD_AMOUNT} from "../../../../../data/constants";
 import {ArmorSlot} from "../../../../../data/enum/armor-slot";
 import {ConfigurationService} from "../../../../../services/configuration.service";
@@ -18,7 +18,7 @@ import {environment} from "../../../../../../environments/environment";
   templateUrl: './slot-limitation-selection.component.html',
   styleUrls: ['./slot-limitation-selection.component.scss']
 })
-export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
+export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly featureDisabled = !environment.featureFlags.enableModslotLimitation;
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlotNames = ArmorPerkOrSlotNames;
@@ -40,6 +40,9 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   hoveredSlot: number = -1;
 
   disabled: boolean = false;
+
+  readonly availableArmorPerks = [ArmorPerkOrSlot.None, ArmorPerkOrSlot.PerkQueensFavor, ArmorPerkOrSlot.SlotRootOfNightmares, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtifice, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings, ArmorPerkOrSlot.SeraphSensorArray];
+
 
   constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
@@ -101,6 +104,12 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
         if (mustRunPossibilityCheck)
           await this.runPossibilityCheck();
       })
+  }
+
+  ngAfterViewInit(): void {
+    if (environment.featureFlags.enableGuardianGamesFeatures && this.slot === ArmorSlot.ArmorSlotClass) {
+      this.availableArmorPerks.splice(1, 0, ArmorPerkOrSlot.GuardianGamesClassItem)
+    }
   }
 
   toggleArmorPerkLock() {

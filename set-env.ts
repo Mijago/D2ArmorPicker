@@ -2,7 +2,7 @@ const writeFile = require("fs").writeFile
 
 const production = process.env.PRODUCTION === "1"
 const beta_branch = process.env.BETA === "1"
-const version = "2.3.0"
+const version = "2.3.2"
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
@@ -43,6 +43,7 @@ const data = {
   featureFlags: {
     enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
     enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
+    enableGuardianGamesFeatures: process.env.D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES == "1",
   }
 }
 
