@@ -1,19 +1,19 @@
 .modTable {
-    width: 100%;
+  width: 100%;
 }
 
 .mat-header-row,
 .mat-row {
-    height: 30px;
+  height: 30px;
 }
 
 .mat-column-class {
-    min-width: 55px;
-    padding-right: 2px;
-    padding-left: 2px;
-    text-align: center;
+  min-width: 55px;
+  padding-right: 2px;
+  padding-left: 2px;
+  text-align: center;
 
-    border-right: 1px solid currentColor;
+  border-right: 1px solid currentColor;
 }
 
 .mat-column-mobility,
@@ -22,82 +22,82 @@
 .mat-column-discipline,
 .mat-column-intellect,
 .mat-column-strength {
-    min-width: 40px;
-    text-align: center;
+  min-width: 40px;
+  text-align: center;
 }
 
 .mat-row:hover {
-    background-color: #494949;
+  background-color: #494949;
 }
 
 .mat-column-mobility,
 .mat-column-recovery,
 .mat-column-intellect {
-    background-color: #464646;
+  background-color: #464646;
 }
 
 .mat-column-name {
-    padding-right: 4px;
-    border-right: 1px solid currentColor;
-    min-width: 150px;
+  padding-right: 4px;
+  border-right: 1px solid currentColor;
+  min-width: 150px;
 }
 
 th.mat-header-cell:last-of-type,
 td.mat-cell:last-of-type,
 td.mat-footer-cell:last-of-type {
-    padding-right: 0;
+  padding-right: 0;
 }
 
 .mat-cell:last-of-type,
 .mat-header-cell:last-of-type,
 .mat-footer-cell:last-of-type {
-    padding-right: 0;
+  padding-right: 0;
 }
 
 .stat-negative,
 .stat-positive {
-    margin-right: 3px;
+  margin-right: 3px;
 }
 
 .stat-negative {
-    color: lightcoral;
+  color: lightcoral;
 }
 
 .stat-positive {
-    color: cornflowerblue;
+  color: cornflowerblue;
 }
 
 .stat-display {
-    width: 60px;
-    float: left;
-    align-content: end;
-    text-align: right;
+  width: 60px;
+  float: left;
+  align-content: end;
+  text-align: right;
 }
 
 .mat-row:hover,
 .mat-row:hover .mat-cell {
-    background-color: #494949;
+  background-color: #494949;
 }
 
 .mat-row.selected:hover,
 .mat-row.selected:hover .mat-cell {
-    background-color: rgba(137, 178, 255, 0.19);
+  background-color: rgba(137, 178, 255, 0.19);
 }
 
 .selected,
 .selected .mat-column-mobility,
 .selected .mat-column-recovery,
 .selected .mat-column-intellect {
-    background-color: rgba(137, 178, 255, 0.11);
+  background-color: rgba(137, 178, 255, 0.11);
 }
 
 .mat-column-load,
 .mat-column-delete {
-    padding-left: 3px;
-    padding-right: 3px;
+  padding-left: 3px;
+  padding-right: 3px;
 }
 
 :host ::ng-deep .mat-form-field-wrapper {
-    margin: 0 !important;
-    padding: 0;
+  margin: 0 !important;
+  padding: 0;
 }

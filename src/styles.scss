@@ -1,24 +1,24 @@
 html,
 body {
-    height: 100%;
-    background-color: #292929;
-    color: white;
+  height: 100%;
+  background-color: #292929;
+  color: white;
 }
 
 body {
-    margin: 0;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
 .allow-cr {
-    white-space: pre;
+  white-space: pre;
 }
 
 .logo-twitter {
-    width: 17px;
+  width: 17px;
 }
 
 .mat-tooltip-panel,
 .overlay-no-pointer-event {
-    pointer-events: none !important;
+  pointer-events: none !important;
 }

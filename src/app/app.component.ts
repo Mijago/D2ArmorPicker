@@ -2,14 +2,14 @@ import { Component } from "@angular/core";
 import { environment } from "../environments/environment";
 
 @Component({
-    selector: "app-root",
-    templateUrl: "./app.component.html",
-    styleUrls: ["./app.component.scss"],
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
 })
 export class AppComponent {
-    title = "D2ArmorPicker";
+  title = "D2ArmorPicker";
 
-    constructor() {
-        console.log("PRODUCTION?", environment.production);
-    }
+  constructor() {
+    console.log("PRODUCTION?", environment.production);
+  }
 }

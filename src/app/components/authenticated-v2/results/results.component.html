@@ -1,424 +1,408 @@
 <mat-card id="card-results">
-    <mat-card-title>Results</mat-card-title>
-    <mat-card-subtitle>
-        <ng-container *ngIf="this.totalResults > 0">
-            Click on a row to expand it and to see the list of the items required for this build.<br />
-        </ng-container>
-        <ng-container *ngIf="this.totalResults === 0">
-            <div class="no-found-sadcat-container">
-                <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat" />&nbsp;
-            </div>
-            <span class="warning-none-found"><b>No combinations found.</b></span>
-            You should loosen your settings a bit.
-        </ng-container>
-    </mat-card-subtitle>
-    <mat-card-content>
-        <div>
-            <div
-                class="config-summary-box"
-                fxLayout="row"
-                fxLayoutAlign="start center"
-                fxLayoutGap="5px">
-                <mat-form-field appearance="outline" class="info-box" fxFlex>
-                    <mat-label>Items Used</mat-label>
-                    <input matInput readonly value="{{ this.itemCount | number }}" />
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="info-box" fxFlex>
-                    <mat-label>Combinations generated</mat-label>
-                    <input matInput readonly value="{{ this.totalResults | number }}" />
+  <mat-card-title>Results</mat-card-title>
+  <mat-card-subtitle>
+    <ng-container *ngIf="this.totalResults > 0">
+      Click on a row to expand it and to see the list of the items required for this build.<br />
+    </ng-container>
+    <ng-container *ngIf="this.totalResults === 0">
+      <div class="no-found-sadcat-container">
+        <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat" />&nbsp;
+      </div>
+      <span class="warning-none-found"><b>No combinations found.</b></span>
+      You should loosen your settings a bit.
+    </ng-container>
+  </mat-card-subtitle>
+  <mat-card-content>
+    <div>
+      <div class="config-summary-box" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
+        <mat-form-field appearance="outline" class="info-box" fxFlex>
+          <mat-label>Items Used</mat-label>
+          <input matInput readonly value="{{ this.itemCount | number }}" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="info-box" fxFlex>
+          <mat-label>Combinations generated</mat-label>
+          <input matInput readonly value="{{ this.totalResults | number }}" />
 
-                    <mat-icon
-                        #tooltip="matTooltip"
-                        *ngIf="
-                            this.parsedResults !== this.totalResults && this.parsedResults === 5e4
-                        "
-                        class="report-problem-icon"
-                        matSuffix
-                        matTooltip="Note: To speed up the whole process, only {{
-                            this.parsedResults | number
-                        }} results are listed in this table.
+          <mat-icon
+            #tooltip="matTooltip"
+            *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 5e4"
+            class="report-problem-icon"
+            matSuffix
+            matTooltip="Note: To speed up the whole process, only {{
+              this.parsedResults | number
+            }} results are listed in this table.
                         If you need more entries, disable the limitation in the advanced settings."
-                        >report_problem
-                    </mat-icon>
-                    <mat-icon
-                        #tooltip="matTooltip"
-                        *ngIf="
-                            this.parsedResults !== this.totalResults && this.parsedResults === 1e6
-                        "
-                        class="report-problem-icon"
-                        matSuffix
-                        matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
-                            this.parsedResults | number
-                        }} results are listed in this table.
+            >report_problem
+          </mat-icon>
+          <mat-icon
+            #tooltip="matTooltip"
+            *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 1e6"
+            class="report-problem-icon"
+            matSuffix
+            matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
+              this.parsedResults | number
+            }} results are listed in this table.
                                 You should narrow down your settings a bit."
-                        >report_problem
-                    </mat-icon>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="info-box" fxFlex>
-                    <mat-label>Time required</mat-label>
-                    <input matInput readonly value="{{ this.totalTime | number }}ms" />
-                </mat-form-field>
-            </div>
+            >report_problem
+          </mat-icon>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="info-box" fxFlex>
+          <mat-label>Time required</mat-label>
+          <input matInput readonly value="{{ this.totalTime | number }}ms" />
+        </mat-form-field>
+      </div>
 
-            <mat-form-field appearance="outline" class="config-summary-box" disabled>
-                <mat-label>Summary of important configuration choices</mat-label>
-                <input matInput readonly value="&nbsp;" class="hidden-input" />
-                <mat-chip-list aria-label="Configuration Summary">
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_selectedExotics.indexOf(-1) > -1"
-                        disableRipple
-                        matTooltip="This setting enforces that all exotics are ignored."
-                        >No Exotic
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="
-                            _config_selectedExotics.length === 1 &&
-                            _config_selectedExotics.indexOf(-1) === -1
-                        "
-                        disableRipple
-                        matTooltip="This setting enforces that only one specific exotic is used."
-                        >Exotic
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="
-                            _config_selectedExotics.length > 1 &&
-                            _config_selectedExotics.indexOf(-1) === -1
-                        "
-                        disableRipple
-                        matTooltip="The tool will try to fulfill your settings for all the selected exotics. If you select exotics in different slots then it will search for legendary items to allow hotswapping with the same stats.">
-                        Multiple Exotics
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_maximumStatMods === 0"
-                        disableRipple
-                        matTooltip="You enforced that no stat mods are used."
-                        >No stat mods
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_tryLimitWastedStats"
-                        disableRipple
-                        matTooltip="The tool will add minor stat mods to reduce wasted stats."
-                        >Reduce wasted stats
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_modslotLimitation.length > 0"
-                        disableRipple
-                        matTooltip="This setting limits available stat mod types, like major Intellect or Recovery."
-                        >Stat Mod Limitation
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_armorPerkLimitation.length > 0"
-                        disableRipple
-                        matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
-                        Armor Perk or Slot
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_onlyShowResultsWithNoWastedStats"
-                        disableRipple
-                        matTooltip="This setting means that only builds with no wasted stats are shown."
-                        selected
-                        >Zero Waste
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_assumeEveryLegendaryIsArtifice"
-                        disableRipple
-                        matTooltip="EVERY legendary is assumed to be artifice."
-                        selected
-                        color="warn">
-                        <mat-icon inline style="height: 100%">report_problem</mat-icon>
-                        &nbsp;Assume everything is artifice&nbsp;
-                        <mat-icon inline style="height: 100%">report_problem</mat-icon>
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="_config_onlyUseMasterworkedItems"
-                        disableRipple
-                        matTooltip="This setting means that only armor pieces are used that are already masterworked."
-                        selected>
-                        Masterworked Only
-                    </mat-chip>
-                    <mat-chip
-                        #tooltip="matTooltip"
-                        *ngIf="
-                            !_config_onlyUseMasterworkedItems &&
-                            (_config_assumeLegendariesMasterworked ||
-                                _config_assumeExoticsMasterworked ||
-                                _config_assumeClassItemMasterworked)
-                        "
-                        disableRipple
-                        matTooltip="Some masterwork assumptions are in place. This means that you may have to masterwork items. Look at your advanced settings to see which ones are activated.">
-                        Masterwork Assumption
-                    </mat-chip>
-                </mat-chip-list>
-            </mat-form-field>
+      <mat-form-field appearance="outline" class="config-summary-box" disabled>
+        <mat-label>Summary of important configuration choices</mat-label>
+        <input matInput readonly value="&nbsp;" class="hidden-input" />
+        <mat-chip-list aria-label="Configuration Summary">
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_selectedExotics.indexOf(-1) > -1"
+            disableRipple
+            matTooltip="This setting enforces that all exotics are ignored."
+            >No Exotic
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="
+              _config_selectedExotics.length === 1 && _config_selectedExotics.indexOf(-1) === -1
+            "
+            disableRipple
+            matTooltip="This setting enforces that only one specific exotic is used."
+            >Exotic
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_selectedExotics.length > 1 && _config_selectedExotics.indexOf(-1) === -1"
+            disableRipple
+            matTooltip="The tool will try to fulfill your settings for all the selected exotics. If you select exotics in different slots then it will search for legendary items to allow hotswapping with the same stats.">
+            Multiple Exotics
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_maximumStatMods === 0"
+            disableRipple
+            matTooltip="You enforced that no stat mods are used."
+            >No stat mods
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_tryLimitWastedStats"
+            disableRipple
+            matTooltip="The tool will add minor stat mods to reduce wasted stats."
+            >Reduce wasted stats
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_modslotLimitation.length > 0"
+            disableRipple
+            matTooltip="This setting limits available stat mod types, like major Intellect or Recovery."
+            >Stat Mod Limitation
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_armorPerkLimitation.length > 0"
+            disableRipple
+            matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
+            Armor Perk or Slot
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_onlyShowResultsWithNoWastedStats"
+            disableRipple
+            matTooltip="This setting means that only builds with no wasted stats are shown."
+            selected
+            >Zero Waste
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_assumeEveryLegendaryIsArtifice"
+            disableRipple
+            matTooltip="EVERY legendary is assumed to be artifice."
+            selected
+            color="warn">
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+            &nbsp;Assume everything is artifice&nbsp;
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_onlyUseMasterworkedItems"
+            disableRipple
+            matTooltip="This setting means that only armor pieces are used that are already masterworked."
+            selected>
+            Masterworked Only
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="
+              !_config_onlyUseMasterworkedItems &&
+              (_config_assumeLegendariesMasterworked ||
+                _config_assumeExoticsMasterworked ||
+                _config_assumeClassItemMasterworked)
+            "
+            disableRipple
+            matTooltip="Some masterwork assumptions are in place. This means that you may have to masterwork items. Look at your advanced settings to see which ones are activated.">
+            Masterwork Assumption
+          </mat-chip>
+        </mat-chip-list>
+      </mat-form-field>
 
-            <div class="hint-text">
-                <mat-icon aria-hidden="false" inline>info</mat-icon>
-                Note that you can change the sort column and order of the table by clicking on the
-                headers.
-            </div>
+      <div class="hint-text">
+        <mat-icon aria-hidden="false" inline>info</mat-icon>
+        Note that you can change the sort column and order of the table by clicking on the headers.
+      </div>
 
-            <table
-                [dataSource]="tableDataSource"
-                class="result-table"
-                mat-table
-                matSort
-                matSortActive="Mods"
-                matSortDirection="asc"
-                multiTemplateDataRows>
-                <!--- Note that these columns can be defined in any order.
+      <table
+        [dataSource]="tableDataSource"
+        class="result-table"
+        mat-table
+        matSort
+        matSortActive="Mods"
+        matSortDirection="asc"
+        multiTemplateDataRows>
+        <!--- Note that these columns can be defined in any order.
          The actual rendered columns are set as a property on the row definition" -->
-                <!-- Name Column -->
-                <ng-container matColumnDef="mobility">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Mobility"
-                        matTooltip="The mobility of this armor combination."
-                        >Mobility
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Mobility] }}
-                        <img
-                            alt="Mobility"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="mobility">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Mobility"
+            matTooltip="The mobility of this armor combination."
+            >Mobility
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Mobility] }}
+            <img
+              alt="Mobility"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="resilience">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Resilience"
-                        matTooltip="The resilience of this armor combination.">
-                        Resilience
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Resilience] }}
-                        <img
-                            alt="Resilience"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="resilience">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Resilience"
+            matTooltip="The resilience of this armor combination.">
+            Resilience
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Resilience] }}
+            <img
+              alt="Resilience"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="recovery">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Recovery"
-                        matTooltip="The recovery of this armor combination.">
-                        Recovery
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Recovery] }}
-                        <img
-                            alt="Recovery"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="recovery">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Recovery"
+            matTooltip="The recovery of this armor combination.">
+            Recovery
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Recovery] }}
+            <img
+              alt="Recovery"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="discipline">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Discipline"
-                        matTooltip="The discipline of this armor combination.">
-                        Discipline
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Discipline] }}
-                        <img
-                            alt="Discipline"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="discipline">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Discipline"
+            matTooltip="The discipline of this armor combination.">
+            Discipline
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Discipline] }}
+            <img
+              alt="Discipline"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="intellect">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Intellect"
-                        matTooltip="The intellect of this armor combination.">
-                        Intellect
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Intellect] }}
-                        <img
-                            alt="Intellect"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="intellect">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Intellect"
+            matTooltip="The intellect of this armor combination.">
+            Intellect
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Intellect] }}
+            <img
+              alt="Intellect"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="strength">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Strength"
-                        matTooltip="The strength of this armor combination."
-                        >Strength
-                    </th>
-                    <td *matCellDef="let element" class="statColumn" mat-cell
-                        >{{ element.stats[ArmorStat.Strength] }}
-                        <img
-                            alt="Strength"
-                            class="statIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" />
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="strength">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Strength"
+            matTooltip="The strength of this armor combination."
+            >Strength
+          </th>
+          <td *matCellDef="let element" class="statColumn" mat-cell
+            >{{ element.stats[ArmorStat.Strength] }}
+            <img
+              alt="Strength"
+              class="statIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png" />
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="mods">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Mods"
-                        matTooltip="The amount of mods required for each combination. Sorting after this takes the mod cost into account.">
-                        Used Mods
-                    </th>
-                    <td *matCellDef="let element" mat-cell>
-                        <app-table-mod-display
-                            [mods]="element.mods"
-                            [artifice]="element.artifice"
-                            class="modPreview"></app-table-mod-display>
-                    </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="mods">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Mods"
+            matTooltip="The amount of mods required for each combination. Sorting after this takes the mod cost into account.">
+            Used Mods
+          </th>
+          <td *matCellDef="let element" mat-cell>
+            <app-table-mod-display
+              [mods]="element.mods"
+              [artifice]="element.artifice"
+              class="modPreview"></app-table-mod-display>
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="exotic">
-                    <th *matHeaderCellDef mat-header-cell> Exotic</th>
-                    <td *matCellDef="let element" mat-cell>
-                        <ng-container *ngFor="let exo of element.exotic">
-                            <!-- TODO name , icon-->
-                            <img
-                                #tooltip="matTooltip"
-                                class="itemIcon"
-                                matTooltip="{{ exo.name }}"
-                                src="https://bungie.net/{{ exo.icon }}" />
-                            <img
-                                class="itemIconWatermark"
-                                src="https://bungie.net/{{ exo.watermark }}" />
-                        </ng-container>
-                        <img
-                            *ngIf="element.exotic.length === 0"
-                            class="itemIcon"
-                            src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
-                    </td>
-                </ng-container>
-                <!-- Name Column -->
-                <ng-container matColumnDef="dropdown">
-                    <th *matHeaderCellDef mat-header-cell></th>
-                    <td *matCellDef="let element" mat-cell>
-                        <mat-icon
-                            *ngIf="expandedElement !== element"
-                            matTooltip="Click to show details for this build.">
-                            expand_more
-                        </mat-icon>
-                        <mat-icon
-                            *ngIf="expandedElement === element"
-                            matTooltip="Click to hide details for this build.">
-                            expand_less
-                        </mat-icon>
+        <!-- Name Column -->
+        <ng-container matColumnDef="exotic">
+          <th *matHeaderCellDef mat-header-cell> Exotic</th>
+          <td *matCellDef="let element" mat-cell>
+            <ng-container *ngFor="let exo of element.exotic">
+              <!-- TODO name , icon-->
+              <img
+                #tooltip="matTooltip"
+                class="itemIcon"
+                matTooltip="{{ exo.name }}"
+                src="https://bungie.net/{{ exo.icon }}" />
+              <img class="itemIconWatermark" src="https://bungie.net/{{ exo.watermark }}" />
+            </ng-container>
+            <img
+              *ngIf="element.exotic.length === 0"
+              class="itemIcon"
+              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
+          </td>
+        </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="dropdown">
+          <th *matHeaderCellDef mat-header-cell></th>
+          <td *matCellDef="let element" mat-cell>
+            <mat-icon
+              *ngIf="expandedElement !== element"
+              matTooltip="Click to show details for this build.">
+              expand_more
+            </mat-icon>
+            <mat-icon
+              *ngIf="expandedElement === element"
+              matTooltip="Click to hide details for this build.">
+              expand_less
+            </mat-icon>
 
-                        <mat-icon
-                            #tooltip="matTooltip"
-                            *ngIf="checkIfAnyItemsMayBeInvalid(element)"
-                            aria-hidden="false"
-                            aria-label="Error"
-                            class="report-problem-icon"
-                            inline
-                            matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items.">
-                            report_problem
-                        </mat-icon>
-                    </td>
-                </ng-container>
+            <mat-icon
+              #tooltip="matTooltip"
+              *ngIf="checkIfAnyItemsMayBeInvalid(element)"
+              aria-hidden="false"
+              aria-label="Error"
+              class="report-problem-icon"
+              inline
+              matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items.">
+              report_problem
+            </mat-icon>
+          </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="tiers">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Tiers"
-                        matTooltip="The amount of Tiers in this build. A tier is each successful 10-step of any stat."
-                        >Tiers
-                    </th>
-                    <td *matCellDef="let element" mat-cell> {{ element.tiers }} </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="tiers">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Tiers"
+            matTooltip="The amount of Tiers in this build. A tier is each successful 10-step of any stat."
+            >Tiers
+          </th>
+          <td *matCellDef="let element" mat-cell> {{ element.tiers }} </td>
+        </ng-container>
 
-                <!-- Name Column -->
-                <ng-container matColumnDef="potential_tiers">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Max Tiers"
-                        matTooltip="The potential reachable stat tiers with all N stat mods used. As of now, this does NOT take mod filters into consideration."
-                        >Max Tiers
-                    </th>
-                    <td *matCellDef="let element" mat-cell>
-                        {{ element.tiers + (5 - element.modCount) }}
-                    </td>
-                </ng-container>
-                <!-- Name Column -->
-                <ng-container matColumnDef="waste">
-                    <th
-                        *matHeaderCellDef
-                        mat-header-cell
-                        mat-sort-header="Waste"
-                        matTooltip="How many points are wasted. Any stat not ending in 0 adds to this value."
-                        >Wasted
-                    </th>
-                    <td *matCellDef="let element" mat-cell> {{ element.waste }} </td>
-                </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="potential_tiers">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Max Tiers"
+            matTooltip="The potential reachable stat tiers with all N stat mods used. As of now, this does NOT take mod filters into consideration."
+            >Max Tiers
+          </th>
+          <td *matCellDef="let element" mat-cell>
+            {{ element.tiers + (5 - element.modCount) }}
+          </td>
+        </ng-container>
+        <!-- Name Column -->
+        <ng-container matColumnDef="waste">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Waste"
+            matTooltip="How many points are wasted. Any stat not ending in 0 adds to this value."
+            >Wasted
+          </th>
+          <td *matCellDef="let element" mat-cell> {{ element.waste }} </td>
+        </ng-container>
 
-                <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-                <ng-container matColumnDef="expandedDetail">
-                    <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
-                        <div
-                            [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
-                            class="example-element-detail">
-                            <app-expanded-result-content
-                                [element]="element"></app-expanded-result-content>
-                        </div>
-                    </td>
-                </ng-container>
+        <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+        <ng-container matColumnDef="expandedDetail">
+          <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
+            <div
+              [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
+              class="example-element-detail">
+              <app-expanded-result-content [element]="element"></app-expanded-result-content>
+            </div>
+          </td>
+        </ng-container>
 
-                <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
-                <tr
-                    (click)="expandedElement = expandedElement === element ? null : element"
-                    *matRowDef="let element; columns: shownColumns"
-                    [class.example-expanded-row]="expandedElement === element"
-                    class="example-element-row"
-                    mat-row>
-                </tr>
-                <tr
-                    *matRowDef="let row; columns: ['expandedDetail']"
-                    class="example-detail-row"
-                    mat-row></tr>
-            </table>
-            <mat-paginator
-                [pageSizeOptions]="[10, 20, 50]"
-                aria-label="Select page of periodic elements"
-                pageSize="20"
-                showFirstLastButtons>
-            </mat-paginator>
-        </div>
-    </mat-card-content>
+        <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
+        <tr
+          (click)="expandedElement = expandedElement === element ? null : element"
+          *matRowDef="let element; columns: shownColumns"
+          [class.example-expanded-row]="expandedElement === element"
+          class="example-element-row"
+          mat-row>
+        </tr>
+        <tr
+          *matRowDef="let row; columns: ['expandedDetail']"
+          class="example-detail-row"
+          mat-row></tr>
+      </table>
+      <mat-paginator
+        [pageSizeOptions]="[10, 20, 50]"
+        aria-label="Select page of periodic elements"
+        pageSize="20"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
+  </mat-card-content>
 </mat-card>

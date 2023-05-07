@@ -6,15 +6,15 @@ import { CommonMaterialModule } from "../../../../modules/common-material/common
 
 // router
 const routes: Routes = [
-    {
-        path: "",
-        component: TheorizerPageComponent,
-    },
+  {
+    path: "",
+    component: TheorizerPageComponent,
+  },
 ];
 
 @NgModule({
-    declarations: [TheorizerPageComponent],
-    exports: [TheorizerPageComponent],
-    imports: [CommonModule, CommonMaterialModule, RouterModule.forChild(routes)],
+  declarations: [TheorizerPageComponent],
+  exports: [TheorizerPageComponent],
+  imports: [CommonModule, CommonMaterialModule, RouterModule.forChild(routes)],
 })
 export class TheorizerPageModule {}

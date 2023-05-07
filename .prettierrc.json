@@ -1,13 +1,13 @@
 {
-    "tabWidth": 2,
-    "useTabs": false,
-    "singleQuote": false,
-    "semi": true,
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "trailingComma": "es5",
-    "bracketSameLine": true,
-    "printWidth": 100,
-    "htmlWhitespaceSensitivity": "strict",
-    "endOfLine": "lf"
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": false,
+  "semi": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "trailingComma": "es5",
+  "bracketSameLine": true,
+  "printWidth": 100,
+  "htmlWhitespaceSensitivity": "strict",
+  "endOfLine": "lf"
 }

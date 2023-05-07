@@ -4,31 +4,31 @@ import { ChangelogDialogComponent } from "../components/authenticated-v2/compone
 import { MatDialog } from "@angular/material/dialog";
 
 @Injectable({
-    providedIn: "root",
+  providedIn: "root",
 })
 export class ChangelogService {
-    constructor(public dialog: MatDialog) {}
+  constructor(public dialog: MatDialog) {}
 
-    setChangelogSeenFlag() {
-        return localStorage.setItem("last-changelog-version", this.changelogData[0].version);
-    }
+  setChangelogSeenFlag() {
+    return localStorage.setItem("last-changelog-version", this.changelogData[0].version);
+  }
 
-    get lastViewedChangelog() {
-        return localStorage.getItem("last-changelog-version");
-    }
+  get lastViewedChangelog() {
+    return localStorage.getItem("last-changelog-version");
+  }
 
-    get mustShowChangelog() {
-        return this.changelogData[0].version !== this.lastViewedChangelog;
-    }
+  get mustShowChangelog() {
+    return this.changelogData[0].version !== this.lastViewedChangelog;
+  }
 
-    get changelogData() {
-        return CHANGELOG_DATA;
-    }
+  get changelogData() {
+    return CHANGELOG_DATA;
+  }
 
-    openChangelogDialog() {
-        const dialogRef = this.dialog.open(ChangelogDialogComponent);
-        dialogRef.afterClosed().subscribe((result) => {
-            this.setChangelogSeenFlag();
-        });
-    }
+  openChangelogDialog() {
+    const dialogRef = this.dialog.open(ChangelogDialogComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      this.setChangelogSeenFlag();
+    });
+  }
 }

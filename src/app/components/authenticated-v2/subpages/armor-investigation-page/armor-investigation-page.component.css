@@ -1,67 +1,67 @@
 #description,
 #filter {
-    max-width: 700px;
-    margin-bottom: 10px;
-    margin-left: auto;
-    margin-right: auto;
+  max-width: 700px;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .cluster-item {
-    flex-grow: 1;
-    flex-basis: 0;
+  flex-grow: 1;
+  flex-basis: 0;
 
-    min-width: 250px;
-    max-width: 350px;
-    margin-bottom: 10px;
+  min-width: 250px;
+  max-width: 350px;
+  margin-bottom: 10px;
 }
 
 .armor-container,
 .plug-sum-col {
-    padding-left: 5px;
+  padding-left: 5px;
 }
 
 .armor-container {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .stat-range {
-    height: 20px;
-    width: 100%;
-    margin-bottom: 3px;
-    float: left;
-    background-color: gray;
+  height: 20px;
+  width: 100%;
+  margin-bottom: 3px;
+  float: left;
+  background-color: gray;
 }
 
 .stat-range-bar {
-    height: 100%;
-    float: left;
-    background-color: white;
+  height: 100%;
+  float: left;
+  background-color: white;
 }
 
 /* Plugs for the first triplet*/
 .stat-range-bar0 {
-    background-color: #acfff1;
+  background-color: #acfff1;
 }
 .stat-range-bar1 {
-    background-color: #5e9eff;
+  background-color: #5e9eff;
 }
 /* Plugs for the 2nd triplet */
 .stat-range-bar3 {
-    background-color: #ffc2ac;
+  background-color: #ffc2ac;
 }
 .stat-range-bar4 {
-    background-color: #ffb45e;
+  background-color: #ffb45e;
 }
 
 .stat-range-bar2,
 .stat-range-bar5 {
-    background-color: #c246ff;
+  background-color: #c246ff;
 }
 
 a {
-    color: #99afe3;
+  color: #99afe3;
 }
 
 a:visited {
-    color: #7294dc;
+  color: #7294dc;
 }

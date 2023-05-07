@@ -1,13 +1,13 @@
 <span class="overlay-icon-container">
-    <ng-container *ngIf="customIconMods.indexOf(perk) > -1">
-        <img
-            #tooltip="matTooltip"
-            class="element-icon"
-            matTooltip="{{ name }}"
-            src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
-        <img class="overlay-icon" *ngIf="customIconMods.indexOf(perk) > -1" src="{{ url }}" />
-    </ng-container>
-    <ng-container *ngIf="customIconMods.indexOf(perk) === -1">
-        <img #tooltip="matTooltip" class="element-icon" matTooltip="{{ name }}" src="{{ url }}" />
-    </ng-container>
+  <ng-container *ngIf="customIconMods.indexOf(perk) > -1">
+    <img
+      #tooltip="matTooltip"
+      class="element-icon"
+      matTooltip="{{ name }}"
+      src="https://bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
+    <img class="overlay-icon" *ngIf="customIconMods.indexOf(perk) > -1" src="{{ url }}" />
+  </ng-container>
+  <ng-container *ngIf="customIconMods.indexOf(perk) === -1">
+    <img #tooltip="matTooltip" class="element-icon" matTooltip="{{ name }}" src="{{ url }}" />
+  </ng-container>
 </span>

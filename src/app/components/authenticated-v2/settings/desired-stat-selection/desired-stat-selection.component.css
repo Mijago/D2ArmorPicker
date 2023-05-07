@@ -1,13 +1,13 @@
 #tierSelectButtonContainer > .tierSelectButton:not(:last-child) {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 .dialogStatIcon {
-    height: 35px;
+  height: 35px;
 }
 
 .warn {
-    background-color: darkred;
-    padding-left: 15px;
-    padding-right: 15px;
+  background-color: darkred;
+  padding-left: 15px;
+  padding-right: 15px;
 }

@@ -16,20 +16,20 @@ Visit the page here: https://d2armorpicker.com
 1. Run `npx husky-init && npm install` to install dependencies.
 2. Duplicate the `.env_example` to `.env_dev`.
 3. Create a Bungie API key. For this, head over to https://www.bungie.net/en/Application and create a new application.
-    - Set the OAuth Client Type to `Confidential` and the redirect URL to `https://localhost:4200/`.
-    - Select the Scopes `Read your Destiny 2 information` and `Move or equip Destiny gear and other items`.
-    - Set `Origin Header` to `https://localhost:4200`.
-    - Copy the API key and paste it to `D2AP_BUNGIE_API_KEY` in the `.env_dev` file.
-    - Copy the OAuth client_id and paste it to `D2AP_BUNGIE_CLIENT_ID` in the `.env_dev` file.
-    - Copy the OAuth client_secrety and paste it to `D2AP_BUNGIE_CLIENT_SECRET` in the `.env_dev` file.
+   - Set the OAuth Client Type to `Confidential` and the redirect URL to `https://localhost:4200/`.
+   - Select the Scopes `Read your Destiny 2 information` and `Move or equip Destiny gear and other items`.
+   - Set `Origin Header` to `https://localhost:4200`.
+   - Copy the API key and paste it to `D2AP_BUNGIE_API_KEY` in the `.env_dev` file.
+   - Copy the OAuth client_id and paste it to `D2AP_BUNGIE_CLIENT_ID` in the `.env_dev` file.
+   - Copy the OAuth client_secrety and paste it to `D2AP_BUNGIE_CLIENT_SECRET` in the `.env_dev` file.
 4. Start the development server with `npm start` (or `npm run start`). The server will be available at https://localhost:4200/. This page will automatically update whenever you change anything in the code.
-    - Ignore the "invalid certificate" error your browser will show you. You need HTTPS to be able to use the Bungie Authentification.
+   - Ignore the "invalid certificate" error your browser will show you. You need HTTPS to be able to use the Bungie Authentification.
 
 ### Building Production and Beta packages
 
--   Copy `.env_dev` to `.env` and/or `.env_beta`.
--   To build a production package, set the environment flag `PRODUCTION=1`.
--   To build a beta package, set the environment flag `BETA=1`.
+- Copy `.env_dev` to `.env` and/or `.env_beta`.
+- To build a production package, set the environment flag `PRODUCTION=1`.
+- To build a beta package, set the environment flag `BETA=1`.
 
 Then you can use `npm run build`.
 
@@ -43,10 +43,10 @@ You can also deploy the page to a "github pages" page. Please note that I strong
 
 ### Guidelines
 
--   We use [husky](https://github.com/typicode/husky) to execute some commit hooks.
--   We use [eslint](https://eslint.org) to make sure we have the same code style.
--   We use [prettier](https://prettier.io/docs/en/) to make sure we have the same code formatting.
--   We are using [commitlint](https://github.com/conventional-changelog/commitlint) to make sure we all have the same commit structure. The template used is [@commitlint/config-angular](https://github.com/conventional-changelog/commitlint/tree/master/@commitlint/config-angular).
+- We use [husky](https://github.com/typicode/husky) to execute some commit hooks.
+- We use [eslint](https://eslint.org) to make sure we have the same code style.
+- We use [prettier](https://prettier.io/docs/en/) to make sure we have the same code formatting.
+- We are using [commitlint](https://github.com/conventional-changelog/commitlint) to make sure we all have the same commit structure. The template used is [@commitlint/config-angular](https://github.com/conventional-changelog/commitlint/tree/master/@commitlint/config-angular).
 
 ### Contributors ✨
 

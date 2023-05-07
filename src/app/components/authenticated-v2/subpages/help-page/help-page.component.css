@@ -1,60 +1,60 @@
 #help-container {
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .changelog-table-container {
-    max-height: 700px;
-    overflow-y: scroll;
+  max-height: 700px;
+  overflow-y: scroll;
 }
 
 mat-card {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
 
 #armor-image-container {
-    overflow: auto;
+  overflow: auto;
 }
 
 #armor-image-container > img:not(:last-of-type) {
-    margin-right: 20px;
+  margin-right: 20px;
 }
 
 #armor-image-container > img {
-    max-height: 300px;
+  max-height: 300px;
 }
 
 .preview-image-container {
-    max-width: 600px;
+  max-width: 600px;
 }
 
 .preview-image {
-    max-width: 100%;
+  max-width: 100%;
 }
 
 .returnbutton {
-    margin-top: 5px;
-    margin-bottom: 15px;
-    width: 100%;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .changelog-table th:first-of-type {
-    min-width: 80px;
+  min-width: 80px;
 }
 
 .changelog-table th:nth-of-type(2) {
-    min-width: 40px;
+  min-width: 40px;
 }
 
 .changelog-table td {
-    border-top: #6e6e6e solid 1px;
+  border-top: #6e6e6e solid 1px;
 }
 
 a {
-    color: #99afe3;
+  color: #99afe3;
 }
 
 a:visited {
-    color: #7294dc;
+  color: #7294dc;
 }

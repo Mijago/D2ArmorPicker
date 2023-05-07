@@ -5,31 +5,31 @@ import { ArmorPerkOrSlot } from "../../../../data/enum/armor-stat";
 import { environment } from "../../../../../environments/environment";
 
 @Component({
-    selector: "app-desired-mod-selection",
-    templateUrl: "./desired-mod-limit-selection.component.html",
-    styleUrls: ["./desired-mod-limit-selection.component.scss"],
+  selector: "app-desired-mod-selection",
+  templateUrl: "./desired-mod-limit-selection.component.html",
+  styleUrls: ["./desired-mod-limit-selection.component.scss"],
 })
 export class DesiredModLimitSelectionComponent {
-    readonly ArmorSlot = ArmorSlot;
-    readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
+  readonly ArmorSlot = ArmorSlot;
+  readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
 
-    public possibilityList = [true, true, true, true, true];
-    public allPossible = true;
-    public disabledSlotLimitation = !environment.featureFlags.enableModslotLimitation;
+  public possibilityList = [true, true, true, true, true];
+  public allPossible = true;
+  public disabledSlotLimitation = !environment.featureFlags.enableModslotLimitation;
 
-    constructor(public config: ConfigurationService) {}
+  constructor(public config: ConfigurationService) {}
 
-    updatePossibility(n: number, state: boolean) {
-        this.possibilityList[n] = state;
-        this.allPossible = this.possibilityList.filter((k) => !!k).length == 5;
-    }
+  updatePossibility(n: number, state: boolean) {
+    this.possibilityList[n] = state;
+    this.allPossible = this.possibilityList.filter((k) => !!k).length == 5;
+  }
 
-    clear() {
-        this.config.modifyConfiguration((c) => {
-            for (let n = 0; n < 5; n++) {
-                c.armorPerks[(n + 1) as ArmorSlot] = { fixed: true, value: 0 };
-                c.maximumModSlots[(n + 1) as ArmorSlot] = { fixed: true, value: 5 };
-            }
-        });
-    }
+  clear() {
+    this.config.modifyConfiguration((c) => {
+      for (let n = 0; n < 5; n++) {
+        c.armorPerks[(n + 1) as ArmorSlot] = { fixed: true, value: 0 };
+        c.maximumModSlots[(n + 1) as ArmorSlot] = { fixed: true, value: 5 };
+      }
+    });
+  }
 }

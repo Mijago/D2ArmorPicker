@@ -1,63 +1,63 @@
 .container {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .impossible-container {
-    text-align: center;
-    margin-right: auto;
-    margin-left: auto;
-    width: fit-content;
-    height: fit-content;
-    font-size: 15px;
-    line-height: 20px;
-    margin-bottom: 10px;
+  text-align: center;
+  margin-right: auto;
+  margin-left: auto;
+  width: fit-content;
+  height: fit-content;
+  font-size: 15px;
+  line-height: 20px;
+  margin-bottom: 10px;
 }
 
 .element-icon {
-    height: 30px;
-    width: 30px;
+  height: 30px;
+  width: 30px;
 
-    &.disabled {
-        opacity: 0.5;
-        cursor: default;
-        pointer-events: none;
-    }
+  &.disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
 }
 
 .overlay-icon-container {
-    position: relative;
+  position: relative;
 
-    .overlay-icon {
-        width: 20px;
-        position: absolute;
-        left: 5px;
-        bottom: 9px;
-        pointer-events: none;
-    }
+  .overlay-icon {
+    width: 20px;
+    position: absolute;
+    left: 5px;
+    bottom: 9px;
+    pointer-events: none;
+  }
 }
 
 .modslot-legend {
-    border-collapse: separate;
-    border-spacing: 0 0;
-    width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0;
+  width: 100%;
 
-    td {
-        padding: 0;
-    }
+  td {
+    padding: 0;
+  }
 }
 
 #explanation-description {
-    width: 520px;
+  width: 520px;
 }
 .minispace {
-    height: 7px;
+  height: 7px;
 }
 
 .text-highlight {
-    color: #cddcef;
+  color: #cddcef;
 }
 
 .example-usecase {
-    font-size: small;
-    line-height: normal;
+  font-size: small;
+  line-height: normal;
 }

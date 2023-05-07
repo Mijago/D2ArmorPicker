@@ -1,78 +1,78 @@
 .loading {
-    cursor: progress;
+  cursor: progress;
 }
 
 .info {
-    z-index: 1000;
-    position: fixed;
-    width: 200px;
+  z-index: 1000;
+  position: fixed;
+  width: 200px;
 
-    left: 50%;
-    top: 50px;
-    transform: translateX(-50%);
+  left: 50%;
+  top: 50px;
+  transform: translateX(-50%);
 
-    border: antiquewhite 1px solid;
+  border: antiquewhite 1px solid;
 }
 
 .sidenav-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    z-index: 20;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 20;
 }
 
 .sidenav {
-    width: 200px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    z-index: 20;
+  width: 200px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 20;
 }
 
 .sidenav .mat-toolbar {
-    background: inherit;
+  background: inherit;
 }
 
 .sidenav .active {
-    background-color: rgba(255, 255, 255, 0.07);
-    color: #b8c4dc;
+  background-color: rgba(255, 255, 255, 0.07);
+  color: #b8c4dc;
 }
 
 .mat-toolbar.mat-primary {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 /* HEADER */
 #header {
-    position: relative;
-    height: 42px;
-    margin-bottom: 5px;
+  position: relative;
+  height: 42px;
+  margin-bottom: 5px;
 }
 
 #header .header-spacer {
-    flex: 1 1 auto;
+  flex: 1 1 auto;
 }
 
 .changelogText {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #loading {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 .d2ap-router-link {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 :host ::ng-deep .mat-tab-link {
-    min-width: 75px;
-    opacity: 1;
+  min-width: 75px;
+  opacity: 1;
 }

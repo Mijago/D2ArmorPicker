@@ -1,99 +1,99 @@
 #card-results {
-    display: inline-block;
-    vertical-align: top;
-    white-space: normal;
-    width: fit-content;
-    margin-left: 3px;
+  display: inline-block;
+  vertical-align: top;
+  white-space: normal;
+  width: fit-content;
+  margin-left: 3px;
 }
 
 .statColumn {
-    position: relative;
+  position: relative;
 }
 
 .statIcon {
-    position: absolute;
-    height: 22px;
-    margin-left: 2px;
-    top: 11px;
+  position: absolute;
+  height: 22px;
+  margin-left: 2px;
+  top: 11px;
 }
 
 .itemIcon {
-    width: 32px;
-    height: 32px;
-    margin-right: 3px;
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
 }
 
 .itemIconWatermark {
-    width: 32px;
-    height: 32px;
-    margin-right: 3px;
-    margin-left: -35px;
-    pointer-events: none;
+  width: 32px;
+  height: 32px;
+  margin-right: 3px;
+  margin-left: -35px;
+  pointer-events: none;
 }
 
 tr.example-element-row td {
-    border-bottom-width: 0;
+  border-bottom-width: 0;
 }
 
 tr.example-detail-row {
-    height: 0 !important;
+  height: 0 !important;
 }
 
 .example-element-detail {
-    overflow: hidden;
-    display: flex;
+  overflow: hidden;
+  display: flex;
 }
 
 .report-problem-icon {
-    color: lightcoral;
+  color: lightcoral;
 }
 
 .hint-text {
-    font-size: small;
-    color: #d5d5d5;
+  font-size: small;
+  color: #d5d5d5;
 }
 
 :host ::ng-deep .info-box .mat-form-field-wrapper {
-    padding-bottom: 5px !important;
-    cursor: default;
+  padding-bottom: 5px !important;
+  cursor: default;
 }
 
 .hidden-input {
-    display: none;
+  display: none;
 }
 
 .config-summary-box {
-    width: 100%;
+  width: 100%;
 }
 
 .result-table tr.example-element-row {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .mat-row:nth-child(4n + 3) {
-    background-color: rgba(116, 116, 116, 0.1);
+  background-color: rgba(116, 116, 116, 0.1);
 }
 
 .warning-none-found {
-    color: red;
+  color: red;
 }
 
 .no-found-sadcat-container {
-    width: 20px;
-    position: relative;
-    display: inline-block;
+  width: 20px;
+  position: relative;
+  display: inline-block;
 }
 
 .no-found-sadcat {
-    position: absolute;
-    width: 18px;
-    top: -1px;
+  position: absolute;
+  width: 18px;
+  top: -1px;
 }
 
 .cdk-column-exotic {
-    min-width: 45px;
+  min-width: 45px;
 }
 
 .cdk-column-waste {
-    padding-left: 5px;
+  padding-left: 5px;
 }

@@ -1,52 +1,52 @@
 .container {
-    display: inline-block;
-    width: 32px;
-    height: 30px;
-    position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 30px;
+  position: relative;
 }
 
 .modIcon {
-    position: absolute;
-    top: -12px;
-    left: -12px;
-    width: 50px;
-    height: 50px;
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 50px;
+  height: 50px;
 
-    -webkit-filter: contrast(2.3);
-    filter: contrast(2.3);
+  -webkit-filter: contrast(2.3);
+  filter: contrast(2.3);
 
-    border: #00000000 solid 2px;
+  border: #00000000 solid 2px;
 
-    -webkit-mask-image: url("../../../../../assets/masks/modmask.svg");
-    mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
+  -webkit-mask-image: url("../../../../../assets/masks/modmask.svg");
+  mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
 }
 
 .modIcon.minor {
-    -webkit-filter: contrast(1.3);
-    filter: contrast(1.3);
+  -webkit-filter: contrast(1.3);
+  filter: contrast(1.3);
 }
 
 .artificeIcon {
-    height: 28px;
-    width: 28px;
+  height: 28px;
+  width: 28px;
 
-    -webkit-filter: saturate(40) hue-rotate(40deg);
-    filter: saturate(40) hue-rotate(40deg);
+  -webkit-filter: saturate(40) hue-rotate(40deg);
+  filter: saturate(40) hue-rotate(40deg);
 }
 
 .selected {
-    border: red solid 2px;
+  border: red solid 2px;
 }
 
 :host {
-    position: relative;
+  position: relative;
 }
 
 .modText {
-    position: absolute;
-    text-shadow: 0 0 6px #000000;
-    font-size: smaller;
-    color: whitesmoke;
-    bottom: -6px;
-    right: -1px;
+  position: absolute;
+  text-shadow: 0 0 6px #000000;
+  font-size: smaller;
+  color: whitesmoke;
+  bottom: -6px;
+  right: -1px;
 }
