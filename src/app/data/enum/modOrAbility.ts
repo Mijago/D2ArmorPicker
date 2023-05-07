@@ -52,7 +52,6 @@ export enum ModOrAbility {
   //MobileRetrofit = 1500, // +5 Mobility
   //ResilientRetrofit, // +5 Resilience
 
-
   // Strand
   ThreadOfFury = 1600,
   ThreadOfAscent,
@@ -62,5 +61,5 @@ export enum ModOrAbility {
   ThreadOfEvolution,
   ThreadOfBinding,
   ThreadOfGeneration,
-  ThreadOfContinuity
+  ThreadOfContinuity,
 }

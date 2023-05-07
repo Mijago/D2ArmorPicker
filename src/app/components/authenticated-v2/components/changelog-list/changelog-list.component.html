@@ -1,18 +1,22 @@
 <mat-list>
   <ng-container *ngFor="let log of changelog.changelogData">
-    <div mat-subheader class="title">{{log.version}}, released on {{log.date}}</div>
+    <div mat-subheader class="title">{{ log.version }}, released on {{ log.date }}</div>
     <mat-list-item *ngFor="let entry of log.entries">
-      <mat-icon *ngIf="entry.type == 0" mat-list-icon matTooltip="A new function has been added.">add_circle_outline
+      <mat-icon *ngIf="entry.type === 0" mat-list-icon matTooltip="A new function has been added."
+        >add_circle_outline
       </mat-icon>
-      <mat-icon *ngIf="entry.type == 1" mat-list-icon matTooltip="A function has been removed.">remove_circle_outline
+      <mat-icon *ngIf="entry.type === 1" mat-list-icon matTooltip="A function has been removed."
+        >remove_circle_outline
       </mat-icon>
-      <mat-icon *ngIf="entry.type == 2" mat-list-icon matTooltip="Something has been modified.">change_history
+      <mat-icon *ngIf="entry.type === 2" mat-list-icon matTooltip="Something has been modified."
+        >change_history
       </mat-icon>
-      <div mat-line class="e"><p>{{entry.text}}</p></div>
-
+      <div mat-line class="e"
+        ><p>{{ entry.text }}</p></div
+      >
     </mat-list-item>
     <mat-list-item>
-      <br/>
+      <br />
       <mat-divider></mat-divider>
     </mat-list-item>
   </ng-container>

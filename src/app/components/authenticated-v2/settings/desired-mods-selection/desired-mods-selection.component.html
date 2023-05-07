@@ -1,129 +1,128 @@
-
-
 <span *ngFor="let d of data; let idx = index">
-  <ng-container *ngIf="idx == 0">
-    <br/>
+  <ng-container *ngIf="idx === 0">
+    <br />
     <mat-button-toggle-group [value]="selectedElement">
-          <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
-            Arc
-          </mat-button-toggle>
-          <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
-            Solar
-          </mat-button-toggle>
-          <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
-            Void
-          </mat-button-toggle>
-          <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
-            Stasis
-          </mat-button-toggle>
-          <mat-button-toggle (click)="setElement(ModifierType.Strand)" [value]="ModifierType.Strand">
-            Strand
-          </mat-button-toggle>
+      <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
+        Arc
+      </mat-button-toggle>
+      <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
+        Solar
+      </mat-button-toggle>
+      <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
+        Void
+      </mat-button-toggle>
+      <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
+        Stasis
+      </mat-button-toggle>
+      <mat-button-toggle (click)="setElement(ModifierType.Strand)" [value]="ModifierType.Strand">
+        Strand
+      </mat-button-toggle>
     </mat-button-toggle-group>
   </ng-container>
-  <ng-container *ngIf="!d.group || d.type == selectedElement">
+  <ng-container *ngIf="!d.group || d.type === selectedElement">
+    <h3 class="stat-part-title" *ngIf="!d.group">{{ d.name }}</h3>
+    <span *ngIf="d.data.length === 0"
+      >There are no fragments configured yet. Please be patient.</span
+    >
+    <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
+      <!-- Position Column -->
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Name</th>
+        <td *matCellDef="let element" mat-cell [modTooltip]="element">
+          <mat-slide-toggle
+            [checked]="selectedMods.indexOf(element.id) > -1"
+            color="primary"
+            disabled
+            style="cursor: pointer !important">
+            {{ element.name }}
+          </mat-slide-toggle>
+        </td>
+      </ng-container>
 
-  <h3 class="stat-part-title" *ngIf="!d.group">{{d.name}}</h3>
-  <span *ngIf="d.data.length == 0">There are no fragments configured yet. Please be patient.</span>
-  <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
-  <!-- Position Column -->
-  <ng-container matColumnDef="name">
-    <th *matHeaderCellDef mat-header-cell>Name</th>
-    <td *matCellDef="let element" mat-cell [modTooltip]="element">
-      <mat-slide-toggle
-        [checked]="selectedMods.indexOf(element.id) > -1" color="primary" disabled
-        style="cursor: pointer !important;">
-        {{element.name}}
-      </mat-slide-toggle>
-    </td>
-  </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="mobility">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="0"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 0) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="resilience">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="1"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 1) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
 
-    <!-- Position Column -->
-  <ng-container matColumnDef="mobility">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="0"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 0) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
-    <!-- Position Column -->
-  <ng-container matColumnDef="resilience">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="1"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 1) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="recovery">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="2"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 2) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
 
-    <!-- Position Column -->
-  <ng-container matColumnDef="recovery">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="2"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 2) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="discipline">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="3"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 3) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
 
-    <!-- Position Column -->
-  <ng-container matColumnDef="discipline">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="3"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 3) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="intellect">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="4"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 4) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
 
-    <!-- Position Column -->
-  <ng-container matColumnDef="intellect">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="4"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 4) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
+      <!-- Position Column -->
+      <ng-container matColumnDef="strength">
+        <th *matHeaderCellDef mat-header-cell>
+          <app-stat-icon [stat]="5"></app-stat-icon>
+        </th>
+        <td *matCellDef="let element" mat-cell>
+          <span *ngVar="getModifierTextForValue(element.bonus, 5) as value">
+            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
+            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
+          </span>
+        </td>
+      </ng-container>
 
-
-    <!-- Position Column -->
-  <ng-container matColumnDef="strength">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="5"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngVar="getModifierTextForValue(element.bonus, 5) as value">
-        <span *ngIf="value > 0" class="stat-positive">+{{value}}</span>
-        <span *ngIf="value < 0" class="stat-negative">{{value}}</span>
-      </span>
-    </td>
-  </ng-container>
-
-  <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-  <tr (click)="handleRowClick(row)" *matRowDef="let row; columns: displayedColumns;"
-      [class.selected]="selectedMods.indexOf(row.id) > -1"
-      mat-row
-  ></tr>
-</table>
-
-
+      <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+      <tr
+        (click)="handleRowClick(row)"
+        *matRowDef="let row; columns: displayedColumns"
+        [class.selected]="selectedMods.indexOf(row.id) > -1"
+        mat-row></tr>
+    </table>
   </ng-container>
 </span>
 

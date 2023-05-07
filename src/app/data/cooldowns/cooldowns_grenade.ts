@@ -1,5 +1,5 @@
-import {EnumDictionary} from "../types/EnumDictionary";
-import {CharacterClass} from "../enum/character-Class";
+import { EnumDictionary } from "../types/EnumDictionary";
+import { CharacterClass } from "../enum/character-Class";
 
 export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {
   [CharacterClass.Titan]: [
@@ -10,7 +10,7 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
     "Void Spike, Tripmine, Swarm, Flashbang", // 91 / 1:31
     "Healing", // 82 / 1:22
     "Fusion", // 73 / 1:13
-    "Duskfield, Firebolt" // 64 / 1:04
+    "Duskfield, Firebolt", // 64 / 1:04
   ],
   [CharacterClass.Hunter]: [
     "Flux", // 182 / 3:02
@@ -20,7 +20,7 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
     "Void Spike, Tripmine, Swarm, Flashbang", // 91 / 1:31
     "Healing", // 82 / 1:22
     "Fusion", // 73 / 1:13
-    "Duskfield, Firebolt" // 64 / 1:04
+    "Duskfield, Firebolt", // 64 / 1:04
   ],
   [CharacterClass.Warlock]: [
     "Flux", // 182
@@ -30,7 +30,7 @@ export const GrenadeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, str
     "Void Spike, Tripmine, Swarm, Flashbang", // 91 / 1:31
     "Healing", // 82 / 1:22
     "Fusion", // 73 / 1:13
-    "Duskfield, Firebolt" // 64 / 1:04
+    "Duskfield, Firebolt", // 64 / 1:04
   ],
-  [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", ""]
-}
+  [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", ""],
+};

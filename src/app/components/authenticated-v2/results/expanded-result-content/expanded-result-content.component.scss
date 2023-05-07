@@ -66,7 +66,8 @@ table tr:not(:last-child) td {
   border-bottom: aliceblue solid 1px !important;
 }
 
-.result-total-all > td, .result-total-gear > td {
+.result-total-all > td,
+.result-total-gear > td {
   border-top: aliceblue double;
 }
 
@@ -112,7 +113,6 @@ table tr:not(:last-child) td {
   color: lightcoral;
 }
 
-
 .invalid-item-box {
   text-align: center;
   margin-right: auto;
@@ -126,7 +126,6 @@ table tr:not(:last-child) td {
 .text-centered {
   text-align: center !important;
 }
-
 
 .specificStatTable {
   border-collapse: separate;
@@ -188,7 +187,8 @@ tr.legend td {
   text-decoration-color: #ffbc00;
 }
 
-.text-mw, .item-stat-bonus {
+.text-mw,
+.item-stat-bonus {
   color: #ffd86a;
 }
 

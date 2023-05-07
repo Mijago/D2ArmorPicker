@@ -17,8 +17,8 @@
 
   border: #00000000 solid 2px;
 
-  -webkit-mask-image: url('../../../../../assets/masks/modmask.svg');
-  mask-image: image(url('../../../../../assets/masks/modmask.svg'), black);
+  -webkit-mask-image: url("../../../../../assets/masks/modmask.svg");
+  mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
 }
 
 .modIcon.minor {
@@ -33,7 +33,6 @@
   -webkit-filter: saturate(40) hue-rotate(40deg);
   filter: saturate(40) hue-rotate(40deg);
 }
-
 
 .selected {
   border: red solid 2px;

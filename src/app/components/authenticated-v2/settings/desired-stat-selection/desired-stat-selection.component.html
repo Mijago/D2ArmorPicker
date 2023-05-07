@@ -1,7 +1,7 @@
 <table>
   <tr *ngFor="let enum of stats">
     <td>
-      {{enum.name}}
+      {{ enum.name }}
     </td>
     <td>
       <app-stat-tier-selection
@@ -11,24 +11,24 @@
         [selectedTier]="minimumStatTiers[enum.value].value"
         [locked]="minimumStatTiers[enum.value].fixed"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
-        (lockedChange)="setLockState(enum.value, $event)"
-      ></app-stat-tier-selection>
+        (lockedChange)="setLockState(enum.value, $event)"></app-stat-tier-selection>
     </td>
   </tr>
 </table>
 
-
 <span id="tierSelectButtonContainer">
   <span class="tierSelectButton">
-    <button mat-stroked-button color="warn" id="clearStatButton" (click)="clearStatSelection()">Clear</button>
+    <button mat-stroked-button color="warn" id="clearStatButton" (click)="clearStatSelection()"
+      >Clear</button
+    >
   </span>
-    <br>
-    Disabled features for now (due to limited development time):
-    <ul>
-      <li>3x100 and 4x100 buttons</li>
-      <li>Mod cost limitation</li>
-      <li>Zero-Waste</li>
-    </ul>
+  <br />
+  Disabled features for now (due to limited development time):
+  <ul>
+    <li>3x100 and 4x100 buttons</li>
+    <li>Mod cost limitation</li>
+    <li>Zero-Waste</li>
+  </ul>
   <!--
 <span class="tierSelectButton">
   <button mat-stroked-button class="selectStatDistributionButton" [matMenuTriggerFor]="menu1"
@@ -86,8 +86,6 @@
 
 <div *ngIf="config_zero_waste" class="warn">
   Known issue: Zero-Waste lets you select higher stats than you can achieve.
-  <br>
+  <br />
   This will be fixed in a future update.
 </div>
-
-

@@ -1,5 +1,5 @@
-import {EnumDictionary} from "../types/EnumDictionary";
-import {CharacterClass} from "../enum/character-Class";
+import { EnumDictionary } from "../types/EnumDictionary";
+import { CharacterClass } from "../enum/character-Class";
 
 export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {
   [CharacterClass.Titan]: [
@@ -29,5 +29,5 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "", // 1:22
     "", // 0:15
   ],
-  [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", "", ""]
-}
+  [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", "", ""],
+};

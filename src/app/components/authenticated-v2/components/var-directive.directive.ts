@@ -1,7 +1,9 @@
-import {Directive, Input, TemplateRef, ViewContainerRef} from '@angular/core';
+import { Directive, Input, TemplateRef, ViewContainerRef } from "@angular/core";
 
 @Directive({
-  selector: '[ngVar]'
+  // we want to keep ngVar so it looks like ngFor and others
+  // eslint-disable-next-line @angular-eslint/directive-selector
+  selector: "[ngVar]",
 })
 export class VarDirectiveDirective {
   @Input()
@@ -24,10 +26,5 @@ export class VarDirectiveDirective {
 
   private hasView: boolean = false;
 
-  constructor(
-    private templateRef: TemplateRef<any>,
-    private vcRef: ViewContainerRef
-  ) {
-  }
-
+  constructor(private templateRef: TemplateRef<any>, private vcRef: ViewContainerRef) {}
 }

@@ -2,7 +2,7 @@
   margin-left: 15px;
 }
 
-.material-listing{
+.material-listing {
   position: relative;
   padding-left: 22px;
   padding-right: 10px;
@@ -27,17 +27,15 @@
   }
 }
 
-
 ::ng-deep .mat-option-text {
-  color: #FFFFFF;
+  color: #ffffff;
 }
-
 
 .character-container {
-  height:50px;
+  height: 50px;
 }
 
-.character-entry{
+.character-entry {
   color: white;
 
   background-size: cover;
@@ -62,10 +60,9 @@
 
   &.selected {
     cursor: default;
-    opacity: 1.0;
+    opacity: 1;
     border: white solid 2px;
   }
-
 }
 
 .class-text {
@@ -73,7 +70,7 @@
   left: 35px;
   top: 8px;
   font-size: x-large;
-  text-shadow:  0 0 6px #000000;
+  text-shadow: 0 0 6px #000000;
 }
 
 .head-icon {
@@ -88,7 +85,7 @@
   position: absolute;
   right: 4px;
   top: 9px;
-  text-shadow:  0 0 6px #000000;
+  text-shadow: 0 0 6px #000000;
   font-size: small;
 }
 a {

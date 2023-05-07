@@ -1,14 +1,22 @@
-import {Directive, Input, TemplateRef, ElementRef, OnInit, HostListener, ComponentRef, OnDestroy} from '@angular/core';
-import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay';
-import {ComponentPortal} from '@angular/cdk/portal';
-import {ArmorTooltipComponent} from "./armor-tooltip.component";
-import {ResultItem} from "../../results/results.component";
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ElementRef,
+  OnInit,
+  HostListener,
+  ComponentRef,
+  OnDestroy,
+} from "@angular/core";
+import { Overlay, OverlayPositionBuilder, OverlayRef } from "@angular/cdk/overlay";
+import { ComponentPortal } from "@angular/cdk/portal";
+import { ArmorTooltipComponent } from "./armor-tooltip.component";
+import { ResultItem } from "../../results/results.component";
 
 @Directive({
-  selector: '[itemTooltip]'
+  selector: "[itemTooltip]",
 })
-export class ItemTooltipRendererDirective {
-
+export class ItemTooltipRendererDirective implements OnInit, OnDestroy {
   /**
    * This will be used to show tooltip or not
    * This can be used to show the tooltip conditionally
@@ -16,23 +24,23 @@ export class ItemTooltipRendererDirective {
   @Input() showToolTip: boolean = true;
 
   //If this is specified then specified text will be showin in the tooltip
-  @Input(`itemTooltip`) armor: ResultItem | undefined;
+  @Input() itemTooltip: ResultItem | undefined;
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
 
   private _overlayRef: OverlayRef | undefined;
 
-  constructor(private _overlay: Overlay,
-              private _overlayPositionBuilder: OverlayPositionBuilder,
-              private _elementRef: ElementRef) {
-  }
+  constructor(
+    private _overlay: Overlay,
+    private _overlayPositionBuilder: OverlayPositionBuilder,
+    private _elementRef: ElementRef
+  ) {}
 
   /**
    * Init life cycle event handler
    */
   ngOnInit() {
-
     if (!this.showToolTip) {
       return;
     }
@@ -41,23 +49,23 @@ export class ItemTooltipRendererDirective {
       .flexibleConnectedTo(this._elementRef)
       .withPositions([
         {
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
+          originX: "center",
+          originY: "bottom",
+          overlayX: "center",
+          overlayY: "top",
           offsetY: 5,
-        }, {
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
+        },
+        {
+          originX: "center",
+          originY: "top",
+          overlayX: "center",
+          overlayY: "bottom",
           offsetY: -5,
-        }
+        },
       ]);
 
-    this._overlayRef = this._overlay.create({positionStrategy});
-    this._overlayRef.addPanelClass("overlay-no-pointer-event")
-
+    this._overlayRef = this._overlay.create({ positionStrategy });
+    this._overlayRef.addPanelClass("overlay-no-pointer-event");
   }
 
   /**
@@ -65,13 +73,14 @@ export class ItemTooltipRendererDirective {
    * i.e. where this directive is applied
    * This method will show the tooltip by instantiating the McToolTipComponent and attaching to the overlay
    */
-  @HostListener('mouseenter')
+  @HostListener("mouseenter")
   show() {
-
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
-      const tooltipRef: ComponentRef<ArmorTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ArmorTooltipComponent));
-      tooltipRef.instance.armor = this.armor;
+      const tooltipRef: ComponentRef<ArmorTooltipComponent> = this._overlayRef.attach(
+        new ComponentPortal(ArmorTooltipComponent)
+      );
+      tooltipRef.instance.itemTooltip = this.itemTooltip;
     }
   }
 
@@ -80,7 +89,7 @@ export class ItemTooltipRendererDirective {
    * i.e. where this directive is applied
    * This method will close the tooltip by detaching the overlay from the view
    */
-  @HostListener('mouseleave')
+  @HostListener("mouseleave")
   hide() {
     this.closeToolTip();
   }
@@ -104,5 +113,4 @@ export class ItemTooltipRendererDirective {
       this._overlayRef.detach();
     }
   }
-
 }

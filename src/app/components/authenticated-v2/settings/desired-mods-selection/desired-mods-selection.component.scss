@@ -2,7 +2,6 @@
   opacity: 1;
 }
 
-
 .stat-part-title {
   margin-top: 10px;
   margin-bottom: 5px;
@@ -12,12 +11,18 @@
   width: 100%;
 }
 
-.mat-header-row, .mat-row {
+.mat-header-row,
+.mat-row {
   height: 30px;
 }
 
-.mat-column-mobility, .mat-column-resilience, .mat-column-recovery,
-.mat-column-discipline, .mat-column-intellect, .mat-column-strength, .mat-column-cost {
+.mat-column-mobility,
+.mat-column-resilience,
+.mat-column-recovery,
+.mat-column-discipline,
+.mat-column-intellect,
+.mat-column-strength,
+.mat-column-cost {
   min-width: 40px;
   text-align: center;
 }
@@ -26,7 +31,9 @@
   background-color: #494949;
 }
 
-.mat-column-mobility, .mat-column-recovery, .mat-column-intellect {
+.mat-column-mobility,
+.mat-column-recovery,
+.mat-column-intellect {
   background-color: #464646;
 }
 
@@ -36,21 +43,24 @@
   min-width: 150px;
 }
 
-
 .mat-row {
   cursor: pointer;
 }
 
-
-th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type {
+th.mat-header-cell:last-of-type,
+td.mat-cell:last-of-type,
+td.mat-footer-cell:last-of-type {
   padding-right: 0;
 }
 
-.mat-cell:last-of-type, .mat-header-cell:last-of-type, .mat-footer-cell:last-of-type {
+.mat-cell:last-of-type,
+.mat-header-cell:last-of-type,
+.mat-footer-cell:last-of-type {
   padding-right: 0;
 }
 
-.stat-negative, .stat-positive {
+.stat-negative,
+.stat-positive {
   margin-right: 3px;
 }
 
@@ -69,14 +79,15 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
   text-align: right;
 }
 
-.mat-row:hover, .mat-row:hover .mat-cell {
+.mat-row:hover,
+.mat-row:hover .mat-cell {
   background-color: #494949;
 }
 
-.mat-row.selected:hover, .mat-row.selected:hover .mat-cell {
+.mat-row.selected:hover,
+.mat-row.selected:hover .mat-cell {
   background-color: rgba(137, 178, 255, 0.19);
 }
-
 
 .selected,
 .selected .mat-column-mobility,
@@ -85,7 +96,6 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
   background-color: rgba(137, 178, 255, 0.11);
 }
 
-
 .mat-column-name {
   min-width: 190px;
 }
@@ -93,7 +103,6 @@ th.mat-header-cell:last-of-type, td.mat-cell:last-of-type, td.mat-footer-cell:la
 .element-icon {
   width: 22px;
 }
-
 
 #clear-container {
   padding-top: 10px;

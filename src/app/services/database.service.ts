@@ -1,12 +1,12 @@
-import {Injectable} from '@angular/core';
-import Dexie from 'dexie';
-import {AuthService} from "./auth.service";
-import {buildDb} from "../data/database";
-import {IManifestArmor} from "../data/types/IManifestArmor";
-import {IInventoryArmor} from "../data/types/IInventoryArmor";
+import { Injectable } from "@angular/core";
+import Dexie from "dexie";
+import { AuthService } from "./auth.service";
+import { buildDb } from "../data/database";
+import { IManifestArmor } from "../data/types/IManifestArmor";
+import { IInventoryArmor } from "../data/types/IInventoryArmor";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class DatabaseService {
   private db: Dexie;
@@ -17,19 +17,19 @@ export class DatabaseService {
   constructor(private auth: AuthService) {
     this.db = buildDb(async () => {
       await this.auth.clearManifestInfo();
-    })
+    });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
 
-    this.auth.logoutEvent.subscribe(async k => {
+    this.auth.logoutEvent.subscribe(async (k) => {
       await this.clearDatabase();
-    })
+    });
   }
 
   private initialize() {
     this.db = buildDb(async () => {
       await this.auth.clearManifestInfo();
-    })
+    });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
   }
@@ -37,7 +37,7 @@ export class DatabaseService {
   private async clearDatabase() {
     localStorage.removeItem("LastManifestUpdate");
     localStorage.removeItem("LastArmorUpdate");
-    await this.inventoryArmor.clear()
+    await this.inventoryArmor.clear();
   }
 
   async resetDatabase(initialize = true) {
@@ -48,8 +48,7 @@ export class DatabaseService {
     localStorage.removeItem("LastArmorUpdate");
     localStorage.removeItem("last-armor-db-name");
 
-    await this.db.delete()
-    if (initialize)
-      this.initialize()
+    await this.db.delete();
+    if (initialize) this.initialize();
   }
 }

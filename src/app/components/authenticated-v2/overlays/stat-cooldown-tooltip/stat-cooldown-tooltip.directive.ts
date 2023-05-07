@@ -1,41 +1,48 @@
-import {Directive, Input, TemplateRef, ElementRef, OnInit, HostListener, ComponentRef, OnDestroy} from '@angular/core';
-import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay';
-import {ComponentPortal} from '@angular/cdk/portal';
-import {IManifestArmor} from "../../../../data/types/IManifestArmor";
-import {StatCooldownTooltipComponent} from "./stat-cooldown-tooltip.component";
-import {ArmorStat} from "../../../../data/enum/armor-stat";
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ElementRef,
+  OnInit,
+  HostListener,
+  ComponentRef,
+  OnDestroy,
+} from "@angular/core";
+import { Overlay, OverlayPositionBuilder, OverlayRef } from "@angular/cdk/overlay";
+import { ComponentPortal } from "@angular/cdk/portal";
+import { IManifestArmor } from "../../../../data/types/IManifestArmor";
+import { StatCooldownTooltipComponent } from "./stat-cooldown-tooltip.component";
+import { ArmorStat } from "../../../../data/enum/armor-stat";
 
 @Directive({
-  selector: '[statCooldownTooltip]'
+  selector: "[statCooldownTooltip]",
 })
-export class StatCooldownTooltipDirective {
-
+export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
   /**
    * This will be used to show tooltip or not
    * This can be used to show the tooltip conditionally
    */
   @Input() showToolTip: boolean = true;
 
-  @Input(`tooltipTier`) tier: number = 0;
-  @Input(`tooltipStat`) stat: ArmorStat = ArmorStat.Mobility;
-  @Input(`tooltipDifferenceTier`) differenceTier: number = 0; // the tier we use to show a difference for
-
+  @Input() tooltipTier: number = 0;
+  @Input() tooltipStat: ArmorStat = ArmorStat.Mobility;
+  @Input() tooltipDifferenceTier: number = 0; // the tier we use to show a difference for
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
 
   private _overlayRef: OverlayRef | undefined;
 
-  constructor(private _overlay: Overlay,
-              private _overlayPositionBuilder: OverlayPositionBuilder,
-              private _elementRef: ElementRef) {
-  }
+  constructor(
+    private _overlay: Overlay,
+    private _overlayPositionBuilder: OverlayPositionBuilder,
+    private _elementRef: ElementRef
+  ) {}
 
   /**
    * Init life cycle event handler
    */
   ngOnInit() {
-
     if (!this.showToolTip) {
       return;
     }
@@ -44,23 +51,23 @@ export class StatCooldownTooltipDirective {
       .flexibleConnectedTo(this._elementRef)
       .withPositions([
         {
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
+          originX: "center",
+          originY: "bottom",
+          overlayX: "center",
+          overlayY: "top",
           offsetY: 5,
-        }, {
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
+        },
+        {
+          originX: "center",
+          originY: "top",
+          overlayX: "center",
+          overlayY: "bottom",
           offsetY: -5,
-        }
+        },
       ]);
 
-    this._overlayRef = this._overlay.create({positionStrategy});
-    this._overlayRef.addPanelClass("overlay-no-pointer-event")
-
+    this._overlayRef = this._overlay.create({ positionStrategy });
+    this._overlayRef.addPanelClass("overlay-no-pointer-event");
   }
 
   /**
@@ -68,15 +75,16 @@ export class StatCooldownTooltipDirective {
    * i.e. where this directive is applied
    * This method will show the tooltip by instantiating the McToolTipComponent and attaching to the overlay
    */
-  @HostListener('mouseenter')
+  @HostListener("mouseenter")
   show() {
-
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
-      const tooltipRef: ComponentRef<StatCooldownTooltipComponent> = this._overlayRef.attach(new ComponentPortal(StatCooldownTooltipComponent));
-      tooltipRef.instance.tier = this.tier;
-      tooltipRef.instance.differenceTier = this.differenceTier;
-      tooltipRef.instance.stat = this.stat;
+      const tooltipRef: ComponentRef<StatCooldownTooltipComponent> = this._overlayRef.attach(
+        new ComponentPortal(StatCooldownTooltipComponent)
+      );
+      tooltipRef.instance.tier = this.tooltipTier;
+      tooltipRef.instance.differenceTier = this.tooltipDifferenceTier;
+      tooltipRef.instance.stat = this.tooltipStat;
     }
   }
 
@@ -85,7 +93,7 @@ export class StatCooldownTooltipDirective {
    * i.e. where this directive is applied
    * This method will close the tooltip by detaching the overlay from the view
    */
-  @HostListener('mouseleave')
+  @HostListener("mouseleave")
   hide() {
     this.closeToolTip();
   }
@@ -109,5 +117,4 @@ export class StatCooldownTooltipDirective {
       this._overlayRef.detach();
     }
   }
-
 }

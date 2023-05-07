@@ -1,6 +1,6 @@
-import {ModifierType} from "./enum/modifierType";
-import {ArmorStat, SpecialArmorStat} from "./enum/armor-stat";
-import {ModOrAbility} from "./enum/modOrAbility";
+import { ModifierType } from "./enum/modifierType";
+import { ArmorStat, SpecialArmorStat } from "./enum/armor-stat";
+import { ModOrAbility } from "./enum/modOrAbility";
 import { DestinyEnergyType } from "bungie-api-ts/destiny2";
 
 export interface ModifierValue {
@@ -9,7 +9,7 @@ export interface ModifierValue {
 }
 
 export interface Modifier {
-  id: ModOrAbility,
+  id: ModOrAbility;
   name: string;
   description: string;
   type: ModifierType;

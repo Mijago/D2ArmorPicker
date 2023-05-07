@@ -20,8 +20,8 @@
   border: cornflowerblue solid 2px;
 }
 
-
-.selected, .selected:hover {
+.selected,
+.selected:hover {
   border: #0059ff solid 2px;
 }
 
@@ -31,7 +31,7 @@
 
 .exoticText {
   position: absolute;
-  text-shadow:  0 0 6px #000000;
+  text-shadow: 0 0 6px #000000;
   background: rgba(33, 33, 33, 0.51);
   color: whitesmoke;
   bottom: 4px;
@@ -39,7 +39,7 @@
 }
 
 .disabled {
-  filter: grayscale(1.0) contrast(0.6);
+  filter: grayscale(1) contrast(0.6);
 
   &:hover {
     cursor: default;

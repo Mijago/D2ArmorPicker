@@ -1,14 +1,13 @@
-import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
-import {IManifestArmor} from "../../../../data/types/IManifestArmor";
-import {ItemIconServiceService} from "../../../../services/item-icon-service.service";
+import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
+import { IManifestArmor } from "../../../../data/types/IManifestArmor";
+import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 
 @Component({
-  selector: 'item-icon',
-  templateUrl: './item-icon.component.html',
-  styleUrls: ['./item-icon.component.scss']
+  selector: "app-item-icon",
+  templateUrl: "./item-icon.component.html",
+  styleUrls: ["./item-icon.component.scss"],
 })
 export class ItemIconComponent implements AfterViewInit {
-
   @Input()
   itemHash: number = 0;
 
@@ -16,11 +15,9 @@ export class ItemIconComponent implements AfterViewInit {
   masterworked: boolean = false;
   item: IManifestArmor | undefined = undefined;
 
-  constructor(private iconService : ItemIconServiceService) {
-  }
+  constructor(private iconService: ItemIconServiceService) {}
 
   async ngAfterViewInit() {
-    this.item = await this.iconService.getItemCached(this.itemHash)
+    this.item = await this.iconService.getItemCached(this.itemHash);
   }
-
 }

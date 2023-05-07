@@ -2,21 +2,26 @@
   <div class="tooltip-container">
     <table>
       <tr>
-        <td colspan="3">{{armor?.name}}</td>
+        <td colspan="3">{{ itemTooltip?.name }}</td>
       </tr>
       <tr>
         <td>Current stats:</td>
       </tr>
-      <tr *ngFor="let stat of armor?.stats; let i = index">
-        <td>{{getArmorStatName(i)}}</td>
+      <tr *ngFor="let stat of itemTooltip?.stats; let i = index">
+        <td>{{ getArmorStatName(i) }}</td>
         <td>
-          <span *ngIf="!armor?.masterworked">{{stat}}</span>
-          <span *ngIf="armor?.masterworked">{{stat+2}}</span>
+          <span *ngIf="!itemTooltip?.masterworked">{{ stat }}</span>
+          <span *ngIf="itemTooltip?.masterworked">{{ stat + 2 }}</span>
         </td>
         <td>
           <div class="stat-display">
             <div class="stat-display-bar" [style.width]="getWidth(stat)">&nbsp;</div>
-            <div class="stat-display-bar masterwork" [style.width]="getWidth(2)" *ngIf="armor?.masterworked">&nbsp;</div>
+            <div
+              class="stat-display-bar masterwork"
+              [style.width]="getWidth(2)"
+              *ngIf="itemTooltip?.masterworked"
+              >&nbsp;</div
+            >
           </div>
         </td>
       </tr>

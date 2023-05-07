@@ -1,91 +1,95 @@
-import {Component, OnInit} from '@angular/core';
-import {GLPK, LP, Result} from "glpk.js";
+import { Component, OnInit } from "@angular/core";
+import { GLPK, LP, Result } from "glpk.js";
 declare const GLPKConstructor: () => GLPK;
-import {ModifierType} from 'src/app/data/enum/modifierType';
-import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
-import {ArmorSlot} from "../../../../data/enum/armor-slot";
-import {DestinyClass} from "bungie-api-ts/destiny2";
-import {buildDb} from "../../../../data/database";
-import {ArmorPerkOrSlot, ArmorPerkOrSlotIcons, ArmorPerkOrSlotNames} from "../../../../data/enum/armor-stat";
-import {Table} from "dexie";
-import {IManifestArmor} from "../../../../data/types/IManifestArmor";
+import { ModifierType } from "src/app/data/enum/modifierType";
+import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
+import { ArmorSlot } from "../../../../data/enum/armor-slot";
+import { DestinyClass } from "bungie-api-ts/destiny2";
+import { buildDb } from "../../../../data/database";
+import {
+  ArmorPerkOrSlot,
+  ArmorPerkOrSlotIcons,
+  ArmorPerkOrSlotNames,
+} from "../../../../data/enum/armor-stat";
+import { Table } from "dexie";
+import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 
-const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"]
+const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
 
 const intrinsicExoticArmorByClassAndSlot = {
   [DestinyClass.Titan]: {
     [ArmorSlot.ArmorSlotHelmet]: [
-      {stats: [0, 1, 1], armor: [3216110440, 106575079, 2578771006]},
-      {stats: [0, 2, 0], armor: [2808156426, 3883866764]},
+      { stats: [0, 1, 1], armor: [3216110440, 106575079, 2578771006] },
+      { stats: [0, 2, 0], armor: [2808156426, 3883866764] },
     ],
     [ArmorSlot.ArmorSlotGauntlet]: [
-      {stats: [0, 1, 1], armor: [1734844651, 241462141, 241462142]},
-      {stats: [0, 2, 0], armor: [1734844650, 1848640623, 2240152949, 2563444729]},
+      { stats: [0, 1, 1], armor: [1734844651, 241462141, 241462142] },
+      { stats: [0, 2, 0], armor: [1734844650, 1848640623, 2240152949, 2563444729] },
     ],
     [ArmorSlot.ArmorSlotChest]: [
-      {stats: [2, 1, 0], armor: [1192890598, 1341951177, 3874247549]},
-      {stats: [1, 1, 1], armor: [1591207518, 1591207519]},
-      {stats: [1, 2, 0], armor: [1654461647]},
+      { stats: [2, 1, 0], armor: [1192890598, 1341951177, 3874247549] },
+      { stats: [1, 1, 1], armor: [1591207518, 1591207519] },
+      { stats: [1, 2, 0], armor: [1654461647] },
     ],
     [ArmorSlot.ArmorSlotLegs]: [
-      {stats: [1, 1, 0], armor: [3539357319, 2255796155, 136355432, 1160559849]},
-      {stats: [1, 0, 1], armor: [2423243921]},
-      {stats: [0, 2, 0], armor: [3539357318]},
+      { stats: [1, 1, 0], armor: [3539357319, 2255796155, 136355432, 1160559849] },
+      { stats: [1, 0, 1], armor: [2423243921] },
+      { stats: [0, 2, 0], armor: [3539357318] },
     ],
   },
   [DestinyClass.Hunter]: {
     [ArmorSlot.ArmorSlotHelmet]: [
-      {stats: [2, 0, 0], armor: [896224899]},
-      {stats: [1, 1, 0], armor: [2757274117, 1053737370, 1321354572, 1321354573]},
-      {stats: [1, 0, 1], armor: [3562696927, 2773056939]},
+      { stats: [2, 0, 0], armor: [896224899] },
+      { stats: [1, 1, 0], armor: [2757274117, 1053737370, 1321354572, 1321354573] },
+      { stats: [1, 0, 1], armor: [3562696927, 2773056939] },
     ],
     [ArmorSlot.ArmorSlotGauntlet]: [
-      {stats: [1, 1, 1], armor: [3942036043]},
-      {stats: [0, 1, 1], armor: [475652357]},
-      {stats: [1, 0, 1], armor: [691578978]},
-      {stats: [1, 1, 0], armor: [691578979, 1688602431]},
-      {stats: [2, 0, 0], armor: [193869523, 1734144409, 4165919945]},
+      { stats: [1, 1, 1], armor: [3942036043] },
+      { stats: [0, 1, 1], armor: [475652357] },
+      { stats: [1, 0, 1], armor: [691578978] },
+      { stats: [1, 1, 0], armor: [691578979, 1688602431] },
+      { stats: [2, 0, 0], armor: [193869523, 1734144409, 4165919945] },
     ],
     [ArmorSlot.ArmorSlotChest]: [
-      {stats: [2, 0, 1], armor: [978537162]},
-      {stats: [2, 1, 0], armor: [903984858, 1474735276, 2766109872]},
-      {stats: [1, 1, 1], armor: [1474735277]},
-      {stats: [1, 2, 0], armor: [2766109874, 3070555693]},
+      { stats: [2, 0, 1], armor: [978537162] },
+      { stats: [2, 1, 0], armor: [903984858, 1474735276, 2766109872] },
+      { stats: [1, 1, 1], armor: [1474735277] },
+      { stats: [1, 2, 0], armor: [2766109874, 3070555693] },
     ],
     [ArmorSlot.ArmorSlotLegs]: [
-      {stats: [2, 0, 0], armor: [193869520, 609852545]},
-      {stats: [1, 1, 0], armor: [193869522]},
+      { stats: [2, 0, 0], armor: [193869520, 609852545] },
+      { stats: [1, 1, 0], armor: [193869522] },
     ],
   },
   [DestinyClass.Warlock]: {
     [ArmorSlot.ArmorSlotHelmet]: [
-      {stats: [0, 1, 1], armor: [3381022971, 1030017949, 1096253259, 2384488862]},
-      {stats: [0, 0, 2], armor: [3381022970, 2177524718, 2428181146]},
-      {stats: [1, 0, 1], armor: [3381022969, 3948284065]},
+      { stats: [0, 1, 1], armor: [3381022971, 1030017949, 1096253259, 2384488862] },
+      { stats: [0, 0, 2], armor: [3381022970, 2177524718, 2428181146] },
+      { stats: [1, 0, 1], armor: [3381022969, 3948284065] },
     ],
     [ArmorSlot.ArmorSlotGauntlet]: [
-      {stats: [0, 0, 2], armor: [1906093346, 3288917178, 3844826443]},
-      {stats: [0, 2, 1], armor: [2950045886]},
-      {stats: [0, 1, 1], armor: [3084282676, 3844826440]},
-      {stats: [1, 0, 1], armor: [3627185503, 3787517196]},
+      { stats: [0, 0, 2], armor: [1906093346, 3288917178, 3844826443] },
+      { stats: [0, 2, 1], armor: [2950045886] },
+      { stats: [0, 1, 1], armor: [3084282676, 3844826440] },
+      { stats: [1, 0, 1], armor: [3627185503, 3787517196] },
     ],
     [ArmorSlot.ArmorSlotChest]: [
-      {stats: [2, 0, 1], armor: [370930766, 4057299719]},
-      {stats: [0, 2, 1], armor: [1725917554, 4057299718]},
-      {stats: [0, 1, 2], armor: [2082483156]},
+      { stats: [2, 0, 1], armor: [370930766, 4057299719] },
+      { stats: [0, 2, 1], armor: [1725917554, 4057299718] },
+      { stats: [0, 1, 2], armor: [2082483156] },
     ],
     [ArmorSlot.ArmorSlotLegs]: [
-      {stats: [0, 1, 2], armor: [121305948]},
-      {stats: [1, 0, 1], armor: [138282166]},
-      {stats: [0, 1, 1], armor: [4136768282]},
+      { stats: [0, 1, 2], armor: [121305948] },
+      { stats: [1, 0, 1], armor: [138282166] },
+      { stats: [0, 1, 1], armor: [4136768282] },
     ],
   },
-}
+};
 
 @Component({
-  selector: 'app-theorizer-page',
-  templateUrl: './theorizer-page.component.html',
-  styleUrls: ['./theorizer-page.component.scss']
+  selector: "app-theorizer-page",
+  templateUrl: "./theorizer-page.component.html",
+  styleUrls: ["./theorizer-page.component.scss"],
 })
 export class TheorizerPageComponent implements OnInit {
   ModifierType = ModifierType;
@@ -132,33 +136,106 @@ export class TheorizerPageComponent implements OnInit {
     fragments: {
       enableFragmentPicker: false,
       subclass: -1,
-      class: DestinyClass.Unknown
+      class: DestinyClass.Unknown,
     },
     mods: {
       maxMods: 5,
-      maxArtifice: 5
+      maxArtifice: 5,
     },
     generator: {
       generateExoticsWithIntrinsicStats: false,
     },
     availablePlugs: [
-      [1, 1, 10], [1, 1, 11], [1, 1, 12], [1, 1, 13], [1, 1, 14], [1, 1, 15],
-      [1, 5, 5], [1, 5, 6], [1, 5, 7], [1, 5, 8], [1, 5, 9], [1, 5, 10],
-      [1, 5, 11], [1, 6, 5], [1, 6, 6], [1, 6, 7], [1, 6, 8], [1, 6, 9],
-      [1, 7, 5], [1, 7, 6], [1, 7, 7], [1, 7, 8], [1, 8, 5], [1, 8, 6],
-      [1, 8, 7], [1, 9, 5], [1, 9, 6], [1, 10, 1], [1, 10, 5], [1, 11, 1],
-      [1, 11, 5], [1, 12, 1], [1, 13, 1], [1, 14, 1], [1, 15, 1], [5, 1, 5],
-      [5, 1, 6], [5, 1, 7], [5, 1, 8], [5, 1, 9], [5, 1, 10], [5, 1, 11],
-      [5, 5, 1], [5, 5, 5], [5, 6, 1], [5, 7, 1], [5, 8, 1], [5, 9, 1],
-      [5, 10, 1], [5, 11, 1], [6, 1, 5], [6, 1, 6], [6, 1, 7], [6, 1, 8],
-      [6, 1, 9], [6, 5, 1], [6, 6, 1], [6, 7, 1], [6, 8, 1], [6, 9, 1],
-      [7, 1, 5], [7, 1, 6], [7, 1, 7], [7, 1, 8], [7, 5, 1], [7, 6, 1],
-      [7, 7, 1], [7, 8, 1], [8, 1, 5], [8, 1, 6], [8, 1, 7], [8, 5, 1],
-      [8, 6, 1], [8, 7, 1], [9, 1, 5], [9, 1, 6], [9, 5, 1], [9, 6, 1],
-      [10, 1, 1], [10, 1, 5], [10, 5, 1], [11, 1, 1], [11, 1, 5], [11, 5, 1],
-      [12, 1, 1], [13, 1, 1], [14, 1, 1], [15, 1, 1]
-    ]
-  }
+      [1, 1, 10],
+      [1, 1, 11],
+      [1, 1, 12],
+      [1, 1, 13],
+      [1, 1, 14],
+      [1, 1, 15],
+      [1, 5, 5],
+      [1, 5, 6],
+      [1, 5, 7],
+      [1, 5, 8],
+      [1, 5, 9],
+      [1, 5, 10],
+      [1, 5, 11],
+      [1, 6, 5],
+      [1, 6, 6],
+      [1, 6, 7],
+      [1, 6, 8],
+      [1, 6, 9],
+      [1, 7, 5],
+      [1, 7, 6],
+      [1, 7, 7],
+      [1, 7, 8],
+      [1, 8, 5],
+      [1, 8, 6],
+      [1, 8, 7],
+      [1, 9, 5],
+      [1, 9, 6],
+      [1, 10, 1],
+      [1, 10, 5],
+      [1, 11, 1],
+      [1, 11, 5],
+      [1, 12, 1],
+      [1, 13, 1],
+      [1, 14, 1],
+      [1, 15, 1],
+      [5, 1, 5],
+      [5, 1, 6],
+      [5, 1, 7],
+      [5, 1, 8],
+      [5, 1, 9],
+      [5, 1, 10],
+      [5, 1, 11],
+      [5, 5, 1],
+      [5, 5, 5],
+      [5, 6, 1],
+      [5, 7, 1],
+      [5, 8, 1],
+      [5, 9, 1],
+      [5, 10, 1],
+      [5, 11, 1],
+      [6, 1, 5],
+      [6, 1, 6],
+      [6, 1, 7],
+      [6, 1, 8],
+      [6, 1, 9],
+      [6, 5, 1],
+      [6, 6, 1],
+      [6, 7, 1],
+      [6, 8, 1],
+      [6, 9, 1],
+      [7, 1, 5],
+      [7, 1, 6],
+      [7, 1, 7],
+      [7, 1, 8],
+      [7, 5, 1],
+      [7, 6, 1],
+      [7, 7, 1],
+      [7, 8, 1],
+      [8, 1, 5],
+      [8, 1, 6],
+      [8, 1, 7],
+      [8, 5, 1],
+      [8, 6, 1],
+      [8, 7, 1],
+      [9, 1, 5],
+      [9, 1, 6],
+      [9, 5, 1],
+      [9, 6, 1],
+      [10, 1, 1],
+      [10, 1, 5],
+      [10, 5, 1],
+      [11, 1, 1],
+      [11, 1, 5],
+      [11, 5, 1],
+      [12, 1, 1],
+      [13, 1, 1],
+      [14, 1, 1],
+      [15, 1, 1],
+    ],
+  };
   result: Result | null = null;
   result_items: any | null = null;
   time_progress = 0;
@@ -168,23 +245,21 @@ export class TheorizerPageComponent implements OnInit {
   private manifestArmor: Table<IManifestArmor>;
 
   constructor() {
-    const db = buildDb(async () => {
-    })
+    const db = buildDb(async () => {});
     this.inventoryArmor = db.table("inventoryArmor");
     this.manifestArmor = db.table("manifestArmor");
   }
-
 
   sum(l: number[]): number {
     return l.reduce((a, b) => a + b, 0);
   }
 
   getPerkName(perk: number) {
-    return ArmorPerkOrSlotNames[perk as ArmorPerkOrSlot]
+    return ArmorPerkOrSlotNames[perk as ArmorPerkOrSlot];
   }
 
   getPerkIconUrl(perk: number) {
-    return ArmorPerkOrSlotIcons[perk as ArmorPerkOrSlot]
+    return ArmorPerkOrSlotIcons[perk as ArmorPerkOrSlot];
   }
 
   slotNameByIndex(index: number): string {
@@ -227,12 +302,12 @@ export class TheorizerPageComponent implements OnInit {
   async ngOnInit() {
     this.glpk = await GLPKConstructor();
 
-    console.log(this.glpk)
+    console.log(this.glpk);
   }
 
   startTimer() {
     this.time_progress = 0;
-    const interval = this.options.solver.timeout / 100 * 1000;
+    const interval = (this.options.solver.timeout / 100) * 1000;
 
     this.timerId = setInterval(() => {
       this.time_progress += 1;
@@ -249,7 +324,6 @@ export class TheorizerPageComponent implements OnInit {
       this.timerId = 0;
     }
   }
-
 
   async run() {
     this.result = this.result_items = null;
@@ -275,20 +349,20 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
     ];
     // contains if items are generated or not, and if they are not, then the metadata
-    const itemMeta = [null, null, null, null, null]
-    const itemIntrinsics: (any | null)[] = [null, null, null, null, null]
-    const itemExotic: (boolean | null)[] = [null, null, null, null, null]
-    const itemArtifice: (boolean)[] = [false, false, false, false, false]
+    const itemMeta = [null, null, null, null, null];
+    const itemIntrinsics: (any | null)[] = [null, null, null, null, null];
+    const itemExotic: (boolean | null)[] = [null, null, null, null, null];
+    const itemArtifice: boolean[] = [false, false, false, false, false];
     let artificeCount = 0;
 
-    const masterwork = [10, 10, 10, 10, 10, 10]
-    const constants = [0, 0, 0, 0, 0, 0]
+    const masterwork = [10, 10, 10, 10, 10, 10];
+    const constants = [0, 0, 0, 0, 0, 0];
 
     const statMods = {
       major: [0, 0, 0, 0, 0, 0],
-      minor: [0, 0, 0, 0, 0, 0]
-    }
-    const artificeMods = [0, 0, 0, 0, 0, 0]
+      minor: [0, 0, 0, 0, 0, 0],
+    };
+    const artificeMods = [0, 0, 0, 0, 0, 0];
 
     for (let kv in result!.result!.vars) {
       if (!kv.startsWith("constant_")) continue;
@@ -319,17 +393,16 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       const [_, slot, itemId] = kv.split("_");
-      itemsToGrab.push({slot: parseInt(slot), itemId: itemId});
+      itemsToGrab.push({ slot: parseInt(slot), itemId: itemId });
     }
     if (itemsToGrab.length > 0) {
-      const db = buildDb(async () => {
-      })
+      const db = buildDb(async () => {});
       const inventoryArmor = db.table("inventoryArmor");
 
       for (let e of itemsToGrab) {
         let dbitems = await inventoryArmor.where("itemInstanceId").equals(e.itemId).toArray();
         if (dbitems.length == 0) continue;
-        const item = dbitems[0]
+        const item = dbitems[0];
         itemMeta[e.slot] = item;
         items[e.slot][0] += item.mobility;
         items[e.slot][1] += item.resilience;
@@ -340,7 +413,7 @@ export class TheorizerPageComponent implements OnInit {
 
         itemExotic[e.slot] = item.isExotic;
         itemArtifice[e.slot] = item.perk == ArmorPerkOrSlot.SlotArtifice;
-        artificeCount += itemArtifice[e.slot] ? 1 : 0
+        artificeCount += itemArtifice[e.slot] ? 1 : 0;
       }
     }
 
@@ -351,19 +424,21 @@ export class TheorizerPageComponent implements OnInit {
       if (result!.result!.vars[kv] == 0) continue;
 
       let [_, slot, clazz, entryId] = kv.split("_");
-      const entry = (intrinsicExoticArmorByClassAndSlot as any)[parseInt(clazz)][parseInt(slot) + 1][parseInt(entryId)];
+      const entry = (intrinsicExoticArmorByClassAndSlot as any)[parseInt(clazz)][
+        parseInt(slot) + 1
+      ][parseInt(entryId)];
 
-      const entryArmor = await Promise.all(entry.armor.map(async (k: number) => {
-        return await this.manifestArmor.where("hash").equals(k).first()
-      }))
-
+      const entryArmor = await Promise.all(
+        entry.armor.map(async (k: number) => {
+          return await this.manifestArmor.where("hash").equals(k).first();
+        })
+      );
 
       itemIntrinsics[parseInt(slot)] = {
         entry: entry,
-        items: entryArmor
+        items: entryArmor,
       };
     }
-
 
     /* STAT MODS */
     for (let kv in result!.result!.vars) {
@@ -401,7 +476,7 @@ export class TheorizerPageComponent implements OnInit {
     }
 
     // now sum every stat to get the final value
-    const total = [0, 0, 0, 0, 0, 0]
+    const total = [0, 0, 0, 0, 0, 0];
     for (let stat = 0; stat < 6; stat++) {
       for (let slot = 0; slot < 5; slot++) {
         total[stat] += items[slot][stat];
@@ -412,29 +487,50 @@ export class TheorizerPageComponent implements OnInit {
       }
       total[stat] += constants[stat];
       total[stat] += masterwork[stat];
-      console.log("artificeMods[stat]", stat, artificeMods[stat], "|", total[stat], 10 * statMods.major[stat], 5 * statMods.minor[stat], 3 * artificeMods[stat])
+      console.log(
+        "artificeMods[stat]",
+        stat,
+        artificeMods[stat],
+        "|",
+        total[stat],
+        10 * statMods.major[stat],
+        5 * statMods.minor[stat],
+        3 * artificeMods[stat]
+      );
       total[stat] += 10 * statMods.major[stat] + 5 * statMods.minor[stat] + 3 * artificeMods[stat];
     }
 
     // get the tiers for each stat
-    const tiers = total.map(k => Math.floor(k / 10))
-    const waste = total.map(k => k % 10)
-    const tierSum = tiers.reduce((a, b) => a + b, 0)
+    const tiers = total.map((k) => Math.floor(k / 10));
+    const waste = total.map((k) => k % 10);
+    const tierSum = tiers.reduce((a, b) => a + b, 0);
 
     return {
-      items, artificeMods, statMods, constants,
-      total, waste, tiers, tierSum, masterwork,
-      itemMeta, itemIntrinsics, itemExotic, itemArtifice
+      items,
+      artificeMods,
+      statMods,
+      constants,
+      total,
+      waste,
+      tiers,
+      tierSum,
+      masterwork,
+      itemMeta,
+      itemIntrinsics,
+      itemExotic,
+      itemArtifice,
     };
   }
 
   async getItems(clazz?: DestinyClass): Promise<IInventoryArmor[]> {
-    let items = await this.inventoryArmor.where("slot").notEqual(ArmorSlot.ArmorSlotNone)
+    let items = (await this.inventoryArmor
+      .where("slot")
+      .notEqual(ArmorSlot.ArmorSlotNone)
       .distinct()
-      .toArray() as IInventoryArmor[];
+      .toArray()) as IInventoryArmor[];
 
     if (clazz != undefined) {
-      items = items.filter(item => item.clazz == clazz);
+      items = items.filter((item) => item.clazz == clazz);
     }
 
     // items = items
@@ -447,7 +543,6 @@ export class TheorizerPageComponent implements OnInit {
     // armor perks
 
     return items;
-
   }
 
   async buildFromConfiguration(): Promise<LP> {
@@ -468,7 +563,11 @@ export class TheorizerPageComponent implements OnInit {
       subjectTo: [
         {
           name: "goal_mobility",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.mobility},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.mobility,
+          },
           vars: [] as any[],
         },
         {
@@ -476,13 +575,17 @@ export class TheorizerPageComponent implements OnInit {
           bnds: {
             type: this.glpk.GLP_DB,
             ub: this.options.stats.maxValue,
-            lb: this.options.stats.desired.resilience
+            lb: this.options.stats.desired.resilience,
           },
           vars: [] as any[],
         },
         {
           name: "goal_recovery",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.recovery},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.recovery,
+          },
           vars: [] as any[],
         },
         {
@@ -490,7 +593,7 @@ export class TheorizerPageComponent implements OnInit {
           bnds: {
             type: this.glpk.GLP_DB,
             ub: this.options.stats.maxValue,
-            lb: this.options.stats.desired.discipline
+            lb: this.options.stats.desired.discipline,
           },
           vars: [] as any[],
         },
@@ -499,90 +602,97 @@ export class TheorizerPageComponent implements OnInit {
           bnds: {
             type: this.glpk.GLP_DB,
             ub: this.options.stats.maxValue,
-            lb: this.options.stats.desired.intellect
+            lb: this.options.stats.desired.intellect,
           },
           vars: [] as any[],
         },
         {
           name: "goal_strength",
-          bnds: {type: this.glpk.GLP_DB, ub: this.options.stats.maxValue, lb: this.options.stats.desired.strength},
+          bnds: {
+            type: this.glpk.GLP_DB,
+            ub: this.options.stats.maxValue,
+            lb: this.options.stats.desired.strength,
+          },
           vars: [] as any[],
         },
       ],
       bounds: [],
       binaries: [], // binary values
-      generals: [] // integers
+      generals: [], // integers
     } as LP;
 
     // add MW and Const Values
     for (let stat = 0; stat < 6; stat++) {
       const val = (this.options.stats as any).constantBoost[statNames[stat]];
       let constVal = 10 + val;
-      lp.bounds!.push({name: `constant_${stat}`, type: this.glpk.GLP_FX, ub: constVal, lb: constVal});
-      lp.subjectTo![stat].vars.push({name: `constant_${stat}`, coef: 1});
-
+      lp.bounds!.push({
+        name: `constant_${stat}`,
+        type: this.glpk.GLP_FX,
+        ub: constVal,
+        lb: constVal,
+      });
+      lp.subjectTo![stat].vars.push({ name: `constant_${stat}`, coef: 1 });
     }
 
     const withOwnArmor = (this.options.armor.armorType & 1) > 0;
     const withGeneratedArmor = (this.options.armor.armorType & 2) > 0;
     const withBothArmorSources = withOwnArmor && withGeneratedArmor;
 
-    const items = await this.getItems()
-    let helmets = items.filter(i => i.slot == ArmorSlot.ArmorSlotHelmet)
-    let gauntlets = items.filter(i => i.slot == ArmorSlot.ArmorSlotGauntlet)
-    let chests = items.filter(i => i.slot == ArmorSlot.ArmorSlotChest)
-    let legs = items.filter(i => i.slot == ArmorSlot.ArmorSlotLegs)
+    const items = await this.getItems();
+    let helmets = items.filter((i) => i.slot == ArmorSlot.ArmorSlotHelmet);
+    let gauntlets = items.filter((i) => i.slot == ArmorSlot.ArmorSlotGauntlet);
+    let chests = items.filter((i) => i.slot == ArmorSlot.ArmorSlotChest);
+    let legs = items.filter((i) => i.slot == ArmorSlot.ArmorSlotLegs);
 
     // check class setting
     if (this.options.fragments.class != DestinyClass.Unknown) {
-      const clazz = this.options.fragments.class
-      helmets = helmets.filter(i => i.clazz == clazz)
-      gauntlets = gauntlets.filter(i => i.clazz == clazz)
-      chests = chests.filter(i => i.clazz == clazz)
-      legs = legs.filter(i => i.clazz == clazz)
+      const clazz = this.options.fragments.class;
+      helmets = helmets.filter((i) => i.clazz == clazz);
+      gauntlets = gauntlets.filter((i) => i.clazz == clazz);
+      chests = chests.filter((i) => i.clazz == clazz);
+      legs = legs.filter((i) => i.clazz == clazz);
     }
 
-    let itemsBySlot = [helmets, gauntlets, chests, legs]
+    let itemsBySlot = [helmets, gauntlets, chests, legs];
 
     const classLimitSubject = {
       name: `classlim`,
       vars: [] as any[],
-      bnds: {type: this.glpk.GLP_UP, ub: 1, lb: 1}
-    }
-    const classLimitSubjects = []
+      bnds: { type: this.glpk.GLP_UP, ub: 1, lb: 1 },
+    };
+    const classLimitSubjects = [];
     // add a variable for each class. Only one of them may be > 0
     for (let clazz = 0; clazz < 3; clazz++) {
-      const clazzVar = `class_${clazz}`
-      lp.binaries!.push(clazzVar)
-      classLimitSubject.vars.push({name: clazzVar, coef: 1})
+      const clazzVar = `class_${clazz}`;
+      lp.binaries!.push(clazzVar);
+      classLimitSubject.vars.push({ name: clazzVar, coef: 1 });
 
       classLimitSubjects.push({
         name: `classlim_${clazz}`,
-        vars: [{name: clazzVar, coef: -4}], // TODO I may have to add 0.25 for theoretical armor piece plugs
-        bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
-      })
+        vars: [{ name: clazzVar, coef: -4 }], // TODO I may have to add 0.25 for theoretical armor piece plugs
+        bnds: { type: this.glpk.GLP_UP, ub: 0, lb: 0 },
+      });
     }
 
     // only allow ZERO or ONE exotic
     const exoticLimitSubject = {
       name: `exoticlim`,
       vars: [] as any[],
-      bnds: {type: this.glpk.GLP_DB, ub: 1, lb: 0}
-    }
+      bnds: { type: this.glpk.GLP_DB, ub: 1, lb: 0 },
+    };
 
     if (this.options.armor.requiresExotic) {
-      console.log("requiring exotic")
-      exoticLimitSubject.bnds = {type: this.glpk.GLP_FX, ub: 1, lb: 1}
+      console.log("requiring exotic");
+      exoticLimitSubject.bnds = { type: this.glpk.GLP_FX, ub: 1, lb: 1 };
     }
 
-
-    lp.subjectTo!.push(classLimitSubject)
-    lp.subjectTo!.push(...classLimitSubjects)
-    lp.subjectTo!.push(exoticLimitSubject)
+    lp.subjectTo!.push(classLimitSubject);
+    lp.subjectTo!.push(...classLimitSubjects);
+    lp.subjectTo!.push(exoticLimitSubject);
 
     const penalty = 20;
-    const artificeArmorPieces = []
-    const artificeArmorPlugs = []
+    const artificeArmorPieces = [];
+    const artificeArmorPlugs = [];
 
     // we have 4 slots
     // we pick four plugs for each slot; a plug has three values
@@ -594,21 +704,20 @@ export class TheorizerPageComponent implements OnInit {
       const slotLimitSubject = {
         name: `slotlim_${slot}`,
         vars: [] as any[],
-        bnds: {type: this.glpk.GLP_FX, ub: 4, lb: 4}
-      }
-      lp.subjectTo!.push(slotLimitSubject)
-
+        bnds: { type: this.glpk.GLP_FX, ub: 4, lb: 4 },
+      };
+      lp.subjectTo!.push(slotLimitSubject);
 
       // introduce one binary variable for each plug in each slot
       if (withGeneratedArmor) {
         const intrinsicStatSelectionSubject = {
           name: `allow_intrinsic_${slot}`,
           vars: [] as any[],
-          bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
-        }
+          bnds: { type: this.glpk.GLP_UP, ub: 0, lb: 0 },
+        };
 
-        lp.binaries!.push(`exotic_${slot}`)
-        exoticLimitSubject.vars.push({name: `exotic_${slot}`, coef: 1})
+        lp.binaries!.push(`exotic_${slot}`);
+        exoticLimitSubject.vars.push({ name: `exotic_${slot}`, coef: 1 });
 
         // generateExoticsWithIntrinsicStats
         if (this.options.generator.generateExoticsWithIntrinsicStats) {
@@ -616,52 +725,59 @@ export class TheorizerPageComponent implements OnInit {
           // only one slot is allowed to be exotic, so we can use this later
 
           // add the subject that limits the usage of intrinsic stat plugs to only work when we select 4 plugs
-          lp.subjectTo!.push(intrinsicStatSelectionSubject)
+          lp.subjectTo!.push(intrinsicStatSelectionSubject);
 
           // add a variable for categories in possibleBonusStats
           for (let clazz = 0; clazz < 3; clazz++) {
-            const entries = (intrinsicExoticArmorByClassAndSlot as any)[clazz][slot + 1]
+            const entries = (intrinsicExoticArmorByClassAndSlot as any)[clazz][slot + 1];
             for (let i = 0; i < entries.length; i++) {
               let entry = entries[i];
-              const name = `intrinsic_${slot}_${clazz}_${i}`
-              lp.binaries!.push(name)
+              const name = `intrinsic_${slot}_${clazz}_${i}`;
+              lp.binaries!.push(name);
               // add to intrinsicStatSelectionSubject
-              intrinsicStatSelectionSubject.vars.push({name: name, coef: 1})
+              intrinsicStatSelectionSubject.vars.push({ name: name, coef: 1 });
 
               // add a limit that it is <= selected class
               lp.subjectTo!.push({
                 name: `intrinsic_${slot}_${clazz}_classlim`,
-                vars: [{name: name, coef: 1}, {name: `class_${clazz}`, coef: -1}],
-                bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
-              })
+                vars: [
+                  { name: name, coef: 1 },
+                  { name: `class_${clazz}`, coef: -1 },
+                ],
+                bnds: { type: this.glpk.GLP_UP, ub: 0, lb: 0 },
+              });
 
               // add a limit that it only added when no exotic is selected
               lp.subjectTo!.push({
                 name: `intrinsic_${slot}_${clazz}_exoticlim`,
-                vars: [{name: name, coef: 1}, {name: `exotic_${slot}`, coef: -1}],
-                bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
-              })
+                vars: [
+                  { name: name, coef: 1 },
+                  { name: `exotic_${slot}`, coef: -1 },
+                ],
+                bnds: { type: this.glpk.GLP_UP, ub: 0, lb: 0 },
+              });
 
               // add the stats
               for (let statmrr = 0; statmrr < 3; statmrr++) {
                 if (entry.stats[statmrr] > 0)
-                  lp.subjectTo![statmrr].vars.push({name: name, coef: entry.stats[statmrr]})
+                  lp.subjectTo![statmrr].vars.push({
+                    name: name,
+                    coef: entry.stats[statmrr],
+                  });
               }
 
               // apply a penalty for using this
-              lp.objective!.vars.push({name: name, coef: -100})
+              lp.objective!.vars.push({ name: name, coef: -100 });
             }
           }
           // TODO make sure that we only add them if it is generated
-
-
         }
 
         // only allow this slot to be exotic if it is also generated and used
         let exoticGenlimSlot = {
           name: `exotic_${slot}_genlim`,
-          vars: [{name: `exotic_${slot}`, coef: 1}],
-          bnds: {type: this.glpk.GLP_UP, ub: 0, lb: 0}
+          vars: [{ name: `exotic_${slot}`, coef: 1 }],
+          bnds: { type: this.glpk.GLP_UP, ub: 0, lb: 0 },
         };
         lp.subjectTo!.push(exoticGenlimSlot);
 
@@ -669,27 +785,26 @@ export class TheorizerPageComponent implements OnInit {
           const subject = {
             name: `plug_${slot}_${plugId}`,
             vars: [] as any[],
-            bnds: {type: this.glpk.GLP_FX, ub: 1, lb: 1}
-          }
-          if (withBothArmorSources)
-            subject.bnds = {type: this.glpk.GLP_DB, ub: 1, lb: 0}
+            bnds: { type: this.glpk.GLP_FX, ub: 1, lb: 1 },
+          };
+          if (withBothArmorSources) subject.bnds = { type: this.glpk.GLP_DB, ub: 1, lb: 0 };
 
           for (let plug = 0; plug < this.options.availablePlugs.length; plug++) {
             const plugName = `plug_${slot}_${plugId}_${plug}`;
             lp.binaries!.push(plugName);
-            subject.vars.push({name: plugName, coef: 1});
+            subject.vars.push({ name: plugName, coef: 1 });
 
             // add to intrinsicStatSelectionSubject
-            intrinsicStatSelectionSubject.vars.push({name: plugName, coef: -0.25})
-            exoticGenlimSlot.vars.push({name: plugName, coef: -0.25})
+            intrinsicStatSelectionSubject.vars.push({ name: plugName, coef: -0.25 });
+            exoticGenlimSlot.vars.push({ name: plugName, coef: -0.25 });
 
-            artificeArmorPlugs.push(plugName)
+            artificeArmorPlugs.push(plugName);
 
             // 4 plugs per item, so coeff 0.25 for each plug
-            slotLimitSubject.vars.push({name: plugName, coef: 1});
+            slotLimitSubject.vars.push({ name: plugName, coef: 1 });
 
             if (withBothArmorSources) {
-              lp.objective!.vars.push({name: plugName, coef: -100});
+              lp.objective!.vars.push({ name: plugName, coef: -100 });
             }
 
             // add the plug to the subject which manages the required stats
@@ -697,10 +812,16 @@ export class TheorizerPageComponent implements OnInit {
               let cn = n;
               if (plugId > 1) cn += 3;
 
-              lp.subjectTo![cn].vars.push({name: plugName, coef: this.options.availablePlugs[plug][n]});
+              lp.subjectTo![cn].vars.push({
+                name: plugName,
+                coef: this.options.availablePlugs[plug][n],
+              });
               // add a penalty for every stat point. This means the solver will try to minimize the number of generated stat points
               if (penalty > 0)
-                lp.objective!.vars.push({name: plugName, coef: -penalty * this.options.availablePlugs[plug][n]})
+                lp.objective!.vars.push({
+                  name: plugName,
+                  coef: -penalty * this.options.availablePlugs[plug][n],
+                });
             }
           }
           lp.subjectTo!.push(subject);
@@ -714,27 +835,27 @@ export class TheorizerPageComponent implements OnInit {
           const identifier = `item_${slot}_${item_id}`;
           lp.binaries!.push(identifier);
           //lp.bounds!.push({name: identifier, type: this.glpk.GLP_DB, ub: 1, lb: 0});
-          lp.subjectTo![0].vars.push({name: identifier, coef: item.mobility});
-          lp.subjectTo![1].vars.push({name: identifier, coef: item.resilience});
-          lp.subjectTo![2].vars.push({name: identifier, coef: item.recovery});
-          lp.subjectTo![3].vars.push({name: identifier, coef: item.discipline});
-          lp.subjectTo![4].vars.push({name: identifier, coef: item.intellect});
-          lp.subjectTo![5].vars.push({name: identifier, coef: item.strength});
+          lp.subjectTo![0].vars.push({ name: identifier, coef: item.mobility });
+          lp.subjectTo![1].vars.push({ name: identifier, coef: item.resilience });
+          lp.subjectTo![2].vars.push({ name: identifier, coef: item.recovery });
+          lp.subjectTo![3].vars.push({ name: identifier, coef: item.discipline });
+          lp.subjectTo![4].vars.push({ name: identifier, coef: item.intellect });
+          lp.subjectTo![5].vars.push({ name: identifier, coef: item.strength });
           // limit the number of items per slot to 1
-          slotLimitSubject.vars.push({name: identifier, coef: 4});
+          slotLimitSubject.vars.push({ name: identifier, coef: 4 });
           // Add an objective for each item, which means we want to have as many of our own items as possible
           if (withBothArmorSources) {
-            lp.objective!.vars.push({name: identifier, coef: 100});
+            lp.objective!.vars.push({ name: identifier, coef: 100 });
           }
 
           // class limit subject
-          classLimitSubjects[item.clazz].vars.push({name: identifier, coef: 1});
+          classLimitSubjects[item.clazz].vars.push({ name: identifier, coef: 1 });
 
           // exotic limit
           if (item.isExotic) {
-            exoticLimitSubject.vars.push({name: identifier, coef: 1});
+            exoticLimitSubject.vars.push({ name: identifier, coef: 1 });
             // also rate this one higher, so that we have more exotics in the results
-            lp.objective!.vars.push({name: identifier, coef: 40});
+            lp.objective!.vars.push({ name: identifier, coef: 40 });
           }
           if (item.perk == ArmorPerkOrSlot.SlotArtifice) {
             artificeArmorPieces.push(identifier);
@@ -743,81 +864,82 @@ export class TheorizerPageComponent implements OnInit {
       }
     }
 
-
     if (this.options.mods.maxMods > 0) {
       const modSubject = {
-        name: `limit_mods`, vars: [] as any[],
+        name: `limit_mods`,
+        vars: [] as any[],
         bnds: {
           type: this.options.mods.maxMods > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
-          ub: this.options.mods.maxMods, lb: 0
-        }
-      }
+          ub: this.options.mods.maxMods,
+          lb: 0,
+        },
+      };
       for (let stat = 0; stat < 6; stat++) {
         // 1 minor, 2 major; and then artifice
-        lp.bounds!.push({name: `mod_${1}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
-        lp.bounds!.push({name: `mod_${2}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+        lp.bounds!.push({ name: `mod_${1}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0 });
+        lp.bounds!.push({ name: `mod_${2}_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0 });
         lp.generals!.push(`mod_${1}_${stat}`);
         lp.generals!.push(`mod_${2}_${stat}`);
 
-        lp.subjectTo![stat].vars.push({name: `mod_${1}_${stat}`, coef: 5});
-        lp.subjectTo![stat].vars.push({name: `mod_${2}_${stat}`, coef: 10});
+        lp.subjectTo![stat].vars.push({ name: `mod_${1}_${stat}`, coef: 5 });
+        lp.subjectTo![stat].vars.push({ name: `mod_${2}_${stat}`, coef: 10 });
 
         // only allow a total of 5 mods and 3 artificer mods
-        modSubject.vars.push({name: `mod_${1}_${stat}`, coef: 1});
-        modSubject.vars.push({name: `mod_${2}_${stat}`, coef: 1});
+        modSubject.vars.push({ name: `mod_${1}_${stat}`, coef: 1 });
+        modSubject.vars.push({ name: `mod_${2}_${stat}`, coef: 1 });
       }
       lp.subjectTo!.push(modSubject);
     }
 
-
     if (this.options.mods.maxArtifice > 0) {
       const artifMaxSubject = {
-        name: `limit_artif_max`, vars: [] as any[],
+        name: `limit_artif_max`,
+        vars: [] as any[],
         bnds: {
           type: this.options.mods.maxArtifice > 0 ? this.glpk.GLP_DB : this.glpk.GLP_FX,
-          ub: this.options.mods.maxArtifice, lb: 0
-        }
-      }
+          ub: this.options.mods.maxArtifice,
+          lb: 0,
+        },
+      };
       const artifSlotSubject = {
-        name: `limit_artif_slot`, vars: [] as any[],
-        bnds: {type: this.glpk.GLP_UP, ub: 1, lb: 0} // UB is 1 as we assume our class item is artifice !TODO make this a setting
-      }
+        name: `limit_artif_slot`,
+        vars: [] as any[],
+        bnds: { type: this.glpk.GLP_UP, ub: 1, lb: 0 }, // UB is 1 as we assume our class item is artifice !TODO make this a setting
+      };
       // add all armor pieces which can be artificed
       for (let piece of artificeArmorPieces) {
-        artifSlotSubject.vars.push({name: piece, coef: -1});
+        artifSlotSubject.vars.push({ name: piece, coef: -1 });
       }
       for (let piece of artificeArmorPlugs) {
-        artifSlotSubject.vars.push({name: piece, coef: -0.25});
+        artifSlotSubject.vars.push({ name: piece, coef: -0.25 });
       }
       // add 1 in case we generated an exotic armor
       if (withGeneratedArmor) {
         for (let slot = 0; slot < 4; slot++) {
-          artifSlotSubject.vars.push({name: `exotic_${slot}`, coef: 1});
+          artifSlotSubject.vars.push({ name: `exotic_${slot}`, coef: 1 });
         }
       }
 
       for (let stat = 0; stat < 6; stat++) {
-        lp.subjectTo![stat].vars.push({name: `artifice_${stat}`, coef: 3});
-        artifMaxSubject.vars.push({name: `artifice_${stat}`, coef: 1});
-        artifSlotSubject.vars.push({name: `artifice_${stat}`, coef: 1});
+        lp.subjectTo![stat].vars.push({ name: `artifice_${stat}`, coef: 3 });
+        artifMaxSubject.vars.push({ name: `artifice_${stat}`, coef: 1 });
+        artifSlotSubject.vars.push({ name: `artifice_${stat}`, coef: 1 });
 
-        lp.bounds!.push({name: `artifice_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0});
+        lp.bounds!.push({ name: `artifice_${stat}`, type: this.glpk.GLP_DB, ub: 5, lb: 0 });
         lp.generals!.push(`artifice_${stat}`);
       }
       lp.subjectTo!.push(artifMaxSubject);
       lp.subjectTo!.push(artifSlotSubject);
     }
 
-
     if (this.options.stats.minTiers > 0 || this.options.stats.maxWaste < 54) {
-
       // I want to have the TIERS of the armor stats
       // for this, I introduce two variables per stat:
       // - The first is the "waste", which is bound between 0 and 9
       // - The second is the "tier", which is bound between -5 and 20
       // We will set these variables as "mobility - waste - 10 tier = 0"
       for (let stat = 0; stat < 6; stat++) {
-        lp.bounds!.push({name: `waste_${stat}`, type: this.glpk.GLP_DB, ub: 9, lb: 0});
+        lp.bounds!.push({ name: `waste_${stat}`, type: this.glpk.GLP_DB, ub: 9, lb: 0 });
         //lp.bounds!.push({name: `tier_${stat}`, type: this.glpk.GLP_DB, ub: 100, lb: -100});
         lp.generals!.push(`waste_${stat}`);
         lp.generals!.push(`tier_${stat}`);
@@ -825,18 +947,17 @@ export class TheorizerPageComponent implements OnInit {
         //lp.objective.vars.push({name: `tier_${stat}`, coef: 2})
         //lp.objective.vars.push({name: `waste_${stat}`, coef: -100})
 
-
         const setWasteAndTierSubject = {
           name: `set_waste_and_tier_${stat}`,
           vars: [
-            {name: `waste_${stat}`, coef: -1},
-            {name: `tier_${stat}`, coef: -10},
-            ...lp.subjectTo![stat].vars
+            { name: `waste_${stat}`, coef: -1 },
+            { name: `tier_${stat}`, coef: -10 },
+            ...lp.subjectTo![stat].vars,
           ],
-          bnds: {type: this.glpk.GLP_FX, ub: 0, lb: 0}
+          bnds: { type: this.glpk.GLP_FX, ub: 0, lb: 0 },
         };
 
-        lp.subjectTo!.push(setWasteAndTierSubject)
+        lp.subjectTo!.push(setWasteAndTierSubject);
       }
 
       // set minTiers <= the sum of the tiers
@@ -844,15 +965,14 @@ export class TheorizerPageComponent implements OnInit {
         const minTierSubject = {
           name: `require_tier_minimum`,
           vars: [] as any[],
-          bnds: {type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers}
-        }
-        console.log("this.options.stats.minTiers", this.options.stats.minTiers)
+          bnds: { type: this.glpk.GLP_LO, ub: 0, lb: this.options.stats.minTiers },
+        };
+        console.log("this.options.stats.minTiers", this.options.stats.minTiers);
         for (let stat = 0; stat < 6; stat++) {
-          minTierSubject.vars.push({name: `tier_${stat}`, coef: 1});
+          minTierSubject.vars.push({ name: `tier_${stat}`, coef: 1 });
         }
         lp.subjectTo!.push(minTierSubject);
       }
-
 
       // Specify maxWaste
       if (this.options.stats.maxWaste < 54) {
@@ -862,26 +982,24 @@ export class TheorizerPageComponent implements OnInit {
           bnds: {
             type: this.options.stats.maxWaste > 0 ? this.glpk.GLP_UP : this.glpk.GLP_FX,
             ub: this.options.stats.maxWaste,
-            lb: 0
-          }
-        }
+            lb: 0,
+          },
+        };
         for (let stat = 0; stat < 6; stat++) {
-          maxWasteSubject.vars.push({name: `waste_${stat}`, coef: 1});
+          maxWasteSubject.vars.push({ name: `waste_${stat}`, coef: 1 });
         }
         lp.subjectTo!.push(maxWasteSubject);
       }
-
     }
 
     // Fix the stats if we enforce them
     if (this.options.stats.statsAreFixed) {
       for (let n = 0; n < 6; n++) {
-        lp.subjectTo[n].bnds.ub = lp.subjectTo[n].bnds.lb
-        lp.subjectTo[n].bnds.type = this.glpk.GLP_FX
+        lp.subjectTo[n].bnds.ub = lp.subjectTo[n].bnds.lb;
+        lp.subjectTo[n].bnds.type = this.glpk.GLP_FX;
       }
     }
 
     return lp;
   }
-
 }

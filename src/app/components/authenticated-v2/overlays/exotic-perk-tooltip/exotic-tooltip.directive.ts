@@ -1,14 +1,22 @@
-import {Directive, Input, TemplateRef, ElementRef, OnInit, HostListener, ComponentRef, OnDestroy} from '@angular/core';
-import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay';
-import {ComponentPortal} from '@angular/cdk/portal';
-import {ExoticPerkTooltipComponent} from "./exotic-perk-tooltip.component";
-import {IManifestArmor} from "../../../../data/types/IManifestArmor";
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ElementRef,
+  OnInit,
+  HostListener,
+  ComponentRef,
+  OnDestroy,
+} from "@angular/core";
+import { Overlay, OverlayPositionBuilder, OverlayRef } from "@angular/cdk/overlay";
+import { ComponentPortal } from "@angular/cdk/portal";
+import { ExoticPerkTooltipComponent } from "./exotic-perk-tooltip.component";
+import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 
 @Directive({
-  selector: '[exoticTooltip]'
+  selector: "[exoticTooltip]",
 })
-export class ExoticTooltipDirective {
-
+export class ExoticTooltipDirective implements OnInit, OnDestroy {
   /**
    * This will be used to show tooltip or not
    * This can be used to show the tooltip conditionally
@@ -16,23 +24,23 @@ export class ExoticTooltipDirective {
   @Input() showToolTip: boolean = true;
 
   //If this is specified then specified text will be show in in the tooltip
-  @Input(`exoticTooltip`) armor: IManifestArmor | undefined;
+  @Input() exoticTooltip: IManifestArmor | undefined;
 
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
 
   private _overlayRef: OverlayRef | undefined;
 
-  constructor(private _overlay: Overlay,
-              private _overlayPositionBuilder: OverlayPositionBuilder,
-              private _elementRef: ElementRef) {
-  }
+  constructor(
+    private _overlay: Overlay,
+    private _overlayPositionBuilder: OverlayPositionBuilder,
+    private _elementRef: ElementRef
+  ) {}
 
   /**
    * Init life cycle event handler
    */
   ngOnInit() {
-
     if (!this.showToolTip) {
       return;
     }
@@ -41,23 +49,23 @@ export class ExoticTooltipDirective {
       .flexibleConnectedTo(this._elementRef)
       .withPositions([
         {
-          originX: 'center',
-          originY: 'bottom',
-          overlayX: 'center',
-          overlayY: 'top',
+          originX: "center",
+          originY: "bottom",
+          overlayX: "center",
+          overlayY: "top",
           offsetY: 5,
-        }, {
-          originX: 'center',
-          originY: 'top',
-          overlayX: 'center',
-          overlayY: 'bottom',
+        },
+        {
+          originX: "center",
+          originY: "top",
+          overlayX: "center",
+          overlayY: "bottom",
           offsetY: -5,
-        }
+        },
       ]);
 
-    this._overlayRef = this._overlay.create({positionStrategy});
-    this._overlayRef.addPanelClass("overlay-no-pointer-event")
-
+    this._overlayRef = this._overlay.create({ positionStrategy });
+    this._overlayRef.addPanelClass("overlay-no-pointer-event");
   }
 
   /**
@@ -65,13 +73,14 @@ export class ExoticTooltipDirective {
    * i.e. where this directive is applied
    * This method will show the tooltip by instantiating the McToolTipComponent and attaching to the overlay
    */
-  @HostListener('mouseenter')
+  @HostListener("mouseenter")
   show() {
-
     //attach the component if it has not already attached to the overlay
     if (this._overlayRef && !this._overlayRef.hasAttached()) {
-      const tooltipRef: ComponentRef<ExoticPerkTooltipComponent> = this._overlayRef.attach(new ComponentPortal(ExoticPerkTooltipComponent));
-      tooltipRef.instance.armor = this.armor;
+      const tooltipRef: ComponentRef<ExoticPerkTooltipComponent> = this._overlayRef.attach(
+        new ComponentPortal(ExoticPerkTooltipComponent)
+      );
+      tooltipRef.instance.armor = this.exoticTooltip;
     }
   }
 
@@ -80,7 +89,7 @@ export class ExoticTooltipDirective {
    * i.e. where this directive is applied
    * This method will close the tooltip by detaching the overlay from the view
    */
-  @HostListener('mouseleave')
+  @HostListener("mouseleave")
   hide() {
     this.closeToolTip();
   }
@@ -104,5 +113,4 @@ export class ExoticTooltipDirective {
       this._overlayRef.detach();
     }
   }
-
 }

@@ -1,4 +1,5 @@
-#description, #filter {
+#description,
+#filter {
   max-width: 700px;
   margin-bottom: 10px;
   margin-left: auto;
@@ -14,7 +15,8 @@
   margin-bottom: 10px;
 }
 
-.armor-container, .plug-sum-col {
+.armor-container,
+.plug-sum-col {
   padding-left: 5px;
 }
 
@@ -36,7 +38,6 @@
   background-color: white;
 }
 
-
 /* Plugs for the first triplet*/
 .stat-range-bar0 {
   background-color: #acfff1;
@@ -52,7 +53,8 @@
   background-color: #ffb45e;
 }
 
-.stat-range-bar2, .stat-range-bar5 {
+.stat-range-bar2,
+.stat-range-bar5 {
   background-color: #c246ff;
 }
 

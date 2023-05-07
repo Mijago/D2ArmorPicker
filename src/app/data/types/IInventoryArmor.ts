@@ -1,5 +1,5 @@
-import {IManifestArmor} from "./IManifestArmor";
-import {DestinyEnergyType} from "bungie-api-ts/destiny2/interfaces";
+import { IManifestArmor } from "./IManifestArmor";
+import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 
 export interface IInventoryArmor extends IManifestArmor {
   id: number;
@@ -13,5 +13,5 @@ export interface IInventoryArmor extends IManifestArmor {
   intellect: number;
   strength: number;
   energyLevel: number;
-  statPlugHashes: (number|undefined)[];
+  statPlugHashes: (number | undefined)[];
 }

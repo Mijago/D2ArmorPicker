@@ -1,64 +1,86 @@
 <div class="character-container">
-  <div *ngIf="userdata.characters.length == 0" class="character-entry">
-    Loading characters..
-  </div>
-  <div (click)="selectClass(char.clazz)"
-       *ngFor="let char of userdata.characters; let idx = index"
-       [class.selected]="selectedClass == char.clazz"
-       [style.background-image]="'url(https://bungie.net/'+char.emblemUrl+')'"
-       class="character-entry"
-       style="float: left;">
+  <div *ngIf="userdata.characters.length === 0" class="character-entry"> Loading characters.. </div>
+  <div
+    (click)="selectClass(char.clazz)"
+    *ngFor="let char of userdata.characters; let idx = index"
+    [class.selected]="selectedClass === char.clazz"
+    [style.background-image]="'url(https://bungie.net/' + char.emblemUrl + ')'"
+    class="character-entry"
+    style="float: left">
     <div class="class-text">
-      <span *ngIf="char.clazz == 0">Titan</span>
-      <span *ngIf="char.clazz == 1">Hunter</span>
-      <span *ngIf="char.clazz == 2">Warlock</span>
+      <span *ngIf="char.clazz === 0">Titan</span>
+      <span *ngIf="char.clazz === 1">Hunter</span>
+      <span *ngIf="char.clazz === 2">Warlock</span>
     </div>
     <div *ngIf="!!itemCounts[idx]">
-      <img class="head-icon"
-           matTooltip="Amount of armor pieces for this class."
-           src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 51 51'%3e%3cpath d='M24.77 7.03c-8.15.38-14.42 7.41-14.42 15.57v16.06c0 .23.13.44.34.53l10.33 4.68c.78.35 1.66-.22 1.66-1.07V31.9c0-.39-.19-.75-.52-.97l-5.39-3.64c-.87-.52-1.43-1.5-1.34-2.61.13-1.46 1.46-2.52 2.93-2.52h4.36c.65 0 1.17.53 1.17 1.17v6.71s0 .61 1.61.61 1.61-.61 1.61-.61v-6.71c0-.65.52-1.17 1.17-1.17h4.36c1.47 0 2.8 1.06 2.93 2.52.1 1.11-.47 2.09-1.34 2.61l-5.39 3.64c-.32.22-.52.58-.52.97v10.91c0 .85.88 1.42 1.66 1.07l10.33-4.68c.21-.1.34-.3.34-.53v-16.5c.01-8.61-7.18-15.55-15.88-15.14z'/%3e%3c/svg%3e">
-      <span class="armor-text" matTooltip="Amount of armor pieces for this class.">×{{itemCounts[char.clazz]}}</span>
+      <img
+        class="head-icon"
+        matTooltip="Amount of armor pieces for this class."
+        src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 51 51'%3e%3cpath d='M24.77 7.03c-8.15.38-14.42 7.41-14.42 15.57v16.06c0 .23.13.44.34.53l10.33 4.68c.78.35 1.66-.22 1.66-1.07V31.9c0-.39-.19-.75-.52-.97l-5.39-3.64c-.87-.52-1.43-1.5-1.34-2.61.13-1.46 1.46-2.52 2.93-2.52h4.36c.65 0 1.17.53 1.17 1.17v6.71s0 .61 1.61.61 1.61-.61 1.61-.61v-6.71c0-.65.52-1.17 1.17-1.17h4.36c1.47 0 2.8 1.06 2.93 2.52.1 1.11-.47 2.09-1.34 2.61l-5.39 3.64c-.32.22-.52.58-.52.97v10.91c0 .85.88 1.42 1.66 1.07l10.33-4.68c.21-.1.34-.3.34-.53v-16.5c.01-8.61-7.18-15.55-15.88-15.14z'/%3e%3c/svg%3e" />
+      <span class="armor-text" matTooltip="Amount of armor pieces for this class."
+        >×{{ itemCounts[char.clazz] }}</span
+      >
     </div>
   </div>
 </div>
 
-<div *ngIf="storedMaterials != null">
-  <span class="material-listing" matTooltip="Ascendant Shards: {{storedMaterials['4257549985']}}">
-  <img src="https://www.bungie.net/common/destiny2_content/icons/2bd6547fa8f170d8868c8ab24b9fe84a.jpg" alt="Ascendant Shard">
-    {{storedMaterials["4257549985"] | number:'1.0-0'}}
+<div *ngIf="storedMaterials !== null">
+  <span class="material-listing" matTooltip="Ascendant Shards: {{ storedMaterials['4257549985'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/2bd6547fa8f170d8868c8ab24b9fe84a.jpg"
+      alt="Ascendant Shard" />
+    {{ storedMaterials["4257549985"] | number : "1.0-0" }}
   </span>
-  <span class="material-listing" matTooltip="Enhancement Prisms: {{storedMaterials['4257549984']}}">
-  <img src="https://www.bungie.net/common/destiny2_content/icons/0397d34d04b687484f73665bb714227b.jpg" alt="Enhancement Prism">
-    {{storedMaterials["4257549984"] | number:'1.0-0'}}
+  <span
+    class="material-listing"
+    matTooltip="Enhancement Prisms: {{ storedMaterials['4257549984'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/0397d34d04b687484f73665bb714227b.jpg"
+      alt="Enhancement Prism" />
+    {{ storedMaterials["4257549984"] | number : "1.0-0" }}
   </span>
-  <span class="material-listing" matTooltip="Enhancement Cores: {{storedMaterials['3853748946']}}">
-   <img src="https://www.bungie.net/common/destiny2_content/icons/259c571eb7f9f85e56be657f371e303f.jpg" alt="Enhancement Core">
-    {{storedMaterials["3853748946"] | number:'1.0-0'}}
+  <span
+    class="material-listing"
+    matTooltip="Enhancement Cores: {{ storedMaterials['3853748946'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/259c571eb7f9f85e56be657f371e303f.jpg"
+      alt="Enhancement Core" />
+    {{ storedMaterials["3853748946"] | number : "1.0-0" }}
   </span>
-  <span class="material-listing" matTooltip="Legendary Shards: {{storedMaterials['1022552290']}}">
-   <img src="https://www.bungie.net/common/destiny2_content/icons/1ff4a008cb851794ccb588e4eb3918a1.png" alt="Legendary Shard">
-    {{storedMaterials["1022552290"] | number:'1.0-0'}}
+  <span class="material-listing" matTooltip="Legendary Shards: {{ storedMaterials['1022552290'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/1ff4a008cb851794ccb588e4eb3918a1.png"
+      alt="Legendary Shard" />
+    {{ storedMaterials["1022552290"] | number : "1.0-0" }}
   </span>
-  <span class="material-listing" matTooltip="Glimmer: {{storedMaterials['3159615086']}}">
-   <img src="https://www.bungie.net/common/destiny2_content/icons/36dd52a3005cb28f7f68448f1ab76c1e.png" alt="Glimmer">
-    {{storedMaterials["3159615086"] | number:'1.0-0'}}
+  <span class="material-listing" matTooltip="Glimmer: {{ storedMaterials['3159615086'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/36dd52a3005cb28f7f68448f1ab76c1e.png"
+      alt="Glimmer" />
+    {{ storedMaterials["3159615086"] | number : "1.0-0" }}
   </span>
 </div>
 
-<a color="primary" fxShow="false"
-   fxShow.lt-md="true" mat-flat-button
-   routerLink="/help"
-   style="margin-left: 15px;">
+<a
+  color="primary"
+  fxShow="false"
+  fxShow.lt-md="true"
+  mat-flat-button
+  routerLink="/help"
+  style="margin-left: 15px">
   <mat-icon inline>help</mat-icon>
   Help and Information about D2ArmorPicker
 </a>
 
 <div>
   If you like my work, you can
-  <a color="accent" href="https://ko-fi.com/mijago"
-     matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
-     target="_blank">
-    support me here.</a>
+  <a
+    color="accent"
+    href="https://ko-fi.com/mijago"
+    matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
+    target="_blank">
+    support me here.</a
+  >
   You can also
   <a color="accent" href="http://discord.d2armorpicker.com" target="_blank">
     join my dev Discord!
@@ -67,10 +89,13 @@
   <div>
     Also check out my Discord-Bot
     <div class="crayon_logo_container">
-      <img class="crayon_logo" alt=""
-           src="https://cdn.discordapp.com/emojis/917423317139480586.webp?size=96&quality=lossless">
+      <img
+        class="crayon_logo"
+        alt=""
+        src="https://cdn.discordapp.com/emojis/917423317139480586.webp?size=96&quality=lossless" />
     </div>
 
-    <a href="https://mijago.github.io/Crayon" target="_blank">Crayon</a>, for all your item information needs!
+    <a href="https://mijago.github.io/Crayon" target="_blank">Crayon</a>, for all your item
+    information needs!
   </div>
 </div>

@@ -1,21 +1,35 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Subject} from "rxjs";
-import {debounceTime, takeUntil} from "rxjs/operators";
-import {InventoryService} from "../../../../services/inventory.service";
-import {IInventoryArmor} from "../../../../data/types/IInventoryArmor";
-import {DatabaseService} from "../../../../services/database.service";
-import {IManifestArmor} from "../../../../data/types/IManifestArmor";
-import {ArmorSlot} from "../../../../data/enum/armor-slot";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Subject } from "rxjs";
+import { debounceTime, takeUntil } from "rxjs/operators";
+import { InventoryService } from "../../../../services/inventory.service";
+import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
+import { DatabaseService } from "../../../../services/database.service";
+import { IManifestArmor } from "../../../../data/types/IManifestArmor";
+import { ArmorSlot } from "../../../../data/enum/armor-slot";
 
-type LocalArmorInfo = { isSunset: boolean, slot: ArmorSlot, totalSum: number, totalStats: number[]; itemInstanceId: string; mobility: number[]; intellect: number[]; strength: number[]; statPlugHashes: (number)[]; name: string; recovery: number[]; discipline: number[]; resilience: number[]; hash: number };
+type LocalArmorInfo = {
+  isSunset: boolean;
+  slot: ArmorSlot;
+  totalSum: number;
+  totalStats: number[];
+  itemInstanceId: string;
+  mobility: number[];
+  intellect: number[];
+  strength: number[];
+  statPlugHashes: number[];
+  name: string;
+  recovery: number[];
+  discipline: number[];
+  resilience: number[];
+  hash: number;
+};
 
 @Component({
-  selector: 'app-armor-investigation-page',
-  templateUrl: './armor-investigation-page.component.html',
-  styleUrls: ['./armor-investigation-page.component.css']
+  selector: "app-armor-investigation-page",
+  templateUrl: "./armor-investigation-page.component.html",
+  styleUrls: ["./armor-investigation-page.component.css"],
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
-
   minMobility: number | null = 0;
   minResilience: number | null = 0;
   minRecovery: number | null = 0;
@@ -35,23 +49,19 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   plugData: { [p: string]: IManifestArmor } = {};
 
-  constructor(public inventory: InventoryService, private db: DatabaseService) {
-  }
+  constructor(public inventory: InventoryService, private db: DatabaseService) {}
 
   ngOnInit(): void {
     this.inventory.inventory
-      .pipe(
-        debounceTime(10),
-        takeUntil(this.ngUnsubscribe)
-      )
+      .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         this.updateItems();
-      })
+      });
   }
 
   getPlugString(plugId: number) {
-    var plugInfo = this.plugData[plugId]
-    let info = [0, 0, 0, 0, 0, 0]
+    var plugInfo = this.plugData[plugId];
+    let info = [0, 0, 0, 0, 0, 0];
     for (let stat of plugInfo.investmentStats) {
       switch (stat.statTypeHash) {
         case 2996146975:
@@ -74,16 +84,16 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           break;
       }
     }
-    return "[" + info.join(" ") + "]"
+    return "[" + info.join(" ") + "]";
   }
 
   async updateItems() {
     let manifestArmor = await this.db.manifestArmor.toArray();
-    const modsData = manifestArmor.filter(d => d.itemType == 19)
-    let plugData = Object.fromEntries(modsData.map((_) => [_.hash, _]))
+    const modsData = manifestArmor.filter((d) => d.itemType == 19);
+    let plugData = Object.fromEntries(modsData.map((_) => [_.hash, _]));
     this.plugData = plugData;
 
-    let armorItems = (await this.db.inventoryArmor.toArray() as IInventoryArmor[])
+    let armorItems = ((await this.db.inventoryArmor.toArray()) as IInventoryArmor[])
       .sort((a, b) => ("" + a.name).localeCompare(b.name))
       .map((i: IInventoryArmor) => {
         var result = {
@@ -100,8 +110,8 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           strength: [] as number[],
           totalStats: [0, 0, 0, 0, 0, 0],
           totalSum: 0,
-          slot: i.slot
-        } as LocalArmorInfo
+          slot: i.slot,
+        } as LocalArmorInfo;
         // add stat plugs
         if (i.statPlugHashes)
           for (let p of i.statPlugHashes) {
@@ -168,21 +178,20 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           }
         }
 
-        for (let s of result.totalStats)
-          result.totalSum += s
+        for (let s of result.totalStats) result.totalSum += s;
 
         return result;
-      })
+      });
 
-    armorItems = this.filterItems(armorItems)
+    armorItems = this.filterItems(armorItems);
 
     this.armorItemsPerSlot = armorItems.reduce((p, v) => {
       const slot = !v.slot ? 10 : v.slot;
-      if (!p.has(slot)) p.set(slot, [])
-      p.get(slot)?.push(v)
+      if (!p.has(slot)) p.set(slot, []);
+      p.get(slot)?.push(v);
 
       return p;
-    }, new Map<ArmorSlot, LocalArmorInfo[]>())
+    }, new Map<ArmorSlot, LocalArmorInfo[]>());
   }
 
   private ngUnsubscribe = new Subject();
@@ -205,11 +214,11 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
       case 5:
         return "Class Items";
     }
-    return "Unknown Category"
+    return "Unknown Category";
   }
 
   getPlugSum(plugId: number) {
-    var plugInfo = this.plugData[plugId]
+    var plugInfo = this.plugData[plugId];
     var total = 0;
     for (let stat of plugInfo.investmentStats) {
       switch (stat.statTypeHash) {
@@ -244,28 +253,46 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   private filterItems(armorItems: LocalArmorInfo[]) {
     if (!!this.armorName)
-      armorItems = armorItems.filter(i => i.name.toLowerCase().indexOf(this.armorName!) > -1)
+      armorItems = armorItems.filter((i) => i.name.toLowerCase().indexOf(this.armorName!) > -1);
     if (!!this.armorHash)
-      armorItems = armorItems.filter(i => ((i.hash || 0).toString().indexOf(this.armorHash!) > -1))
+      armorItems = armorItems.filter((i) => (i.hash || 0).toString().indexOf(this.armorHash!) > -1);
     if (!!this.armorId)
-      armorItems = armorItems.filter(i => ((i.itemInstanceId || 0).toString().indexOf(this.armorId!) > -1))
+      armorItems = armorItems.filter(
+        (i) => (i.itemInstanceId || 0).toString().indexOf(this.armorId!) > -1
+      );
 
-    armorItems = armorItems.filter(i => i.totalStats[0] >= (this.minMobility || 0));
-    armorItems = armorItems.filter(i => i.totalStats[1] >= (this.minResilience || 0));
-    armorItems = armorItems.filter(i => i.totalStats[2] >= (this.minRecovery || 0));
-    armorItems = armorItems.filter(i => i.totalStats[3] >= (this.minDiscipline || 0));
-    armorItems = armorItems.filter(i => i.totalStats[4] >= (this.minIntellect || 0));
-    armorItems = armorItems.filter(i => i.totalStats[5] >= (this.minStrength || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[0] >= (this.minMobility || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[1] >= (this.minResilience || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[2] >= (this.minRecovery || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[3] >= (this.minDiscipline || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[4] >= (this.minIntellect || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[5] >= (this.minStrength || 0));
     if ((this.anyPlugWithN ?? 0) > 0)
-      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) >= (this.anyPlugWithN || 0)).length > 0)
+      armorItems = armorItems.filter(
+        (i) =>
+          (i.statPlugHashes || []).filter((pl) => this.getPlugSum(pl) >= (this.anyPlugWithN || 0))
+            .length > 0
+      );
 
     if ((this.anyPlugBelowN ?? 0) < 17)
-      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) <= (this.anyPlugBelowN || 0)).length > 0)
+      armorItems = armorItems.filter(
+        (i) =>
+          (i.statPlugHashes || []).filter((pl) => this.getPlugSum(pl) <= (this.anyPlugBelowN || 0))
+            .length > 0
+      );
 
     if ((this.allPlugsWithN ?? 0) > 0)
-      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) < (this.allPlugsWithN || 0)).length == 0)
+      armorItems = armorItems.filter(
+        (i) =>
+          (i.statPlugHashes || []).filter((pl) => this.getPlugSum(pl) < (this.allPlugsWithN || 0))
+            .length == 0
+      );
     if ((this.allPlugsBelowN ?? 0) < 17)
-      armorItems = armorItems.filter(i => (i.statPlugHashes || []).filter(pl => this.getPlugSum(pl) > (this.allPlugsBelowN || 0)).length == 0)
+      armorItems = armorItems.filter(
+        (i) =>
+          (i.statPlugHashes || []).filter((pl) => this.getPlugSum(pl) > (this.allPlugsBelowN || 0))
+            .length == 0
+      );
 
     return armorItems;
   }

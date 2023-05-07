@@ -68,10 +68,9 @@ tr.example-detail-row {
 
 .result-table tr.example-element-row {
   cursor: pointer;
-
 }
 
-.mat-row:nth-child(4n+3) {
+.mat-row:nth-child(4n + 3) {
   background-color: rgba(116, 116, 116, 0.1);
 }
 
@@ -90,7 +89,6 @@ tr.example-detail-row {
   width: 18px;
   top: -1px;
 }
-
 
 .cdk-column-exotic {
   min-width: 45px;

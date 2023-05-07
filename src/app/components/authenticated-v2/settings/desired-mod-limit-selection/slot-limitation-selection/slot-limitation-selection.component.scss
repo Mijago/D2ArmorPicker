@@ -10,7 +10,6 @@
   }
 }
 
-
 .container {
   height: 60px;
 }
@@ -30,7 +29,6 @@
     position: absolute;
     bottom: 2px;
     left: 60px;
-
   }
 
   .element-list {
@@ -58,8 +56,7 @@
   }
 }
 
-
-:host ::ng-deep  .selector-slots .mat-button-toggle{
+:host ::ng-deep .selector-slots .mat-button-toggle {
   background-color: inherit;
 }
 
@@ -119,7 +116,6 @@
   left: 0;
 }
 
-
 .overlay-icon-container {
   position: relative;
 
@@ -132,18 +128,17 @@
   }
 }
 
-
 .element-icon:hover {
   border: cornflowerblue solid 2px !important;
 }
 
-.selected, .selected:hover {
+.selected,
+.selected:hover {
   background-color: rgba(137, 178, 255, 0.24);
   border: #0059ff solid 2px !important;
 }
 
 .energy-container {
-
   .energy-bar {
     float: left;
     margin-right: 3px;
@@ -159,7 +154,8 @@
     border: indianred solid 2px;
   }
 
-  .energy-bar:hover, .hovered {
+  .energy-bar:hover,
+  .hovered {
     background-color: #6e6e6e;
   }
 
@@ -176,7 +172,6 @@
     background-color: #6e6e6e;
   }
 }
-
 
 .mod-info {
   position: relative;
@@ -205,18 +200,22 @@
     width: 100%;
     height: 100%;
 
-    background: linear-gradient(to top left,
-      rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0) calc(50% - 0.8px),
-      rgb(0, 0, 0) 50%,
-      rgba(0, 0, 0, 0) calc(50% + 0.8px),
-      rgba(0, 0, 0, 0) 100%),
-    linear-gradient(to top right,
+    background: linear-gradient(
+        to top left,
         rgba(0, 0, 0, 0) 0%,
         rgba(0, 0, 0, 0) calc(50% - 0.8px),
         rgb(0, 0, 0) 50%,
         rgba(0, 0, 0, 0) calc(50% + 0.8px),
-        rgba(0, 0, 0, 0) 100%);
+        rgba(0, 0, 0, 0) 100%
+      ),
+      linear-gradient(
+        to top right,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0) calc(50% - 0.8px),
+        rgb(0, 0, 0) 50%,
+        rgba(0, 0, 0, 0) calc(50% + 0.8px),
+        rgba(0, 0, 0, 0) 100%
+      );
   }
 
   .mod-icon {
@@ -230,7 +229,8 @@
     height: 34px;
   }
 
-  &.major, &.minor {
+  &.major,
+  &.minor {
     .overlay {
       display: none;
     }
@@ -245,14 +245,13 @@
       display: none;
     }
   }
-
 }
 
 .menuArmorIcon {
   position: absolute;
   top: 8px;
 }
-.menuArmorText{
+.menuArmorText {
   padding-left: 35px;
 }
 

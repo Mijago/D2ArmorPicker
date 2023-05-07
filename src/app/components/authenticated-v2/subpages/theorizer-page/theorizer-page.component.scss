@@ -42,7 +42,6 @@
   text-align: right;
 }
 
-
 #container {
   margin-bottom: 20px;
   margin-top: 20px;
@@ -70,12 +69,12 @@
   }
 }
 
-.theoretic, .intrinsic {
+.theoretic,
+.intrinsic {
   td:not(:first-of-type) {
     color: #ecb5b5;
   }
 }
-
 
 .icon-item {
   height: 20px;

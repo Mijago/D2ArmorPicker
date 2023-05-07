@@ -1,5 +1,5 @@
-import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable} from "rxjs";
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
 
 export interface Status {
   calculatingPermutations: boolean;
@@ -10,23 +10,22 @@ export interface Status {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class StatusProviderService {
-
   private __status: Status = {
     calculatingResults: false,
     calculatingPermutations: false,
     updatingResultsTable: false,
     updatingInventory: false,
-    updatingManifest: false
-  }
+    updatingManifest: false,
+  };
 
   private _status: BehaviorSubject<Status>;
   public readonly status: Observable<Status>;
 
   constructor() {
-    this._status = new BehaviorSubject<Status>(this.__status)
+    this._status = new BehaviorSubject<Status>(this.__status);
     this.status = this._status.asObservable();
   }
 
@@ -36,7 +35,7 @@ export class StatusProviderService {
 
   modifyStatus(cb: (status: Status) => void) {
     cb(this.__status);
-    console.log("modifyStatus", this.__status)
-    this._status.next(this.__status)
+    console.log("modifyStatus", this.__status);
+    this._status.next(this.__status);
   }
 }
