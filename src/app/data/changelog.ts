@@ -12,6 +12,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.3.2",
+    date: "May 7, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Feature: Added 'Guardian Games' class item type to the dropdown. ",
+        issues: []
+      }
+    ]
+  },
+  {
     version: "2.3.1",
     date: "April 2, 2023",
     entries: [
