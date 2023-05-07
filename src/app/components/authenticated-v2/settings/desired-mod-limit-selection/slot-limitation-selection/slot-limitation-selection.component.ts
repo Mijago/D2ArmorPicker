@@ -42,7 +42,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   disabled: boolean = false;
 
   readonly availableArmorPerks = [ArmorPerkOrSlot.None, ArmorPerkOrSlot.PerkQueensFavor, ArmorPerkOrSlot.SlotRootOfNightmares, ArmorPerkOrSlot.SlotKingsFall, ArmorPerkOrSlot.SlotVowOfTheDisciple,ArmorPerkOrSlot.SlotVaultOfGlass, ArmorPerkOrSlot.SlotDeepStoneCrypt, ArmorPerkOrSlot.SlotGardenOfSalvation, ArmorPerkOrSlot.SlotLastWish, ArmorPerkOrSlot.SlotNightmare, ArmorPerkOrSlot.SlotArtifice, ArmorPerkOrSlot.PerkIronBanner, ArmorPerkOrSlot.PerkUniformedOfficer, ArmorPerkOrSlot.PerkPlunderersTrappings, ArmorPerkOrSlot.SeraphSensorArray];
-  
+
 
   constructor(public config: ConfigurationService, public inventory: InventoryService, private db: DatabaseService) {
   }
@@ -108,7 +108,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   ngAfterViewInit(): void {
     if (environment.featureFlags.enableGuardianGamesFeatures && this.slot === ArmorSlot.ArmorSlotClass) {
-      this.availableArmorPerks.unshift(ArmorPerkOrSlot.GuardianGamesClassItem);
+      this.availableArmorPerks.splice(1, 0, ArmorPerkOrSlot.GuardianGamesClassItem)
     }
   }
 
