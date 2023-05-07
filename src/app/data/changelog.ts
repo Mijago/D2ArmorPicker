@@ -20,6 +20,11 @@ export const CHANGELOG_DATA = [
         text: "Feature: Added 'Guardian Games' class item type to the dropdown. ",
         issues: [],
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reformatted every file in the codebase and improved the code workflow. You should not really see this on your end, but it will allow everyone to easily contribute to this open source project!",
+        issues: [],
+      },
     ],
   },
   {
