@@ -405,4 +405,11 @@
       </mat-paginator>
     </div>
   </mat-card-content>
+  <mat-card-actions *ngIf="totalResults > 0">
+    <span class="flex-spacer"></span>
+
+    <button mat-raised-button color="primary" (click)="saveBuilds()"
+      >Download results as JSON</button
+    >
+  </mat-card-actions>
 </mat-card>

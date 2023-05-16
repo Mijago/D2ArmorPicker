@@ -236,4 +236,25 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
+
+  saveBuilds() {
+    let jsonData = this._results.map((r) => {
+      let p = Object.assign({}, r);
+      p.items = p.items.map((i) => {
+        return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
+      });
+      delete p.exotic;
+      return p;
+    });
+
+    // download the file
+    let a = document.createElement("a");
+    a.download = "builds.json";
+    const url = window.URL.createObjectURL(new Blob([JSON.stringify(jsonData, null, 2)]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "d2ap_results.json");
+    document.body.appendChild(link);
+    link.click();
+  }
 }
