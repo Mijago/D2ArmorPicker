@@ -144,7 +144,7 @@ function prepareConstantAvailableModslots(config: BuildConfiguration) {
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
-  return availableModCost.filter((d) => d > 0).sort();
+  return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
 }
 
 addEventListener("message", async ({ data }) => {
@@ -711,20 +711,20 @@ function get_mods_precalc(
   let bestMods: any = [];
 
   const availableModCostLen = availableModCost.length;
-  const maxAvailableModCost = availableModCost[availableModCostLen - 1];
-  const minAvailableModCost = availableModCost[0];
+  const minAvailableModCost = availableModCost[availableModCostLen - 1];
+  const maxAvailableModCost = availableModCost[0];
 
   function validateMods(usedModCost: number[]): boolean {
     let usedModCount = usedModCost.length;
     if (usedModCount == 0) return true;
     if (usedModCount > availableModCostLen) return false;
     // sort usedMods ascending
-    usedModCost.sort((a, b) => a - b);
+    usedModCost.sort((a, b) => b - a);
     // check if the usedMods are valid
     // substract the usedMods from the availableMods, start at the highest cost
-    for (let i = availableModCost.length - 1; i >= 5 - usedModCount; i--) {
+    for (let i = 0; i < availableModCost.length && i < usedModCount; i--) {
       //console.log(i, availableModCost[i], usedModCount, usedModCost[i - (5 - usedModCount)], ""+usedModCost);
-      if (availableModCost[i] < usedModCost[i - (5 - usedModCount)]) return false;
+      if (availableModCost[i] < usedModCost[i]) return false;
     }
 
     return true;
