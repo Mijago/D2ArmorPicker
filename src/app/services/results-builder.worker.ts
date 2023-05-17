@@ -722,8 +722,7 @@ function get_mods_precalc(
     usedModCost.sort((a, b) => b - a);
     // check if the usedMods are valid
     // substract the usedMods from the availableMods, start at the highest cost
-    for (let i = 0; i < availableModCost.length && i < usedModCount; i--) {
-      //console.log(i, availableModCost[i], usedModCount, usedModCost[i - (5 - usedModCount)], ""+usedModCost);
+    for (let i = 0; i < availableModCost.length && i < usedModCount; i++) {
       if (availableModCost[i] < usedModCost[i]) return false;
     }
 
