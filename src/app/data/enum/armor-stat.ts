@@ -71,11 +71,11 @@ export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Recovery]:
     "https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png",
   [ArmorStat.Discipline]:
-    "https://www.bungie.net/common/destiny2_content/icons/ca62128071dc254fe75891211b98b237.png",
+    "https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png",
   [ArmorStat.Intellect]:
-    "https://www.bungie.net/common/destiny2_content/icons/59732534ce7060dba681d1ba84c055a6.png",
+    "https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png",
   [ArmorStat.Strength]:
-    "https://www.bungie.net/common/destiny2_content/icons/c7eefc8abbaa586eeab79e962a79d6ad.png",
+    "https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png",
 };
 
 type Literal<T extends ArmorStat> = `${T}`;

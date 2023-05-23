@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-import { GLPK, LP, Result } from "glpk.js";
-declare const GLPKConstructor: () => GLPK;
+import GLPKConstructor, { GLPK, LP, Result } from "glpk.js";
+//declare const GLPKConstructor: () => GLPK;
 import { ModifierType } from "src/app/data/enum/modifierType";
 import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
@@ -128,7 +128,7 @@ export class TheorizerPageComponent implements OnInit {
       },
       // if we must reach the EXACT stats and can not go over them
       statsAreFixed: false,
-      maxValue: 109,
+      maxValue: 250,
       minTiers: 0,
       minPoints: 100,
       maxWaste: 54,
