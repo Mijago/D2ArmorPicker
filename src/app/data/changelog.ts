@@ -12,22 +12,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
-    version: "2.4.0.3",
-    date: "May 15, 2023",
+    version: "2.4.0",
+    date: "May 23, 2023",
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Modified the internal algorithm. It makes stuff faster and gives better results.",
+        text: "Rewrote the internal algorithm. It makes stuff faster and gives better results.",
         issues: [],
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added a 'Perform further optimization' setting. This will give you even better results, but it will take a bit longer.",
+        text: "Added a 'Perform further optimization' setting. This will give you better results, but it will take a bit longer.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Icons to the Stat Selection to make it easier to see which row is which perk.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added button to download results as JSON.",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Enabled Modslot limitation. (This is still a bit slow, but it will be improved in the near future.)",
+        text: "Enabled Modslot limitation.",
         issues: [],
       },
       {
