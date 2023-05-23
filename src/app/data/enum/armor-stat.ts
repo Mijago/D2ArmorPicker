@@ -193,13 +193,13 @@ export const ArmorAffinityNames: EnumDictionary<DestinyEnergyType, string> = {
 export const ArmorAffinityIcons: EnumDictionary<DestinyEnergyType, string> = {
   [DestinyEnergyType.Any]: "",
   [DestinyEnergyType.Arc]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_092d066688b879c807c3b460afdd61e6.png",
+    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_092d066688b879c807c3b460afdd61e6.png",
   [DestinyEnergyType.Thermal]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png",
+    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png",
   [DestinyEnergyType.Void]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png",
+    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png",
   [DestinyEnergyType.Stasis]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyEnergyTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png",
+    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png",
   [DestinyEnergyType.Ghost]: "",
   [DestinyEnergyType.Subclass]: "",
 };
