@@ -459,6 +459,8 @@ export class BungieApiService {
     if ((scks?.filter((d) => d.singleInitialItemHash == 3727270518) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtifice;
 
+    if ((scks?.filter((d) => d.singleInitialItemHash == 2779380852) || []).length > 0)
+      return ArmorPerkOrSlot.SonarAmplifier;
     if ((scks?.filter((d) => d.singleInitialItemHash == 4144354978) || []).length > 0)
       return ArmorPerkOrSlot.SlotRootOfNightmares;
     if ((scks?.filter((d) => d.singleInitialItemHash == 1728096240) || []).length > 0)

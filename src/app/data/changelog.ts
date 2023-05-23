@@ -36,6 +36,11 @@ export const CHANGELOG_DATA = [
         issues: [],
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Added Sonar Amplifier perk.",
+        issues: [],
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
         text: "Enabled Modslot limitation.",
         issues: [],
