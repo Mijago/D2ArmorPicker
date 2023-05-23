@@ -454,7 +454,9 @@ export class BungieApiService {
       return ArmorPerkOrSlot.GuardianGamesClassItem;
 
     const scks = v.sockets?.socketEntries;
-    if ((scks?.filter((d) => d.reusablePlugSetHash == 1259) || []).length > 0)
+    if ((scks?.filter((d) => d.reusablePlugSetHash == 1280) || []).length > 0)
+      return ArmorPerkOrSlot.SlotArtifice;
+    if ((scks?.filter((d) => d.singleInitialItemHash == 3727270518) || []).length > 0)
       return ArmorPerkOrSlot.SlotArtifice;
 
     if ((scks?.filter((d) => d.singleInitialItemHash == 4144354978) || []).length > 0)
