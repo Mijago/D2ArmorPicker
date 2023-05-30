@@ -670,16 +670,18 @@ export class BungieApiService {
         if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = ArmorSlot.ArmorSlotClass;
 
         const isArmor2 =
-          (v.sockets?.socketEntries.filter((d) => {
-            return (
-              d.socketTypeHash == 2512726577 || // general
-              d.socketTypeHash == 1108765570 || // arms
-              d.socketTypeHash == 959256494 || // chest
-              d.socketTypeHash == 2512726577 || // class
-              d.socketTypeHash == 3219375296 || // legs
-              d.socketTypeHash == 968742181
-            ); // head
-          }).length || []) > 0;
+          (
+            v.sockets?.socketEntries.filter((d) => {
+              return (
+                d.socketTypeHash == 2512726577 || // general
+                d.socketTypeHash == 1108765570 || // arms
+                d.socketTypeHash == 959256494 || // chest
+                d.socketTypeHash == 2512726577 || // class
+                d.socketTypeHash == 3219375296 || // legs
+                d.socketTypeHash == 968742181 // head
+              );
+            }) || []
+          ).length > 0;
 
         const isExotic = v.inventory?.tierTypeName == "Exotic" ? 1 : 0;
         let exoticPerkHash = null;
