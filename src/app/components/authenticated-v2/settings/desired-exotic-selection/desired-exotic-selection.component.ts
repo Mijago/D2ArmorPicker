@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { InventoryService } from "../../../../services/inventory.service";
+import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { CharacterClass } from "../../../../data/enum/character-Class";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
@@ -44,8 +44,9 @@ export const listAnimation = trigger("listAnimation", [
 })
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   selectedExotics: number[] = [];
+  includeCollectionRolls = false;
   currentClass: CharacterClass = CharacterClass.Titan;
-  exotics: { inInventory: boolean; item: IManifestArmor }[][] = [];
+  exotics: ClassExoticInfo[][] = [];
 
   constructor(public inventory: InventoryService, public config: ConfigurationService) {}
 
@@ -55,6 +56,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
         this.currentClass = c.characterClass;
         await this.updateExoticsForClass();
       }
+      this.includeCollectionRolls = c.includeCollectionRolls;
       this.selectedExotics = c.selectedExotics;
     });
 
@@ -73,7 +75,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   private async updateExoticsForClass() {
     const armors = await this.inventory.getExoticsForClass(this.currentClass);
 
-    function uniq(a: { inInventory: boolean; item: IManifestArmor }[]) {
+    function uniq(a: ClassExoticInfo[]) {
       var seen: any = {};
       return a.filter(function (item) {
         var k = item.item.hash;
@@ -87,6 +89,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotChest)),
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotLegs)),
     ];
+  }
+
+  setAllowCollectionRolls(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.includeCollectionRolls = allow;
+    });
   }
 
   selectExotic(hash: number, $event: any) {

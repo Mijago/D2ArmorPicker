@@ -20,7 +20,7 @@ import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { ArmorPerkOrSlot, ArmorStat } from "../data/enum/armor-stat";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { IInventoryArmor } from "../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 
 const plugs = [
   [1, 1, 10],
@@ -123,6 +123,7 @@ function buildTestItem(
     name: "item_" + slot,
     armor2: true,
     clazz: DestinyClass.Titan,
+    source: InventoryArmorSource.Inventory,
     description: "",
     slot: slot,
     mobility: stats[0],
@@ -148,6 +149,7 @@ function buildTestItem(
     rarity: TierType.Superior,
     rawData: undefined,
     statPlugHashes: [],
+    socketEntries: [],
     watermarkIcon: "",
   };
 }

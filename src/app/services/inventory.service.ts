@@ -30,6 +30,7 @@ import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
 import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
+import { InventoryArmorSource } from "../data/types/IInventoryArmor";
 
 type info = {
   results: ResultDefinition[];
@@ -39,6 +40,12 @@ type info = {
   statCombo4x100: ArmorStat[][];
   itemCount: number;
   totalTime: number;
+};
+
+export type ClassExoticInfo = {
+  inInventory: boolean;
+  inCollection: boolean;
+  item: IManifestArmor;
 };
 
 @Injectable({
@@ -248,7 +255,8 @@ export class InventoryService {
     }
   }
 
-  public exoticsForClass: Array<IManifestArmor> = [];
+  // I don’t think this is used?
+  // public exoticsForClass: Array<IManifestArmor> = [];
 
   async getItemCountForClass(clazz: CharacterClass, slot?: ArmorSlot) {
     let pieces = await this.db.inventoryArmor.where("clazz").equals(clazz).toArray();
@@ -256,10 +264,7 @@ export class InventoryService {
     return pieces.length;
   }
 
-  async getExoticsForClass(
-    clazz: CharacterClass,
-    slot?: ArmorSlot
-  ): Promise<{ inInventory: boolean; item: IManifestArmor }[]> {
+  async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
     let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray();
     inventory = inventory.filter(
       (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
@@ -270,11 +275,15 @@ export class InventoryService {
       (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
     );
 
-    this.exoticsForClass = exotics;
+    // this.exoticsForClass = exotics;
     return exotics.map((ex) => {
+      const instances = inventory.filter((i) => i.hash == ex.hash);
       return {
         item: ex,
-        inInventory: inventory.filter((i) => i.hash == ex.hash).length > 0,
+        inCollection:
+          instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
+        inInventory:
+          instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
       };
     });
   }

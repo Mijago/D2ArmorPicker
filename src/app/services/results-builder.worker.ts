@@ -16,7 +16,7 @@
  */
 
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { IInventoryArmor } from "../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { buildDb } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC } from "../data/constants";
@@ -29,7 +29,11 @@ import {
   StatModifier,
 } from "../data/enum/armor-stat";
 import { IManifestArmor } from "../data/types/IManifestArmor";
-import { TierType } from "bungie-api-ts/destiny2";
+import {
+  DestinyItemInvestmentStatDefinition,
+  DestinyItemSocketState,
+  TierType,
+} from "bungie-api-ts/destiny2";
 import { environment } from "../../environments/environment";
 
 import { precalculatedZeroWasteModCombinations } from "../data/generated/precalculatedZeroWasteModCombinations";
@@ -201,6 +205,10 @@ addEventListener("message", async ({ data }) => {
     .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
     // filter disabled items
     .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
+    // filter collection rolls if not allowed
+    .filter(
+      (item) => config.includeCollectionRolls || item.source !== InventoryArmorSource.Collections
+    )
     // filter the selected exotic right here
     .filter((item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic)
     .filter(

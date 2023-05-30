@@ -79,6 +79,7 @@ export class BuildConfiguration {
   useFotlArmor = true;
   allowBlueArmorPieces = true;
   ignoreSunsetArmor = false;
+  includeCollectionRolls = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
@@ -114,6 +115,7 @@ export class BuildConfiguration {
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedItems: false,
       ignoreSunsetArmor: false,
+      includeCollectionRolls: false,
       allowBlueArmorPieces: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,

@@ -21,6 +21,7 @@ import {
   DestinyComponentType,
   DestinyInventoryItemDefinition,
   DestinyItemSocketState,
+  DestinyCollectibleState,
   equipItem,
   getDestinyManifest,
   getDestinyManifestSlice,
@@ -28,6 +29,9 @@ import {
   getProfile,
   HttpClientConfig,
   transferItem,
+  DestinyManifestSlice,
+  DestinyCollectiblesComponent,
+  DestinyItemInvestmentStatDefinition,
 } from "bungie-api-ts/destiny2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
 import { AuthService } from "./auth.service";
@@ -36,10 +40,57 @@ import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
 import { BungieMembershipType } from "bungie-api-ts/common";
 import { IManifestArmor } from "../data/types/IManifestArmor";
-import { IInventoryArmor } from "../data/types/IInventoryArmor";
+import {
+  IInventoryArmor,
+  InventoryArmorSource,
+  createArmorItem,
+} from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { ArmorPerkOrSlot } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
+import { IManifestCollectible } from "../data/types/IManifestCollectible";
+
+// This will mutate the incoming armor item to add the relevant stats
+// plugHashes is received as a simple array of hashes,
+// as the data is in a different shape for instances vs manifest items
+function collectInvestmentStats(
+  r: IInventoryArmor,
+  itemInvestmentStats: DestinyItemInvestmentStatDefinition[],
+  plugHashes: (number | undefined)[],
+  mods: Record<string, IManifestArmor>
+) {
+  const investmentStats: { [id: number]: number } = {
+    2996146975: 0,
+    392767087: 0,
+    1943323491: 0,
+    1735777505: 0,
+    144602215: 0,
+    4244567218: 0,
+  };
+
+  // Intrinsics
+  for (let newStats of itemInvestmentStats) {
+    if (newStats.statTypeHash in investmentStats)
+      investmentStats[newStats.statTypeHash] += newStats.value;
+  }
+
+  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
+  r.statPlugHashes = plugs;
+  var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
+  for (let entry of plm) {
+    for (let newStats of entry.investmentStats) {
+      if (newStats.statTypeHash in investmentStats)
+        investmentStats[newStats.statTypeHash] += newStats.value;
+    }
+  }
+
+  r.mobility = investmentStats[2996146975];
+  r.resilience = investmentStats[392767087];
+  r.recovery = investmentStats[1943323491];
+  r.discipline = investmentStats[1735777505];
+  r.intellect = investmentStats[144602215];
+  r.strength = investmentStats[4244567218];
+}
 
 @Injectable({
   providedIn: "root",
@@ -270,6 +321,29 @@ export class BungieApiService {
     return result;
   }
 
+  // Collect the list of unlocked exotic armor pieces
+  private async getUnlockedExoticArmor(
+    characterCollectibles: Record<string, DestinyCollectiblesComponent>
+  ) {
+    const manifestExoticArmorItemHashes = (await this.db.manifestCollectibles.toArray()).reduce(
+      (acc, cur) => {
+        acc[cur.hash] = cur.itemHash;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
+    return Object.values(characterCollectibles)
+      .flatMap((char) => Object.entries(char.collectibles ?? {}))
+      .filter(([hash, { state }]) => {
+        return (
+          (state & DestinyCollectibleState.NotAcquired) === 0 &&
+          manifestExoticArmorItemHashes[parseInt(hash)]
+        );
+      })
+      .map(([hash, _]) => manifestExoticArmorItemHashes[parseInt(hash)]);
+  }
+
   async updateArmorItems(force = false) {
     if (environment.offlineMode) {
       console.info("BungieApiService", "updateArmorItems", "offline mode, skipping");
@@ -301,10 +375,15 @@ export class BungieApiService {
         DestinyComponentType.ItemPerks,
         DestinyComponentType.ItemSockets,
         DestinyComponentType.ItemPlugStates,
+        DestinyComponentType.Collectibles,
       ],
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
     });
+
+    const unlockedExoticArmorItemHashes = await this.getUnlockedExoticArmor(
+      profile.Response.characterCollectibles.data ?? {}
+    );
 
     let allItems = profile.Response.profileInventory.data?.items || [];
     for (let charI in profile.Response.characterEquipment.data) {
@@ -339,10 +418,14 @@ export class BungieApiService {
     else materials["1022552290"] = 0;
     localStorage.setItem("stored-materials", JSON.stringify(materials));
 
-    let ids = Array.from(new Set(allItems.map((d) => d.itemHash)));
+    // Collect a list of all armor item hashes that we need to look up in the manifest
+    const idSet = new Set(allItems.map((d) => d.itemHash));
+    // Add all exotics owned by the player, as they can always be found from collections
+    unlockedExoticArmorItemHashes.forEach((id) => idSet.add(id));
+
     // Do not search directly in the DB, as it is VERY slow.
     let manifestArmor = await this.db.manifestArmor.toArray();
-    const cx = manifestArmor.filter((d) => ids.indexOf(d.hash) > -1);
+    const cx = manifestArmor.filter((d) => idSet.has(d.hash));
     const modsData = manifestArmor.filter((d) => d.itemType == 19);
     let res = Object.fromEntries(cx.map((_) => [_.hash, _]));
     let mods = Object.fromEntries(modsData.map((_) => [_.hash, _]));
@@ -366,76 +449,23 @@ export class BungieApiService {
           let instanceData = profile.Response.itemComponents.instances.data || {};
           let instance = instanceData[d.itemInstanceId || ""] || {};
 
-          let r = Object.assign(
-            {
-              itemInstanceId: d.itemInstanceId || "",
-              masterworked: !!instance.energy && instance.energy.energyCapacity == 10,
-              energyLevel: !!instance.energy ? instance.energy.energyCapacity : 0,
-              mobility: 0,
-              resilience: 0,
-              recovery: 0,
-              discipline: 0,
-              intellect: 0,
-              strength: 0,
-            },
-            res[d.itemHash]
-          ) as IInventoryArmor;
-          (r.id as any) = undefined;
+          let r = createArmorItem(
+            res[d.itemHash],
+            d.itemInstanceId || "",
+            InventoryArmorSource.Inventory
+          );
+          r.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
+          r.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
 
           // HALLOWEEN MASKS
           if (d.itemHash == 2545426109 || d.itemHash == 199733460 || d.itemHash == 3224066584)
             r.slot = ArmorSlot.ArmorSlotHelmet;
           // /HALLOWEEN MASKS
 
-          var investmentStats: { [id: number]: number } = {
-            2996146975: 0,
-            392767087: 0,
-            1943323491: 0,
-            1735777505: 0,
-            144602215: 0,
-            4244567218: 0,
-          };
-          // Intrinsics
-          if (res[d.itemHash] && res[d.itemHash].investmentStats) {
-            for (let newStats of res[d.itemHash].investmentStats) {
-              if (newStats.statTypeHash in investmentStats)
-                investmentStats[newStats.statTypeHash] += newStats.value;
-            }
-          }
-          if (r.slot != ArmorSlot.ArmorSlotClass) {
-            const destinyItemSocketsComponents = profile.Response.itemComponents.sockets.data || {};
-            // check if d.itemInstanceId is in destinyItemSocketsComponents
-            if (d.itemInstanceId && d.itemInstanceId in destinyItemSocketsComponents) {
-              const sockets: DestinyItemSocketState[] =
-                destinyItemSocketsComponents[d.itemInstanceId || ""].sockets;
-              var plugs = [
-                sockets[6].plugHash,
-                sockets[7].plugHash,
-                sockets[8].plugHash,
-                sockets[9].plugHash,
-              ];
-              r.statPlugHashes = plugs;
-              var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
-              for (let entry of plm) {
-                for (let newStats of entry.investmentStats) {
-                  if (newStats.statTypeHash in investmentStats)
-                    investmentStats[newStats.statTypeHash] += newStats.value;
-                }
-              }
-            } else {
-              console.error(
-                "Sockets data does not contain the correct item instance ID",
-                d.itemInstanceId,
-                profile.Response.itemComponents.sockets.data
-              );
-            }
-          }
-          r.mobility = investmentStats[2996146975];
-          r.resilience = investmentStats[392767087];
-          r.recovery = investmentStats[1943323491];
-          r.discipline = investmentStats[1735777505];
-          r.intellect = investmentStats[144602215];
-          r.strength = investmentStats[4244567218];
+          const sockets = profile.Response.itemComponents.sockets.data || {};
+          const socketsList =
+            sockets[d.itemInstanceId!]?.sockets.map((socket) => socket.plugHash) ?? [];
+          collectInvestmentStats(r, res[d.itemHash]?.investmentStats ?? [], socketsList, mods);
 
           // Take a look if it really has the artifice perk
           if (r.perk == ArmorPerkOrSlot.SlotArtifice) {
@@ -450,6 +480,34 @@ export class BungieApiService {
 
           return r as IInventoryArmor;
         }) || [];
+
+    // Now add the collection rolls for exotics
+    const collectionRollItems = unlockedExoticArmorItemHashes
+      .map((exoticItemHash) => {
+        const manifestArmorItem = res[exoticItemHash];
+        if (!manifestArmorItem) {
+          console.error("Couldn't find manifest item for exotic", exoticItemHash);
+          return null;
+        }
+
+        const collectionItem = createArmorItem(
+          manifestArmorItem,
+          `c${manifestArmorItem.hash}`,
+          InventoryArmorSource.Collections
+        );
+
+        collectInvestmentStats(
+          collectionItem,
+          manifestArmorItem.investmentStats,
+          manifestArmorItem.socketEntries.map((s) => s.singleInitialItemHash),
+          mods
+        );
+
+        return collectionItem;
+      })
+      .filter(Boolean) as IInventoryArmor[];
+
+    r = r.concat(collectionRollItems);
 
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
 
@@ -509,6 +567,32 @@ export class BungieApiService {
     return ArmorPerkOrSlot.None;
   }
 
+  // Collect the data for exotic armor collectibles
+  // this allows us to map a collection entry hash to the associated armor inventory item hash
+  private async updateExoticCollectibles(
+    manifestTables: DestinyManifestSlice<
+      ("DestinyCollectibleDefinition" | "DestinyInventoryItemDefinition")[]
+    >
+  ) {
+    const exoticArmorCollectibles: IManifestCollectible[] = Object.entries(
+      manifestTables.DestinyCollectibleDefinition
+    )
+      .filter(([k, v]) => {
+        const item = manifestTables.DestinyInventoryItemDefinition[v.itemHash];
+        return item?.inventory?.tierTypeName == "Exotic" && item?.itemType == 2; // Armor
+      })
+      .map(([k, v]) => {
+        return {
+          hash: parseInt(k),
+          itemHash: v.itemHash,
+        };
+      });
+
+    console.log("Storing", exoticArmorCollectibles.length, "exotic armor hashes");
+    await this.db.manifestCollectibles.clear();
+    await this.db.manifestCollectibles.bulkPut(exoticArmorCollectibles);
+  }
+
   async updateManifest(force = false) {
     if (environment.offlineMode) {
       console.info("BungieApiService", "updateManifest", "offline mode, skipping");
@@ -555,7 +639,7 @@ export class BungieApiService {
 
     const manifestTables = await getDestinyManifestSlice((d) => this.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
-      tableNames: ["DestinyInventoryItemDefinition"],
+      tableNames: ["DestinyInventoryItemDefinition", "DestinyCollectibleDefinition"],
       language: "en",
     });
 
@@ -564,6 +648,9 @@ export class BungieApiService {
       manifestTables.DestinyInventoryItemDefinition
     );
 
+    await this.updateExoticCollectibles(manifestTables);
+
+    // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
         if (v.itemType == 19) return true; // mods
@@ -633,6 +720,7 @@ export class BungieApiService {
           itemSubType: v.itemSubType,
           investmentStats: v.investmentStats,
           perk: this.getArmorPerk(v),
+          socketEntries: v.sockets?.socketEntries ?? [],
         } as IManifestArmor;
       });
 
