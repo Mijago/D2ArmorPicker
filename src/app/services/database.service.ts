@@ -21,6 +21,7 @@ import { AuthService } from "./auth.service";
 import { buildDb } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { IInventoryArmor } from "../data/types/IInventoryArmor";
+import { IManifestCollectible } from "../data/types/IManifestCollectible";
 
 @Injectable({
   providedIn: "root",
@@ -31,12 +32,16 @@ export class DatabaseService {
   public manifestArmor: Dexie.Table<IManifestArmor, number>;
   public inventoryArmor: Dexie.Table<IInventoryArmor, number>;
 
+  // Maps the collectible hash to the inventory item hash
+  public manifestCollectibles: Dexie.Table<IManifestCollectible>;
+
   constructor(private auth: AuthService) {
     this.db = buildDb(async () => {
       await this.auth.clearManifestInfo();
     });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
+    this.manifestCollectibles = this.db.table("manifestCollectibles");
 
     this.auth.logoutEvent.subscribe(async (k) => {
       await this.clearDatabase();
@@ -49,6 +54,7 @@ export class DatabaseService {
     });
     this.manifestArmor = this.db.table("manifestArmor");
     this.inventoryArmor = this.db.table("inventoryArmor");
+    this.manifestCollectibles = this.db.table("manifestCollectibles");
   }
 
   private async clearDatabase() {

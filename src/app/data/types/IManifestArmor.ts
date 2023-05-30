@@ -18,6 +18,7 @@
 import {
   DestinyClass,
   DestinyItemInvestmentStatDefinition,
+  DestinyItemSocketEntryDefinition,
   TierType,
 } from "bungie-api-ts/destiny2/interfaces";
 import { ArmorSlot } from "../enum/armor-slot";
@@ -41,4 +42,5 @@ export interface IManifestArmor {
   itemType: number;
   itemSubType: number;
   investmentStats: DestinyItemInvestmentStatDefinition[];
+  socketEntries: DestinyItemSocketEntryDefinition[];
 }

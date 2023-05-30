@@ -15,8 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ArmorSlot } from "../enum/armor-slot";
 import { IManifestArmor } from "./IManifestArmor";
 import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
+
+export enum InventoryArmorSource {
+  Inventory = 0,
+  Collections = 1,
+}
 
 export interface IInventoryArmor extends IManifestArmor {
   id: number;
@@ -31,4 +37,32 @@ export interface IInventoryArmor extends IManifestArmor {
   strength: number;
   energyLevel: number;
   statPlugHashes: (number | undefined)[];
+  source: InventoryArmorSource;
+}
+
+export function createArmorItem(
+  manifestItem: IManifestArmor,
+  itemInstanceId: string,
+  source: InventoryArmorSource
+): IInventoryArmor {
+  const item: IInventoryArmor = Object.assign(
+    {
+      id: -1,
+      itemInstanceId,
+      mayBeBugged: false,
+      statPlugHashes: [],
+      masterworked: false,
+      energyLevel: 0,
+      mobility: 0,
+      resilience: 0,
+      recovery: 0,
+      discipline: 0,
+      intellect: 0,
+      strength: 0,
+      source,
+    },
+    manifestItem
+  );
+  (item as any).id = undefined;
+  return item;
 }

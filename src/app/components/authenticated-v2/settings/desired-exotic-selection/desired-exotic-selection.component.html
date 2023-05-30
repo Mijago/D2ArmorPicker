@@ -37,11 +37,23 @@
       class="exoticIcon {{ selectedExotics.indexOf(exotic.item.hash) > -1 ? 'selected' : '' }}"
       src="https://www.bungie.net/{{ exotic.item.icon }}"
       [exoticTooltip]="exotic.item"
-      [class.disabled]="!exotic.inInventory"
-      (click)="exotic.inInventory && selectExotic(exotic.item.hash, $event)" />
+      [class.disabled]="includeCollectionRolls ? !exotic.inCollection : !exotic.inInventory"
+      (click)="
+        (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
+          selectExotic(exotic.item.hash, $event)
+      " />
     <img
       class="watermarkIcon"
       *ngIf="exotic.item.watermarkIcon"
       src="https://www.bungie.net/{{ exotic.item.watermarkIcon }}" />
   </span>
+</div>
+
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="includeCollectionRolls"
+    (change)="setAllowCollectionRolls($event.checked)">
+    Include collection rolls
+  </mat-slide-toggle>
 </div>
