@@ -10,41 +10,13 @@ import {
 import { AuthService } from "./auth.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
-import { HttpClient } from "@angular/common/http";
+import { HttpClientService } from "./http-client.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class MembershipService {
-  constructor(private authService: AuthService, private http: HttpClient) {}
-
-  private async $http(config: HttpClientConfig) {
-    return this.http
-      .get<any>(config.url, {
-        params: config.params,
-        headers: {
-          "X-API-Key": environment.apiKey,
-          Authorization: "Bearer " + this.authService.accessToken,
-        },
-      })
-      .toPromise()
-      .catch(async (err) => {
-        console.error(err);
-        if (environment.offlineMode) {
-          console.debug("Offline mode, ignoring API error");
-          return;
-        }
-        if (err.error?.ErrorStatus == "SystemDisabled") {
-          console.info("System is disabled. Revoking auth, must re-login");
-          await this.authService.logout();
-        }
-        if (err.ErrorStatus != "Internal Server Error") {
-          console.info("API-Error");
-          //await this.authService.logout();
-        }
-        // TODO: go to login page
-      });
-  }
+  constructor(private authService: AuthService, private http: HttpClientService) {}
 
   async getMembershipDataForCurrentUser(): Promise<GroupUserInfoCard> {
     var membershipData = JSON.parse(localStorage.getItem("auth-membershipInfo") || "null");
@@ -55,7 +27,7 @@ export class MembershipService {
     }
 
     console.info("BungieApiService", "getMembershipDataForCurrentUser");
-    let response = await getMembershipDataForCurrentUser((d) => this.$http(d));
+    let response = await getMembershipDataForCurrentUser((d) => this.http.$http(d));
     let memberships = response?.Response.destinyMemberships;
     console.info("Memberships:", memberships);
     memberships = memberships.filter(
@@ -74,7 +46,7 @@ export class MembershipService {
       let lastPlayed = 0;
       for (let id in memberships) {
         const membership = memberships?.[id];
-        const profile = await getProfile((d) => this.$http(d), {
+        const profile = await getProfile((d) => this.http.$http(d), {
           components: [DestinyComponentType.Profiles],
           membershipType: membership.membershipType,
           destinyMembershipId: membership.membershipId,
@@ -105,7 +77,7 @@ export class MembershipService {
       return [];
     }
 
-    const profile = await getProfile((d) => this.$http(d), {
+    const profile = await getProfile((d) => this.http.$http(d), {
       components: [DestinyComponentType.Characters],
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,

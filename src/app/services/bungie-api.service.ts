@@ -27,14 +27,12 @@ import {
   getDestinyManifestSlice,
   getItem,
   getProfile,
-  HttpClientConfig,
   transferItem,
   DestinyManifestSlice,
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
 } from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
-import { HttpClient } from "@angular/common/http";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
 import { IManifestArmor } from "../data/types/IManifestArmor";
@@ -42,16 +40,15 @@ import {
   IInventoryArmor,
   InventoryArmorSource,
   createArmorItem,
+  applyInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { ArmorPerkOrSlot } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
+import { HttpClientService } from "./http-client.service";
 
-// This will mutate the incoming armor item to add the relevant stats
-// plugHashes is received as a simple array of hashes,
-// as the data is in a different shape for instances vs manifest items
 function collectInvestmentStats(
   r: IInventoryArmor,
   itemInvestmentStats: DestinyItemInvestmentStatDefinition[],
@@ -99,7 +96,7 @@ export class BungieApiService {
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient,
+    private http: HttpClientService,
     private db: DatabaseService,
     private config: ConfigurationService,
     private membership: MembershipService
@@ -107,57 +104,6 @@ export class BungieApiService {
     this.config.configuration.subscribe(async (config) => {
       this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
     });
-  }
-
-  async $httpWithoutKey(config: HttpClientConfig) {
-    return this.http
-      .get<any>(config.url, {
-        params: config.params,
-      })
-      .toPromise();
-  }
-
-  async $httpPost(config: HttpClientConfig) {
-    return this.http
-      .post<any>(config.url, config.body, {
-        params: config.params,
-        headers: {
-          "X-API-Key": environment.apiKey,
-          Authorization: "Bearer " + this.authService.accessToken,
-        },
-      })
-      .toPromise()
-      .catch(async (err) => {
-        console.error(err);
-      });
-  }
-
-  async $http(config: HttpClientConfig) {
-    return this.http
-      .get<any>(config.url, {
-        params: config.params,
-        headers: {
-          "X-API-Key": environment.apiKey,
-          Authorization: "Bearer " + this.authService.accessToken,
-        },
-      })
-      .toPromise()
-      .catch(async (err) => {
-        console.error(err);
-        if (environment.offlineMode) {
-          console.debug("Offline mode, ignoring API error");
-          return;
-        }
-        if (err.error?.ErrorStatus == "SystemDisabled") {
-          console.info("System is disabled. Revoking auth, must re-login");
-          await this.authService.logout();
-        }
-        if (err.ErrorStatus != "Internal Server Error") {
-          console.info("API-Error");
-          //await this.authService.logout();
-        }
-        // TODO: go to login page
-      });
   }
 
   async transferItem(
@@ -171,7 +117,7 @@ export class BungieApiService {
       return false;
     }
 
-    let r1 = await getItem((d) => this.$http(d), {
+    let r1 = await getItem((d) => this.http.$http(d), {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
       itemInstanceId: itemInstanceId,
@@ -184,7 +130,7 @@ export class BungieApiService {
     if (r1.Response.characterId != targetCharacter) {
       if (r1.Response.item.data?.location != 2) {
         await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
-        r1 = await getItem((d) => this.$http(d), {
+        r1 = await getItem((d) => this.http.$http(d), {
           membershipType: destinyMembership.membershipType,
           destinyMembershipId: destinyMembership.membershipId,
           itemInstanceId: itemInstanceId,
@@ -201,7 +147,7 @@ export class BungieApiService {
         transferToVault: false,
       };
 
-      transferResult = !!(await transferItem((d) => this.$httpPost(d), payload));
+      transferResult = !!(await transferItem((d) => this.http.$httpPost(d), payload));
     }
     if (equip) {
       let equipPayload = {
@@ -211,7 +157,7 @@ export class BungieApiService {
         itemId: r1?.Response.item.data?.itemInstanceId || "",
         itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
       };
-      transferResult = !!(await equipItem((d) => this.$httpPost(d), equipPayload));
+      transferResult = !!(await equipItem((d) => this.http.$httpPost(d), equipPayload));
     }
 
     return transferResult;
@@ -225,7 +171,7 @@ export class BungieApiService {
       return;
     }
 
-    const r1 = await getItem((d) => this.$http(d), {
+    const r1 = await getItem((d) => this.http.$http(d), {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
       itemInstanceId: itemInstanceId,
@@ -241,7 +187,7 @@ export class BungieApiService {
       transferToVault: true,
     };
 
-    await transferItem((d) => this.$httpPost(d), payload);
+    await transferItem((d) => this.http.$httpPost(d), payload);
   }
 
   // Collect the list of unlocked exotic armor pieces
@@ -287,7 +233,7 @@ export class BungieApiService {
     }
 
     console.info("BungieApiService", "getProfile");
-    let profile = await getProfile((d) => this.$http(d), {
+    let profile = await getProfile((d) => this.http.$http(d), {
       components: [
         DestinyComponentType.CharacterEquipment,
         DestinyComponentType.CharacterInventories,
@@ -533,7 +479,7 @@ export class BungieApiService {
           Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") >
           1000 * 3600 * 0.25
         ) {
-          destinyManifest = await getDestinyManifest((d) => this.$http(d));
+          destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
           const version = destinyManifest.Response.version;
           if (localStorage.getItem("last-manifest-version") == version) {
             console.debug(
@@ -557,10 +503,11 @@ export class BungieApiService {
       }
     }
 
-    if (destinyManifest == null) destinyManifest = await getDestinyManifest((d) => this.$http(d));
+    if (destinyManifest == null)
+      destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
     const version = destinyManifest.Response.version;
 
-    const manifestTables = await getDestinyManifestSlice((d) => this.$httpWithoutKey(d), {
+    const manifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
       tableNames: ["DestinyInventoryItemDefinition", "DestinyCollectibleDefinition"],
       language: "en",
