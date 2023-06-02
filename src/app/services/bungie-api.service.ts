@@ -21,6 +21,7 @@ import {
   DestinyComponentType,
   DestinyInventoryItemDefinition,
   DestinyItemSocketState,
+  DestinyItemType,
   DestinyCollectibleState,
   equipItem,
   getDestinyManifest,
@@ -80,12 +81,7 @@ function collectInvestmentStats(
     }
   }
 
-  r.mobility = investmentStats[2996146975];
-  r.resilience = investmentStats[392767087];
-  r.recovery = investmentStats[1943323491];
-  r.discipline = investmentStats[1735777505];
-  r.intellect = investmentStats[144602215];
-  r.strength = investmentStats[4244567218];
+  applyInvestmentStats(r, investmentStats);
 }
 
 @Injectable({
@@ -299,56 +295,56 @@ export class BungieApiService {
     let res = Object.fromEntries(cx.map((_) => [_.hash, _]));
     let mods = Object.fromEntries(modsData.map((_) => [_.hash, _]));
 
-    let r =
-      allItems
-        //.filter(d => ids.indexOf(d.itemHash) > -1)
-        .filter((d) => !!d.itemInstanceId)
-        .filter((d) => {
-          let statData = profile.Response.itemComponents.stats.data || {};
-          let stats = statData[d.itemInstanceId || ""]?.stats || {};
-          return !!stats[392767087];
-        })
-        .filter((d) => {
-          // remove sunset items
-          let instanceData = profile.Response.itemComponents.instances.data || {};
-          let instance = instanceData[d.itemInstanceId || ""] || {};
-          return !!instance.energy;
-        })
-        .map((d) => {
-          let instanceData = profile.Response.itemComponents.instances.data || {};
-          let instance = instanceData[d.itemInstanceId || ""] || {};
+    let r = allItems
+      //.filter(d => ids.indexOf(d.itemHash) > -1)
+      .filter((d) => !!d.itemInstanceId)
+      .filter((d) => d.bucketHash !== 3284755031) // Filter out subclasses
+      .filter((d) => {
+        let statData = profile.Response.itemComponents.stats.data || {};
+        let stats = statData[d.itemInstanceId || ""]?.stats || {};
+        return !!stats[392767087];
+      })
+      .filter((d) => {
+        // remove sunset items
+        let instanceData = profile.Response.itemComponents.instances.data || {};
+        let instance = instanceData[d.itemInstanceId || ""] || {};
+        return !!instance.energy;
+      })
+      .map((d) => {
+        let instanceData = profile.Response.itemComponents.instances.data || {};
+        let instance = instanceData[d.itemInstanceId || ""] || {};
 
-          let r = createArmorItem(
-            res[d.itemHash],
-            d.itemInstanceId || "",
-            InventoryArmorSource.Inventory
-          );
-          r.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
-          r.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
+        if (!res[d.itemHash]) {
+          console.warn("Missing manifest item for item hash", d.itemHash);
+          return null;
+        }
 
-          // HALLOWEEN MASKS
-          if (d.itemHash == 2545426109 || d.itemHash == 199733460 || d.itemHash == 3224066584)
-            r.slot = ArmorSlot.ArmorSlotHelmet;
-          // /HALLOWEEN MASKS
+        let r = createArmorItem(
+          res[d.itemHash],
+          d.itemInstanceId || "",
+          InventoryArmorSource.Inventory
+        );
+        r.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
+        r.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
+        const sockets = profile.Response.itemComponents.sockets.data || {};
+        const socketsList =
+          sockets[d.itemInstanceId!]?.sockets.map((socket) => socket.plugHash) ?? [];
+        collectInvestmentStats(r, res[d.itemHash]?.investmentStats ?? [], socketsList, mods);
 
-          const sockets = profile.Response.itemComponents.sockets.data || {};
-          const socketsList =
-            sockets[d.itemInstanceId!]?.sockets.map((socket) => socket.plugHash) ?? [];
-          collectInvestmentStats(r, res[d.itemHash]?.investmentStats ?? [], socketsList, mods);
+        // Take a look if it really has the artifice perk
+        if (r.perk == ArmorPerkOrSlot.SlotArtifice) {
+          let statData = profile.Response.itemComponents.perks.data || {};
+          let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
+          const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
+          if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
+        }
 
-          // Take a look if it really has the artifice perk
-          if (r.perk == ArmorPerkOrSlot.SlotArtifice) {
-            let statData = profile.Response.itemComponents.perks.data || {};
-            let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
-            const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
-            if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
-          }
+        if (!r.isExotic && this.config_assumeEveryLegendaryIsArtifice)
+          r.perk = ArmorPerkOrSlot.SlotArtifice;
 
-          if (!r.isExotic && this.config_assumeEveryLegendaryIsArtifice)
-            r.perk = ArmorPerkOrSlot.SlotArtifice;
-
-          return r as IInventoryArmor;
-        }) || [];
+        return r as IInventoryArmor;
+      })
+      .filter(Boolean) as IInventoryArmor[];
 
     // Now add the collection rolls for exotics
     const collectionRollItems = unlockedExoticArmorItemHashes
@@ -448,7 +444,7 @@ export class BungieApiService {
     )
       .filter(([k, v]) => {
         const item = manifestTables.DestinyInventoryItemDefinition[v.itemHash];
-        return item?.inventory?.tierTypeName == "Exotic" && item?.itemType == 2; // Armor
+        return item?.inventory?.tierTypeName == "Exotic" && item?.itemType == DestinyItemType.Armor;
       })
       .map(([k, v]) => {
         return {
