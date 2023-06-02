@@ -17,9 +17,9 @@
 
 import { Injectable } from "@angular/core";
 import { AuthService } from "./auth.service";
-import { BungieApiService } from "./bungie-api.service";
 import { InventoryService } from "./inventory.service";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
+import { MembershipService } from "./membership.service";
 
 @Injectable({
   providedIn: "root",
@@ -31,7 +31,7 @@ export class UserdataService {
 
   constructor(
     private auth: AuthService,
-    private api: BungieApiService,
+    private membership: MembershipService,
     private inventory: InventoryService
   ) {
     this.loadCachedData();
@@ -54,7 +54,7 @@ export class UserdataService {
   }
 
   private async updateCharacterData() {
-    this.characters = await this.api.getCharacters();
+    this.characters = await this.membership.getCharacters();
     localStorage.setItem("cachedCharacters", JSON.stringify(this.characters));
   }
 }
