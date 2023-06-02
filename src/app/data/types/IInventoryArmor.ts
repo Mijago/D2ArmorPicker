@@ -45,6 +45,8 @@ export function createArmorItem(
   itemInstanceId: string,
   source: InventoryArmorSource
 ): IInventoryArmor {
+  if (!manifestItem) throw new Error("Missing manifest item");
+
   const item: IInventoryArmor = Object.assign(
     {
       id: -1,
@@ -64,5 +66,30 @@ export function createArmorItem(
     manifestItem
   );
   (item as any).id = undefined;
+
+  // HALLOWEEN MASKS
+  if (
+    manifestItem.hash == 2545426109 ||
+    manifestItem.hash == 199733460 ||
+    manifestItem.hash == 3224066584
+  ) {
+    item.slot = ArmorSlot.ArmorSlotHelmet;
+  }
+
   return item;
+}
+
+// This will mutate the incoming armor item to add the relevant stats
+// plugHashes is received as a simple array of hashes,
+// as the data is in a different shape for instances vs manifest items
+export function applyInvestmentStats(
+  r: IInventoryArmor,
+  investmentStats: { [id: number]: number }
+) {
+  r.mobility = investmentStats[2996146975];
+  r.resilience = investmentStats[392767087];
+  r.recovery = investmentStats[1943323491];
+  r.discipline = investmentStats[1735777505];
+  r.intellect = investmentStats[144602215];
+  r.strength = investmentStats[4244567218];
 }
