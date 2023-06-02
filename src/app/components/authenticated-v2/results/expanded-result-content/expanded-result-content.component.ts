@@ -54,6 +54,7 @@ import {
   UpgradeSpendTier,
 } from "@destinyitemmanager/dim-api-types";
 import { CharacterClass } from "src/app/data/enum/character-Class";
+import { MembershipService } from "src/app/services/membership.service";
 
 @Component({
   selector: "app-expanded-result-content",
@@ -82,7 +83,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   constructor(
     private config: ConfigurationService,
     private _snackBar: MatSnackBar,
-    private bungieApi: BungieApiService
+    private bungieApi: BungieApiService,
+    private membership: MembershipService
   ) {}
 
   public buildItemIdString(element: ResultDefinition | null) {
@@ -156,7 +158,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   async getCharacterId() {
     // get character Id
-    let characters = await this.bungieApi.getCharacters();
+    let characters = await this.membership.getCharacters();
     characters = characters.filter((c) => c.clazz == this.config_characterClass);
     if (characters.length == 0) {
       this.openSnackBar("Error: Could not find a character to move the items to.");
