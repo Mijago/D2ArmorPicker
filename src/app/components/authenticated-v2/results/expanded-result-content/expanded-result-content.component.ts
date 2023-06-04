@@ -13,6 +13,9 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Additional copyrighted lines in this file:
+ *  bhollis (adaption of the DIM links)
  */
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
