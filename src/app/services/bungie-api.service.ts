@@ -191,7 +191,7 @@ export class BungieApiService {
   // Collect the list of unlocked exotic armor pieces
   private async getUnlockedExoticArmor(
     characterCollectibles: Record<string, DestinyCollectiblesComponent>
-  ) {
+  ): Promise<Set<number>> {
     const manifestExoticArmorItemHashes = (await this.db.manifestCollectibles.toArray()).reduce(
       (acc, cur) => {
         acc[cur.hash] = cur.itemHash;
@@ -200,7 +200,7 @@ export class BungieApiService {
       {} as Record<number, number>
     );
 
-    return Object.values(characterCollectibles)
+    const itemHashes = Object.values(characterCollectibles)
       .flatMap((char) => Object.entries(char.collectibles ?? {}))
       .filter(([hash, { state }]) => {
         return (
@@ -209,6 +209,8 @@ export class BungieApiService {
         );
       })
       .map(([hash, _]) => manifestExoticArmorItemHashes[parseInt(hash)]);
+
+    return new Set(itemHashes);
   }
 
   async updateArmorItems(force = false) {
@@ -351,7 +353,7 @@ export class BungieApiService {
       .filter(Boolean) as IInventoryArmor[];
 
     // Now add the collection rolls for exotics
-    const collectionRollItems = unlockedExoticArmorItemHashes
+    const collectionRollItems = Array.from(unlockedExoticArmorItemHashes)
       .map((exoticItemHash) => {
         const manifestArmorItem = res[exoticItemHash];
         if (!manifestArmorItem) {
