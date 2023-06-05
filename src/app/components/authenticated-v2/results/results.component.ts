@@ -83,6 +83,7 @@ export interface ResultItem {
   perk: ArmorPerkOrSlot;
   transferState: ResultItemMoveState;
   statsNoMods: number[];
+  source: number;
 }
 
 @Component({

@@ -22,6 +22,10 @@
         <td colspan="3">{{ itemTooltip?.name }}</td>
       </tr>
       <tr>
+        <td>Source</td>
+        <td>{{ getSourceText() }}</td>
+      </tr>
+      <tr>
         <td>Current stats:</td>
       </tr>
       <tr *ngFor="let stat of itemTooltip?.stats; let i = index">
