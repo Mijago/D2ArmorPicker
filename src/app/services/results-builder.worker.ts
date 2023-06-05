@@ -710,6 +710,7 @@ export function handlePermutation(
             instance.intellect,
             instance.strength,
           ],
+          source: instance.source,
         });
         return p;
       },
