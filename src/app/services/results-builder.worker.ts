@@ -16,7 +16,7 @@
  */
 
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource, isEqualItem } from "../data/types/IInventoryArmor";
 import { buildDb } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC } from "../data/constants";
@@ -238,6 +238,19 @@ addEventListener("message", async ({ data }) => {
       );
     });
   // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
+
+  // Remove collection items if they are in inventory
+  items = items.filter((item) => {
+    if (item.source === InventoryArmorSource.Inventory) return true;
+
+    const purchasedItemInstance = items.find(
+      (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
+    );
+
+    // If this item is a collection/vendor item, ignore it if the player
+    // already has a real copy of the same item.
+    return purchasedItemInstance === undefined;
+  });
 
   let helmets = items
     .filter((i) => i.slot == ArmorSlot.ArmorSlotHelmet)
