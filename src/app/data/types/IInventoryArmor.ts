@@ -97,3 +97,17 @@ export function applyInvestmentStats(
   r.intellect = investmentStats[144602215];
   r.strength = investmentStats[4244567218];
 }
+
+// Returns true if the items are effectively equal in stats
+export function isEqualItem(a: IInventoryArmor, b: IInventoryArmor): boolean {
+  return (
+    a.slot === b.slot &&
+    a.hash === b.hash &&
+    a.mobility === b.mobility &&
+    a.resilience === b.resilience &&
+    a.recovery === b.recovery &&
+    a.discipline === b.discipline &&
+    a.intellect === b.intellect &&
+    a.strength === b.strength
+  );
+}
