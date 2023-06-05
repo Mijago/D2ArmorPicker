@@ -19,7 +19,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { InventoryService } from "../../../../services/inventory.service";
-import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "../../../../data/types/IInventoryArmor";
 import { DatabaseService } from "../../../../services/database.service";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
@@ -111,6 +111,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     this.plugData = plugData;
 
     let armorItems = ((await this.db.inventoryArmor.toArray()) as IInventoryArmor[])
+      .filter((i) => i.source === InventoryArmorSource.Inventory)
       .sort((a, b) => ("" + a.name).localeCompare(b.name))
       .map((i: IInventoryArmor) => {
         var result = {

@@ -284,6 +284,7 @@ export class InventoryService {
           instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
         inInventory:
           instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
+        inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
       };
     });
   }

@@ -48,6 +48,7 @@ import { ArmorPerkOrSlot } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
+import { VendorsService } from "./vendors.service";
 import { HttpClientService } from "./http-client.service";
 
 function collectInvestmentStats(
@@ -95,7 +96,8 @@ export class BungieApiService {
     private http: HttpClientService,
     private db: DatabaseService,
     private config: ConfigurationService,
-    private membership: MembershipService
+    private membership: MembershipService,
+    private vendors: VendorsService
   ) {
     this.config.configuration.subscribe(async (config) => {
       this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
@@ -246,6 +248,8 @@ export class BungieApiService {
       destinyMembershipId: destinyMembership.membershipId,
     });
 
+    const vendorArmorItems = await this.vendors.getVendorArmorItems();
+
     const unlockedExoticArmorItemHashes = await this.getUnlockedExoticArmor(
       profile.Response.characterCollectibles.data ?? {}
     );
@@ -375,6 +379,8 @@ export class BungieApiService {
     r = r.concat(collectionRollItems);
 
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
+
+    r = r.concat(vendorArmorItems);
 
     // Now add the stuff to the db..
     await this.db.inventoryArmor.clear();

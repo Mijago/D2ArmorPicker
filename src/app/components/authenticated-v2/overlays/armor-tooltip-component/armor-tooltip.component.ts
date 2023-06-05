@@ -33,6 +33,9 @@ export class ArmorTooltipComponent {
       case InventoryArmorSource.Collections:
         return "Collections";
 
+      case InventoryArmorSource.Vendor:
+        return "Vendor";
+
       default:
         return "Inventory";
     }

@@ -22,6 +22,7 @@ import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 export enum InventoryArmorSource {
   Inventory = 0,
   Collections = 1,
+  Vendor = 2,
 }
 
 export interface IInventoryArmor extends IManifestArmor {
@@ -36,7 +37,10 @@ export interface IInventoryArmor extends IManifestArmor {
   intellect: number;
   strength: number;
   energyLevel: number;
+
+  // Note: this will be empty for vendor items
   statPlugHashes: (number | undefined)[];
+
   source: InventoryArmorSource;
 }
 
