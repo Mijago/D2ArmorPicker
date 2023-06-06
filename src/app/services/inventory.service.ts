@@ -45,6 +45,7 @@ type info = {
 export type ClassExoticInfo = {
   inInventory: boolean;
   inCollection: boolean;
+  inVendor: boolean;
   item: IManifestArmor;
 };
 
