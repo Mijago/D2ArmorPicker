@@ -45,6 +45,7 @@ export const listAnimation = trigger("listAnimation", [
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   selectedExotics: number[] = [];
   includeCollectionRolls = false;
+  includeVendorRolls = false;
   currentClass: CharacterClass = CharacterClass.Titan;
   exotics: ClassExoticInfo[][] = [];
 
@@ -57,6 +58,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
         await this.updateExoticsForClass();
       }
       this.includeCollectionRolls = c.includeCollectionRolls;
+      this.includeVendorRolls = c.includeVendorRolls;
       this.selectedExotics = c.selectedExotics;
     });
 

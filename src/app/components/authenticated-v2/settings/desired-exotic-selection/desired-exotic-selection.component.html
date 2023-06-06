@@ -37,7 +37,13 @@
       class="exoticIcon {{ selectedExotics.indexOf(exotic.item.hash) > -1 ? 'selected' : '' }}"
       src="https://www.bungie.net/{{ exotic.item.icon }}"
       [exoticTooltip]="exotic.item"
-      [class.disabled]="includeCollectionRolls ? !exotic.inCollection : !exotic.inInventory"
+      [class.disabled]="
+        !(
+          exotic.inInventory ||
+          (includeCollectionRolls && exotic.inCollection) ||
+          (includeVendorRolls && exotic.inVendor)
+        )
+      "
       (click)="
         (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
           selectExotic(exotic.item.hash, $event)
