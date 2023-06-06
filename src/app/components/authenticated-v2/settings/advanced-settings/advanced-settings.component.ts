@@ -72,6 +72,14 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: false,
             help: "Ignore sunset armor in the results.",
           },
+          {
+            name: "Include vendor items.",
+            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.includeVendorRolls = v)),
+            value: c.includeVendorRolls,
+            disabled: false,
+            impactsResultCount: false,
+            help: "Include armor pieces that can currently be bought from a vendor.",
+          },
         ],
         Masterwork: [
           {

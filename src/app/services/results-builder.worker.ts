@@ -204,10 +204,17 @@ addEventListener("message", async ({ data }) => {
     .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
     // filter disabled items
     .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
-    // filter collection rolls if not allowed
-    .filter(
-      (item) => config.includeCollectionRolls || item.source !== InventoryArmorSource.Collections
-    )
+    // filter collection/vendor rolls if not allowed
+    .filter((item) => {
+      switch (item.source) {
+        case InventoryArmorSource.Collections:
+          return config.includeCollectionRolls;
+        case InventoryArmorSource.Vendor:
+          return config.includeVendorRolls;
+        default:
+          return true;
+      }
+    })
     // filter the selected exotic right here
     .filter((item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic)
     .filter(

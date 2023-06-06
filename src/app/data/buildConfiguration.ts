@@ -79,6 +79,7 @@ export class BuildConfiguration {
   useFotlArmor = true;
   allowBlueArmorPieces = true;
   ignoreSunsetArmor = false;
+  includeVendorRolls = false;
   includeCollectionRolls = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
@@ -116,6 +117,7 @@ export class BuildConfiguration {
       onlyUseMasterworkedItems: false,
       ignoreSunsetArmor: false,
       includeCollectionRolls: false,
+      includeVendorRolls: false,
       allowBlueArmorPieces: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
