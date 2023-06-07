@@ -472,44 +472,36 @@ export class BungieApiService {
       return;
     }
 
-    var destinyManifest = null;
-    if (
-      !force &&
-      localStorage.getItem("LastManifestUpdate") &&
-      localStorage.getItem("last-manifest-revision")
-    ) {
-      if (localStorage.getItem("last-manifest-revision") == environment.revision) {
-        if (
-          Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") >
-          1000 * 3600 * 0.25
-        ) {
-          destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
-          const version = destinyManifest.Response.version;
-          if (localStorage.getItem("last-manifest-version") == version) {
-            console.debug(
-              "bungieApiService - updateManifest",
-              "Abort updateManifest due to fitting ManifestVersion"
-            );
-            return;
-          }
+    const manifestCache = this.db.lastManifestUpdate();
+
+    let destinyManifest = null;
+    if (manifestCache && !force) {
+      if (Date.now() - manifestCache.updatedAt > 1000 * 3600 * 0.25) {
+        destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
+        const version = destinyManifest.Response.version;
+        if (manifestCache.version == version) {
+          console.debug(
+            "bungieApiService - updateManifest",
+            "Abort updateManifest due to fitting ManifestVersion"
+          );
+          return;
         }
-        if (localStorage.getItem("last-manifest-db-name") == this.db.manifestArmor.db.name)
-          if (
-            Date.now() - Number.parseInt(localStorage.getItem("LastManifestUpdate") || "0") <
-            1000 * 3600 * 24
-          ) {
-            console.debug(
-              "bungieApiService - updateManifest",
-              "Abort updateManifest due to fitting Date"
-            );
-            return;
-          }
+      }
+
+      if (Date.now() - manifestCache.updatedAt < 1000 * 3600 * 24) {
+        console.debug(
+          "bungieApiService - updateManifest",
+          "Abort updateManifest due to fitting Date"
+        );
+        return;
       }
     }
 
-    if (destinyManifest == null)
+    if (destinyManifest == null) {
       destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
-    const version = destinyManifest.Response.version;
+    }
+
+    const manifestVersion = destinyManifest.Response.version;
 
     const manifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
@@ -600,12 +592,7 @@ export class BungieApiService {
         } as IManifestArmor;
       });
 
-    await this.db.manifestArmor.clear();
-    await this.db.manifestArmor.bulkPut(entries);
-    localStorage.setItem("LastManifestUpdate", Date.now().toString());
-    localStorage.setItem("last-manifest-db-name", this.db.manifestArmor.db.name);
-    localStorage.setItem("last-manifest-revision", environment.revision);
-    localStorage.setItem("last-manifest-version", version);
+    await this.db.writeManifestArmor(entries, manifestVersion);
 
     return manifestTables;
   }

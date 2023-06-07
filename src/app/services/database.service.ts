@@ -22,6 +22,7 @@ import { buildDb } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { IInventoryArmor } from "../data/types/IInventoryArmor";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
+import { environment } from "../../environments/environment";
 
 @Injectable({
   providedIn: "root",
@@ -57,6 +58,15 @@ export class DatabaseService {
     this.manifestCollectibles = this.db.table("manifestCollectibles");
   }
 
+  async writeManifestArmor(items: IManifestArmor[], version: string) {
+    await this.manifestArmor.clear();
+    await this.manifestArmor.bulkPut(items);
+    localStorage.setItem("LastManifestUpdate", Date.now().toString());
+    localStorage.setItem("last-manifest-db-name", this.manifestArmor.db.name);
+    localStorage.setItem("last-manifest-revision", environment.revision);
+    localStorage.setItem("last-manifest-version", version);
+  }
+
   private async clearDatabase() {
     localStorage.removeItem("LastManifestUpdate");
     localStorage.removeItem("LastArmorUpdate");
@@ -73,5 +83,41 @@ export class DatabaseService {
 
     await this.db.delete();
     if (initialize) this.initialize();
+  }
+
+  /**
+   * Returns the information about the current cached manifest version,
+   * if it exists and is still valid.
+   */
+  lastManifestUpdate(): { updatedAt: number; version: string } | undefined {
+    const lastManifestUpdate = localStorage.getItem("LastManifestUpdate");
+    const lastManifestVersion = localStorage.getItem("last-manifest-version");
+
+    const lastManifestRevision = localStorage.getItem("last-manifest-revision");
+    const lastManifestDbName = localStorage.getItem("last-manifest-db-name");
+
+    if (
+      !lastManifestUpdate ||
+      !lastManifestRevision ||
+      !lastManifestDbName ||
+      !lastManifestVersion
+    ) {
+      return;
+    }
+
+    if (localStorage.getItem("last-manifest-revision") !== environment.revision) {
+      return;
+    }
+
+    if (lastManifestDbName !== this.inventoryArmor.db.name) {
+      return;
+    }
+
+    const lastUpdate = parseInt(lastManifestUpdate);
+
+    return {
+      updatedAt: lastUpdate,
+      version: lastManifestVersion,
+    };
   }
 }
