@@ -72,13 +72,15 @@ function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
-  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
-  r.statPlugHashes = plugs;
-  var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
-  for (let entry of plm) {
-    for (let newStats of entry.investmentStats) {
-      if (newStats.statTypeHash in investmentStats)
-        investmentStats[newStats.statTypeHash] += newStats.value;
+  if (r.slot != ArmorSlot.ArmorSlotClass) {
+    const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
+    r.statPlugHashes = plugs;
+    var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
+    for (let entry of plm) {
+      for (let newStats of entry.investmentStats) {
+        if (newStats.statTypeHash in investmentStats)
+          investmentStats[newStats.statTypeHash] += newStats.value;
+      }
     }
   }
 
