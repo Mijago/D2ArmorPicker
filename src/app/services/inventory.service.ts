@@ -256,9 +256,6 @@ export class InventoryService {
     }
   }
 
-  // I don’t think this is used?
-  // public exoticsForClass: Array<IManifestArmor> = [];
-
   async getItemCountForClass(clazz: CharacterClass, slot?: ArmorSlot) {
     let pieces = await this.db.inventoryArmor.where("clazz").equals(clazz).toArray();
     if (!!slot) pieces = pieces.filter((i) => i.slot == slot);
@@ -276,7 +273,6 @@ export class InventoryService {
       (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
     );
 
-    // this.exoticsForClass = exotics;
     return exotics.map((ex) => {
       const instances = inventory.filter((i) => i.hash == ex.hash);
       return {
