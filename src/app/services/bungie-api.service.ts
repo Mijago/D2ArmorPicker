@@ -252,7 +252,7 @@ export class BungieApiService {
       destinyMembershipId: destinyMembership.membershipId,
     });
 
-    const vendorArmorItems = await this.vendors.getVendorArmorItems();
+    await this.vendors.updateVendorArmorItemsCache();
 
     const unlockedExoticArmorItemHashes = await this.getUnlockedExoticArmor(
       profile.Response.characterCollectibles.data ?? {}
@@ -384,11 +384,10 @@ export class BungieApiService {
 
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
 
-    r = r.concat(vendorArmorItems);
-
-    // Now add the stuff to the db..
-    await this.db.inventoryArmor.clear();
+    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Inventory }).delete();
+    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Collections }).delete();
     await this.db.inventoryArmor.bulkAdd(r);
+
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
     localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name);
 
