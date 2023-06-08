@@ -39,7 +39,7 @@ export interface IInventoryArmor extends IManifestArmor {
   energyLevel: number;
 
   // Note: this will be empty for vendor items
-  statPlugHashes: (number | undefined)[];
+  statPlugHashes?: (number | undefined)[];
 
   source: InventoryArmorSource;
 }
@@ -56,7 +56,6 @@ export function createArmorItem(
       id: -1,
       itemInstanceId,
       mayBeBugged: false,
-      statPlugHashes: [],
       masterworked: false,
       energyLevel: 0,
       mobility: 0,
