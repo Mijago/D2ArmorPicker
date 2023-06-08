@@ -18,7 +18,7 @@
 import { Component, Input, OnInit, TemplateRef } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
-import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
 
 @Component({
   selector: "app-armor-tooltip-component",
@@ -29,16 +29,11 @@ export class ArmorTooltipComponent {
   @Input() itemTooltip: ResultItem | undefined;
 
   getSourceText() {
-    switch (this.itemTooltip?.source) {
-      case InventoryArmorSource.Collections:
-        return "Collections";
-
-      case InventoryArmorSource.Vendor:
-        return "Vendor";
-
-      default:
-        return "Inventory";
+    if (!this.itemTooltip) {
+      return "";
     }
+
+    return InventoryArmorSourceNames[this.itemTooltip.source];
   }
 
   getArmorStatName(i: number) {
