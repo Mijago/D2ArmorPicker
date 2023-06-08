@@ -35,6 +35,7 @@ import { ArmorSlot } from "../../../data/enum/armor-slot";
 import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 
 export interface ResultDefinition {
   exotic:
@@ -83,7 +84,7 @@ export interface ResultItem {
   perk: ArmorPerkOrSlot;
   transferState: ResultItemMoveState;
   statsNoMods: number[];
-  source: number;
+  source: InventoryArmorSource;
 }
 
 @Component({
