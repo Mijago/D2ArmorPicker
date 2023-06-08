@@ -115,6 +115,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
   _config_onlyUseMasterworkedItems: Boolean = false;
+  _config_includeCollectionRolls: Boolean = false;
+  _config_includeVendorRolls: Boolean = false;
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
@@ -164,6 +166,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
       this._config_maximumStatMods = c.maximumStatMods;
       this._config_onlyUseMasterworkedItems = c.onlyUseMasterworkedItems;
+      this._config_includeCollectionRolls = c.includeCollectionRolls;
+      this._config_includeVendorRolls = c.includeVendorRolls;
       this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
       this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this._config_selectedExotics = c.selectedExotics;

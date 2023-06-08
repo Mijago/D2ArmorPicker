@@ -163,6 +163,20 @@
             matTooltip="Some masterwork assumptions are in place. This means that you may have to masterwork items. Look at your advanced settings to see which ones are activated.">
             Masterwork Assumption
           </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_includeCollectionRolls"
+            disableRipple
+            matTooltip="Collection Exotic rolls will be included in the search.">
+            Include Collection Rolls
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_includeVendorRolls"
+            disableRipple
+            matTooltip="Currently available Vendor items will be included in the search.">
+            Include Vendor Items
+          </mat-chip>
         </mat-chip-list>
       </mat-form-field>
 
