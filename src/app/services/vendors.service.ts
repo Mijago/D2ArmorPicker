@@ -5,6 +5,7 @@ import {
   HttpClientConfig,
   DestinyComponentType,
   DestinyItemType,
+  DestinyVendorItemState,
 } from "bungie-api-ts/destiny2";
 import { MembershipService } from "./membership.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
@@ -17,6 +18,8 @@ import {
 } from "../data/types/IInventoryArmor";
 import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
+
+const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
 @Injectable({
   providedIn: "root",
@@ -32,7 +35,10 @@ export class VendorsService {
     manifestItems: Record<number, IManifestArmor>,
     destinyMembership: GroupUserInfoCard,
     characterId: string
-  ): Promise<IInventoryArmor[]> {
+  ): Promise<{
+    items: IInventoryArmor[];
+    nextRefreshDate: number;
+  }> {
     const vendorsResponse = await getVendors((d) => this.http.$http(d), {
       components: [
         DestinyComponentType.Vendors,
@@ -45,17 +51,24 @@ export class VendorsService {
       filter: 0,
     });
 
-    const vendorArmorItems = Object.entries(vendorsResponse.Response.vendors.data ?? {})
+    const vendorItems = Object.entries(vendorsResponse.Response.vendors.data!)
       .filter(([_vendorHash, vendor]) => vendor.enabled && vendor.canPurchase)
       .flatMap(([vendorHash, vendor]) => {
         const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
         const vendorItemStats =
           vendorsResponse.Response.itemComponents[parseInt(vendorHash)].stats.data ?? {};
 
-        return Object.entries(saleItems)
+        const vendorArmorItems = Object.entries(saleItems)
           .map(([vendorItemIndex, saleItem]) => {
             const manifestItem = manifestItems[saleItem.itemHash];
             const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
+
+            if (
+              (saleItem.augments & DestinyVendorItemState.Owned) ===
+              DestinyVendorItemState.Owned
+            ) {
+              return;
+            }
 
             if (!manifestItem || !itemStats) {
               return;
@@ -78,16 +91,59 @@ export class VendorsService {
             return r;
           })
           .filter(Boolean) as IInventoryArmor[];
-      });
+
+        return {
+          items: vendorArmorItems,
+          nextRefreshDate: new Date(vendor.nextRefreshDate).getTime(),
+        };
+      })
+      .filter(({ items }) => items.length > 0);
+
+    const vendorArmorItems = vendorItems.flatMap(({ items }) => items);
+
+    const nextRefreshDate = Math.min(...vendorItems.map(({ nextRefreshDate }) => nextRefreshDate));
 
     console.log(
       `Collected ${vendorArmorItems.length} vendor armor items for character ${characterId}`
     );
 
-    return vendorArmorItems;
+    return {
+      items: vendorArmorItems,
+      nextRefreshDate,
+    };
   }
 
-  async getVendorArmorItems(): Promise<IInventoryArmor[]> {
+  private isVendorCacheValid() {
+    const nextRefreshTimeStr = localStorage.getItem(VENDOR_NEXT_REFRESH_KEY);
+    if (!nextRefreshTimeStr) {
+      return false;
+    }
+
+    const nextVendorRefresh = new Date(nextRefreshTimeStr);
+    if (!isFinite(nextVendorRefresh.getTime())) {
+      return false;
+    }
+
+    return nextVendorRefresh < new Date();
+  }
+
+  private async writeVendorCache(items: IInventoryArmor[], nextRefreshDate: Date) {
+    console.log(
+      `Writing new vendor cache (${
+        items.length
+      } items), valid until ${nextRefreshDate.toISOString()}`
+    );
+    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Vendor }).delete();
+    await this.db.inventoryArmor.bulkPut(items);
+    localStorage.setItem(VENDOR_NEXT_REFRESH_KEY, nextRefreshDate.toISOString());
+  }
+
+  async updateVendorArmorItemsCache() {
+    if (this.isVendorCacheValid()) {
+      console.log("Using vendor items cache");
+      return;
+    }
+
     const destinyMembership = await this.membership.getMembershipDataForCurrentUser();
     const characters = await this.membership.getCharacters();
 
@@ -105,6 +161,10 @@ export class VendorsService {
       )
     );
 
-    return vendorArmorItems.flat();
+    const allItems = vendorArmorItems.flatMap(({ items }) => items);
+    const nextRefreshDate = Math.min(
+      ...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)
+    );
+    return this.writeVendorCache(allItems, new Date(nextRefreshDate));
   }
 }
