@@ -16,7 +16,7 @@
  */
 
 import { AfterViewInit, Component } from "@angular/core";
-import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "../../../../data/types/IInventoryArmor";
 import { DatabaseService } from "../../../../services/database.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { InventoryService } from "../../../../services/inventory.service";
@@ -454,7 +454,10 @@ export class ArmorClusterPageComponent implements AfterViewInit {
   }
 
   public async Update() {
-    var items = await this.db.inventoryArmor.toArray();
+    var items = (await this.db.inventoryArmor.toArray()).filter(
+      (item) => item.source === InventoryArmorSource.Inventory
+    );
+
     var clusters: IInventoryArmor[][] = [];
     for (let i = 0; i < this.clusterInformation.length; i++) {
       clusters.push([]);
