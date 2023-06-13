@@ -60,6 +60,8 @@ export interface ResultDefinition {
   modCost: number;
   modCount: number;
   loaded: boolean;
+  usesCollectionRoll?: boolean;
+  usesVendorRoll?: boolean;
 }
 
 export enum ResultItemMoveState {
@@ -190,6 +192,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         "mods",
       ];
       if (c.showWastedStatsColumn) columns.push("waste");
+      if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
     });

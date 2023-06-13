@@ -339,6 +339,26 @@
               src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
           </td>
         </ng-container>
+
+        <!-- Vendor/Collection Column -->
+        <ng-container matColumnDef="source">
+          <th *matHeaderCellDef mat-header-cell>Sources</th>
+          <td *matCellDef="let element" mat-cell>
+            <span class="source-column">
+              <img
+                *ngIf="!!element.usesCollectionRoll"
+                matTooltip="This build uses a collection exotic. You have to collect it before you can use it."
+                class="collectionIcon"
+                src="https://www.bungie.net/common/destiny2_content/icons/1d01287dd47af97fef16fa6acbac23ba.png" />
+              <img
+                *ngIf="!!element.usesVendorRoll"
+                matTooltip="This build uses a vendor item. You have to collect it before you can use it."
+                class="vendorIcon"
+                src="https://www.bungie.net/common/destiny2_content/icons/8ef4b5bd32277dba9aee7c368404ad5d.jpg" />
+            </span>
+          </td>
+        </ng-container>
+
         <!-- Name Column -->
         <ng-container matColumnDef="dropdown">
           <th *matHeaderCellDef mat-header-cell></th>
