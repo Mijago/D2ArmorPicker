@@ -30,7 +30,8 @@ import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
 import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
-import { InventoryArmorSource } from "../data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
+import { ItemBindStatus } from "bungie-api-ts/destiny2";
 
 type info = {
   results: ResultDefinition[];
@@ -207,6 +208,19 @@ export class InventoryService {
             for (let result of results) {
               endResults.push(...result);
             }
+
+            // add extra fields for collection and vendor rolls
+            endResults = endResults.map((r) => {
+              r.usesCollectionRoll = r.items.some(
+                (i: IInventoryArmor[]) => i[0].source === InventoryArmorSource.Collections
+              );
+              r.usesVendorRoll = r.items.some(
+                (i: IInventoryArmor[]) => i[0].source === InventoryArmorSource.Vendor
+              );
+              return r;
+            });
+
+            console.debug("endResults", endResults);
 
             this._armorResults.next({
               results: endResults,
