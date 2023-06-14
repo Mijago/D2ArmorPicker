@@ -62,3 +62,12 @@
     cursor: default;
   }
 }
+
+.vendor-item {
+  /* rotate color */
+  filter: hue-rotate(130deg);
+}
+
+.collection-item {
+  filter: hue-rotate(180deg);
+}

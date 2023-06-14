@@ -43,6 +43,10 @@ export class ExoticTooltipDirective implements OnInit, OnDestroy {
   //If this is specified then specified text will be show in in the tooltip
   @Input() exoticTooltip: IManifestArmor | undefined;
 
+  @Input() exoticTooltipInVendor: boolean = false;
+
+  @Input() exoticTooltipInCollection: boolean = false;
+
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
 
@@ -97,6 +101,8 @@ export class ExoticTooltipDirective implements OnInit, OnDestroy {
       const tooltipRef: ComponentRef<ExoticPerkTooltipComponent> = this._overlayRef.attach(
         new ComponentPortal(ExoticPerkTooltipComponent)
       );
+      tooltipRef.instance.collection = this.exoticTooltipInCollection;
+      tooltipRef.instance.vendor = this.exoticTooltipInVendor;
       tooltipRef.instance.armor = this.exoticTooltip;
     }
   }

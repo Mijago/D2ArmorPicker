@@ -29,6 +29,9 @@ import { ItemIconServiceService } from "../../../../services/item-icon-service.s
 })
 export class ExoticPerkTooltipComponent implements OnInit {
   @Input() armor: IManifestArmor | undefined;
+  @Input() vendor: boolean = false;
+  @Input() collection: boolean = false;
+
   exoticPerk: IManifestArmor | undefined;
   exoticPerkNotThere: boolean = false;
 
