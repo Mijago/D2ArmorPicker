@@ -44,6 +44,18 @@
           {{ exoticPerk.description }}
         </td>
       </tr>
+
+      <tr *ngIf="collection || vendor" class="collection-roll-info">
+        <td colspan="2">
+          This exotic is not in your inventory but it is
+          <ng-container *ngIf="collection">
+            in your collection
+            <ng-container *ngIf="vendor"> and </ng-container>
+          </ng-container>
+          <ng-container *ngIf="vendor">available at a vendor</ng-container>. You can still generate
+          a loadout with this exotic, but you will have to grab it by yourself.
+        </td>
+      </tr>
     </table>
   </div>
 </div>

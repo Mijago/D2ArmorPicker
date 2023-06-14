@@ -37,6 +37,12 @@
       class="exoticIcon {{ selectedExotics.indexOf(exotic.item.hash) > -1 ? 'selected' : '' }}"
       src="https://www.bungie.net/{{ exotic.item.icon }}"
       [exoticTooltip]="exotic.item"
+      [exoticTooltipInVendor]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
+      [exoticTooltipInCollection]="
+        !exotic.inInventory && includeCollectionRolls && exotic.inCollection
+      "
+      [class.vendor-item]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
+      [class.collection-item]="!exotic.inInventory && includeCollectionRolls && exotic.inCollection"
       [class.disabled]="
         !(
           exotic.inInventory ||
