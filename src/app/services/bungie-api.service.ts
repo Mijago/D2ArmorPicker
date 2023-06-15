@@ -402,40 +402,39 @@ export class BungieApiService {
     )
       return ArmorPerkOrSlot.GuardianGamesClassItem;
 
-    const scks = v.sockets?.socketEntries;
-    if ((scks?.filter((d) => d.reusablePlugSetHash == 1280) || []).length > 0)
-      return ArmorPerkOrSlot.SlotArtifice;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 3727270518) || []).length > 0)
+    const scks = v.sockets?.socketEntries ?? [];
+    if (scks.find((d) => d.reusablePlugSetHash == 1280)) return ArmorPerkOrSlot.SlotArtifice;
+    if (scks.find((d) => d.singleInitialItemHash == 3727270518))
       return ArmorPerkOrSlot.SlotArtifice;
 
-    if ((scks?.filter((d) => d.singleInitialItemHash == 2779380852) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 2779380852))
       return ArmorPerkOrSlot.SonarAmplifier;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 4144354978) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 4144354978))
       return ArmorPerkOrSlot.SlotRootOfNightmares;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 1728096240) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 1728096240))
       return ArmorPerkOrSlot.SlotKingsFall;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 1679876242) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 1679876242))
       return ArmorPerkOrSlot.SlotLastWish;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 3738398030) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 3738398030))
       return ArmorPerkOrSlot.SlotVaultOfGlass;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 706611068) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 706611068))
       return ArmorPerkOrSlot.SlotGardenOfSalvation;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 4055462131) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 4055462131))
       return ArmorPerkOrSlot.SlotDeepStoneCrypt;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 2447143568) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 2447143568))
       return ArmorPerkOrSlot.SlotVowOfTheDisciple;
 
-    if ((scks?.filter((d) => d.singleInitialItemHash == 1101259514) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 1101259514))
       return ArmorPerkOrSlot.PerkQueensFavor;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 1180997867) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 1180997867))
       return ArmorPerkOrSlot.SlotNightmare;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 2472875850) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 2472875850))
       return ArmorPerkOrSlot.PerkIronBanner;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 2392155347) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 2392155347))
       return ArmorPerkOrSlot.PerkUniformedOfficer;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 400659041) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 400659041))
       return ArmorPerkOrSlot.PerkPlunderersTrappings;
-    if ((scks?.filter((d) => d.singleInitialItemHash == 3525583702) || []).length > 0)
+    if (scks.find((d) => d.singleInitialItemHash == 3525583702))
       return ArmorPerkOrSlot.SeraphSensorArray;
 
     return ArmorPerkOrSlot.None;
