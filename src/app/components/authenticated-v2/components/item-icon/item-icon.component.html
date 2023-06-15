@@ -26,5 +26,10 @@
     class="item-icon-overlay"
     src="https://bungie.net/{{ item.watermarkIcon }}"
     *ngIf="item.watermarkIcon" />
+  <div
+    class="item-source-overlay"
+    *ngIf="isFromVendor || isFromCollection"
+    [class.vendor-item]="isFromVendor"
+    [class.collection-item]="isFromCollection"></div>
   <div *ngIf="masterworked" class="item-icon-masterwork-overlay"></div>
 </div>

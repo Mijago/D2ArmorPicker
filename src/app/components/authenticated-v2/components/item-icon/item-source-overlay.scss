@@ -1,0 +1,17 @@
+.item-source-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  pointer-events: none;
+
+  border-top: calc(var(--icon-size) / 2) solid transparent;
+  border-right: calc(var(--icon-size) / 2) solid transparent;
+
+  &.vendor-item {
+    border-top-color: blue;
+  }
+  &.collection-item {
+    border-top-color: lightgreen;
+  }
+}

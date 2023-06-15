@@ -58,6 +58,11 @@
       class="watermarkIcon"
       *ngIf="exotic.item.watermarkIcon"
       src="https://www.bungie.net/{{ exotic.item.watermarkIcon }}" />
+    <div
+      class="item-source-overlay"
+      *ngIf="!exotic.inInventory"
+      [class.vendor-item]="includeVendorRolls && exotic.inVendor"
+      [class.collection-item]="includeCollectionRolls && exotic.inCollection"></div>
   </span>
 </div>
 
