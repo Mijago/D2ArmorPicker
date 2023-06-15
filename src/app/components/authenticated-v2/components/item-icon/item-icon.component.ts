@@ -18,6 +18,7 @@
 import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
+import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 
 @Component({
   selector: "app-item-icon",
@@ -30,11 +31,19 @@ export class ItemIconComponent implements AfterViewInit {
 
   @Input()
   masterworked: boolean = false;
+
+  @Input()
+  source: InventoryArmorSource = InventoryArmorSource.Inventory;
+  isFromVendor: boolean = false;
+  isFromCollection: boolean = false;
+
   item: IManifestArmor | undefined = undefined;
 
   constructor(private iconService: ItemIconServiceService) {}
 
   async ngAfterViewInit() {
     this.item = await this.iconService.getItemCached(this.itemHash);
+    this.isFromVendor = this.source === InventoryArmorSource.Vendor;
+    this.isFromCollection = this.source === InventoryArmorSource.Collections;
   }
 }

@@ -15,6 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.container {
+  display: inline-block;
+  position: relative;
+
+  --icon-size: 36px;
+}
+
 .exoticIcon {
   width: 36px;
   height: 36px;
@@ -63,11 +70,8 @@
   }
 }
 
-.vendor-item {
-  /* rotate color */
-  filter: hue-rotate(130deg);
+.item-source-overlay {
+  margin: 2px;
 }
 
-.collection-item {
-  filter: hue-rotate(180deg);
-}
+@import "../../components/item-icon/item-source-overlay.scss";

@@ -40,6 +40,7 @@
   position: relative;
   transition: opacity 0.2s, transform 0.2s;
   width: 100%;
+  --icon-size: 22px;
 }
 
 .item-icon-overlay,
@@ -50,3 +51,5 @@
   width: 100%;
   pointer-events: none;
 }
+
+@import "./item-source-overlay";
