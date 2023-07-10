@@ -19,6 +19,7 @@ import { Component, Input, OnInit, TemplateRef } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
+import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 
 @Component({
   selector: "app-armor-tooltip-component",
@@ -44,5 +45,12 @@ export class ArmorTooltipComponent {
     return Math.min(100, (stat / 32) * 100) + "%";
   }
 
+  getTotalStats() {
+    return this.itemTooltip?.stats.reduce((a, b) => a + b, 0) || 0;
+  }
+
+  get isVendorItem() {
+    return this.itemTooltip?.source === InventoryArmorSource.Vendor;
+  }
   constructor() {}
 }

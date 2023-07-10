@@ -50,6 +50,7 @@ import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
 import { VendorsService } from "./vendors.service";
 import { HttpClientService } from "./http-client.service";
+import { IVendorInfo } from "../data/types/IVendorInfo";
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -440,6 +441,20 @@ export class BungieApiService {
     return ArmorPerkOrSlot.None;
   }
 
+  private async updateVendorNames(
+    manifestTables: DestinyManifestSlice<"DestinyVendorDefinition"[]>
+  ) {
+    const vendors = manifestTables.DestinyVendorDefinition;
+
+    // get values
+    const vendorInfo: IVendorInfo[] = Object.values(vendors).map((v) => {
+      return { vendorId: v.hash, vendorName: v.displayProperties.name } as IVendorInfo;
+    });
+
+    await this.db.vendorNames.clear();
+    await this.db.vendorNames.bulkAdd(vendorInfo);
+  }
+
   // Collect the data for exotic armor collectibles
   // this allows us to map a collection entry hash to the associated armor inventory item hash
   private async updateExoticCollectibles(
@@ -505,7 +520,11 @@ export class BungieApiService {
 
     const manifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutKey(d), {
       destinyManifest: destinyManifest.Response,
-      tableNames: ["DestinyInventoryItemDefinition", "DestinyCollectibleDefinition"],
+      tableNames: [
+        "DestinyInventoryItemDefinition",
+        "DestinyCollectibleDefinition",
+        "DestinyVendorDefinition",
+      ],
       language: "en",
     });
 
@@ -515,6 +534,7 @@ export class BungieApiService {
     );
 
     await this.updateExoticCollectibles(manifestTables);
+    await this.updateVendorNames(manifestTables);
 
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)

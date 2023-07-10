@@ -23,7 +23,13 @@
       </tr>
       <tr>
         <td>Source</td>
-        <td>{{ getSourceText() }}</td>
+        <td colspan="2">{{ getSourceText() }}</td>
+      </tr>
+      <tr *ngIf="isVendorItem && itemTooltip">
+        <td>Vendor</td>
+        <td colspan="2">{{
+          itemTooltip.itemInstanceId | getVendorIdFromItemId | getVendorName | async
+        }}</td>
       </tr>
       <tr>
         <td>Current stats:</td>
@@ -44,6 +50,12 @@
               >&nbsp;</div
             >
           </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Total base stats:</td>
+        <td>
+          {{ getTotalStats() }}
         </td>
       </tr>
     </table>

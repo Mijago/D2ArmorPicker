@@ -95,6 +95,10 @@ import { StatCooldownTooltipDirective } from "./components/authenticated-v2/over
 import { SlotLimitationTitleComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component";
 import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 import { CommonModule } from "@angular/common";
+import {
+  VendorIdFromItemIdPipe,
+  VendorNamePipe,
+} from "./components/authenticated-v2/pipes/vendor-name-pipe";
 
 const routes: Routes = [
   {
@@ -159,6 +163,8 @@ const routes: Routes = [
     ConfirmDialogComponent,
     ExpandedResultContentComponent,
     CountElementInListPipe,
+    VendorIdFromItemIdPipe,
+    VendorNamePipe,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
