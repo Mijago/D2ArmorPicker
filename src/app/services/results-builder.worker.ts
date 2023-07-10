@@ -749,21 +749,22 @@ function get_mods_precalc(
       }
     }
   }
-  if (optimize == ModOptimizationStrategy.ReduceUsedMods) {
-    precalculatedMods.forEach((d) => {
-      d.sort((a, b) => {
-        if (a[3] == 0) return -1;
-        const ac = a[1] + a[2];
-        const bc = b[1] + b[2];
-        return ac - bc;
-      });
-    });
-  } else if (optimize == ModOptimizationStrategy.ReduceUsedModslots) {
+  if (
+    optimize == ModOptimizationStrategy.ReduceUsedMods ||
+    optimize == ModOptimizationStrategy.ReduceUsedModslots
+  ) {
     precalculatedMods.forEach((d, idx) => {
       const minorMul = idx in [1, 2, 4] ? 2 : 1;
       const majorMul = idx in [1, 2, 4] ? 4 : 3;
       d.sort((a, b) => {
-        if (a[3] == 0) return -1;
+        if (a[3] == 0) return 1;
+        if (optimize == ModOptimizationStrategy.ReduceUsedMods) {
+          const ac = a[1] + a[2];
+          const bc = b[1] + b[2];
+
+          if (ac != bc) return ac - bc;
+        }
+
         const ac = minorMul * a[1] + majorMul * a[2];
         const bc = minorMul * b[1] + majorMul * b[2];
         return ac - bc;

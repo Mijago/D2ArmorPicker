@@ -179,12 +179,9 @@
     <mat-button-toggle [value]="2">Reduce mod cost</mat-button-toggle>
   </mat-button-toggle-group>
 </div>
-
 <br />
 <div>
-  <span class="warn"> Important notes: </span>
-  <ul>
-    <li>The "locked stats" feature might not work for now.</li>
-    <li>The "locked stats" feature might lead to incorrect stat previews.</li>
-  </ul>
+  <mat-slide-toggle color="primary" [checked]="config_reduce_waste" (change)="toggleReduceWaste()">
+    Add mods to reduce wasted stats
+  </mat-slide-toggle>
 </div>
