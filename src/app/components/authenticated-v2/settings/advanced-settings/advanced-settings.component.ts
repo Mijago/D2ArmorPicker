@@ -120,15 +120,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: true,
             help: "Only parse the first 30,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled.",
           },
-          {
-            name: "Execute further optimization steps (slower).",
-            cp: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.executeModOptimization = v)),
-            value: c.executeModOptimization,
-            disabled: false,
-            impactsResultCount: true,
-            help: "Executes further optimization steps when picking mods. This will increase the time it takes to calculate the results.",
-          },
         ],
         "Extra Columns": [
           {

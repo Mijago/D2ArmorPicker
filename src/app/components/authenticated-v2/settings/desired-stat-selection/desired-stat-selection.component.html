@@ -167,10 +167,23 @@
 </span>
 
 <br />
+<br />
+<!-- modOptimizationStrategy -->
+<div>
+  <div> Mod optimization strategy: </div>
+  <mat-button-toggle-group
+    [(ngModel)]="config_mod_strategy"
+    (change)="setModOptimizationStrategy()">
+    <mat-button-toggle [value]="0">Reduce waste</mat-button-toggle>
+    <mat-button-toggle [value]="1">Reduce mod count</mat-button-toggle>
+    <mat-button-toggle [value]="2">Reduce mod cost</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
+<br />
 <div>
   <span class="warn"> Important notes: </span>
   <ul>
-    <li>"Reduce wasted stats" currently has no function (will come back, don't worry)</li>
     <li>The "locked stats" feature might not work for now.</li>
     <li>The "locked stats" feature might lead to incorrect stat previews.</li>
   </ul>

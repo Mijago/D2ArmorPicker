@@ -20,9 +20,9 @@ import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
 import { CharacterClass } from "./enum/character-Class";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "./constants";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "./enum/armor-slot";
 import { ModifierType } from "./enum/modifierType";
+import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
 
 export function getDefaultStatDict(
   value: number
@@ -83,7 +83,7 @@ export class BuildConfiguration {
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
   onlyUseMasterworkedItems = false;
-  executeModOptimization = false; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
+  modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
@@ -119,7 +119,7 @@ export class BuildConfiguration {
       assumeExoticsMasterworked: true,
       assumeClassItemMasterworked: true,
       limitParsedResults: true,
-      executeModOptimization: false,
+      modOptimizationStrategy: ModOptimizationStrategy.None,
       tryLimitWastedStats: true,
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,

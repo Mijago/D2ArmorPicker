@@ -29,6 +29,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.4.1",
+    date: "July 10, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the ability to select the optimization strategy. You can now choose between 'Reduce waste', 'Reduce used mods' and 'Reduce used modslots'. The default is 'Reduce waste'.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the reduce wasted stats feature.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the 'Extra optimization steps' setting. It is now always enabled.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.4.0",
     date: "May 23, 2023",
     entries: [

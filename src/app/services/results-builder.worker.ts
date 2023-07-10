@@ -34,6 +34,7 @@ import { environment } from "../../environments/environment";
 
 import { precalculatedZeroWasteModCombinations } from "../data/generated/precalculatedZeroWasteModCombinations";
 import { precalculatedModCombinations } from "../data/generated/precalculatedModCombinations";
+import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 
 const db = buildDb(async () => {});
 const inventoryArmor = db.table("inventoryArmor");
@@ -480,6 +481,15 @@ export function handlePermutation(
     }
   }
 
+  // distances required to reduce wasted stat points :)
+  const optionalDistances = [0, 0, 0, 0, 0, 0];
+  if (config.tryLimitWastedStats)
+    for (let stat: ArmorStat = 0; stat < 6; stat++) {
+      if (config.minimumStatTiers[stat].value * 10 < stats[stat]) {
+        optionalDistances[stat] = 10 - (stats[stat] % 10);
+      }
+    }
+
   // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
   const distanceSum =
@@ -487,14 +497,15 @@ export function handlePermutation(
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) return null;
 
   let result: StatModifier[] | null;
-  if (distanceSum == 0) result = [];
+  if (distanceSum == 0 && !config.tryLimitWastedStats) result = [];
   else
     result = get_mods_precalc(
       config,
       distances,
+      optionalDistances,
       availableArtificeCount,
       availableModCost,
-      config.executeModOptimization
+      config.modOptimizationStrategy
     );
 
   if (result == null) return null;
@@ -550,9 +561,10 @@ export function handlePermutation(
       const mods = get_mods_precalc(
         config,
         newDistances,
+        [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
         availableModCost,
-        false
+        ModOptimizationStrategy.None
       );
       if (mods != null) {
         runtime.statCombo3x100.add((1 << combo[0]) + (1 << combo[1]) + (1 << combo[2]));
@@ -567,9 +579,10 @@ export function handlePermutation(
       const mods = get_mods_precalc(
         config,
         newDistances,
+        [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
         availableModCost,
-        false
+        ModOptimizationStrategy.None
       );
       if (mods != null) {
         runtime.statCombo4x100.add(
@@ -607,9 +620,10 @@ export function handlePermutation(
       const mods = get_mods_precalc(
         config,
         distances,
+        [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
         availableModCost,
-        false
+        ModOptimizationStrategy.None
       );
       //const mods = null;
       if (mods != null) {
@@ -699,9 +713,10 @@ export function handlePermutation(
 function get_mods_precalc(
   config: BuildConfiguration,
   distances: number[],
+  optionalDistances: number[],
   availableArtificeCount: number,
   availableModCost: number[],
-  optimize: boolean = true
+  optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
   // check distances <= 62
   if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 62)
@@ -721,15 +736,50 @@ function get_mods_precalc(
     modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
   ];
 
+  for (let i = 0; i < optionalDistances.length; i++) {
+    if (optionalDistances[i] > 0) {
+      const additionalCombosA = modCombinations[optionalDistances[i]];
+      const additionalCombosB = modCombinations[optionalDistances[i] + 10];
+      if (additionalCombosB != null) {
+        precalculatedMods[i] = precalculatedMods[i].concat(additionalCombosB);
+      }
+
+      if (additionalCombosA != null) {
+        precalculatedMods[i] = additionalCombosA.concat(precalculatedMods[i]);
+      }
+    }
+  }
+  if (optimize == ModOptimizationStrategy.ReduceUsedMods) {
+    precalculatedMods.forEach((d) => {
+      d.sort((a, b) => {
+        if (a[3] == 0) return -1;
+        const ac = a[1] + a[2];
+        const bc = b[1] + b[2];
+        return ac - bc;
+      });
+    });
+  } else if (optimize == ModOptimizationStrategy.ReduceUsedModslots) {
+    precalculatedMods.forEach((d, idx) => {
+      const minorMul = idx in [1, 2, 4] ? 2 : 1;
+      const majorMul = idx in [1, 2, 4] ? 4 : 3;
+      d.sort((a, b) => {
+        if (a[3] == 0) return -1;
+        const ac = minorMul * a[1] + majorMul * a[2];
+        const bc = minorMul * b[1] + majorMul * b[2];
+        return ac - bc;
+      });
+    });
+  }
+
   // we have six stats with possible mod usage
   // we have to build every possible combination of mods and check if it is possible and if it is better than the current best
 
-  let bestUsedPoints = 1000;
-  let bestMods: any = [];
+  let bestMods: any = null;
 
   const availableModCostLen = availableModCost.length;
   const minAvailableModCost = availableModCost[availableModCostLen - 1];
-  const maxAvailableModCost = availableModCost[0];
+
+  // const maxAvailableModCost = availableModCost[0];
 
   function validateMods(usedModCost: number[]): boolean {
     let usedModCount = usedModCost.length;
@@ -756,7 +806,6 @@ function get_mods_precalc(
       [0, 0, 0, 0]
     );
 
-    if (sum[3] > bestUsedPoints) return false;
     if (sum[0] > availableArtificeCount) return false;
     if (sum[1] + sum[2] > availableModCostLen) return false;
     if (sum[3] < 0) return false;
@@ -809,14 +858,9 @@ function get_mods_precalc(
               if (sum[0] > availableArtificeCount) continue;
               if (sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0) continue;
 
-              const waste = sum[3];
-              if (waste < bestUsedPoints) {
-                //console.log("New best waste: " + waste, "Mods: " + mods, "Sum: " + sum, "Distances: " + distances)
-                bestUsedPoints = waste;
-                bestMods = mods;
+              bestMods = mods;
 
-                if (!optimize) break root;
-              }
+              break root;
             }
           }
         }
@@ -824,7 +868,7 @@ function get_mods_precalc(
     }
   }
 
-  if (bestUsedPoints === 1000) return null;
+  if (bestMods === null) return null;
 
   const usedMods = [];
   for (let i = 0; i < bestMods.length; i++) {

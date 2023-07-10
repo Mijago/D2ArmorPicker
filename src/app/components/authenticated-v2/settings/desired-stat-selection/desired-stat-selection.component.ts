@@ -24,6 +24,7 @@ import { InventoryService } from "../../../../services/inventory.service";
 import { ModInformation } from "../../../../data/ModInformation";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { ModOptimizationStrategy } from "../../../../data/enum/mod-optimization-strategy";
 
 function calcScore(d: number[]) {
   let score = 0;
@@ -46,6 +47,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   _statCombo4x100: ArmorStat[][] = [];
   _statCombo3x100: ArmorStat[][] = [];
   config_zero_waste = false;
+  config_mod_strategy = ModOptimizationStrategy.None;
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
     this.stats = Object.keys(ArmorStat)
@@ -66,6 +68,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.statsByMods = tmpStatsByMods;
       this.minimumStatTiers = c.minimumStatTiers;
       this.config_zero_waste = c.onlyShowResultsWithNoWastedStats;
+      this.config_mod_strategy = c.modOptimizationStrategy;
     });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
@@ -121,5 +124,11 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  setModOptimizationStrategy() {
+    this.config.modifyConfiguration((c) => {
+      c.modOptimizationStrategy = this.config_mod_strategy;
+    });
   }
 }
