@@ -17,6 +17,6 @@
 
 export enum ModOptimizationStrategy {
   None = 0,
-  ReduceUsedMods,
-  ReduceUsedModslots,
+  ReduceUsedModSockets,
+  ReduceUsedModPoints,
 }

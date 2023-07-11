@@ -139,8 +139,8 @@ export const precalculatedModCombinations: { [key: number]: [number, number, num
     [0, 0, 2, 20],
   ],
   18: [
-    [1, 3, 0, 18],
     [1, 1, 1, 18],
+    [1, 3, 0, 18],
     [3, 2, 0, 19],
     [3, 0, 1, 19],
     [5, 1, 0, 20],

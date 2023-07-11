@@ -170,18 +170,31 @@
 <br />
 <!-- modOptimizationStrategy -->
 <div>
-  <div> Mod optimization strategy: </div>
+  <div><b>Mod optimization strategy:</b></div>
+  <div>You can choose if the algorithm should keep an eye on amount or the cost of mods.</div>
   <mat-button-toggle-group
     [(ngModel)]="config_mod_strategy"
     (change)="setModOptimizationStrategy()">
-    <mat-button-toggle [value]="0">Reduce waste</mat-button-toggle>
-    <mat-button-toggle [value]="1">Reduce mod count</mat-button-toggle>
-    <mat-button-toggle [value]="2">Reduce mod cost</mat-button-toggle>
+    <mat-button-toggle
+      [value]="0"
+      matTooltip="Fast. Will result in good and fast results. Some better results *may* be skipped."
+      >No extra logic (fast)</mat-button-toggle
+    >
+    <mat-button-toggle
+      [value]="1"
+      matTooltip="Slower. Reduces the amount of used mods. This means that it will try to give you 4 mods instead of 5 whenever possible."
+      >Fewer mods, high cost (slow)</mat-button-toggle
+    >
+    <mat-button-toggle
+      [value]="2"
+      matTooltip="Slower. Reduces the total cost of mods. This will result in less Intellect mods, for example."
+      >Many mods, low cost (slow)</mat-button-toggle
+    >
   </mat-button-toggle-group>
 </div>
 <br />
 <div>
   <mat-slide-toggle color="primary" [checked]="config_reduce_waste" (change)="toggleReduceWaste()">
-    Add mods to reduce wasted stats
+    Add mods to reduce wasted stats (slower)
   </mat-slide-toggle>
 </div>

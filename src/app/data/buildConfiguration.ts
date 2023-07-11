@@ -120,7 +120,7 @@ export class BuildConfiguration {
       assumeClassItemMasterworked: true,
       limitParsedResults: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
-      tryLimitWastedStats: true,
+      tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       showPotentialTierColumn: false,

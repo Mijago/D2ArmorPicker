@@ -485,7 +485,7 @@ export function handlePermutation(
   const optionalDistances = [0, 0, 0, 0, 0, 0];
   if (config.tryLimitWastedStats)
     for (let stat: ArmorStat = 0; stat < 6; stat++) {
-      if (config.minimumStatTiers[stat].value * 10 < stats[stat]) {
+      if (distances[stat] == 0 && stats[stat] < 100) {
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }
@@ -736,29 +736,26 @@ function get_mods_precalc(
     modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
   ];
 
+  const limit = 3;
   for (let i = 0; i < optionalDistances.length; i++) {
     if (optionalDistances[i] > 0) {
       const additionalCombosA = modCombinations[optionalDistances[i]];
-      const additionalCombosB = modCombinations[optionalDistances[i] + 10];
-      if (additionalCombosB != null) {
-        precalculatedMods[i] = precalculatedMods[i].concat(additionalCombosB);
-      }
-
       if (additionalCombosA != null) {
-        precalculatedMods[i] = additionalCombosA.concat(precalculatedMods[i]);
+        precalculatedMods[i] = additionalCombosA.slice(0, limit).concat(precalculatedMods[i]);
       }
     }
   }
+  /*
   if (
-    optimize == ModOptimizationStrategy.ReduceUsedMods ||
-    optimize == ModOptimizationStrategy.ReduceUsedModslots
+    optimize == ModOptimizationStrategy.ReduceUsedModSockets ||
+    optimize == ModOptimizationStrategy.ReduceUsedModPoints
   ) {
     precalculatedMods.forEach((d, idx) => {
       const minorMul = idx in [1, 2, 4] ? 2 : 1;
       const majorMul = idx in [1, 2, 4] ? 4 : 3;
       d.sort((a, b) => {
         if (a[3] == 0) return 1;
-        if (optimize == ModOptimizationStrategy.ReduceUsedMods) {
+        if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
           const ac = a[1] + a[2];
           const bc = b[1] + b[2];
 
@@ -767,15 +764,20 @@ function get_mods_precalc(
 
         const ac = minorMul * a[1] + majorMul * a[2];
         const bc = minorMul * b[1] + majorMul * b[2];
-        return ac - bc;
+
+        if (ac != bc) return ac - bc;
+
+        return a[0] - b[0];
       });
     });
   }
+  //*/
 
   // we have six stats with possible mod usage
   // we have to build every possible combination of mods and check if it is possible and if it is better than the current best
 
   let bestMods: any = null;
+  let bestScore = 1000;
 
   const availableModCostLen = availableModCost.length;
   const minAvailableModCost = availableModCost[availableModCostLen - 1];
@@ -797,6 +799,22 @@ function get_mods_precalc(
     return true;
   }
 
+  const costMinor = [1, 2, 2, 1, 2, 1];
+  const costMajor = [3, 4, 4, 3, 4, 3];
+
+  function score(entries: [number, number, number, number][]) {
+    if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
+      const n1 = entries.reduce((a, b) => a + b[1] + b[2], 0);
+      return n1;
+    } else if (optimize == ModOptimizationStrategy.ReduceUsedModPoints) {
+      return entries.reduce(
+        (a, b, currentIndex) => a + costMinor[currentIndex] * b[1] + costMajor[currentIndex] * b[2],
+        0
+      );
+    }
+    return entries.reduce((a, b) => a + b[3], 0);
+  }
+
   function validate(
     entries: [number, number, number, number][],
     alsoValidateMods = false
@@ -807,6 +825,7 @@ function get_mods_precalc(
       [0, 0, 0, 0]
     );
 
+    if (score(entries) > bestScore) return false;
     if (sum[0] > availableArtificeCount) return false;
     if (sum[1] + sum[2] > availableModCostLen) return false;
     if (sum[3] < 0) return false;
@@ -845,7 +864,7 @@ function get_mods_precalc(
           if (!validate([mobility, resilience, recovery, discipline])) continue;
           for (let intellect of precalculatedMods[4]) {
             if (!validate([mobility, resilience, recovery, discipline, intellect])) continue;
-            for (let strength of precalculatedMods[5]) {
+            inner: for (let strength of precalculatedMods[5]) {
               let mods = [mobility, resilience, recovery, discipline, intellect, strength];
 
               if (!validate(mods, true)) continue;
@@ -859,9 +878,17 @@ function get_mods_precalc(
               if (sum[0] > availableArtificeCount) continue;
               if (sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0) continue;
 
-              bestMods = mods;
+              for (let m = 0; m < 6; m++)
+                if (optionalDistances[m] > 0 && mods[m][3] == 0 && bestMods != null) continue inner;
 
-              break root;
+              let scoreVal = score(mods);
+              if (scoreVal < bestScore) {
+                bestScore = scoreVal;
+                bestMods = mods;
+                if (optimize == ModOptimizationStrategy.None) {
+                  break root;
+                }
+              }
             }
           }
         }

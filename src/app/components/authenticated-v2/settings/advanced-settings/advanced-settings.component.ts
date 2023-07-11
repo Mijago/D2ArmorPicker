@@ -143,7 +143,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         ],
         "Wasted Stats": [
           {
-            name: "Try to optimize wasted stats",
+            name: "Try to optimize wasted stats (slower)",
             cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.tryLimitWastedStats = v)),
             value: c.tryLimitWastedStats,
             disabled: false,
@@ -158,7 +158,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               environment.featureFlags.enableZeroWaste &&
               c.tryLimitWastedStats &&
               c.onlyShowResultsWithNoWastedStats,
-            disabled: !c.tryLimitWastedStats || !environment.featureFlags.enableZeroWaste,
+            disabled: !environment.featureFlags.enableZeroWaste,
             impactsResultCount: true,
             help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results.",
           },

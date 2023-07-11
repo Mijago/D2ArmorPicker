@@ -30,7 +30,7 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.4.1",
-    date: "July 10, 2023",
+    date: "July 11, 2023",
     entries: [
       {
         type: ChangelogEntryType.ADD,
@@ -39,7 +39,12 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added the reduce wasted stats feature.",
+        text: "Re-added the reduce wasted stats feature. It is now disabled by default. It is a bit slower and not really necessary for most people.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Zero Waste is no longer dependent on the 'Reduce wasted stats' setting. In fact, it practically overwrites it.",
         issues: [],
       },
       {
