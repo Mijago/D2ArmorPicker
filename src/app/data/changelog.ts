@@ -29,9 +29,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
-    version: "2.4.1",
+    version: "2.4.2",
     date: "July 11, 2023",
     entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the ability to use collection roll armor. This is disabled by default. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the ability to use vendor armor, including Xur. This is disabled by default. Thanks to ciarán!",
+        issues: [],
+      },
       {
         type: ChangelogEntryType.ADD,
         text: "Added the ability to select the optimization strategy. You can now choose between 'Reduce waste', 'Reduce used mods' and 'Reduce used modslots'. The default is 'Reduce waste'.",

@@ -162,10 +162,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             name: "Only show builds with no wasted stats",
             cp: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.onlyShowResultsWithNoWastedStats = v)),
-            value:
-              environment.featureFlags.enableZeroWaste &&
-              c.tryLimitWastedStats &&
-              c.onlyShowResultsWithNoWastedStats,
+            value: environment.featureFlags.enableZeroWaste && c.onlyShowResultsWithNoWastedStats,
             disabled: !environment.featureFlags.enableZeroWaste,
             impactsResultCount: true,
             help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results.",
