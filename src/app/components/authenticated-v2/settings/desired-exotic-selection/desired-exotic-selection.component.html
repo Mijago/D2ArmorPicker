@@ -14,9 +14,6 @@
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
-
-<span><b>For the FotL mask, scroll down to the "Advanced Settings".</b></span>
-
 <div *ngFor="let itemGroup of exotics; let i = index" [@listAnimation]="itemGroup.length">
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}"
@@ -71,6 +68,30 @@
     color="primary"
     [checked]="includeCollectionRolls"
     (change)="setAllowCollectionRolls($event.checked)">
-    Include collection rolls
+    Include <u>exotic</u> collection rolls
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="includeVendorRolls"
+    (change)="setAllowVendorItems($event.checked)">
+    Inculde <u>legendary and exotic</u> vendor armor (slower)
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="allowBlueArmorPieces"
+    (change)="setAllowBlueArmorPieces($event.checked)">
+    Include white, blue and green items
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="!ignoreSunsetArmor"
+    (change)="setIgnoreSunsetArmor(!$event.checked)">
+    Include sunset armor
   </mat-slide-toggle>
 </div>

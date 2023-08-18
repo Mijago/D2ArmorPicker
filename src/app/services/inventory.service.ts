@@ -273,6 +273,9 @@ export class InventoryService {
   async getItemCountForClass(clazz: CharacterClass, slot?: ArmorSlot) {
     let pieces = await this.db.inventoryArmor.where("clazz").equals(clazz).toArray();
     if (!!slot) pieces = pieces.filter((i) => i.slot == slot);
+    //if (!this._config.includeVendorRolls) pieces = pieces.filter((i) => i.source != InventoryArmorSource.Vendor);
+    //if (!this._config.includeCollectionRolls) pieces = pieces.filter((i) => i.source != InventoryArmorSource.Collections);
+    pieces = pieces.filter((i) => i.source == InventoryArmorSource.Inventory);
     return pieces.length;
   }
 

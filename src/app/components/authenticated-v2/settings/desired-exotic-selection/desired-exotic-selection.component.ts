@@ -46,6 +46,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   selectedExotics: number[] = [];
   includeCollectionRolls = false;
   includeVendorRolls = false;
+  ignoreSunsetArmor = false;
+  allowBlueArmorPieces = false;
   currentClass: CharacterClass = CharacterClass.Titan;
   exotics: ClassExoticInfo[][] = [];
 
@@ -60,6 +62,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.includeCollectionRolls = c.includeCollectionRolls;
       this.includeVendorRolls = c.includeVendorRolls;
       this.selectedExotics = c.selectedExotics;
+      this.ignoreSunsetArmor = c.ignoreSunsetArmor;
+      this.allowBlueArmorPieces = c.allowBlueArmorPieces;
     });
 
     this.inventory.manifest
@@ -96,6 +100,24 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   setAllowCollectionRolls(allow: boolean) {
     this.config.modifyConfiguration((c) => {
       c.includeCollectionRolls = allow;
+    });
+  }
+
+  setAllowVendorItems(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.includeVendorRolls = allow;
+    });
+  }
+
+  setAllowBlueArmorPieces(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.allowBlueArmorPieces = allow;
+    });
+  }
+
+  setIgnoreSunsetArmor(ignore: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.ignoreSunsetArmor = ignore;
     });
   }
 

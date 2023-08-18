@@ -54,33 +54,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             help: "Only use a FotL masks. You will not get results if you do not own the mask.",
           },
         ],
-        "Armor selection": [
-          {
-            name: "Allow the usage of armor that is not exotic or legendary.",
-            cp: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.allowBlueArmorPieces = v)),
-            value: c.allowBlueArmorPieces,
-            disabled: false,
-            impactsResultCount: false,
-            help: "This setting allows the tool to use white, green and blue armor pieces.",
-          },
-          {
-            name: "Ignore sunset armor.",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.ignoreSunsetArmor = v)),
-            value: c.ignoreSunsetArmor,
-            disabled: false,
-            impactsResultCount: false,
-            help: "Ignore sunset armor in the results.",
-          },
-          {
-            name: "Include vendor items.",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.includeVendorRolls = v)),
-            value: c.includeVendorRolls,
-            disabled: false,
-            impactsResultCount: false,
-            help: "Include armor pieces that can currently be bought from a vendor.",
-          },
-        ],
         Masterwork: [
           {
             name: "Assume all legendary items are masterworked",
