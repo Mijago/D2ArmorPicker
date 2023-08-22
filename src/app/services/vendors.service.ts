@@ -124,7 +124,7 @@ export class VendorsService {
       return false;
     }
 
-    return nextVendorRefresh < new Date();
+    return nextVendorRefresh > new Date();
   }
 
   private async writeVendorCache(items: IInventoryArmor[], nextRefreshDate: Date) {
