@@ -52,7 +52,7 @@ export class VendorsService {
     });
 
     const vendorItems = Object.entries(vendorsResponse.Response.vendors.data!)
-      .filter(([_vendorHash, vendor]) => vendor.enabled && vendor.canPurchase)
+      .filter(([_vendorHash, vendor]) => vendor.enabled)
       .flatMap(([vendorHash, vendor]) => {
         const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
         const vendorItemStats =
