@@ -404,7 +404,7 @@ export class BungieApiService {
       return ArmorPerkOrSlot.GuardianGamesClassItem;
 
     const scks = v.sockets?.socketEntries ?? [];
-    if (scks.find((d) => d.reusablePlugSetHash == 1280)) return ArmorPerkOrSlot.SlotArtifice;
+    if (scks.find((d) => d.reusablePlugSetHash == 1311)) return ArmorPerkOrSlot.SlotArtifice;
     if (scks.find((d) => d.singleInitialItemHash == 3727270518))
       return ArmorPerkOrSlot.SlotArtifice;
 
