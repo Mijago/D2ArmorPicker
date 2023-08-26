@@ -519,14 +519,14 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3192552691,
   },
-  [ModOrAbility.ThreadOfContinuity]: {
-    id: ModOrAbility.ThreadOfContinuity,
-    name: "Thread of Continuity",
-    description: "Suspend, unravel, and sever effects applied to targets have increased duration.",
+  [ModOrAbility.ThreadOfPropagation]: {
+    id: ModOrAbility.ThreadOfPropagation,
+    name: "Thread of Propagation",
+    description: "Powered melee final blows grant your [Strand] Strand weapons Unraveling Rounds",
     type: ModifierType.Strand,
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 3192552690,
+    hash: 4208512210,
   },
 };
