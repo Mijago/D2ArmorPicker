@@ -36,26 +36,42 @@
             entry.description === undefined ||
             !!entry.description[characterClass]
           ">
-          <ng-container *ngVar="entry.valueFunction(tier) as currentTierValue">
+          <ng-container *ngVar="valueFunction(entry, tier) as currentTierValue">
             <td>{{ entry.name }}</td>
-            <td>{{ entry.formatting(currentTierValue) }}</td>
-            <ng-container *ngVar="entry.valueFunction(differenceTier) as selectedTierValue">
+            <td>{{ formatEntry(entry, currentTierValue) }}</td>
+            <ng-container *ngVar="valueFunction(entry, differenceTier) as selectedTierValue">
               <ng-container
                 *ngVar="
                   getPercentageDifference(currentTierValue, selectedTierValue) as tierDifference
                 ">
                 <td *ngIf="differenceTier !== tier">
                   <span
-                    [class.good]="tierDifference * entry.benefitDirection > 0"
-                    [class.bad]="tierDifference * entry.benefitDirection < 0"
+                    [class.good]="
+                      (entry.increaseIsImprovement && tierDifference > 0) ||
+                      (!entry.increaseIsImprovement && tierDifference < 0)
+                    "
+                    [class.bad]="
+                      !(
+                        (entry.increaseIsImprovement && tierDifference > 0) ||
+                        (!entry.increaseIsImprovement && tierDifference < 0)
+                      )
+                    "
                     *ngVar="-(selectedTierValue - currentTierValue) as dif">
-                    {{ dif > 0 ? "+" : "" }}{{ entry.formatting(dif) }}
+                    {{ dif > 0 ? "+" : "" }}{{ formatEntry(entry, dif) }}
                   </span>
                 </td>
                 <td *ngIf="differenceTier !== tier">
                   <span
-                    [class.good]="tierDifference * entry.benefitDirection > 0"
-                    [class.bad]="tierDifference * entry.benefitDirection < 0">
+                    [class.good]="
+                      (entry.increaseIsImprovement && tierDifference > 0) ||
+                      (!entry.increaseIsImprovement && tierDifference < 0)
+                    "
+                    [class.bad]="
+                      !(
+                        (entry.increaseIsImprovement && tierDifference > 0) ||
+                        (!entry.increaseIsImprovement && tierDifference < 0)
+                      )
+                    ">
                     ({{ tierDifference > 0 ? "+" : ""
                     }}{{ tierDifference * 100 | number : "1.0-0" }}%)
                   </span>
@@ -63,7 +79,7 @@
               </ng-container>
             </ng-container>
             <td>
-              {{ !!entry.description ? entry.description[characterClass] : "" }}
+              {{ entry.description }}
             </td>
           </ng-container>
         </tr>
