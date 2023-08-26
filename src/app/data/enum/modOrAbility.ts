@@ -78,5 +78,5 @@ export enum ModOrAbility {
   ThreadOfEvolution,
   ThreadOfBinding,
   ThreadOfGeneration,
-  ThreadOfContinuity,
+  ThreadOfPropagation,
 }
