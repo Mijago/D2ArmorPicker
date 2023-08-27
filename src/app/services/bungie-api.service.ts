@@ -455,6 +455,23 @@ export class BungieApiService {
     await this.db.vendorNames.bulkAdd(vendorInfo);
   }
 
+  private async updateAbilities(
+    manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
+  ) {
+    const allItems = manifestTables.DestinyInventoryItemDefinition;
+    const allAbilities: DestinyInventoryItemDefinition[] = [];
+
+    Object.values(allItems).forEach((item) => {
+      if (!item.itemCategoryHashes?.includes(1043342778)) {
+        return;
+      }
+
+      allAbilities.push(item);
+    });
+
+    localStorage.setItem("allAbilities", JSON.stringify(allAbilities));
+  }
+
   // Collect the data for exotic armor collectibles
   // this allows us to map a collection entry hash to the associated armor inventory item hash
   private async updateExoticCollectibles(
@@ -535,6 +552,7 @@ export class BungieApiService {
 
     await this.updateExoticCollectibles(manifestTables);
     await this.updateVendorNames(manifestTables);
+    await this.updateAbilities(manifestTables);
 
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)

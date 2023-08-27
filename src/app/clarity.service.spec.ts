@@ -55,7 +55,7 @@ fdescribe("ClarityService", () => {
   });
 
   it("should fetch the liva data", () => {
-    service.loadCharacterStats();
+    service.load();
 
     const req = httpTestingController.expectOne((req) => req.url.includes("CharacterStatInfo"));
     req.flush(JSON.stringify({}));
@@ -64,7 +64,7 @@ fdescribe("ClarityService", () => {
   it("should not fetch if there is cached data", () => {
     localStorage.setItem("clarity-character-stats", "{}");
 
-    service.loadCharacterStats();
+    service.load();
 
     httpTestingController.expectNone((req) => req.url.includes("CharacterStatInfo"));
   });

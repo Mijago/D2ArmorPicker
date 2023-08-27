@@ -21,9 +21,10 @@ import { Observable, BehaviorSubject, of } from "rxjs";
 
 import type { CharacterStats } from "./data/character_stats/schema";
 
-const CHARACTER_STATS_URL =
-  "https://raw.githubusercontent.com/Database-Clarity/Character-Stats/wip/versions/1.8/CharacterStatInfo-NI.json";
-const LOCAL_STORAGE_KEY = "clarity-character-stats";
+const BASE_URL = "https://raw.githubusercontent.com/Database-Clarity/Character-Stats/wip";
+const CHARACTER_STATS_URL = `${BASE_URL}/versions/1.8/CharacterStatInfo-NI.json`;
+
+const LOCAL_STORAGE_STATS_KEY = "clarity-character-stats";
 
 /**
  * TODO:
@@ -41,9 +42,13 @@ export class ClarityService {
 
   constructor(private http: HttpClient) {}
 
+  load() {
+    this.loadCharacterStats();
+  }
+
   // Load data from cache or fetch live data if necessary
-  loadCharacterStats() {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+  private loadCharacterStats() {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_STATS_KEY);
     if (storedData) {
       console.log("Using cached character stats data");
       this._characterStats.next(JSON.parse(storedData));
@@ -58,7 +63,7 @@ export class ClarityService {
       .get<CharacterStats>(CHARACTER_STATS_URL)
       .toPromise()
       .then((data) => {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+        localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
         this._characterStats.next(data);
       })
       .catch((err) => {

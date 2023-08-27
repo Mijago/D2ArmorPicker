@@ -37,7 +37,10 @@
             !!entry.description[characterClass]
           ">
           <ng-container *ngVar="valueFunction(entry, tier) as currentTierValue">
-            <td>{{ entry.name }}</td>
+            <td>
+              <img src="https://www.bungie.net/{{ entry.icon }}" *ngIf="entry.icon" />
+              {{ entry.name }}
+            </td>
             <td>{{ formatEntry(entry, currentTierValue) }}</td>
             <ng-container *ngVar="valueFunction(entry, differenceTier) as selectedTierValue">
               <ng-container

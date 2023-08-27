@@ -60,7 +60,11 @@ export class StatCooldownTooltipComponent implements OnInit {
 
   ngOnInit(): void {
     const statName = ArmorStatNames[this.stat] as keyof CharacterStats;
-    this.entries = this.characterStats.get(statName);
+    this.entries = this.characterStats.get(
+      statName,
+      this.config.readonlyConfigurationSnapshot.characterClass,
+      this.config.readonlyConfigurationSnapshot.selectedModElement
+    );
   }
 
   formatEntry(entry: CooldownEntry, value: number) {
