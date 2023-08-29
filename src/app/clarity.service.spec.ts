@@ -19,12 +19,19 @@ import { HttpClientTestingModule, HttpTestingController } from "@angular/common/
 import { HttpClient } from "@angular/common/http";
 import { TestBed } from "@angular/core/testing";
 
-import { ClarityService } from "./clarity.service";
+import {
+  ClarityService,
+  CHARACTER_STATS_URL,
+  UPDATES_URL,
+  SUPPORTED_SCHEMA_VERSION,
+  UpdateData,
+} from "./clarity.service";
 
-fdescribe("ClarityService", () => {
+describe("ClarityService", () => {
   let service: ClarityService;
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
+  let currentDataVersion: number = 0;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -34,38 +41,102 @@ fdescribe("ClarityService", () => {
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
 
-    let store: Record<string, string> = {};
-    const mockLocalStorage = {
-      getItem: (key: string): string | null => (key in store ? store[key] : null),
-      setItem: (key: string, value: string) => (store[key] = `${value}`),
-      removeItem: (key: string) => delete store[key],
-      clear: () => (store = {}),
-    };
-
-    spyOn(localStorage, "getItem").and.callFake(mockLocalStorage.getItem);
-    spyOn(localStorage, "setItem").and.callFake(mockLocalStorage.setItem);
-    spyOn(localStorage, "removeItem").and.callFake(mockLocalStorage.removeItem);
-    spyOn(localStorage, "clear").and.callFake(mockLocalStorage.clear);
+    localStorage.removeItem("clarity-character-stats");
+    localStorage.removeItem("clarity-character-stats-version");
 
     service = TestBed.inject(ClarityService);
+
+    service.characterStats.subscribe((data) => {
+      console.log("change:", data);
+      if (data) {
+        currentDataVersion = (data as any)!.version;
+      }
+    });
   });
 
   afterEach(() => {
     httpTestingController.verify();
   });
 
-  it("should fetch the liva data", () => {
-    service.load();
+  it("should fetch liva data if there is no cached data", (done) => {
+    expectStatsFetch(1);
 
-    const req = httpTestingController.expectOne((req) => req.url.includes("CharacterStatInfo"));
-    req.flush(JSON.stringify({}));
+    service.load().then(() => {
+      expect(currentDataVersion).toBe(1);
+      done();
+    });
+
+    expectVersionFetch();
   });
 
-  it("should not fetch if there is cached data", () => {
-    localStorage.setItem("clarity-character-stats", "{}");
+  it("should not fetch if there is cached data which matches the live version", (done) => {
+    const liveVersion = 12345;
 
-    service.load();
+    setCachedDataWithVersion(liveVersion);
 
-    httpTestingController.expectNone((req) => req.url.includes("CharacterStatInfo"));
+    service.load().then(() => {
+      expect(currentDataVersion).toBe(liveVersion);
+      done();
+    });
+
+    expectVersionFetch(liveVersion);
   });
+
+  it("should fetch live data if it is newer than the cached data", (done) => {
+    const liveVersion = 12345;
+
+    setCachedDataWithVersion(liveVersion - 1);
+
+    expectStatsFetch(liveVersion);
+
+    service.load().then(() => {
+      expect(currentDataVersion).toBe(liveVersion);
+      done();
+    });
+
+    expectVersionFetch(liveVersion);
+  });
+
+  it("should not fetch live data the schema does not match our supported version", (done) => {
+    setCachedDataWithVersion(1);
+
+    spyOn(console, "warn");
+    service.load().then(() => {
+      expect(console.warn).toHaveBeenCalledWith(
+        "Unsupported live character stats schema version",
+        "300.5"
+      );
+      expect(currentDataVersion).toBe(1);
+      done();
+    });
+
+    expectVersionFetch(2, "300.5");
+  });
+
+  function expectStatsFetch(version: number) {
+    setTimeout(() => {
+      expect(() => {
+        httpTestingController.expectOne(CHARACTER_STATS_URL).flush(JSON.stringify({ version }));
+      }).not.toThrow();
+    });
+  }
+
+  function expectVersionFetch(
+    lastUpdate: number = 1,
+    schemaVersion: string = SUPPORTED_SCHEMA_VERSION
+  ) {
+    expect(() => {
+      httpTestingController.expectOne(UPDATES_URL).flush(
+        JSON.stringify({
+          lastUpdate,
+          schemaVersion,
+        } as UpdateData)
+      );
+    }).not.toThrow();
+  }
+
+  function setCachedDataWithVersion(version: number) {
+    localStorage.setItem("clarity-character-stats", JSON.stringify({ version }));
+    localStorage.setItem("clarity-character-stats-version", version.toString());
+  }
 });

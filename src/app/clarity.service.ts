@@ -22,9 +22,17 @@ import { Observable, BehaviorSubject, of } from "rxjs";
 import type { CharacterStats } from "./data/character_stats/schema";
 
 const BASE_URL = "https://raw.githubusercontent.com/Database-Clarity/Character-Stats/wip";
-const CHARACTER_STATS_URL = `${BASE_URL}/versions/1.8/CharacterStatInfo-NI.json`;
+export const SUPPORTED_SCHEMA_VERSION = "1.8";
+export const CHARACTER_STATS_URL = `${BASE_URL}/versions/${SUPPORTED_SCHEMA_VERSION}/CharacterStatInfo-NI.json`;
+export const UPDATES_URL = `${BASE_URL}/update.json`;
 
+const LOCAL_STORAGE_STATS_VERSION_KEY = "clarity-character-stats-version";
 const LOCAL_STORAGE_STATS_KEY = "clarity-character-stats";
+
+export type UpdateData = {
+  lastUpdate: number;
+  schemaVersion: string;
+};
 
 /**
  * TODO:
@@ -42,32 +50,51 @@ export class ClarityService {
 
   constructor(private http: HttpClient) {}
 
-  load() {
-    this.loadCharacterStats();
+  async load() {
+    await this.loadCharacterStats();
+  }
+
+  private async fetchUpdateData(): Promise<UpdateData> {
+    return this.http
+      .get<string>(UPDATES_URL)
+      .toPromise()
+      .then((json) => JSON.parse(json));
   }
 
   // Load data from cache or fetch live data if necessary
-  private loadCharacterStats() {
+  private async loadCharacterStats() {
+    // If we have any stored data, we can just make it available right away
     const storedData = localStorage.getItem(LOCAL_STORAGE_STATS_KEY);
     if (storedData) {
-      console.log("Using cached character stats data");
       this._characterStats.next(JSON.parse(storedData));
-    } else {
-      console.log("Fetching character stats data");
-      this.fetchLiveCharacterStats();
+    }
+
+    const liveVersion = await this.fetchUpdateData();
+    const storedVersion = parseInt(localStorage.getItem(LOCAL_STORAGE_STATS_VERSION_KEY) || "0");
+
+    // There’s new data available
+    if (liveVersion.lastUpdate > storedVersion) {
+      if (liveVersion.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+        console.warn("Unsupported live character stats schema version", liveVersion.schemaVersion);
+      } else {
+        await this.fetchLiveCharacterStats()
+          .then((data) => {
+            localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
+            localStorage.setItem(LOCAL_STORAGE_STATS_VERSION_KEY, liveVersion.toString());
+
+            this._characterStats.next(data);
+          })
+          .catch((err) => {
+            console.log("Clarity fetch err", err);
+          });
+      }
     }
   }
 
-  private fetchLiveCharacterStats() {
-    this.http
-      .get<CharacterStats>(CHARACTER_STATS_URL)
+  private async fetchLiveCharacterStats(): Promise<CharacterStats> {
+    return this.http
+      .get<string>(CHARACTER_STATS_URL)
       .toPromise()
-      .then((data) => {
-        localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
-        this._characterStats.next(data);
-      })
-      .catch((err) => {
-        console.log("Clarity fetch err", err);
-      });
+      .then((json) => JSON.parse(json));
   }
 }
