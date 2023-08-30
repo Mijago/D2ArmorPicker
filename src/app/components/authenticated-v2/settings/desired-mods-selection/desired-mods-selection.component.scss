@@ -58,6 +58,11 @@
   padding-right: 4px;
   border-right: 1px solid currentColor;
   min-width: 150px;
+
+  app-item-icon {
+    float: left;
+    margin-right: 5px;
+  }
 }
 
 .mat-row {
