@@ -49,32 +49,14 @@
                 ">
                 <td *ngIf="differenceTier !== tier">
                   <span
-                    [class.good]="
-                      (entry.increaseIsImprovement && tierDifference > 0) ||
-                      (!entry.increaseIsImprovement && tierDifference < 0)
-                    "
-                    [class.bad]="
-                      !(
-                        (entry.increaseIsImprovement && tierDifference > 0) ||
-                        (!entry.increaseIsImprovement && tierDifference < 0)
-                      )
-                    "
+                    [class.good]="differenceTier < tier"
+                    [class.bad]="differenceTier > tier"
                     *ngVar="-(selectedTierValue - currentTierValue) as dif">
                     {{ dif > 0 ? "+" : "" }}{{ formatEntry(entry, dif) }}
                   </span>
                 </td>
                 <td *ngIf="differenceTier !== tier">
-                  <span
-                    [class.good]="
-                      (entry.increaseIsImprovement && tierDifference > 0) ||
-                      (!entry.increaseIsImprovement && tierDifference < 0)
-                    "
-                    [class.bad]="
-                      !(
-                        (entry.increaseIsImprovement && tierDifference > 0) ||
-                        (!entry.increaseIsImprovement && tierDifference < 0)
-                      )
-                    ">
+                  <span [class.good]="differenceTier < tier" [class.bad]="differenceTier > tier">
                     ({{ tierDifference > 0 ? "+" : ""
                     }}{{ tierDifference * 100 | number : "1.0-0" }}%)
                   </span>

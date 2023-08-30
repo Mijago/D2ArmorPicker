@@ -23,11 +23,6 @@ import { ModifierType } from "./data/enum/modifierType";
 import type { CharacterStats, Override } from "./data/character_stats/schema";
 import { DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 
-export enum BenefitDirection {
-  Positive = 1,
-  Negative = -1,
-}
-
 export enum CharacterStatType {
   Speed = 1,
   Percentage = 2,
@@ -39,7 +34,6 @@ export interface CooldownEntry {
   name: string;
   icon?: string;
   values: number[];
-  increaseIsImprovement?: boolean;
   description?: string;
   valueType?: CharacterStatType;
   characterClass?: CharacterClass;
@@ -85,19 +79,16 @@ export class CharacterStatsService {
         {
           key: "WalkSpeed",
           name: "Walk Speed",
-          increaseIsImprovement: true,
           valueType: CharacterStatType.Speed,
         },
         {
           key: "StrafeSpeed",
           name: "Strafe Speed",
-          increaseIsImprovement: true,
           valueType: CharacterStatType.Speed,
         },
         {
           key: "CrouchSpeed",
           name: "Crouch Speed",
-          increaseIsImprovement: true,
           valueType: CharacterStatType.Speed,
         },
       ]),
@@ -105,18 +96,15 @@ export class CharacterStatsService {
         {
           key: "TotalHP",
           name: "Total HP",
-          increaseIsImprovement: true,
         },
         {
           key: "PvEDamageResistance",
           name: "PvE Damage Resistance",
-          increaseIsImprovement: true,
           valueType: CharacterStatType.Percentage,
         },
         {
           key: "FlinchResistance",
           name: "Flinch Resistance",
-          increaseIsImprovement: true,
           valueType: CharacterStatType.Percentage,
         },
       ]),
@@ -135,7 +123,6 @@ export class CharacterStatsService {
           key: "HealthRegenSpeed",
           name: "Health Regen Speed",
           valueType: CharacterStatType.Time,
-          increaseIsImprovement: true,
         },
         {
           key: "ShieldRegenDelay",
@@ -146,7 +133,6 @@ export class CharacterStatsService {
           key: "ShieldRegenSpeed",
           name: "Shield Regen Speed",
           valueType: CharacterStatType.Time,
-          increaseIsImprovement: true,
         },
       ]),
       Discipline: this.generateEntries(data.Discipline, allAbilities),
