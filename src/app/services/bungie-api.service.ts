@@ -458,16 +458,14 @@ export class BungieApiService {
   private async updateAbilities(
     manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
   ) {
-    const allItems = manifestTables.DestinyInventoryItemDefinition;
-    const allAbilities: DestinyInventoryItemDefinition[] = [];
-
-    Object.values(allItems).forEach((item) => {
-      if (!item.itemCategoryHashes?.includes(1043342778)) {
-        return;
+    const allAbilities = Object.values(manifestTables.DestinyInventoryItemDefinition).filter(
+      (item) => {
+        // e.g. "hunter.arc.supers", "shared.arc.grenades"
+        return item.plug?.plugCategoryIdentifier?.match(
+          /\.(supers|grenades|class_abilities|melee|aspects|fragments)$/
+        );
       }
-
-      allAbilities.push(item);
-    });
+    );
 
     localStorage.setItem("allAbilities", JSON.stringify(allAbilities));
   }
