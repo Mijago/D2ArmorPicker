@@ -82,6 +82,10 @@
               </ng-container>
             </ng-container>
             <td>
+              <ng-container *ngFor="let itemHash of entry.overrideIcons">
+                <app-item-icon [itemHash]="itemHash"> </app-item-icon>
+              </ng-container>
+
               {{ entry.description }}
             </td>
           </ng-container>

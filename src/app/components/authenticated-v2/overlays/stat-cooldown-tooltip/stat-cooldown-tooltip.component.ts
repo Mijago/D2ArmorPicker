@@ -63,7 +63,8 @@ export class StatCooldownTooltipComponent implements OnInit {
     this.entries = this.characterStats.get(
       statName,
       this.config.readonlyConfigurationSnapshot.characterClass,
-      this.config.readonlyConfigurationSnapshot.selectedModElement
+      this.config.readonlyConfigurationSnapshot.selectedModElement,
+      this.config.readonlyConfigurationSnapshot.selectedExotics
     );
   }
 

@@ -54,11 +54,8 @@ export class ClarityService {
     await this.loadCharacterStats();
   }
 
-  private async fetchUpdateData(): Promise<UpdateData> {
-    return this.http
-      .get<string>(UPDATES_URL)
-      .toPromise()
-      .then((json) => JSON.parse(json));
+  private async fetchUpdateData() {
+    return this.http.get<UpdateData>(UPDATES_URL).toPromise();
   }
 
   // Load data from cache or fetch live data if necessary
@@ -91,10 +88,7 @@ export class ClarityService {
     }
   }
 
-  private async fetchLiveCharacterStats(): Promise<CharacterStats> {
-    return this.http
-      .get<string>(CHARACTER_STATS_URL)
-      .toPromise()
-      .then((json) => JSON.parse(json));
+  private async fetchLiveCharacterStats() {
+    return this.http.get<CharacterStats>(CHARACTER_STATS_URL).toPromise();
   }
 }

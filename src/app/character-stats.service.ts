@@ -20,7 +20,7 @@ import { ClarityService } from "./clarity.service";
 import { CharacterClass } from "./data/enum/character-Class";
 import { ModifierType } from "./data/enum/modifierType";
 
-import type { CharacterStats } from "./data/character_stats/schema";
+import type { CharacterStats, Override } from "./data/character_stats/schema";
 import { DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 
 export enum BenefitDirection {
@@ -35,6 +35,7 @@ export enum CharacterStatType {
 }
 
 export interface CooldownEntry {
+  hash?: number;
   name: string;
   icon?: string;
   values: number[];
@@ -43,6 +44,9 @@ export interface CooldownEntry {
   valueType?: CharacterStatType;
   characterClass?: CharacterClass;
   element?: ModifierType;
+
+  // If any items are affecting this entry’s cooldown their hash will be added to this list
+  overrideIcons?: number[];
 }
 
 /**
@@ -54,6 +58,7 @@ export interface CooldownEntry {
 })
 export class CharacterStatsService {
   private allStatEntries: Partial<Record<keyof CharacterStats, CooldownEntry[]>> = {};
+  private overrides: Override[] = [];
 
   constructor(private clarity: ClarityService) {
     this.clarity.characterStats.subscribe((data) => data && this.updateCharacterStats(data));
@@ -70,6 +75,10 @@ export class CharacterStatsService {
       acc.set(ability.hash, ability);
       return acc;
     }, new Map<number, DestinyInventoryItemDefinition>());
+
+    this.overrides = Object.values(data)
+      .map((stat) => stat.Overrides)
+      .flat();
 
     this.allStatEntries = {
       Mobility: this.generateEntries(data.Mobility, allAbilities, [
@@ -154,25 +163,35 @@ export class CharacterStatsService {
   get(
     statName: keyof CharacterStats,
     characterClass?: CharacterClass,
-    element?: ModifierType
+    element?: ModifierType,
+    exoticHashes: number[] = []
   ): CooldownEntry[] {
     const entries = this.allStatEntries[statName] ?? [];
 
-    return entries.filter((entry) => {
-      if (
-        characterClass !== undefined &&
-        entry.characterClass !== undefined &&
-        entry.characterClass !== characterClass
-      ) {
-        return false;
-      }
+    const exoticOverrides = this.overrides.filter((o) => exoticHashes.includes(o.Hash));
 
-      if (element !== undefined && entry.element !== undefined && entry.element !== element) {
-        return false;
-      }
+    return entries
+      .filter((entry) => {
+        if (
+          characterClass !== undefined &&
+          entry.characterClass !== undefined &&
+          entry.characterClass !== characterClass
+        ) {
+          return false;
+        }
 
-      return true;
-    });
+        if (element !== undefined && entry.element !== undefined && entry.element !== element) {
+          return false;
+        }
+
+        return true;
+      })
+      .map((entry) => {
+        return exoticOverrides.reduce(
+          (acc, override) => applyExoticArmorOverride(acc, override),
+          entry
+        );
+      });
   }
 
   private generateEntries<T extends CharacterStats[keyof CharacterStats]>(
@@ -209,6 +228,7 @@ export class CharacterStatsService {
       const { characterClass, element } = getClassAndElementForAbility(ability);
 
       const abilityData: CooldownEntry = {
+        hash: ability.hash,
         name: ability.displayProperties.name,
         icon: ability.displayProperties.icon,
         values: entry.Cooldowns,
@@ -259,4 +279,35 @@ function getClassAndElementForAbility(ability: DestinyInventoryItemDefinition): 
   }
 
   return { characterClass, element };
+}
+
+function applyExoticArmorOverride(originalEntry: CooldownEntry, override: Override): CooldownEntry {
+  if (!originalEntry.hash || !override.Requirements.includes(originalEntry.hash)) {
+    return originalEntry;
+  }
+
+  const entry: CooldownEntry = {
+    ...originalEntry,
+    overrideIcons: [...(originalEntry.overrideIcons ?? []), override.Hash],
+  };
+
+  if (override.CooldownOverride) {
+    return {
+      ...entry,
+      values: override.CooldownOverride,
+    };
+  }
+
+  if (override.Scalar) {
+    const reqIndex = override.Requirements.indexOf(originalEntry.hash);
+    const scalar = override.Scalar[reqIndex];
+
+    return {
+      ...entry,
+      values: entry.values.map((value) => value * scalar),
+    };
+  }
+
+  console.log("Unhandled override", override);
+  return originalEntry;
 }
