@@ -25,7 +25,7 @@ import { AuthService } from "../../../services/auth.service";
 import { NavigationEnd, Router } from "@angular/router";
 import { environment } from "../../../../environments/environment";
 import { ChangelogService } from "../../../services/changelog.service";
-import { CharacterStatsService } from "src/app/character-stats.service";
+import { CharacterStatsService } from "../../../services/character-stats.service";
 
 @Component({
   selector: "app-app-v2-core",

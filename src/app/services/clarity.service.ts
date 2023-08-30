@@ -19,7 +19,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable, BehaviorSubject, of } from "rxjs";
 
-import type { CharacterStats } from "./data/character_stats/schema";
+import type { CharacterStats } from "../data/character_stats/schema";
 
 const BASE_URL = "https://raw.githubusercontent.com/Database-Clarity/Character-Stats/wip";
 export const SUPPORTED_SCHEMA_VERSION = "1.8";

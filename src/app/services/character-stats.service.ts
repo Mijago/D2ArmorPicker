@@ -17,10 +17,9 @@
 
 import { Injectable } from "@angular/core";
 import { ClarityService } from "./clarity.service";
-import { CharacterClass } from "./data/enum/character-Class";
-import { ModifierType } from "./data/enum/modifierType";
-
-import type { CharacterStats, Override } from "./data/character_stats/schema";
+import { CharacterClass } from "../data/enum/character-Class";
+import { ModifierType } from "../data/enum/modifierType";
+import type { CharacterStats, Override } from "../data/character_stats/schema";
 import { DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 
 export enum CharacterStatType {

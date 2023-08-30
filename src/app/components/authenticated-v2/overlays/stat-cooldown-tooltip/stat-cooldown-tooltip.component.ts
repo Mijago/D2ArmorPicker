@@ -20,13 +20,12 @@ import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { formatTimeMMMSS } from "../../../../data/cooldowns/cooldown_definitions";
 import { CharacterClass } from "../../../../data/enum/character-Class";
 import { ConfigurationService } from "../../../../services/configuration.service";
-
-import { CharacterStats } from "src/app/data/character_stats/schema";
+import { CharacterStats } from "../../../../data/character_stats/schema";
 import {
   CharacterStatType,
   CharacterStatsService,
   CooldownEntry,
-} from "src/app/character-stats.service";
+} from "../../../../services/character-stats.service";
 
 const speedTextFormatter = (t: number) => (Math.round(t * 100) / 100).toFixed(2) + "m/s";
 
