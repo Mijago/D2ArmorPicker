@@ -47,7 +47,6 @@ describe("ClarityService", () => {
     service = TestBed.inject(ClarityService);
 
     service.characterStats.subscribe((data) => {
-      console.log("change:", data);
       if (data) {
         currentDataVersion = (data as any)!.version;
       }
@@ -116,7 +115,7 @@ describe("ClarityService", () => {
   function expectStatsFetch(version: number) {
     setTimeout(() => {
       expect(() => {
-        httpTestingController.expectOne(CHARACTER_STATS_URL).flush(JSON.stringify({ version }));
+        httpTestingController.expectOne(CHARACTER_STATS_URL).flush({ version });
       }).not.toThrow();
     });
   }
@@ -126,12 +125,10 @@ describe("ClarityService", () => {
     schemaVersion: string = SUPPORTED_SCHEMA_VERSION
   ) {
     expect(() => {
-      httpTestingController.expectOne(UPDATES_URL).flush(
-        JSON.stringify({
-          lastUpdate,
-          schemaVersion,
-        } as UpdateData)
-      );
+      httpTestingController.expectOne(UPDATES_URL).flush({
+        lastUpdate,
+        schemaVersion,
+      } as UpdateData);
     }).not.toThrow();
   }
 
