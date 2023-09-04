@@ -16,7 +16,7 @@
  */
 
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { TestBed } from "@angular/core/testing";
 
 import {
@@ -62,6 +62,9 @@ describe("ClarityService", () => {
 
     service.load().then(() => {
       expect(currentDataVersion).toBe(1);
+      expect(localStorage.getItem("clarity-character-stats-version")).toEqual(
+        currentDataVersion.toString()
+      );
       done();
     });
 
@@ -90,6 +93,9 @@ describe("ClarityService", () => {
 
     service.load().then(() => {
       expect(currentDataVersion).toBe(liveVersion);
+      expect(localStorage.getItem("clarity-character-stats-version")).toEqual(
+        liveVersion.toString()
+      );
       done();
     });
 
@@ -110,6 +116,46 @@ describe("ClarityService", () => {
     });
 
     expectVersionFetch(2, "300.5");
+  });
+
+  it("should fail gracefully if version fetch fails", (done) => {
+    spyOn(console, "warn");
+    service
+      .load()
+      .then(() => {
+        expect(console.warn).toHaveBeenCalledWith(
+          "Error loading Clarity data",
+          jasmine.any(HttpErrorResponse)
+        );
+        done();
+      })
+      .catch((err) => console.warn(err));
+
+    // Network error from version fetch
+    httpTestingController.expectOne(UPDATES_URL).error(new ProgressEvent("error"));
+  });
+
+  it("should fail gracefully if stats fetch fails", (done) => {
+    spyOn(console, "warn");
+
+    setTimeout(() => {
+      // Network error from stats fetch
+      httpTestingController.expectOne(CHARACTER_STATS_URL).error(new ProgressEvent("error"));
+    });
+
+    service
+      .load()
+      .then(() => {
+        expect(console.warn).toHaveBeenCalledWith(
+          "Error loading Clarity data",
+          jasmine.any(HttpErrorResponse)
+        );
+        done();
+      })
+      .catch((err) => console.warn(err));
+
+    // Network error from version fetch
+    expectVersionFetch(2);
   });
 
   function expectStatsFetch(version: number) {

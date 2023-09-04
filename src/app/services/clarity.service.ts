@@ -21,7 +21,7 @@ import { Observable, BehaviorSubject, of } from "rxjs";
 
 import type { CharacterStats } from "../data/character_stats/schema";
 
-const BASE_URL = "https://raw.githubusercontent.com/Database-Clarity/Character-Stats/wip";
+const BASE_URL = "https://Database-Clarity.github.io/Character-Stats";
 export const SUPPORTED_SCHEMA_VERSION = "1.8";
 export const CHARACTER_STATS_URL = `${BASE_URL}/versions/${SUPPORTED_SCHEMA_VERSION}/CharacterStatInfo-NI.json`;
 export const UPDATES_URL = `${BASE_URL}/update.json`;
@@ -51,7 +51,11 @@ export class ClarityService {
   constructor(private http: HttpClient) {}
 
   async load() {
-    await this.loadCharacterStats();
+    try {
+      await this.loadCharacterStats();
+    } catch (err) {
+      console.warn("Error loading Clarity data", err);
+    }
   }
 
   private async fetchUpdateData() {
@@ -70,20 +74,16 @@ export class ClarityService {
     const storedVersion = parseInt(localStorage.getItem(LOCAL_STORAGE_STATS_VERSION_KEY) || "0");
 
     // There’s new data available
-    if (liveVersion.lastUpdate > storedVersion) {
+    if (liveVersion && liveVersion.lastUpdate > storedVersion) {
       if (liveVersion.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
         console.warn("Unsupported live character stats schema version", liveVersion.schemaVersion);
-      } else {
-        await this.fetchLiveCharacterStats()
-          .then((data) => {
-            localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
-            localStorage.setItem(LOCAL_STORAGE_STATS_VERSION_KEY, liveVersion.toString());
+      } else if (liveVersion && liveVersion.lastUpdate !== undefined) {
+        await this.fetchLiveCharacterStats().then((data) => {
+          localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
+          localStorage.setItem(LOCAL_STORAGE_STATS_VERSION_KEY, liveVersion.lastUpdate.toString());
 
-            this._characterStats.next(data);
-          })
-          .catch((err) => {
-            console.log("Clarity fetch err", err);
-          });
+          this._characterStats.next(data);
+        });
       }
     }
   }
