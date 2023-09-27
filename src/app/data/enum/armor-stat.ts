@@ -146,6 +146,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SonarAmplifier]: "Sonar Amplifier",
   [ArmorPerkOrSlot.COUNT]: "",
 };
+
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
@@ -184,6 +185,33 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SonarAmplifier]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
   [ArmorPerkOrSlot.COUNT]: "",
+};
+
+// List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
+// GuardianGamesClassItem is excluded as these are checked by item hash
+export const ArmorPerkSocketHashes: EnumDictionary<
+  Exclude<
+    ArmorPerkOrSlot,
+    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT
+  >,
+  number
+> = {
+  [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
+  [ArmorPerkOrSlot.SonarAmplifier]: 2779380852,
+  [ArmorPerkOrSlot.SlotRootOfNightmares]: 4144354978,
+  [ArmorPerkOrSlot.SlotKingsFall]: 1728096240,
+  [ArmorPerkOrSlot.SlotCrotasEnd]: 717667840,
+  [ArmorPerkOrSlot.SlotLastWish]: 1679876242,
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: 3738398030,
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: 706611068,
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: 4055462131,
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: 2447143568,
+  [ArmorPerkOrSlot.PerkQueensFavor]: 1101259514,
+  [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
+  [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 400659041,
+  [ArmorPerkOrSlot.SeraphSensorArray]: 3525583702,
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
