@@ -114,6 +114,7 @@ export enum ArmorPerkOrSlot {
   PerkUniformedOfficer,
   SlotVowOfTheDisciple,
   SlotKingsFall,
+  SlotCrotasEnd,
   PerkPlunderersTrappings,
   SeraphSensorArray,
   SlotRootOfNightmares,
@@ -137,6 +138,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.SeraphSensorArray]: "Seraph Sensor Array",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
@@ -169,6 +171,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
   [ArmorPerkOrSlot.SlotKingsFall]:
     "https://www.bungie.net/common/destiny2_content/icons/0e515c7cf25a2f2350b788e6f5b7f8eb.png",
+  [ArmorPerkOrSlot.SlotCrotasEnd]:
+    "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]:
     "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
   [ArmorPerkOrSlot.SeraphSensorArray]:
@@ -195,6 +199,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkIronBanner]: 'perkname:"iron lord\'s pride"',
   [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
   [ArmorPerkOrSlot.SeraphSensorArray]: 'perkname:"seraph sensor array"',
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",

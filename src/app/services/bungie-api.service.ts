@@ -414,6 +414,8 @@ export class BungieApiService {
       return ArmorPerkOrSlot.SlotRootOfNightmares;
     if (scks.find((d) => d.singleInitialItemHash == 1728096240))
       return ArmorPerkOrSlot.SlotKingsFall;
+    if (scks.find((d) => d.singleInitialItemHash == 717667840))
+      return ArmorPerkOrSlot.SlotCrotasEnd;
     if (scks.find((d) => d.singleInitialItemHash == 1679876242))
       return ArmorPerkOrSlot.SlotLastWish;
     if (scks.find((d) => d.singleInitialItemHash == 3738398030))
