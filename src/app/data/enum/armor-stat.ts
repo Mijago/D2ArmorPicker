@@ -121,6 +121,7 @@ export enum ArmorPerkOrSlot {
   // A special case just for guardian games class items.
   GuardianGamesClassItem,
   SonarAmplifier,
+  SlotCrotasEnd,
   COUNT,
 }
 
@@ -142,6 +143,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
   [ArmorPerkOrSlot.PerkQueensFavor]: "Queen's Favor",
   [ArmorPerkOrSlot.SonarAmplifier]: "Sonar Amplifier",
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -179,6 +181,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/8d844c97fa13f4cb649358404d011be7.png",
   [ArmorPerkOrSlot.SonarAmplifier]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
+  [ArmorPerkOrSlot.SlotCrotasEnd]:
+    "https://www.bungie.net/common/destiny2_content/icons/d89e12c918cb0c6b1087b073ad14d6c2.png",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -200,6 +204,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.PerkQueensFavor]: 'perkname:"queen\'s favor"',
   [ArmorPerkOrSlot.SonarAmplifier]: 'perkname:"sonar amplifier"',
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 

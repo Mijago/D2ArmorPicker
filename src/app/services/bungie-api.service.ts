@@ -505,6 +505,8 @@ export class BungieApiService {
       return ArmorPerkOrSlot.PerkPlunderersTrappings;
     if ((scks?.filter((d) => d.singleInitialItemHash == 3525583702) || []).length > 0)
       return ArmorPerkOrSlot.SeraphSensorArray;
+    if ((scks?.filter((d) => d.singleInitialItemHash == 717667840 ) || []).length > 0)
+      return ArmorPerkOrSlot.SlotCrotasEnd;
 
     return ArmorPerkOrSlot.None;
   }

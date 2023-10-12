@@ -67,6 +67,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     ArmorPerkOrSlot.None,
     ArmorPerkOrSlot.PerkQueensFavor,
     ArmorPerkOrSlot.SonarAmplifier,
+    ArmorPerkOrSlot.SlotCrotasEnd,
     ArmorPerkOrSlot.SlotRootOfNightmares,
     ArmorPerkOrSlot.SlotKingsFall,
     ArmorPerkOrSlot.SlotVowOfTheDisciple,
