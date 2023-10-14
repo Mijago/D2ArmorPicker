@@ -52,7 +52,7 @@ export class VendorsService {
     });
 
     const vendorItems = Object.entries(vendorsResponse.Response.vendors.data!)
-      .filter(([_vendorHash, vendor]) => vendor.enabled && vendor.canPurchase)
+      .filter(([_vendorHash, vendor]) => vendor.enabled)
       .flatMap(([vendorHash, vendor]) => {
         const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
         const vendorItemStats =
@@ -124,7 +124,7 @@ export class VendorsService {
       return false;
     }
 
-    return nextVendorRefresh < new Date();
+    return nextVendorRefresh > new Date();
   }
 
   private async writeVendorCache(items: IInventoryArmor[], nextRefreshDate: Date) {
