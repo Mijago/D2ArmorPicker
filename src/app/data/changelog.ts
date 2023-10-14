@@ -29,6 +29,37 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.0",
+    date: "October 14, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "The stat cooldowns and values are now automatically updated from the Clarity database. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "The new modslots/perks are now available in the dropdown.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The stat cooldowns now show icons. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The fragments now show their icons. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor internal updates for DIM references. Thanks to bhollis!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.4.2",
     date: "July 11, 2023",
     entries: [
