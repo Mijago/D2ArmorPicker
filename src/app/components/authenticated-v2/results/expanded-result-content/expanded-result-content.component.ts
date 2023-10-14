@@ -39,10 +39,8 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { DestinyEnergyType, DestinyClass } from "bungie-api-ts/destiny2";
-import { ArmorSlot } from "../../../../data/enum/armor-slot";
-import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { ModifierType } from "../../../../data/enum/modifierType";
-import { BuildConfiguration, FixableSelection } from "../../../../data/buildConfiguration";
+import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY } from "../../../../data/masterworkCost";
@@ -50,8 +48,6 @@ import {
   AssumeArmorMasterwork,
   Loadout,
   LoadoutParameters,
-  LockArmorEnergyType,
-  UpgradeSpendTier,
 } from "@destinyitemmanager/dim-api-types";
 import { CharacterClass } from "src/app/data/enum/character-Class";
 import { MembershipService } from "src/app/services/membership.service";
