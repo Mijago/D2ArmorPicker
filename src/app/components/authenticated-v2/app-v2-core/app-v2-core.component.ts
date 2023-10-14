@@ -25,6 +25,7 @@ import { AuthService } from "../../../services/auth.service";
 import { NavigationEnd, Router } from "@angular/router";
 import { environment } from "../../../../environments/environment";
 import { ChangelogService } from "../../../services/changelog.service";
+import { CharacterStatsService } from "../../../services/character-stats.service";
 
 @Component({
   selector: "app-app-v2-core",
@@ -63,6 +64,7 @@ export class AppV2CoreComponent implements OnInit {
     private inv: InventoryService,
     private auth: AuthService,
     private router: Router,
+    private characterStats: CharacterStatsService,
     public changelog: ChangelogService
   ) {}
 
@@ -84,6 +86,8 @@ export class AppV2CoreComponent implements OnInit {
           this.navLinks.find((tab) => tab.link === this.router.url) as any
         );
     });
+
+    this.characterStats.loadCharacterStats();
   }
 
   async refreshAll(b: boolean) {

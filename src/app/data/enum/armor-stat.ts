@@ -114,6 +114,7 @@ export enum ArmorPerkOrSlot {
   PerkUniformedOfficer,
   SlotVowOfTheDisciple,
   SlotKingsFall,
+  SlotCrotasEnd,
   PerkPlunderersTrappings,
   SeraphSensorArray,
   SlotRootOfNightmares,
@@ -137,6 +138,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.SeraphSensorArray]: "Seraph Sensor Array",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
@@ -144,6 +146,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SonarAmplifier]: "Sonar Amplifier",
   [ArmorPerkOrSlot.COUNT]: "",
 };
+
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
@@ -169,6 +172,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
   [ArmorPerkOrSlot.SlotKingsFall]:
     "https://www.bungie.net/common/destiny2_content/icons/0e515c7cf25a2f2350b788e6f5b7f8eb.png",
+  [ArmorPerkOrSlot.SlotCrotasEnd]:
+    "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]:
     "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
   [ArmorPerkOrSlot.SeraphSensorArray]:
@@ -180,6 +185,33 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SonarAmplifier]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
   [ArmorPerkOrSlot.COUNT]: "",
+};
+
+// List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
+// GuardianGamesClassItem is excluded as these are checked by item hash
+export const ArmorPerkSocketHashes: EnumDictionary<
+  Exclude<
+    ArmorPerkOrSlot,
+    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT
+  >,
+  number
+> = {
+  [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
+  [ArmorPerkOrSlot.SonarAmplifier]: 2779380852,
+  [ArmorPerkOrSlot.SlotRootOfNightmares]: 4144354978,
+  [ArmorPerkOrSlot.SlotKingsFall]: 1728096240,
+  [ArmorPerkOrSlot.SlotCrotasEnd]: 717667840,
+  [ArmorPerkOrSlot.SlotLastWish]: 1679876242,
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: 3738398030,
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: 706611068,
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: 4055462131,
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: 2447143568,
+  [ArmorPerkOrSlot.PerkQueensFavor]: 1101259514,
+  [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
+  [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 400659041,
+  [ArmorPerkOrSlot.SeraphSensorArray]: 3525583702,
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -195,6 +227,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkIronBanner]: 'perkname:"iron lord\'s pride"',
   [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
+  [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
   [ArmorPerkOrSlot.SeraphSensorArray]: 'perkname:"seraph sensor array"',
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",

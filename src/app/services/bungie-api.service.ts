@@ -44,7 +44,7 @@ import {
   applyInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot } from "../data/enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorPerkSocketHashes } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
@@ -404,39 +404,17 @@ export class BungieApiService {
       return ArmorPerkOrSlot.GuardianGamesClassItem;
 
     const scks = v.sockets?.socketEntries ?? [];
+
+    // Is this necessary? the singleInitialItemHash is also being checked
     if (scks.find((d) => d.reusablePlugSetHash == 1311)) return ArmorPerkOrSlot.SlotArtifice;
-    if (scks.find((d) => d.singleInitialItemHash == 3727270518))
-      return ArmorPerkOrSlot.SlotArtifice;
 
-    if (scks.find((d) => d.singleInitialItemHash == 2779380852))
-      return ArmorPerkOrSlot.SonarAmplifier;
-    if (scks.find((d) => d.singleInitialItemHash == 4144354978))
-      return ArmorPerkOrSlot.SlotRootOfNightmares;
-    if (scks.find((d) => d.singleInitialItemHash == 1728096240))
-      return ArmorPerkOrSlot.SlotKingsFall;
-    if (scks.find((d) => d.singleInitialItemHash == 1679876242))
-      return ArmorPerkOrSlot.SlotLastWish;
-    if (scks.find((d) => d.singleInitialItemHash == 3738398030))
-      return ArmorPerkOrSlot.SlotVaultOfGlass;
-    if (scks.find((d) => d.singleInitialItemHash == 706611068))
-      return ArmorPerkOrSlot.SlotGardenOfSalvation;
-    if (scks.find((d) => d.singleInitialItemHash == 4055462131))
-      return ArmorPerkOrSlot.SlotDeepStoneCrypt;
-    if (scks.find((d) => d.singleInitialItemHash == 2447143568))
-      return ArmorPerkOrSlot.SlotVowOfTheDisciple;
-
-    if (scks.find((d) => d.singleInitialItemHash == 1101259514))
-      return ArmorPerkOrSlot.PerkQueensFavor;
-    if (scks.find((d) => d.singleInitialItemHash == 1180997867))
-      return ArmorPerkOrSlot.SlotNightmare;
-    if (scks.find((d) => d.singleInitialItemHash == 2472875850))
-      return ArmorPerkOrSlot.PerkIronBanner;
-    if (scks.find((d) => d.singleInitialItemHash == 2392155347))
-      return ArmorPerkOrSlot.PerkUniformedOfficer;
-    if (scks.find((d) => d.singleInitialItemHash == 400659041))
-      return ArmorPerkOrSlot.PerkPlunderersTrappings;
-    if (scks.find((d) => d.singleInitialItemHash == 3525583702))
-      return ArmorPerkOrSlot.SeraphSensorArray;
+    for (const socket of scks) {
+      const slotType =
+        ArmorPerkSocketHashes[socket.singleInitialItemHash as keyof typeof ArmorPerkSocketHashes];
+      if (slotType) {
+        return slotType;
+      }
+    }
 
     return ArmorPerkOrSlot.None;
   }
@@ -453,6 +431,21 @@ export class BungieApiService {
 
     await this.db.vendorNames.clear();
     await this.db.vendorNames.bulkAdd(vendorInfo);
+  }
+
+  private async updateAbilities(
+    manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
+  ) {
+    const allAbilities = Object.values(manifestTables.DestinyInventoryItemDefinition).filter(
+      (item) => {
+        // e.g. "hunter.arc.supers", "shared.arc.grenades"
+        return item.plug?.plugCategoryIdentifier?.match(
+          /\.(supers|grenades|class_abilities|melee|aspects|fragments)$/
+        );
+      }
+    );
+
+    localStorage.setItem("allAbilities", JSON.stringify(allAbilities));
   }
 
   // Collect the data for exotic armor collectibles
@@ -535,6 +528,7 @@ export class BungieApiService {
 
     await this.updateExoticCollectibles(manifestTables);
     await this.updateVendorNames(manifestTables);
+    await this.updateAbilities(manifestTables);
 
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)

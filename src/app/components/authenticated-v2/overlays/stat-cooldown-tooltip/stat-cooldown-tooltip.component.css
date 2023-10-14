@@ -45,3 +45,14 @@ table {
 th {
   white-space: nowrap;
 }
+
+img {
+  width: 24px;
+  height: 24px;
+  float: left;
+  margin-right: 3px;
+}
+
+tr {
+  line-height: 24px;
+}

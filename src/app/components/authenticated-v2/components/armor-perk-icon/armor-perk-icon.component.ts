@@ -32,6 +32,7 @@ export class ArmorPerkIconComponent {
 
   customIconMods = [
     ArmorPerkOrSlot.SlotKingsFall,
+    ArmorPerkOrSlot.SlotCrotasEnd,
     ArmorPerkOrSlot.SlotArtifice,
     ArmorPerkOrSlot.SlotVowOfTheDisciple,
     ArmorPerkOrSlot.SlotRootOfNightmares,
