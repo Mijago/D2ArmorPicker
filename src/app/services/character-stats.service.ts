@@ -54,7 +54,9 @@ export class CharacterStatsService {
   private overrides: Override[] = [];
 
   constructor(private clarity: ClarityService) {
-    this.clarity.characterStats.subscribe((data) => data && this.updateCharacterStats(data));
+    this.clarity.characterStats.subscribe((data) => {
+      if (data) this.updateCharacterStats(data);
+    });
   }
 
   loadCharacterStats() {
@@ -63,7 +65,9 @@ export class CharacterStatsService {
 
   private updateCharacterStats(data: CharacterStats) {
     const allAbilities = (
-      JSON.parse(window.localStorage.getItem("allAbilities")!) as DestinyInventoryItemDefinition[]
+      (JSON.parse(
+        window.localStorage.getItem("allAbilities")!
+      ) as DestinyInventoryItemDefinition[]) || []
     ).reduce((acc, ability) => {
       acc.set(ability.hash, ability);
       return acc;
