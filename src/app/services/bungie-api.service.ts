@@ -409,11 +409,14 @@ export class BungieApiService {
     if (scks.find((d) => d.reusablePlugSetHash == 1311)) return ArmorPerkOrSlot.SlotArtifice;
 
     for (const socket of scks) {
-      const slotType =
-        ArmorPerkSocketHashes[socket.singleInitialItemHash as keyof typeof ArmorPerkSocketHashes];
-      if (slotType) {
-        return slotType;
-      }
+      const socketHash = socket.singleInitialItemHash;
+      if (!socketHash) continue;
+
+      // find the key of ArmorPerkSocketHashes that matches the socketHash
+      const slotType = Object.entries(ArmorPerkSocketHashes).find(
+        (kvpair) => kvpair[1] == socketHash
+      );
+      if (slotType) return slotType[0] as unknown as ArmorPerkOrSlot;
     }
 
     return ArmorPerkOrSlot.None;
