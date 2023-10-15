@@ -31,7 +31,7 @@ const speedTextFormatter = (t: number) => (Math.round(t * 100) / 100).toFixed(2)
 
 function reformatTimeMMMSS(time: number) {
   var str = formatTimeMMMSS(time);
-  if (time < 0) str = "-" + str;
+  if (time < 0) str = "- " + str;
   return str;
 }
 @Component({
@@ -68,12 +68,17 @@ export class StatCooldownTooltipComponent implements OnInit {
   }
 
   formatEntry(entry: CooldownEntry, value: number) {
+    value = parseFloat(value.toFixed(2));
     if (entry.valueType === CharacterStatType.Speed) {
       return speedTextFormatter(value);
     }
 
     if (entry.valueType === CharacterStatType.Percentage) {
       return `${value}%`;
+    }
+
+    if (entry.valueType === CharacterStatType.PercentagePerSecond) {
+      return `${value}%/s`;
     }
 
     if (entry.valueType === CharacterStatType.Time) {

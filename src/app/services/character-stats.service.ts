@@ -26,6 +26,7 @@ export enum CharacterStatType {
   Speed = 1,
   Percentage = 2,
   Time = 3,
+  PercentagePerSecond = 4,
 }
 
 export interface CooldownEntry {
@@ -125,7 +126,7 @@ export class CharacterStatsService {
         {
           key: "HealthRegenSpeed",
           name: "Health Regen Speed",
-          valueType: CharacterStatType.Time,
+          valueType: CharacterStatType.PercentagePerSecond,
         },
         {
           key: "ShieldRegenDelay",
@@ -135,7 +136,7 @@ export class CharacterStatsService {
         {
           key: "ShieldRegenSpeed",
           name: "Shield Regen Speed",
-          valueType: CharacterStatType.Time,
+          valueType: CharacterStatType.PercentagePerSecond,
         },
       ]),
       Discipline: this.generateEntries(data.Discipline, allAbilities),
