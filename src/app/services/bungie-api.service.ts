@@ -416,7 +416,9 @@ export class BungieApiService {
       const slotType = Object.entries(ArmorPerkSocketHashes).find(
         (kvpair) => kvpair[1] == socketHash
       );
-      if (slotType) return slotType[0] as unknown as ArmorPerkOrSlot;
+      if (slotType) {
+        return parseInt(slotType[0]) as unknown as ArmorPerkOrSlot;
+      }
     }
 
     return ArmorPerkOrSlot.None;

@@ -83,7 +83,7 @@ function checkSlots(
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
   )
     return { valid: false };
-  // also return if we can not find the correct class item. pepepoint.
+  // also return if we can not find the correct class item.
   if (
     config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None &&
@@ -327,6 +327,8 @@ addEventListener("message", async ({ data }) => {
   const constHasOneExoticLength = selectedExotics.length <= 1;
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
+
+  console.log("hasArtificeClassItem", hasArtificeClassItem);
 
   let results: any[] = [];
   let resultsLength = 0;
