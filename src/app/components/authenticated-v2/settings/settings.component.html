@@ -24,7 +24,17 @@
   </mat-card>
   <mat-card>
     <mat-card-title>Select the stats you want to achieve</mat-card-title>
-    <mat-card-subtitle>The heart of this tool. Select the stats you want!</mat-card-subtitle>
+    <mat-card-subtitle
+      >The heart of this tool. Select the stats you want!
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        matTooltip="Cooldowns and Stats provided by Clarity."
+        #tooltip="matTooltip">
+        info
+      </mat-icon>
+    </mat-card-subtitle>
     <mat-card-content>
       <app-desired-stat-selection></app-desired-stat-selection>
     </mat-card-content>
