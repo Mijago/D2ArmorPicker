@@ -169,6 +169,40 @@ function prepareConstantAvailableModslots(config: BuildConfiguration) {
   return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
 }
 
+function* generateArmorCombinations(
+  helmets: IInventoryArmor[],
+  gauntlets: IInventoryArmor[],
+  chests: IInventoryArmor[],
+  legs: IInventoryArmor[],
+  constHasOneExoticLength: boolean,
+  requiresAtLeastOneExotic: boolean
+) {
+  for (let helmet of helmets) {
+    for (let gauntlet of gauntlets) {
+      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
+      for (let chest of chests) {
+        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
+          continue;
+        for (let leg of legs) {
+          if (
+            constHasOneExoticLength &&
+            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
+            leg.isExotic
+          )
+            continue;
+          if (
+            requiresAtLeastOneExotic &&
+            !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
+          )
+            continue;
+
+          yield [helmet, gauntlet, chest, leg];
+        }
+      }
+    }
+  }
+}
+
 addEventListener("message", async ({ data }) => {
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2");
@@ -338,84 +372,71 @@ addEventListener("message", async ({ data }) => {
   let doNotOutput = false;
 
   console.time("tm");
-  for (let helmet of helmets) {
-    for (let gauntlet of gauntlets) {
-      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
-      for (let chest of chests) {
-        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
-          continue;
-        for (let leg of legs) {
-          if (
-            constHasOneExoticLength &&
-            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
-            leg.isExotic
-          )
-            continue;
-          if (
-            requiresAtLeastOneExotic &&
-            !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
-          )
-            continue;
-          /**
-           *  At this point we already have:
-           *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
-           *  - disabled items were already removed (config.disabledItems)
-           */
 
-          const slotCheckResult = checkSlots(
-            config,
-            constantModslotRequirement,
-            availableClassItemPerkTypes,
-            helmet,
-            gauntlet,
-            chest,
-            leg
-          );
-          if (!slotCheckResult.valid) continue;
+  for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
+    helmets,
+    gauntlets,
+    chests,
+    legs,
+    constHasOneExoticLength,
+    requiresAtLeastOneExotic
+  )) {
+    /**
+     *  At this point we already have:
+     *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
+     *  - disabled items were already removed (config.disabledItems)
+     */
+    const slotCheckResult = checkSlots(
+      config,
+      constantModslotRequirement,
+      availableClassItemPerkTypes,
+      helmet,
+      gauntlet,
+      chest,
+      leg
+    );
+    if (!slotCheckResult.valid) continue;
 
-          const canUseArtificeClassItem =
-            !slotCheckResult.requiredClassItemType ||
-            slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
-          const result = handlePermutation(
-            runtime,
-            config,
-            helmet,
-            gauntlet,
-            chest,
-            leg,
-            constantBonus,
-            constantAvailableModslots,
-            doNotOutput,
-            hasArtificeClassItem && canUseArtificeClassItem
-          );
-          // Only add 50k to the list if the setting is activated.
-          // We will still calculate the rest so that we get accurate results for the runtime values
-          if (result != null) {
-            totalResults++;
-            if (result !== "DONOTSEND") {
-              result["classItem"] = {
-                perk:
-                  slotCheckResult.requiredClassItemType ||
-                  (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None),
-              };
+    const canUseArtificeClassItem =
+      !slotCheckResult.requiredClassItemType ||
+      slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
+    const result = handlePermutation(
+      runtime,
+      config,
+      helmet,
+      gauntlet,
+      chest,
+      leg,
+      constantBonus,
+      constantAvailableModslots,
+      doNotOutput,
+      hasArtificeClassItem && canUseArtificeClassItem
+    );
+    // Only add 50k to the list if the setting is activated.
+    // We will still calculate the rest so that we get accurate results for the runtime values
+    if (result != null) {
+      totalResults++;
+      if (result !== "DONOTSEND") {
+        result["classItem"] = {
+          perk:
+            slotCheckResult.requiredClassItemType ||
+            (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None),
+        };
 
-              results.push(result);
-              resultsLength++;
-              listedResults++;
-              doNotOutput =
-                doNotOutput ||
-                (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
-                listedResults >= 1e6 / threadSplit.count;
-            }
-          }
-          if (resultsLength >= 5000) {
-            // @ts-ignore
-            postMessage({ runtime, results, done: false, total: 0 });
-            results = [];
-            resultsLength = 0;
-          }
-        }
+        results.push(result);
+        resultsLength++;
+        listedResults++;
+        doNotOutput =
+          doNotOutput ||
+          (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
+          listedResults >= 1e6 / threadSplit.count;
       }
+    }
+    if (resultsLength >= 5000) {
+      // @ts-ignore
+      postMessage({ runtime, results, done: false, total: 0 });
+      results = [];
+      resultsLength = 0;
     }
   }
   console.timeEnd("tm");
