@@ -17,7 +17,7 @@
 
 import { Component, Input, OnInit } from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
-import { formatTimeMMMSS } from "../../../../data/cooldowns/cooldown_definitions";
+import { formatTimeMMMSS, formatTimeSplit } from "../../../../data/cooldowns/cooldown_definitions";
 import { CharacterClass } from "../../../../data/enum/character-Class";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { CharacterStats } from "../../../../data/character_stats/schema";
@@ -31,6 +31,11 @@ const speedTextFormatter = (t: number) => (Math.round(t * 100) / 100).toFixed(2)
 
 function reformatTimeMMMSS(time: number) {
   var str = formatTimeMMMSS(time);
+  if (time < 0) str = "- " + str;
+  return str;
+}
+function reformatTimeSplit(time: number) {
+  var str = formatTimeSplit(time);
   if (time < 0) str = "- " + str;
   return str;
 }
@@ -81,8 +86,12 @@ export class StatCooldownTooltipComponent implements OnInit {
       return `${value}%/s`;
     }
 
-    if (entry.valueType === CharacterStatType.Time) {
+    if (entry.valueType === CharacterStatType.TimeMMSS) {
       return reformatTimeMMMSS(value);
+    }
+
+    if (entry.valueType === CharacterStatType.Time) {
+      return reformatTimeSplit(value);
     }
 
     return value;

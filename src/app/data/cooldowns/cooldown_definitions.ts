@@ -31,6 +31,15 @@ export function formatTimeMMMSS(seconds: number) {
   var min = Math.floor(seconds / 60);
   var sec = Math.floor(seconds - min * 60);
 
+  return `${min}:${sec < 10 ? "0" : ""}${sec}`;
+}
+
+export function formatTimeSplit(seconds: number) {
+  seconds = Math.abs(seconds);
+  var ms = Math.floor((seconds % 1) * 10);
+  var min = Math.floor(seconds / 60);
+  var sec = Math.floor(seconds - min * 60);
+
   let str = `${sec}s`;
   if (ms > 0) str = `${sec}.${ms}s`;
   if (min > 0) str = `${min}m ${str}`;

@@ -26,7 +26,8 @@ export enum CharacterStatType {
   Speed = 1,
   Percentage = 2,
   Time = 3,
-  PercentagePerSecond = 4,
+  TimeMMSS = 4,
+  PercentagePerSecond = 5,
 }
 
 export interface CooldownEntry {
@@ -222,7 +223,7 @@ export class CharacterStatsService {
         name: ability.displayProperties.name,
         icon: ability.displayProperties.icon,
         values: entry.Cooldowns,
-        valueType: CharacterStatType.Time,
+        valueType: CharacterStatType.TimeMMSS,
         characterClass,
         element,
       };
