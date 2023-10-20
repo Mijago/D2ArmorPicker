@@ -536,7 +536,7 @@ export function handlePermutation(
   const optionalDistances = [0, 0, 0, 0, 0, 0];
   if (config.tryLimitWastedStats)
     for (let stat: ArmorStat = 0; stat < 6; stat++) {
-      if (distances[stat] == 0 && stats[stat] < 100) {
+      if (distances[stat] == 0 && stats[stat] < 100 && stats[stat] % 10 > 0) {
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }

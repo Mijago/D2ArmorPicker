@@ -57,6 +57,11 @@ export const CHANGELOG_DATA = [
         text: "Minor internal updates for DIM references. Thanks to bhollis!",
         issues: [],
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved the wasted stats selection, again!",
+        issues: [],
+      },
     ],
   },
   {
