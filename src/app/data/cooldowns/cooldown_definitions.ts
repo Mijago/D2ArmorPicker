@@ -27,7 +27,7 @@ export const CLASS_COOLDOWN_RATIO_PER_TIER = [
 
 export function formatTimeMMMSS(seconds: number) {
   seconds = Math.abs(seconds);
-  var ms = Math.floor((seconds % 1) * 10);
+  var ms = Math.floor((seconds * 10) % 10);
   var min = Math.floor(seconds / 60);
   var sec = Math.floor(seconds - min * 60);
 
@@ -36,7 +36,7 @@ export function formatTimeMMMSS(seconds: number) {
 
 export function formatTimeSplit(seconds: number) {
   seconds = Math.abs(seconds);
-  var ms = Math.floor((seconds % 1) * 10);
+  var ms = Math.floor((seconds * 10) % 10);
   var min = Math.floor(seconds / 60);
   var sec = Math.floor(seconds - min * 60);
 
