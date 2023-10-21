@@ -348,6 +348,26 @@ export class TheorizerPageComponent implements OnInit {
     this.calculating = true;
 
     const lp = await this.buildFromConfiguration();
+    console.log(lp);
+
+    // check lp.binaries for duplicates
+    const binaries = lp.binaries!;
+    const duplicates = binaries.filter((item, index) => binaries.indexOf(item) != index);
+    if (duplicates.length > 0) {
+      alert("Duplicate items in binary list: " + duplicates.join(", "));
+      this.calculating = false;
+      return;
+    }
+
+    // also check lp.generals
+    const generals = lp.generals!;
+    const duplicates2 = generals.filter((item, index) => generals.indexOf(item) != index);
+    if (duplicates2.length > 0) {
+      alert("Duplicate items in generals list: " + duplicates2.join(", "));
+      this.calculating = false;
+      return;
+    }
+
     this.lp = lp;
     this.startTimer();
     const result = await this.glpk.solve(lp);
@@ -549,6 +569,15 @@ export class TheorizerPageComponent implements OnInit {
     if (clazz != undefined) {
       items = items.filter((item) => item.clazz == clazz);
     }
+
+    // drop duplicates
+    items = items.filter((item, index) => {
+      return (
+        items.findIndex((i) => {
+          return i.itemInstanceId == item.itemInstanceId;
+        }) == index
+      );
+    });
 
     // items = items
     // config.onlyUseMasterworkedItems - only keep masterworked items
