@@ -521,4 +521,7 @@ export const precalculatedZeroWasteModCombinations: {
   60: [[5, 1, 4, 60]],
   61: [],
   62: [[4, 0, 5, 62]],
+  63: [],
+  64: [],
+  65: [[5, 0, 5, 65]],
 };

@@ -57,7 +57,9 @@ def factor_combinations_with_overflow(n, mustBeExact=False, exactValue=0):
 result = dict()
 result_zerowaste = dict()
 
-for n in range(1, 63):
+MAX_F = 10*5 + 5*3
+
+for n in range(1, MAX_F+1):
     fact = factor_combinations_with_overflow(n)
 
     # sort the tuples in fact.
@@ -65,6 +67,18 @@ for n in range(1, 63):
     # - minimize the 3rd value
     # - minimize the 2nd value
     fact = sorted(fact, key=lambda x: (x[3], x[2], x[1], x[0]))
+    
+    # remove every entry that is equal or higher in all values than any previous entry
+    fact = [tuple(x) for x in fact]
+    removed_entries = [
+        x for x in fact
+        if index_of_first(fact, lambda y: y[0] >= x[0] and y[1] >= x[1] and y[2] >= x[2]) == fact.index(x)
+    ]  
+    fact = [
+        x for x in fact
+        if index_of_first(fact, lambda y: y[0] <= x[0] and y[1] <= x[1] and y[2] <= x[2]) == fact.index(x)
+    ]
+    
     result[n] = fact
 
     fact2 = []

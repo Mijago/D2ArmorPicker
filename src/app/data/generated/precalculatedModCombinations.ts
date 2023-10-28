@@ -575,4 +575,7 @@ export const precalculatedModCombinations: { [key: number]: [number, number, num
   ],
   61: [[4, 0, 5, 62]],
   62: [[4, 0, 5, 62]],
+  63: [[5, 0, 5, 65]],
+  64: [[5, 0, 5, 65]],
+  65: [[5, 0, 5, 65]],
 };
