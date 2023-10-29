@@ -29,6 +29,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.1",
+    date: "October 29, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Exhumed Excess' Perk. The modslot limitations are now ordered. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added a solution for the stat distances 63, 64 and 65. You probably won't ever see it, as this is 'five artifice and five major mods'.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "'Fix wasted points' is now ignored for stats that are locked.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.0",
     date: "October 14, 2023",
     entries: [

@@ -19,7 +19,11 @@ const writeFile = require("fs").writeFile;
 
 const production = process.env.PRODUCTION === "1";
 const beta_branch = process.env.BETA === "1";
-const version = "2.5.0";
+const version = "2.5.1";
+
+console.log("production: " + production);
+console.log("beta_branch: " + beta_branch);
+console.log("version: " + version);
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
