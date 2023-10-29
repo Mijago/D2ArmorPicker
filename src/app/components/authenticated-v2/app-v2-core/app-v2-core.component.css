@@ -89,7 +89,7 @@
   cursor: pointer;
 }
 
-:host ::ng-deep .mat-tab-link {
+:host ::ng-deep .mat-mdc-tab-link {
   min-width: 75px;
   opacity: 1;
 }
