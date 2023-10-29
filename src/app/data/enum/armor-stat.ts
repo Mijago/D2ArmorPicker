@@ -104,86 +104,90 @@ export enum SpecialArmorStat {
 
 export enum ArmorPerkOrSlot {
   None,
-  SlotNightmare,
-  SlotArtifice,
-  SlotLastWish,
-  SlotGardenOfSalvation,
-  SlotDeepStoneCrypt,
-  SlotVaultOfGlass,
-  PerkIronBanner,
-  PerkUniformedOfficer,
-  SlotVowOfTheDisciple,
-  SlotKingsFall,
+  PerkExhumedExcess,
   SlotCrotasEnd,
-  PerkPlunderersTrappings,
-  SeraphSensorArray,
   SlotRootOfNightmares,
+  SlotKingsFall,
+  SlotVowOfTheDisciple,
+  SlotVaultOfGlass,
+  SlotDeepStoneCrypt,
+  SlotGardenOfSalvation,
+  SlotLastWish,
+  SlotArtifice,
+  PerkIronBanner,
+  SlotNightmare,
+  SonarAmplifier,
   PerkQueensFavor,
+  PerkSeraphSensorArray,
+  PerkPlunderersTrappings,
+  PerkUniformedOfficer,
   // A special case just for guardian games class items.
   GuardianGamesClassItem,
-  SonarAmplifier,
   COUNT,
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
-  [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
-  [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
-  [ArmorPerkOrSlot.SlotArtifice]: "Artifice Modslot",
-  [ArmorPerkOrSlot.SlotLastWish]: "Last Wish Modslot",
-  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "Garden of Salvation Modslot",
-  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "Deep Stone Crypt Modslot",
-  [ArmorPerkOrSlot.SlotVaultOfGlass]: "Vault of Glass Modslot",
-  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "Vow of the Disciple Modslot",
-  [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
-  [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
+  [ArmorPerkOrSlot.PerkExhumedExcess]: "Exhumed Excess",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
-  [ArmorPerkOrSlot.SeraphSensorArray]: "Seraph Sensor Array",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
-  [ArmorPerkOrSlot.PerkQueensFavor]: "Queen's Favor",
+  [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "Vow of the Disciple Modslot",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: "Vault of Glass Modslot",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "Deep Stone Crypt Modslot",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "Garden of Salvation Modslot",
+  [ArmorPerkOrSlot.SlotLastWish]: "Last Wish Modslot",
+  [ArmorPerkOrSlot.SlotArtifice]: "Artifice Modslot",
+  [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
+  [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
   [ArmorPerkOrSlot.SonarAmplifier]: "Sonar Amplifier",
+  [ArmorPerkOrSlot.PerkQueensFavor]: "Queen's Favor",
+  [ArmorPerkOrSlot.PerkSeraphSensorArray]: "Seraph Sensor Array",
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
+  [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
-  [ArmorPerkOrSlot.GuardianGamesClassItem]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyEventCardDefinition_ce6c2cf855dce694bcc89803b6bc44b7.png",
-  [ArmorPerkOrSlot.SlotNightmare]:
-    "https://www.bungie.net/common/destiny2_content/icons/53d6e3505cd03d4026b3dbbd9ccc19b6.jpg",
-  [ArmorPerkOrSlot.SlotArtifice]:
-    "https://www.bungie.net/common/destiny2_content/icons/46eec78bb7864641bbd7ba1fd4f9f248.png",
-  [ArmorPerkOrSlot.SlotLastWish]:
-    "https://www.bungie.net/common/destiny2_content/icons/76f0c1520fa384ceb27bd2469225dd8a.png",
-  [ArmorPerkOrSlot.SlotGardenOfSalvation]:
-    "https://www.bungie.net/common/destiny2_content/icons/53d6e3505cd03d4026b3dbbd9ccc19b6.jpg",
-  [ArmorPerkOrSlot.SlotDeepStoneCrypt]:
-    "https://www.bungie.net/common/destiny2_content/icons/d6452d010cfe72a51a9089ec68ab223c.png",
-  [ArmorPerkOrSlot.SlotVaultOfGlass]:
-    "https://www.bungie.net/common/destiny2_content/icons/7c9a2d95113de19c5acdbed57775abf4.png",
-  [ArmorPerkOrSlot.SlotVowOfTheDisciple]:
-    "https://www.bungie.net/common/destiny2_content/icons/b84b6ea72dd05de7123aa2ae87ba0d6a.png",
-  [ArmorPerkOrSlot.PerkIronBanner]:
-    "https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png",
-  [ArmorPerkOrSlot.PerkUniformedOfficer]:
-    "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
-  [ArmorPerkOrSlot.SlotKingsFall]:
-    "https://www.bungie.net/common/destiny2_content/icons/0e515c7cf25a2f2350b788e6f5b7f8eb.png",
+  [ArmorPerkOrSlot.PerkExhumedExcess]:
+    "https://www.bungie.net/common/destiny2_content/icons/8b10e265736c3ca1778c3f54fdb62bad.png",
   [ArmorPerkOrSlot.SlotCrotasEnd]:
     "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]:
-    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
-  [ArmorPerkOrSlot.SeraphSensorArray]:
-    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
   [ArmorPerkOrSlot.SlotRootOfNightmares]:
     "https://www.bungie.net/common/destiny2_content/icons/f2b6ec58e14244e4972705897667c246.png",
-  [ArmorPerkOrSlot.PerkQueensFavor]:
-    "https://www.bungie.net/common/destiny2_content/icons/8d844c97fa13f4cb649358404d011be7.png",
+  [ArmorPerkOrSlot.SlotKingsFall]:
+    "https://www.bungie.net/common/destiny2_content/icons/0e515c7cf25a2f2350b788e6f5b7f8eb.png",
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]:
+    "https://www.bungie.net/common/destiny2_content/icons/b84b6ea72dd05de7123aa2ae87ba0d6a.png",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]:
+    "https://www.bungie.net/common/destiny2_content/icons/7c9a2d95113de19c5acdbed57775abf4.png",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]:
+    "https://www.bungie.net/common/destiny2_content/icons/d6452d010cfe72a51a9089ec68ab223c.png",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]:
+    "https://www.bungie.net/common/destiny2_content/icons/53d6e3505cd03d4026b3dbbd9ccc19b6.jpg",
+  [ArmorPerkOrSlot.SlotLastWish]:
+    "https://www.bungie.net/common/destiny2_content/icons/76f0c1520fa384ceb27bd2469225dd8a.png",
+  [ArmorPerkOrSlot.SlotArtifice]:
+    "https://www.bungie.net/common/destiny2_content/icons/46eec78bb7864641bbd7ba1fd4f9f248.png",
+  [ArmorPerkOrSlot.PerkIronBanner]:
+    "https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png",
+  [ArmorPerkOrSlot.SlotNightmare]:
+    "https://www.bungie.net/common/destiny2_content/icons/53d6e3505cd03d4026b3dbbd9ccc19b6.jpg",
   [ArmorPerkOrSlot.SonarAmplifier]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
+  [ArmorPerkOrSlot.PerkQueensFavor]:
+    "https://www.bungie.net/common/destiny2_content/icons/8d844c97fa13f4cb649358404d011be7.png",
+  [ArmorPerkOrSlot.PerkSeraphSensorArray]:
+    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]:
+    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
+  [ArmorPerkOrSlot.PerkUniformedOfficer]:
+    "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
+  [ArmorPerkOrSlot.GuardianGamesClassItem]:
+    "https://www.bungie.net/common/destiny2_content/icons/DestinyEventCardDefinition_ce6c2cf855dce694bcc89803b6bc44b7.png",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -196,43 +200,45 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   >,
   number
 > = {
-  [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
-  [ArmorPerkOrSlot.SonarAmplifier]: 2779380852,
+  [ArmorPerkOrSlot.PerkExhumedExcess]: 717722696,
+  [ArmorPerkOrSlot.SlotCrotasEnd]: 717667840,
   [ArmorPerkOrSlot.SlotRootOfNightmares]: 4144354978,
   [ArmorPerkOrSlot.SlotKingsFall]: 1728096240,
-  [ArmorPerkOrSlot.SlotCrotasEnd]: 717667840,
-  [ArmorPerkOrSlot.SlotLastWish]: 1679876242,
-  [ArmorPerkOrSlot.SlotVaultOfGlass]: 3738398030,
-  [ArmorPerkOrSlot.SlotGardenOfSalvation]: 706611068,
-  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: 4055462131,
   [ArmorPerkOrSlot.SlotVowOfTheDisciple]: 2447143568,
-  [ArmorPerkOrSlot.PerkQueensFavor]: 1101259514,
-  [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: 3738398030,
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: 4055462131,
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: 706611068,
+  [ArmorPerkOrSlot.SlotLastWish]: 1679876242,
+  [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
   [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
+  [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
+  [ArmorPerkOrSlot.SonarAmplifier]: 2779380852,
+  [ArmorPerkOrSlot.PerkQueensFavor]: 1101259514,
+  [ArmorPerkOrSlot.PerkSeraphSensorArray]: 3525583702,
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: 400659041,
-  [ArmorPerkOrSlot.SeraphSensorArray]: 3525583702,
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "",
-  [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
-  [ArmorPerkOrSlot.SlotNightmare]: "modslot:nightmare",
-  [ArmorPerkOrSlot.SlotArtifice]: 'perkname:"artifice armor"',
-  [ArmorPerkOrSlot.SlotLastWish]: "modslot:lastwish",
-  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "modslot:gardenofsalvation",
-  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "modslot:deepstonecrypt",
-  [ArmorPerkOrSlot.SlotVaultOfGlass]: "modslot:vaultofglass",
-  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "source:vow",
-  [ArmorPerkOrSlot.PerkIronBanner]: 'perkname:"iron lord\'s pride"',
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
-  [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
+  [ArmorPerkOrSlot.PerkExhumedExcess]: 'perkname:"exhumed excess"',
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
-  [ArmorPerkOrSlot.SeraphSensorArray]: 'perkname:"seraph sensor array"',
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
-  [ArmorPerkOrSlot.PerkQueensFavor]: 'perkname:"queen\'s favor"',
+  [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
+  [ArmorPerkOrSlot.SlotVowOfTheDisciple]: "modslot:vowofthedisciple",
+  [ArmorPerkOrSlot.SlotVaultOfGlass]: "modslot:vaultofglass",
+  [ArmorPerkOrSlot.SlotDeepStoneCrypt]: "modslot:deepstonecrypt",
+  [ArmorPerkOrSlot.SlotGardenOfSalvation]: "modslot:gardenofsalvation",
+  [ArmorPerkOrSlot.SlotLastWish]: "modslot:lastwish",
+  [ArmorPerkOrSlot.SlotArtifice]: 'perkname:"artifice armor"',
+  [ArmorPerkOrSlot.PerkIronBanner]: 'perkname:"iron lord\'s pride"',
+  [ArmorPerkOrSlot.SlotNightmare]: "modslot:nightmare",
   [ArmorPerkOrSlot.SonarAmplifier]: 'perkname:"sonar amplifier"',
+  [ArmorPerkOrSlot.PerkQueensFavor]: 'perkname:"queen\'s favor"',
+  [ArmorPerkOrSlot.PerkSeraphSensorArray]: 'perkname:"seraph sensor array"',
+  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
+  [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
+  [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
