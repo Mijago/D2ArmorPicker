@@ -22,15 +22,19 @@ import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorStat } from "../data/enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
 import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
-import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
-import { DestinyClass, ItemBindStatus } from "bungie-api-ts/destiny2";
+import { IInventoryArmor, InventoryArmorSource, isEqualItem } from "../data/types/IInventoryArmor";
+import { DestinyClass, ItemBindStatus, TierType } from "bungie-api-ts/destiny2";
+import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
+import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
+import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
+import { FORCE_USE_NO_EXOTIC } from "../data/constants";
 
 type info = {
   results: ResultDefinition[];
@@ -161,14 +165,14 @@ export class InventoryService {
 
       // Do not update results in Help and Cluster pages
       if (this.shouldCalculateResults()) {
-        this.updateResults();
+        await this.updateResults();
       }
     } finally {
       this.refreshing = false;
     }
   }
 
-  updateResults(nthreads: number = 3) {
+  async updateResults(nthreads: number = 3) {
     this.clearResults();
 
     if (this.updatingResults) {
@@ -181,17 +185,97 @@ export class InventoryService {
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       let doneWorkerCount = 0;
 
-      let results: any[] = [];
+      let results: IPermutatorArmorSet[] = [];
       let totalPermutationCount = 0;
       let resultMaximumTiers: number[][] = [];
       let resultStatCombo3x100 = new Set<number>();
       let resultStatCombo4x100 = new Set<number>();
       const startTime = Date.now();
 
+      let config = this._config;
+      let selectedExotics: IManifestArmor[] = await Promise.all(
+        config.selectedExotics
+          .filter((hash) => hash != FORCE_USE_NO_EXOTIC)
+          .map(
+            async (hash) =>
+              (await this.db.manifestArmor.where("hash").equals(hash).first()) as IManifestArmor
+          )
+      );
+      selectedExotics = selectedExotics.filter((i) => !!i);
+
+      let itemz = (await this.db.inventoryArmor
+        .where("clazz")
+        .equals(config.characterClass)
+        .distinct()
+        .toArray()) as IInventoryArmor[];
+
+      itemz = itemz
+        // only armor :)
+        .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
+        // filter disabled items
+        .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
+        // filter collection/vendor rolls if not allowed
+        .filter((item) => {
+          switch (item.source) {
+            case InventoryArmorSource.Collections:
+              return config.includeCollectionRolls;
+            case InventoryArmorSource.Vendor:
+              return config.includeVendorRolls;
+            default:
+              return true;
+          }
+        })
+        // filter the selected exotic right here
+        .filter(
+          (item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic
+        )
+        .filter(
+          (item) =>
+            selectedExotics.length != 1 ||
+            selectedExotics[0].slot != item.slot ||
+            selectedExotics[0].hash == item.hash
+        )
+        // config.onlyUseMasterworkedItems - only keep masterworked items
+        .filter((item) => !config.onlyUseMasterworkedItems || item.masterworked)
+        // non-legendaries and non-exotics
+        .filter(
+          (item) =>
+            config.allowBlueArmorPieces ||
+            item.rarity == TierType.Exotic ||
+            item.rarity == TierType.Superior
+        )
+        // sunset armor
+        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset)
+        // armor perks
+        .filter((item) => {
+          return (
+            item.isExotic ||
+            !config.armorPerks[item.slot].fixed ||
+            config.armorPerks[item.slot].value == ArmorPerkOrSlot.None ||
+            config.armorPerks[item.slot].value == item.perk
+          );
+        });
+      // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
+
+      // Remove collection items if they are in inventory
+      itemz = itemz.filter((item) => {
+        if (item.source === InventoryArmorSource.Inventory) return true;
+
+        const purchasedItemInstance = items.find(
+          (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
+        );
+
+        // If this item is a collection/vendor item, ignore it if the player
+        // already has a real copy of the same item.
+        return purchasedItemInstance === undefined;
+      });
+
+      let items = itemz as unknown as IPermutatorArmor[];
+
       for (let n = 0; n < nthreads; n++) {
         const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
-        worker.onmessage = ({ data }) => {
-          results.push(data.results);
+        worker.onmessage = async ({ data }) => {
+          results.push(...(data.results as IPermutatorArmorSet[]));
           if (data.done == true) {
             doneWorkerCount++;
             totalPermutationCount += data.stats.permutationCount;
@@ -204,20 +288,71 @@ export class InventoryService {
             this.updatingResults = false;
 
             let endResults = [];
-            for (let result of results) {
-              endResults.push(...result);
-            }
 
-            // add extra fields for collection and vendor rolls
-            endResults = endResults.map((r) => {
-              r.usesCollectionRoll = r.items.some(
-                (i: IInventoryArmor[]) => i[0].source === InventoryArmorSource.Collections
-              );
-              r.usesVendorRoll = r.items.some(
-                (i: IInventoryArmor[]) => i[0].source === InventoryArmorSource.Vendor
-              );
-              return r;
-            });
+            for (let armorSet of results) {
+              let items = armorSet.armor.map((x) =>
+                itemz.find((y) => y.id == x)
+              ) as IInventoryArmor[];
+              let exotic = items.find((x) => x.isExotic);
+              let stats = getStatSum(items);
+              let v = {
+                exotic:
+                  exotic == null
+                    ? []
+                    : [
+                        {
+                          icon: exotic?.icon,
+                          watermark: exotic?.watermarkIcon,
+                          name: exotic?.name,
+                          hash: exotic?.hash,
+                        },
+                      ],
+                artifice: armorSet.usedArtifice,
+                modCount: armorSet.usedMods.length,
+                modCost: armorSet.usedMods.reduce(
+                  (p, d: StatModifier) => p + STAT_MOD_VALUES[d][2],
+                  0
+                ),
+                mods: armorSet.usedMods,
+                stats: armorSet.statsWithMods,
+                statsNoMods: stats,
+                tiers: getSkillTier(armorSet.statsWithMods),
+                waste: getWaste(armorSet.statsWithMods),
+                items: items.reduce(
+                  (p: any, instance) => {
+                    p[instance.slot - 1].push({
+                      energyLevel: instance.energyLevel,
+                      hash: instance.hash,
+                      itemInstanceId: instance.itemInstanceId,
+                      name: instance.name,
+                      exotic: !!instance.isExotic,
+                      masterworked: instance.masterworked,
+                      mayBeBugged: instance.mayBeBugged,
+                      slot: instance.slot,
+                      perk: instance.perk,
+                      transferState: 0, // TRANSFER_NONE
+                      stats: [
+                        instance.mobility,
+                        instance.resilience,
+                        instance.recovery,
+                        instance.discipline,
+                        instance.intellect,
+                        instance.strength,
+                      ],
+                      source: instance.source,
+                    });
+                    return p;
+                  },
+                  [[], [], [], []]
+                ),
+                classItem: armorSet.classItemPerk,
+                usesCollectionRoll: items.some(
+                  (v) => v.source === InventoryArmorSource.Collections
+                ),
+                usesVendorRoll: items.some((v) => v.source === InventoryArmorSource.Vendor),
+              } as unknown as ResultDefinition;
+              endResults.push(v);
+            }
 
             console.debug("endResults", endResults);
 
@@ -263,6 +398,8 @@ export class InventoryService {
             count: nthreads,
             current: n,
           },
+          items,
+          selectedExotics,
         });
       }
     } finally {

@@ -17,7 +17,8 @@
 
 import { ArmorSlot } from "../enum/armor-slot";
 import { IManifestArmor } from "./IManifestArmor";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
+import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
+import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export enum InventoryArmorSource {
   Inventory = 0,
@@ -25,23 +26,29 @@ export enum InventoryArmorSource {
   Vendor = 2,
 }
 
-export interface IInventoryArmor extends IManifestArmor {
+export interface IDestinyArmor {
   id: number;
-  itemInstanceId: string;
+  hash: number;
+  slot: ArmorSlot;
   masterworked: boolean;
-  mayBeBugged: boolean; // if there was an error in the parsing
+
   mobility: number;
   resilience: number;
   recovery: number;
   discipline: number;
   intellect: number;
   strength: number;
+
+  source: InventoryArmorSource;
+}
+
+export interface IInventoryArmor extends IManifestArmor, IDestinyArmor {
+  itemInstanceId: string;
+  mayBeBugged: boolean; // if there was an error in the parsing
   energyLevel: number;
 
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
-
-  source: InventoryArmorSource;
 }
 
 export function createArmorItem(
@@ -98,7 +105,7 @@ export function applyInvestmentStats(
 }
 
 // Returns true if the items are effectively equal in stats
-export function isEqualItem(a: IInventoryArmor, b: IInventoryArmor): boolean {
+export function isEqualItem(a: IDestinyArmor, b: IDestinyArmor): boolean {
   return (
     a.slot === b.slot &&
     a.hash === b.hash &&
