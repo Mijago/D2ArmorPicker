@@ -1,12 +1,4 @@
-import {
-  DestinyClass,
-  TierType,
-  DestinyItemInvestmentStatDefinition,
-  DestinyItemSocketEntryDefinition,
-} from "bungie-api-ts/destiny2";
-import { ArmorSlot } from "../enum/armor-slot";
 import { ArmorPerkOrSlot, StatModifier } from "../enum/armor-stat";
-import { InventoryArmorSource } from "./IInventoryArmor";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export interface IPermutatorArmorSet {

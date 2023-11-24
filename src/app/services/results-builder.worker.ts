@@ -16,15 +16,10 @@
  */
 
 import { BuildConfiguration } from "../data/buildConfiguration";
-import {
-  IDestinyArmor,
-  IInventoryArmor,
-  InventoryArmorSource,
-  isEqualItem,
-} from "../data/types/IInventoryArmor";
+import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC } from "../data/constants";
+import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
@@ -33,12 +28,7 @@ import {
   STAT_MOD_VALUES,
   StatModifier,
 } from "../data/enum/armor-stat";
-import { IManifestArmor } from "../data/types/IManifestArmor";
-import {
-  DestinyItemInvestmentStatDefinition,
-  DestinyItemSocketState,
-  TierType,
-} from "bungie-api-ts/destiny2";
+
 import { environment } from "../../environments/environment";
 
 import { precalculatedZeroWasteModCombinations } from "../data/generated/precalculatedZeroWasteModCombinations";
@@ -52,165 +42,6 @@ import {
 } from "../data/types/IPermutatorArmorSet";
 
 const db = new Database();
-
-function checkSlots(
-  config: BuildConfiguration,
-  constantModslotRequirement: number[],
-  availableClassItemTypes: Set<ArmorPerkOrSlot>,
-  helmet: IPermutatorArmor,
-  gauntlet: IPermutatorArmor,
-  chest: IPermutatorArmor,
-  leg: IPermutatorArmor
-) {
-  var exoticId = config.selectedExotics[0] || 0;
-  let requirements = constantModslotRequirement.slice();
-  if (
-    (exoticId <= 0 || helmet.hash != exoticId) &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
-  )
-    return { valid: false };
-  if (
-    (exoticId <= 0 || gauntlet.hash != exoticId) &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
-  )
-    return { valid: false };
-  if (
-    (exoticId <= 0 || chest.hash != exoticId) &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
-  )
-    return { valid: false };
-  if (
-    (exoticId <= 0 || leg.hash != exoticId) &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
-  )
-    return { valid: false };
-  // also return if we can not find the correct class item.
-  if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None &&
-    !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value)
-  )
-    return { valid: false };
-
-  requirements[helmet.perk]--;
-  requirements[gauntlet.perk]--;
-  requirements[chest.perk]--;
-  requirements[leg.perk]--;
-
-  // ignore exotic selection
-  if (exoticId > 0) {
-    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
-    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
-    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
-    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
-  }
-
-  let bad = 0;
-  for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) bad += Math.max(0, requirements[n]);
-
-  var requiredClassItemType = ArmorPerkOrSlot.None;
-  if (bad == 1) {
-    // search if we have a class item to fulfill the stats
-    var fixed = false;
-    for (let k = 1; k < ArmorPerkOrSlot.COUNT && !fixed; k++) {
-      if (requirements[k] <= 0) continue;
-      if (availableClassItemTypes.has(k)) {
-        fixed = true;
-        requiredClassItemType = k;
-      }
-    }
-    if (fixed) bad--;
-  } else if (
-    requiredClassItemType == ArmorPerkOrSlot.None &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
-  ) {
-    requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
-  }
-
-  // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
-
-  return { valid: bad <= 0, requiredClassItemType };
-}
-
-function prepareConstantStatBonus(config: BuildConfiguration) {
-  const constantBonus = [0, 0, 0, 0, 0, 0];
-  // Apply configurated mods to the stat value
-  // Apply mods
-  for (const mod of config.enabledMods) {
-    for (const bonus of ModInformation[mod].bonus) {
-      var statId =
-        bonus.stat == SpecialArmorStat.ClassAbilityRegenerationStat
-          ? [1, 0, 2][config.characterClass]
-          : bonus.stat;
-      constantBonus[statId] += bonus.value;
-    }
-  }
-  return constantBonus;
-}
-
-function prepareConstantModslotRequirement(config: BuildConfiguration) {
-  let constantPerkRequirement = [];
-  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantPerkRequirement.push(0);
-
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
-  return constantPerkRequirement;
-}
-
-function prepareConstantAvailableModslots(config: BuildConfiguration) {
-  var availableModCost: number[] = [];
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
-  return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
-}
-
-function* generateArmorCombinations(
-  helmets: IPermutatorArmor[],
-  gauntlets: IPermutatorArmor[],
-  chests: IPermutatorArmor[],
-  legs: IPermutatorArmor[],
-  constHasOneExoticLength: boolean,
-  requiresAtLeastOneExotic: boolean
-) {
-  for (let helmet of helmets) {
-    for (let gauntlet of gauntlets) {
-      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
-      for (let chest of chests) {
-        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
-          continue;
-        for (let leg of legs) {
-          if (
-            constHasOneExoticLength &&
-            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
-            leg.isExotic
-          )
-            continue;
-          if (
-            requiresAtLeastOneExotic &&
-            !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
-          )
-            continue;
-
-          yield [helmet, gauntlet, chest, leg];
-        }
-      }
-    }
-  }
-}
 
 addEventListener("message", async ({ data }) => {
   const startTime = Date.now();
@@ -388,17 +219,361 @@ addEventListener("message", async ({ data }) => {
   });
 });
 
-export function getStatSum(
-  items: IDestinyArmor[]
-): [number, number, number, number, number, number] {
-  return [
-    items[0].mobility + items[1].mobility + items[2].mobility + items[3].mobility,
-    items[0].resilience + items[1].resilience + items[2].resilience + items[3].resilience,
-    items[0].recovery + items[1].recovery + items[2].recovery + items[3].recovery,
-    items[0].discipline + items[1].discipline + items[2].discipline + items[3].discipline,
-    items[0].intellect + items[1].intellect + items[2].intellect + items[3].intellect,
-    items[0].strength + items[1].strength + items[2].strength + items[3].strength,
+function checkSlots(
+  config: BuildConfiguration,
+  constantModslotRequirement: number[],
+  availableClassItemTypes: Set<ArmorPerkOrSlot>,
+  helmet: IPermutatorArmor,
+  gauntlet: IPermutatorArmor,
+  chest: IPermutatorArmor,
+  leg: IPermutatorArmor
+) {
+  var exoticId = config.selectedExotics[0] || 0;
+  let requirements = constantModslotRequirement.slice();
+  if (
+    (exoticId <= 0 || helmet.hash != exoticId) &&
+    config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
+    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
+  )
+    return { valid: false };
+  if (
+    (exoticId <= 0 || gauntlet.hash != exoticId) &&
+    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
+    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
+  )
+    return { valid: false };
+  if (
+    (exoticId <= 0 || chest.hash != exoticId) &&
+    config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
+    config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
+  )
+    return { valid: false };
+  if (
+    (exoticId <= 0 || leg.hash != exoticId) &&
+    config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
+    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
+  )
+    return { valid: false };
+  // also return if we can not find the correct class item.
+  if (
+    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None &&
+    !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value)
+  )
+    return { valid: false };
+
+  requirements[helmet.perk]--;
+  requirements[gauntlet.perk]--;
+  requirements[chest.perk]--;
+  requirements[leg.perk]--;
+
+  // ignore exotic selection
+  if (exoticId > 0) {
+    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
+    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
+    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
+    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
+  }
+
+  let bad = 0;
+  for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) bad += Math.max(0, requirements[n]);
+
+  var requiredClassItemType = ArmorPerkOrSlot.None;
+  if (bad == 1) {
+    // search if we have a class item to fulfill the stats
+    var fixed = false;
+    for (let k = 1; k < ArmorPerkOrSlot.COUNT && !fixed; k++) {
+      if (requirements[k] <= 0) continue;
+      if (availableClassItemTypes.has(k)) {
+        fixed = true;
+        requiredClassItemType = k;
+      }
+    }
+    if (fixed) bad--;
+  } else if (
+    requiredClassItemType == ArmorPerkOrSlot.None &&
+    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
+  ) {
+    requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
+  }
+
+  // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
+
+  return { valid: bad <= 0, requiredClassItemType };
+}
+
+function prepareConstantStatBonus(config: BuildConfiguration) {
+  const constantBonus = [0, 0, 0, 0, 0, 0];
+  // Apply configurated mods to the stat value
+  // Apply mods
+  for (const mod of config.enabledMods) {
+    for (const bonus of ModInformation[mod].bonus) {
+      var statId =
+        bonus.stat == SpecialArmorStat.ClassAbilityRegenerationStat
+          ? [1, 0, 2][config.characterClass]
+          : bonus.stat;
+      constantBonus[statId] += bonus.value;
+    }
+  }
+  return constantBonus;
+}
+
+function prepareConstantModslotRequirement(config: BuildConfiguration) {
+  let constantPerkRequirement = [];
+  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantPerkRequirement.push(0);
+
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
+  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
+  return constantPerkRequirement;
+}
+
+function prepareConstantAvailableModslots(config: BuildConfiguration) {
+  var availableModCost: number[] = [];
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value);
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value);
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
+  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
+  return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
+}
+
+function* generateArmorCombinations(
+  helmets: IPermutatorArmor[],
+  gauntlets: IPermutatorArmor[],
+  chests: IPermutatorArmor[],
+  legs: IPermutatorArmor[],
+  constHasOneExoticLength: boolean,
+  requiresAtLeastOneExotic: boolean
+) {
+  for (let helmet of helmets) {
+    for (let gauntlet of gauntlets) {
+      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
+      for (let chest of chests) {
+        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
+          continue;
+        for (let leg of legs) {
+          if (
+            constHasOneExoticLength &&
+            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
+            leg.isExotic
+          )
+            continue;
+          if (
+            requiresAtLeastOneExotic &&
+            !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
+          )
+            continue;
+
+          yield [helmet, gauntlet, chest, leg];
+        }
+      }
+    }
+  }
+}
+
+function get_mods_precalc(
+  config: BuildConfiguration,
+  distances: number[],
+  optionalDistances: number[],
+  availableArtificeCount: number,
+  availableModCost: number[],
+  optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
+): StatModifier[] | null {
+  // check distances <= 62
+  if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 62)
+    return null;
+
+  const modCombinations = config.onlyShowResultsWithNoWastedStats
+    ? precalculatedZeroWasteModCombinations
+    : precalculatedModCombinations;
+
+  // grab the precalculated mods for the distances
+  const precalculatedMods = [
+    modCombinations[distances[0]] || [[0, 0, 0, 0]], // mobility
+    modCombinations[distances[1]] || [[0, 0, 0, 0]], // resilience
+    modCombinations[distances[2]] || [[0, 0, 0, 0]], // recovery
+    modCombinations[distances[3]] || [[0, 0, 0, 0]], // discipline
+    modCombinations[distances[4]] || [[0, 0, 0, 0]], // intellect
+    modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
   ];
+
+  const limit = 3;
+  for (let i = 0; i < optionalDistances.length; i++) {
+    if (optionalDistances[i] > 0) {
+      const additionalCombosA = modCombinations[optionalDistances[i]];
+      if (additionalCombosA != null) {
+        precalculatedMods[i] = additionalCombosA.slice(0, limit).concat(precalculatedMods[i]);
+      }
+    }
+  }
+  /*
+  if (
+    optimize == ModOptimizationStrategy.ReduceUsedModSockets ||
+    optimize == ModOptimizationStrategy.ReduceUsedModPoints
+  ) {
+    precalculatedMods.forEach((d, idx) => {
+      const minorMul = idx in [1, 2, 4] ? 2 : 1;
+      const majorMul = idx in [1, 2, 4] ? 4 : 3;
+      d.sort((a, b) => {
+        if (a[3] == 0) return 1;
+        if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
+          const ac = a[1] + a[2];
+          const bc = b[1] + b[2];
+
+          if (ac != bc) return ac - bc;
+        }
+
+        const ac = minorMul * a[1] + majorMul * a[2];
+        const bc = minorMul * b[1] + majorMul * b[2];
+
+        if (ac != bc) return ac - bc;
+
+        return a[0] - b[0];
+      });
+    });
+  }
+  //*/
+
+  // we have six stats with possible mod usage
+  // we have to build every possible combination of mods and check if it is possible and if it is better than the current best
+
+  let bestMods: any = null;
+  let bestScore = 1000;
+
+  const availableModCostLen = availableModCost.length;
+  const minAvailableModCost = availableModCost[availableModCostLen - 1];
+
+  // const maxAvailableModCost = availableModCost[0];
+
+  function validateMods(usedModCost: number[]): boolean {
+    let usedModCount = usedModCost.length;
+    if (usedModCount == 0) return true;
+    if (usedModCount > availableModCostLen) return false;
+    // sort usedMods ascending
+    usedModCost.sort((a, b) => b - a);
+    // check if the usedMods are valid
+    // substract the usedMods from the availableMods, start at the highest cost
+    for (let i = 0; i < availableModCost.length && i < usedModCount; i++) {
+      if (availableModCost[i] < usedModCost[i]) return false;
+    }
+
+    return true;
+  }
+
+  const costMinor = [1, 2, 2, 1, 2, 1];
+  const costMajor = [3, 4, 4, 3, 4, 3];
+
+  function score(entries: [number, number, number, number][]) {
+    if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
+      const n1 = entries.reduce((a, b) => a + b[1] + b[2], 0);
+      return n1;
+    } else if (optimize == ModOptimizationStrategy.ReduceUsedModPoints) {
+      return entries.reduce(
+        (a, b, currentIndex) => a + costMinor[currentIndex] * b[1] + costMajor[currentIndex] * b[2],
+        0
+      );
+    }
+    return entries.reduce((a, b) => a + b[3], 0);
+  }
+
+  function validate(
+    entries: [number, number, number, number][],
+    alsoValidateMods = false
+  ): boolean {
+    // sum up the stats
+    const sum = entries.reduce(
+      (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
+      [0, 0, 0, 0]
+    );
+
+    if (score(entries) > bestScore) return false;
+    if (sum[0] > availableArtificeCount) return false;
+    if (sum[1] + sum[2] > availableModCostLen) return false;
+    if (sum[3] < 0) return false;
+
+    // test availableModCosts
+    // the used mods translate as follows:
+    // entries[0], entries[3] and entries[5]: minor 1, major 3
+    // entries[1], entries[2] and entries[4]: minor 2, major 4
+
+    if (!alsoValidateMods || minAvailableModCost == 5) return true;
+
+    let usedModCost: number[] = [];
+    for (let statIdx = 0; statIdx < entries.length; statIdx++) {
+      const entry = entries[statIdx];
+      const isSmallMod = statIdx == 0 || statIdx == 3 || statIdx == 5;
+      let minorModCost = isSmallMod ? 1 : 2;
+      let majorModCost = isSmallMod ? 3 : 4;
+
+      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(minorModCost);
+      for (let major = 0; major < entry[2]; major++) usedModCost.push(majorModCost);
+    }
+
+    if (usedModCost.length == 0) return true;
+    if (!validateMods(usedModCost)) return false;
+
+    return true;
+  }
+
+  root: for (let mobility of precalculatedMods[0]) {
+    if (!validate([mobility])) continue;
+    for (let resilience of precalculatedMods[1]) {
+      if (!validate([mobility, resilience])) continue;
+      for (let recovery of precalculatedMods[2]) {
+        if (!validate([mobility, resilience, recovery])) continue;
+        for (let discipline of precalculatedMods[3]) {
+          if (!validate([mobility, resilience, recovery, discipline])) continue;
+          for (let intellect of precalculatedMods[4]) {
+            if (!validate([mobility, resilience, recovery, discipline, intellect])) continue;
+            inner: for (let strength of precalculatedMods[5]) {
+              let mods = [mobility, resilience, recovery, discipline, intellect, strength];
+
+              if (!validate(mods, true)) continue;
+
+              const sum = mods.reduce(
+                (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
+                [0, 0, 0, 0]
+              );
+
+              if (sum[3] < 0) continue; // did not reach the target
+              if (sum[0] > availableArtificeCount) continue;
+              if (sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0) continue;
+
+              for (let m = 0; m < 6; m++)
+                if (optionalDistances[m] > 0 && mods[m][3] == 0 && bestMods != null) continue inner;
+
+              let scoreVal = score(mods);
+              if (scoreVal < bestScore) {
+                bestScore = scoreVal;
+                bestMods = mods;
+                if (optimize == ModOptimizationStrategy.None) {
+                  break root;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (bestMods === null) return null;
+
+  const usedMods = [];
+  for (let i = 0; i < bestMods.length; i++) {
+    for (let n = 0; n < bestMods[i][0]; n++) usedMods.push(3 + 3 * i);
+    for (let n = 0; n < bestMods[i][1]; n++) usedMods.push(1 + 3 * i);
+    for (let n = 0; n < bestMods[i][2]; n++) usedMods.push(2 + 3 * i);
+  }
+
+  return usedMods;
 }
 
 export function handlePermutation(
@@ -651,202 +826,17 @@ export function handlePermutation(
   return createArmorSet(helmet, gauntlet, chest, leg, usedArtifice, usedMods, stats);
 }
 
-function get_mods_precalc(
-  config: BuildConfiguration,
-  distances: number[],
-  optionalDistances: number[],
-  availableArtificeCount: number,
-  availableModCost: number[],
-  optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
-): StatModifier[] | null {
-  // check distances <= 62
-  if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 62)
-    return null;
-
-  const modCombinations = config.onlyShowResultsWithNoWastedStats
-    ? precalculatedZeroWasteModCombinations
-    : precalculatedModCombinations;
-
-  // grab the precalculated mods for the distances
-  const precalculatedMods = [
-    modCombinations[distances[0]] || [[0, 0, 0, 0]], // mobility
-    modCombinations[distances[1]] || [[0, 0, 0, 0]], // resilience
-    modCombinations[distances[2]] || [[0, 0, 0, 0]], // recovery
-    modCombinations[distances[3]] || [[0, 0, 0, 0]], // discipline
-    modCombinations[distances[4]] || [[0, 0, 0, 0]], // intellect
-    modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
+export function getStatSum(
+  items: IDestinyArmor[]
+): [number, number, number, number, number, number] {
+  return [
+    items[0].mobility + items[1].mobility + items[2].mobility + items[3].mobility,
+    items[0].resilience + items[1].resilience + items[2].resilience + items[3].resilience,
+    items[0].recovery + items[1].recovery + items[2].recovery + items[3].recovery,
+    items[0].discipline + items[1].discipline + items[2].discipline + items[3].discipline,
+    items[0].intellect + items[1].intellect + items[2].intellect + items[3].intellect,
+    items[0].strength + items[1].strength + items[2].strength + items[3].strength,
   ];
-
-  const limit = 3;
-  for (let i = 0; i < optionalDistances.length; i++) {
-    if (optionalDistances[i] > 0) {
-      const additionalCombosA = modCombinations[optionalDistances[i]];
-      if (additionalCombosA != null) {
-        precalculatedMods[i] = additionalCombosA.slice(0, limit).concat(precalculatedMods[i]);
-      }
-    }
-  }
-  /*
-  if (
-    optimize == ModOptimizationStrategy.ReduceUsedModSockets ||
-    optimize == ModOptimizationStrategy.ReduceUsedModPoints
-  ) {
-    precalculatedMods.forEach((d, idx) => {
-      const minorMul = idx in [1, 2, 4] ? 2 : 1;
-      const majorMul = idx in [1, 2, 4] ? 4 : 3;
-      d.sort((a, b) => {
-        if (a[3] == 0) return 1;
-        if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
-          const ac = a[1] + a[2];
-          const bc = b[1] + b[2];
-
-          if (ac != bc) return ac - bc;
-        }
-
-        const ac = minorMul * a[1] + majorMul * a[2];
-        const bc = minorMul * b[1] + majorMul * b[2];
-
-        if (ac != bc) return ac - bc;
-
-        return a[0] - b[0];
-      });
-    });
-  }
-  //*/
-
-  // we have six stats with possible mod usage
-  // we have to build every possible combination of mods and check if it is possible and if it is better than the current best
-
-  let bestMods: any = null;
-  let bestScore = 1000;
-
-  const availableModCostLen = availableModCost.length;
-  const minAvailableModCost = availableModCost[availableModCostLen - 1];
-
-  // const maxAvailableModCost = availableModCost[0];
-
-  function validateMods(usedModCost: number[]): boolean {
-    let usedModCount = usedModCost.length;
-    if (usedModCount == 0) return true;
-    if (usedModCount > availableModCostLen) return false;
-    // sort usedMods ascending
-    usedModCost.sort((a, b) => b - a);
-    // check if the usedMods are valid
-    // substract the usedMods from the availableMods, start at the highest cost
-    for (let i = 0; i < availableModCost.length && i < usedModCount; i++) {
-      if (availableModCost[i] < usedModCost[i]) return false;
-    }
-
-    return true;
-  }
-
-  const costMinor = [1, 2, 2, 1, 2, 1];
-  const costMajor = [3, 4, 4, 3, 4, 3];
-
-  function score(entries: [number, number, number, number][]) {
-    if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
-      const n1 = entries.reduce((a, b) => a + b[1] + b[2], 0);
-      return n1;
-    } else if (optimize == ModOptimizationStrategy.ReduceUsedModPoints) {
-      return entries.reduce(
-        (a, b, currentIndex) => a + costMinor[currentIndex] * b[1] + costMajor[currentIndex] * b[2],
-        0
-      );
-    }
-    return entries.reduce((a, b) => a + b[3], 0);
-  }
-
-  function validate(
-    entries: [number, number, number, number][],
-    alsoValidateMods = false
-  ): boolean {
-    // sum up the stats
-    const sum = entries.reduce(
-      (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
-      [0, 0, 0, 0]
-    );
-
-    if (score(entries) > bestScore) return false;
-    if (sum[0] > availableArtificeCount) return false;
-    if (sum[1] + sum[2] > availableModCostLen) return false;
-    if (sum[3] < 0) return false;
-
-    // test availableModCosts
-    // the used mods translate as follows:
-    // entries[0], entries[3] and entries[5]: minor 1, major 3
-    // entries[1], entries[2] and entries[4]: minor 2, major 4
-
-    if (!alsoValidateMods || minAvailableModCost == 5) return true;
-
-    let usedModCost: number[] = [];
-    for (let statIdx = 0; statIdx < entries.length; statIdx++) {
-      const entry = entries[statIdx];
-      const isSmallMod = statIdx == 0 || statIdx == 3 || statIdx == 5;
-      let minorModCost = isSmallMod ? 1 : 2;
-      let majorModCost = isSmallMod ? 3 : 4;
-
-      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(minorModCost);
-      for (let major = 0; major < entry[2]; major++) usedModCost.push(majorModCost);
-    }
-
-    if (usedModCost.length == 0) return true;
-    if (!validateMods(usedModCost)) return false;
-
-    return true;
-  }
-
-  root: for (let mobility of precalculatedMods[0]) {
-    if (!validate([mobility])) continue;
-    for (let resilience of precalculatedMods[1]) {
-      if (!validate([mobility, resilience])) continue;
-      for (let recovery of precalculatedMods[2]) {
-        if (!validate([mobility, resilience, recovery])) continue;
-        for (let discipline of precalculatedMods[3]) {
-          if (!validate([mobility, resilience, recovery, discipline])) continue;
-          for (let intellect of precalculatedMods[4]) {
-            if (!validate([mobility, resilience, recovery, discipline, intellect])) continue;
-            inner: for (let strength of precalculatedMods[5]) {
-              let mods = [mobility, resilience, recovery, discipline, intellect, strength];
-
-              if (!validate(mods, true)) continue;
-
-              const sum = mods.reduce(
-                (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
-                [0, 0, 0, 0]
-              );
-
-              if (sum[3] < 0) continue; // did not reach the target
-              if (sum[0] > availableArtificeCount) continue;
-              if (sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0) continue;
-
-              for (let m = 0; m < 6; m++)
-                if (optionalDistances[m] > 0 && mods[m][3] == 0 && bestMods != null) continue inner;
-
-              let scoreVal = score(mods);
-              if (scoreVal < bestScore) {
-                bestScore = scoreVal;
-                bestMods = mods;
-                if (optimize == ModOptimizationStrategy.None) {
-                  break root;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  if (bestMods === null) return null;
-
-  const usedMods = [];
-  for (let i = 0; i < bestMods.length; i++) {
-    for (let n = 0; n < bestMods[i][0]; n++) usedMods.push(3 + 3 * i);
-    for (let n = 0; n < bestMods[i][1]; n++) usedMods.push(1 + 3 * i);
-    for (let n = 0; n < bestMods[i][2]; n++) usedMods.push(2 + 3 * i);
-  }
-
-  return usedMods;
 }
 
 export function getSkillTier(stats: number[]) {
