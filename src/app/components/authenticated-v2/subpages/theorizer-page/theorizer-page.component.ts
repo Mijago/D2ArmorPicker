@@ -22,7 +22,7 @@ import { ModifierType } from "src/app/data/enum/modifierType";
 import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { buildDb } from "../../../../data/database";
+import { Database } from "../../../../data/database";
 import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
@@ -258,13 +258,11 @@ export class TheorizerPageComponent implements OnInit {
   time_progress = 0;
   private timerId: number = 0;
   lp: LP | null = null;
-  private inventoryArmor: Table<IInventoryArmor>;
-  private manifestArmor: Table<IManifestArmor>;
+
+  private db: Database;
 
   constructor() {
-    const db = buildDb(async () => {});
-    this.inventoryArmor = db.table("inventoryArmor");
-    this.manifestArmor = db.table("manifestArmor");
+    this.db = new Database();
   }
 
   sum(l: number[]): number {
@@ -386,7 +384,7 @@ export class TheorizerPageComponent implements OnInit {
       [0, 0, 0, 0, 0, 0],
     ];
     // contains if items are generated or not, and if they are not, then the metadata
-    const itemMeta = [null, null, null, null, null];
+    const itemMeta: (IInventoryArmor | null)[] = [null, null, null, null, null];
     const itemIntrinsics: (any | null)[] = [null, null, null, null, null];
     const itemExotic: (boolean | null)[] = [null, null, null, null, null];
     const itemArtifice: boolean[] = [false, false, false, false, false];
@@ -433,11 +431,11 @@ export class TheorizerPageComponent implements OnInit {
       itemsToGrab.push({ slot: parseInt(slot), itemId: itemId });
     }
     if (itemsToGrab.length > 0) {
-      const db = buildDb(async () => {});
-      const inventoryArmor = db.table("inventoryArmor");
-
       for (let e of itemsToGrab) {
-        let dbitems = await inventoryArmor.where("itemInstanceId").equals(e.itemId).toArray();
+        let dbitems = await this.db.inventoryArmor
+          .where("itemInstanceId")
+          .equals(e.itemId)
+          .toArray();
         if (dbitems.length == 0) continue;
         const item = dbitems[0];
         itemMeta[e.slot] = item;
@@ -448,7 +446,7 @@ export class TheorizerPageComponent implements OnInit {
         items[e.slot][4] += item.intellect;
         items[e.slot][5] += item.strength;
 
-        itemExotic[e.slot] = item.isExotic;
+        itemExotic[e.slot] = item.isExotic == 1;
         itemArtifice[e.slot] = item.perk == ArmorPerkOrSlot.SlotArtifice;
         artificeCount += itemArtifice[e.slot] ? 1 : 0;
       }
@@ -467,7 +465,7 @@ export class TheorizerPageComponent implements OnInit {
 
       const entryArmor = await Promise.all(
         entry.armor.map(async (k: number) => {
-          return await this.manifestArmor.where("hash").equals(k).first();
+          return await this.db.manifestArmor.where("hash").equals(k).first();
         })
       );
 
@@ -560,7 +558,7 @@ export class TheorizerPageComponent implements OnInit {
   }
 
   async getItems(clazz?: DestinyClass): Promise<IInventoryArmor[]> {
-    let items = (await this.inventoryArmor
+    let items = (await this.db.inventoryArmor
       .where("slot")
       .notEqual(ArmorSlot.ArmorSlotNone)
       .distinct()

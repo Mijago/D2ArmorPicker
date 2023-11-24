@@ -17,7 +17,7 @@
 
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IInventoryArmor, InventoryArmorSource, isEqualItem } from "../data/types/IInventoryArmor";
-import { buildDb } from "../data/database";
+import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC, FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
@@ -40,9 +40,7 @@ import { precalculatedZeroWasteModCombinations } from "../data/generated/precalc
 import { precalculatedModCombinations } from "../data/generated/precalculatedModCombinations";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 
-const db = buildDb(async () => {});
-const inventoryArmor = db.table("inventoryArmor");
-const manifestArmor = db.table("manifestArmor");
+const db = new Database();
 
 function checkSlots(
   config: BuildConfiguration,
@@ -224,11 +222,14 @@ addEventListener("message", async ({ data }) => {
   let selectedExotics: IManifestArmor[] = await Promise.all(
     config.selectedExotics
       .filter((hash) => hash != FORCE_USE_NO_EXOTIC)
-      .map(async (hash) => await manifestArmor.where("hash").equals(hash).first())
+      .map(
+        async (hash) =>
+          (await db.manifestArmor.where("hash").equals(hash).first()) as IManifestArmor
+      )
   );
   selectedExotics = selectedExotics.filter((i) => !!i);
 
-  let items = (await inventoryArmor
+  let items = (await db.inventoryArmor
     .where("clazz")
     .equals(config.characterClass)
     .distinct()
