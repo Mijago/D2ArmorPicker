@@ -17,7 +17,6 @@
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { Subject } from "rxjs";
-import { CharacterClass } from "../../../../data/enum/character-Class";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { takeUntil } from "rxjs/operators";
 import { UserdataService } from "../../../../services/userdata.service";

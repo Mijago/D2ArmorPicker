@@ -18,7 +18,6 @@
 import { Component, Input, OnInit } from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { formatTimeMMMSS, formatTimeSplit } from "../../../../data/cooldowns/cooldown_definitions";
-import { CharacterClass } from "../../../../data/enum/character-Class";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { CharacterStats } from "../../../../data/character_stats/schema";
 import {
@@ -26,6 +25,7 @@ import {
   CharacterStatsService,
   CooldownEntry,
 } from "../../../../services/character-stats.service";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 
 const speedTextFormatter = (t: number) => (Math.round(t * 100) / 100).toFixed(2) + "m/s";
 
@@ -58,7 +58,7 @@ export class StatCooldownTooltipComponent implements OnInit {
     private characterStats: CharacterStatsService
   ) {}
 
-  get characterClass(): CharacterClass {
+  get characterClass(): DestinyClass {
     return this.config.readonlyConfigurationSnapshot.characterClass;
   }
 

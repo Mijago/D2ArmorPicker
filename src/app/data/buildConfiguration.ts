@@ -18,11 +18,11 @@
 import { ArmorPerkOrSlot, ArmorStat } from "./enum/armor-stat";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
-import { CharacterClass } from "./enum/character-Class";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "./constants";
 import { ArmorSlot } from "./enum/armor-slot";
 import { ModifierType } from "./enum/modifierType";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
+import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
 
 export function getDefaultStatDict(
   value: number
@@ -43,7 +43,7 @@ export interface FixableSelection<T> {
 }
 
 export class BuildConfiguration {
-  characterClass: CharacterClass = CharacterClass.Titan;
+  characterClass: DestinyClass = DestinyClass.Titan;
 
   // Add constant +1 strength
   addConstent1Resilience = false;
@@ -128,7 +128,7 @@ export class BuildConfiguration {
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       showPotentialTierColumn: false,
-      characterClass: CharacterClass.Titan,
+      characterClass: DestinyClass.Titan,
       selectedModElement: ModifierType.Stasis,
       selectedExotics: [],
       maximumModSlots: {

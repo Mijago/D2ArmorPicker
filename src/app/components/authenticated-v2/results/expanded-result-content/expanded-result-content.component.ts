@@ -49,7 +49,6 @@ import {
   Loadout,
   LoadoutParameters,
 } from "@destinyitemmanager/dim-api-types";
-import { CharacterClass } from "src/app/data/enum/character-Class";
 import { MembershipService } from "src/app/services/membership.service";
 
 @Component({
@@ -336,21 +335,21 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       const subclassHashes: {
         [characterClass: number]: { [modifierType: number]: number | undefined } | undefined;
       } = {
-        [CharacterClass.Hunter]: {
+        [DestinyClass.Hunter]: {
           [ModifierType.Stasis]: 873720784,
           [ModifierType.Void]: 2453351420,
           [ModifierType.Solar]: 2240888816,
           [ModifierType.Arc]: 2328211300,
           [ModifierType.Strand]: 3785442599,
         },
-        [CharacterClass.Titan]: {
+        [DestinyClass.Titan]: {
           [ModifierType.Stasis]: 613647804,
           [ModifierType.Void]: 2842471112,
           [ModifierType.Solar]: 2550323932,
           [ModifierType.Arc]: 2932390016,
           [ModifierType.Strand]: 242419885,
         },
-        [CharacterClass.Warlock]: {
+        [DestinyClass.Warlock]: {
           [ModifierType.Stasis]: 3291545503,
           [ModifierType.Void]: 2849050827,
           [ModifierType.Solar]: 3941205951,

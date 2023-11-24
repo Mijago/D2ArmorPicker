@@ -18,13 +18,13 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
-import { CharacterClass } from "../../../../data/enum/character-Class";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 
 export const listAnimation = trigger("listAnimation", [
   transition("* <=> *", [
@@ -48,7 +48,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
-  currentClass: CharacterClass = CharacterClass.Titan;
+  currentClass: DestinyClass = DestinyClass.Titan;
   exotics: ClassExoticInfo[][] = [];
 
   constructor(public inventory: InventoryService, public config: ConfigurationService) {}

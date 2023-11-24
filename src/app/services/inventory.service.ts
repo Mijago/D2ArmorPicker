@@ -16,7 +16,6 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { CharacterClass } from "../data/enum/character-Class";
 import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { ConfigurationService } from "./configuration.service";
@@ -31,7 +30,7 @@ import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
 import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
 import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
-import { ItemBindStatus } from "bungie-api-ts/destiny2";
+import { DestinyClass, ItemBindStatus } from "bungie-api-ts/destiny2";
 
 type info = {
   results: ResultDefinition[];
@@ -61,7 +60,7 @@ export class InventoryService {
    * @private
    */
   private allArmorResults: ResultDefinition[] = [];
-  private currentClass: CharacterClass = CharacterClass.None;
+  private currentClass: DestinyClass = DestinyClass.Unknown;
 
   private _manifest: ReplaySubject<null>;
   public readonly manifest: Observable<null>;
@@ -270,7 +269,7 @@ export class InventoryService {
     }
   }
 
-  async getItemCountForClass(clazz: CharacterClass, slot?: ArmorSlot) {
+  async getItemCountForClass(clazz: DestinyClass, slot?: ArmorSlot) {
     let pieces = await this.db.inventoryArmor.where("clazz").equals(clazz).toArray();
     if (!!slot) pieces = pieces.filter((i) => i.slot == slot);
     //if (!this._config.includeVendorRolls) pieces = pieces.filter((i) => i.source != InventoryArmorSource.Vendor);
@@ -279,7 +278,7 @@ export class InventoryService {
     return pieces.length;
   }
 
-  async getExoticsForClass(clazz: CharacterClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
+  async getExoticsForClass(clazz: DestinyClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
     let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray();
     inventory = inventory.filter(
       (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
