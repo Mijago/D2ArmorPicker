@@ -823,7 +823,16 @@ export function handlePermutation(
   const waste1 = getWaste(stats);
   if (config.onlyShowResultsWithNoWastedStats && waste1 > 0) return null;
 
-  return createArmorSet(helmet, gauntlet, chest, leg, usedArtifice, usedMods, stats);
+  return createArmorSet(
+    helmet,
+    gauntlet,
+    chest,
+    leg,
+    usedArtifice,
+    usedMods,
+    stats,
+    statsWithoutMods
+  );
 }
 
 export function getStatSum(

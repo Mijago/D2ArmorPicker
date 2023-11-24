@@ -294,7 +294,7 @@ export class InventoryService {
                 itemz.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
-              let stats = getStatSum(items);
+              //let stats = getStatSum(items);
               let v = {
                 exotic:
                   exotic == null
@@ -315,7 +315,7 @@ export class InventoryService {
                 ),
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
-                statsNoMods: stats,
+                statsNoMods: armorSet.statsWithoutMods,
                 tiers: getSkillTier(armorSet.statsWithMods),
                 waste: getWaste(armorSet.statsWithMods),
                 items: items.reduce(
@@ -347,9 +347,9 @@ export class InventoryService {
                 ),
                 classItem: armorSet.classItemPerk,
                 usesCollectionRoll: items.some(
-                  (v) => v.source === InventoryArmorSource.Collections
+                  (y) => y.source === InventoryArmorSource.Collections
                 ),
-                usesVendorRoll: items.some((v) => v.source === InventoryArmorSource.Vendor),
+                usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
               } as unknown as ResultDefinition;
               endResults.push(v);
             }

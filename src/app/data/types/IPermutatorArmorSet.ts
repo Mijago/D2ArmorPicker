@@ -7,6 +7,7 @@ export interface IPermutatorArmorSet {
   usedMods: StatModifier[];
   classItemPerk: ArmorPerkOrSlot;
   statsWithMods: number[];
+  statsWithoutMods: number[];
 }
 
 export function createArmorSet(
@@ -16,14 +17,16 @@ export function createArmorSet(
   leg: IPermutatorArmor,
   usedArtifice: StatModifier[],
   usedMods: StatModifier[],
-  statsWithMods: number[]
+  statsWithMods: number[],
+  statsWithoutMods: number[]
 ): IPermutatorArmorSet {
   return {
     armor: [helmet.id, gauntlet.id, chest.id, leg.id],
-    usedArtifice: usedArtifice,
+    usedArtifice,
     usedMods,
     classItemPerk: ArmorPerkOrSlot.None,
-    statsWithMods: statsWithMods,
+    statsWithMods,
+    statsWithoutMods,
   };
 }
 
