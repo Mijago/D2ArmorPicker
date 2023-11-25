@@ -29,7 +29,12 @@ import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
 import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
-import { IInventoryArmor, InventoryArmorSource, isEqualItem } from "../data/types/IInventoryArmor";
+import {
+  IInventoryArmor,
+  InventoryArmorSource,
+  isEqualItem,
+  totalStats,
+} from "../data/types/IInventoryArmor";
 import { DestinyClass, ItemBindStatus, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
 import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
@@ -290,6 +295,12 @@ export class InventoryService {
           source: armor.source,
         } as IPermutatorArmor;
       });
+
+      // Improve per thread performance by shuffling the inventory
+      // sorting is a naive aproach that can be optimized
+      // in my test is better than the default order from the db
+      items = items.sort((a, b) => totalStats(a) - totalStats(b));
+
       for (let n = 0; n < nthreads; n++) {
         const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
         worker.onmessage = async ({ data }) => {

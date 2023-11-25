@@ -117,3 +117,7 @@ export function isEqualItem(a: IDestinyArmor, b: IDestinyArmor): boolean {
     a.strength === b.strength
   );
 }
+
+export function totalStats(a: IDestinyArmor): number {
+  return a.mobility + a.resilience + a.recovery + a.discipline + a.intellect + a.strength;
+}
