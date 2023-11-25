@@ -92,7 +92,7 @@ addEventListener("message", async ({ data }) => {
         [legs, legs.length],
       ] as [IPermutatorArmor[], number][]
     ).sort((a, b) => a[1] - b[1])[0][0];
-    var keepLength = Math.floor(splitEntry.length / threadSplit.count);
+    var keepLength = Math.round(splitEntry.length / threadSplit.count);
     var startIndex = keepLength * threadSplit.current; // we can delete everything before this
     var endIndex = startIndex + keepLength; // we can delete everything after this
     // if we have rounding issues, let the last thread do the rest

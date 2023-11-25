@@ -299,7 +299,7 @@ export class InventoryService {
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
-      items = items.sort((a, b) => totalStats(a) - totalStats(b));
+      items = items.sort((a, b) => totalStats(b) - totalStats(a));
 
       for (let n = 0; n < nthreads; n++) {
         const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
