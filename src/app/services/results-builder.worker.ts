@@ -44,9 +44,11 @@ import {
 const db = new Database();
 
 addEventListener("message", async ({ data }) => {
+  const threadSplit = data.threadSplit as { count: number; current: number };
+
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2");
-  console.time("total");
+  console.time(`total #${threadSplit.current}`);
   const config = data.config as BuildConfiguration;
 
   // toggle feature flags
@@ -81,7 +83,6 @@ addEventListener("message", async ({ data }) => {
   let legs = items.filter((i) => i.slot == ArmorSlot.ArmorSlotLegs);
 
   // Support multithreading. find the largest set and split it by N.
-  const threadSplit = data.threadSplit as { count: number; current: number };
   if (threadSplit.count > 1) {
     var splitEntry = (
       [
@@ -138,7 +139,7 @@ addEventListener("message", async ({ data }) => {
   let totalResults = 0;
   let doNotOutput = false;
 
-  console.time("tm");
+  console.time(`tm #${threadSplit.current}`);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
     helmets,
@@ -203,8 +204,8 @@ addEventListener("message", async ({ data }) => {
       resultsLength = 0;
     }
   }
-  console.timeEnd("tm");
-  console.timeEnd("total");
+  console.timeEnd(`tm #${threadSplit.current}`);
+  console.timeEnd(`total #${threadSplit.current}`);
 
   // @ts-ignore
   postMessage({

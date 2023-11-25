@@ -270,8 +270,26 @@ export class InventoryService {
         return purchasedItemInstance === undefined;
       });
 
-      let items = itemz as unknown as IPermutatorArmor[];
-
+      let items = itemz.map((armor) => {
+        return {
+          id: armor.id,
+          hash: armor.hash,
+          slot: armor.slot,
+          clazz: armor.clazz,
+          perk: armor.perk,
+          isExotic: !!armor.isExotic,
+          rarity: armor.rarity,
+          isSunset: armor.isSunset,
+          masterworked: armor.masterworked,
+          mobility: armor.mobility,
+          resilience: armor.resilience,
+          recovery: armor.recovery,
+          discipline: armor.discipline,
+          intellect: armor.intellect,
+          strength: armor.strength,
+          source: armor.source,
+        } as IPermutatorArmor;
+      });
       for (let n = 0; n < nthreads; n++) {
         const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
         worker.onmessage = async ({ data }) => {
