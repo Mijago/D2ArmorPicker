@@ -91,7 +91,8 @@ addEventListener("message", async ({ data }) => {
         [chests, chests.length],
         [legs, legs.length],
       ] as [IPermutatorArmor[], number][]
-    ).sort((a, b) => a[1] - b[1])[0][0];
+    ).sort((a, b) => b[1] - a[1])[0][0];
+
     var keepLength = Math.round(splitEntry.length / threadSplit.count);
     var startIndex = keepLength * threadSplit.current; // we can delete everything before this
     var endIndex = startIndex + keepLength; // we can delete everything after this
