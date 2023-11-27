@@ -266,7 +266,7 @@ export class InventoryService {
       itemz = itemz.filter((item) => {
         if (item.source === InventoryArmorSource.Inventory) return true;
 
-        const purchasedItemInstance = items.find(
+        const purchasedItemInstance = itemz.find(
           (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
         );
 
