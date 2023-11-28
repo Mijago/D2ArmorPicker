@@ -165,7 +165,8 @@
           <mat-chip
             #tooltip="matTooltip"
             *ngIf="
-              !_config_onlyUseMasterworkedItems &&
+              !_config_onlyUseMasterworkedExotics &&
+              !_config_onlyUseMasterworkedLegendaries &&
               (_config_assumeLegendariesMasterworked ||
                 _config_assumeExoticsMasterworked ||
                 _config_assumeClassItemMasterworked)
