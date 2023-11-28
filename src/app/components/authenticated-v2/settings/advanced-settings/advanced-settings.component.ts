@@ -83,10 +83,19 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             help: "If this setting is enabled, a plain +2 is added to every stat. This means that your Class Item must be masterworked.",
           },
           {
-            name: "Only use already masterworked items",
+            name: "Only use already masterworked exotic items",
             cp: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.onlyUseMasterworkedItems = v)),
-            value: c.onlyUseMasterworkedItems,
+              this.config.modifyConfiguration((c) => (c.onlyUseMasterworkedExotics = v)),
+            value: c.onlyUseMasterworkedExotics,
+            disabled: false,
+            impactsResultCount: true,
+            help: undefined,
+          },
+          {
+            name: "Only use already masterworked legendary items",
+            cp: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.onlyUseMasterworkedLegendaries = v)),
+            value: c.onlyUseMasterworkedLegendaries,
             disabled: false,
             impactsResultCount: true,
             help: undefined,
