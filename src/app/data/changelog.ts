@@ -34,6 +34,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
+        text: "Split the 'Assume all items are masterworked' switch into 'legendary' and 'exotic' switches. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added the 'Ascendant Protector' Perk. Thanks to Mojo!",
         issues: [],
       },
