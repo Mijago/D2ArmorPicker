@@ -104,7 +104,7 @@ export enum SpecialArmorStat {
 
 export enum ArmorPerkOrSlot {
   None,
-  PerkAscendantProtector,
+  PerkExhumedExcess,
   SlotCrotasEnd,
   SlotRootOfNightmares,
   SlotKingsFall,
@@ -116,7 +116,6 @@ export enum ArmorPerkOrSlot {
   SlotArtifice,
   PerkIronBanner,
   SlotNightmare,
-  PerkExhumedExcess,
   SonarAmplifier,
   PerkQueensFavor,
   PerkSeraphSensorArray,
@@ -124,6 +123,7 @@ export enum ArmorPerkOrSlot {
   PerkUniformedOfficer,
   // A special case just for guardian games class items.
   GuardianGamesClassItem,
+  PerkAscendantProtector,
   COUNT,
 }
 
