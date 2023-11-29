@@ -18,7 +18,7 @@
 import { Injectable } from "@angular/core";
 import Dexie from "dexie";
 import { AuthService } from "./auth.service";
-import { buildDb } from "../data/database";
+import { Database } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { IInventoryArmor } from "../data/types/IInventoryArmor";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
@@ -28,26 +28,12 @@ import { IVendorInfo } from "../data/types/IVendorInfo";
 @Injectable({
   providedIn: "root",
 })
-export class DatabaseService {
-  private db: Dexie;
-
-  public manifestArmor: Dexie.Table<IManifestArmor, number>;
-  public inventoryArmor: Dexie.Table<IInventoryArmor, number>;
-
-  // Maps the collectible hash to the inventory item hash
-  public manifestCollectibles: Dexie.Table<IManifestCollectible>;
-
-  // Maps the vendor id to the vendor name
-  public vendorNames: Dexie.Table<IVendorInfo, number>;
-
+export class DatabaseService extends Database {
   constructor(private auth: AuthService) {
-    this.db = buildDb(async () => {
-      await this.auth.clearManifestInfo();
+    super();
+    this.version(this.verno).upgrade(async (tx) => {
+      this.auth.clearManifestInfo();
     });
-    this.manifestArmor = this.db.table("manifestArmor");
-    this.inventoryArmor = this.db.table("inventoryArmor");
-    this.manifestCollectibles = this.db.table("manifestCollectibles");
-    this.vendorNames = this.db.table("vendorNames");
 
     this.auth.logoutEvent.subscribe(async (k) => {
       await this.clearDatabase();
@@ -55,13 +41,8 @@ export class DatabaseService {
   }
 
   private initialize() {
-    this.db = buildDb(async () => {
-      await this.auth.clearManifestInfo();
-    });
-    this.manifestArmor = this.db.table("manifestArmor");
-    this.inventoryArmor = this.db.table("inventoryArmor");
-    this.manifestCollectibles = this.db.table("manifestCollectibles");
-    this.vendorNames = this.db.table("vendorNames");
+    this.open();
+    this.auth.clearManifestInfo();
   }
 
   async writeManifestArmor(items: IManifestArmor[], version: string) {
@@ -87,7 +68,7 @@ export class DatabaseService {
     localStorage.removeItem("LastArmorUpdate");
     localStorage.removeItem("last-armor-db-name");
 
-    await this.db.delete();
+    await this.delete();
     if (initialize) this.initialize();
   }
 

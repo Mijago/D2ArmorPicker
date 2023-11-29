@@ -17,10 +17,9 @@
 
 import { Injectable } from "@angular/core";
 import { ClarityService } from "./clarity.service";
-import { CharacterClass } from "../data/enum/character-Class";
 import { ModifierType } from "../data/enum/modifierType";
 import type { CharacterStats, Override } from "../data/character_stats/schema";
-import { DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
+import { DestinyClass, DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 
 export enum CharacterStatType {
   Speed = 1,
@@ -37,7 +36,7 @@ export interface CooldownEntry {
   values: number[];
   description?: string;
   valueType?: CharacterStatType;
-  characterClass?: CharacterClass;
+  characterClass?: DestinyClass;
   element?: ModifierType;
 
   // If any items are affecting this entry’s cooldown their hash will be added to this list
@@ -153,7 +152,7 @@ export class CharacterStatsService {
    */
   get(
     statName: keyof CharacterStats,
-    characterClass?: CharacterClass,
+    characterClass?: DestinyClass,
     element?: ModifierType,
     exoticHashes: number[] = []
   ): CooldownEntry[] {
@@ -235,10 +234,10 @@ export class CharacterStatsService {
 }
 
 function getClassAndElementForAbility(ability: DestinyInventoryItemDefinition): {
-  characterClass: CharacterClass | undefined;
+  characterClass: DestinyClass | undefined;
   element: ModifierType | undefined;
 } {
-  let characterClass: CharacterClass | undefined;
+  let characterClass: DestinyClass | undefined;
   let element: ModifierType | undefined;
 
   // e.g. "hunter.arc.supers", "shared.arc.grenades"
@@ -250,11 +249,11 @@ function getClassAndElementForAbility(ability: DestinyInventoryItemDefinition): 
   const [className, elementName, _] = parts;
 
   if (className === "warlock") {
-    characterClass = CharacterClass.Warlock;
+    characterClass = DestinyClass.Warlock;
   } else if (className === "hunter") {
-    characterClass = CharacterClass.Hunter;
+    characterClass = DestinyClass.Hunter;
   } else if (className === "titan") {
-    characterClass = CharacterClass.Titan;
+    characterClass = DestinyClass.Titan;
   }
 
   if (elementName === "arc") {

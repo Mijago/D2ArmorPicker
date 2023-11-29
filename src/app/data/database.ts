@@ -16,22 +16,28 @@
  */
 
 import Dexie from "dexie";
+import { IManifestArmor } from "./types/IManifestArmor";
+import { IInventoryArmor } from "./types/IInventoryArmor";
+import { IManifestCollectible } from "./types/IManifestCollectible";
+import { IVendorInfo } from "./types/IVendorInfo";
 
-export function buildDb(onUpgrade: () => void) {
-  const db = new Dexie("d2armorpicker-v2");
+export class Database extends Dexie {
+  manifestArmor!: Dexie.Table<IManifestArmor, number>;
+  inventoryArmor!: Dexie.Table<IInventoryArmor, number>;
 
-  // Declare tables, IDs and indexes
-  db.version(24)
-    .stores({
+  // Maps the collectible hash to the inventory item hash
+  manifestCollectibles!: Dexie.Table<IManifestCollectible>;
+  // Maps the vendor id to the vendor name
+  vendorNames!: Dexie.Table<IVendorInfo, number>;
+
+  constructor() {
+    super("d2armorpicker-v2");
+    this.version(24).stores({
       manifestArmor: "id++, hash, isExotic",
       inventoryArmor:
         "id++, itemInstanceId, isExotic, hash, name, masterworked, clazz, slot, source",
       manifestCollectibles: "id++, hash",
       vendorNames: "id++, vendorId",
-    })
-    .upgrade(async (tx) => {
-      await onUpgrade();
     });
-
-  return db;
+  }
 }

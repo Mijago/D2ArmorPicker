@@ -26,10 +26,9 @@ import {
   SpecialArmorStat,
 } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
-import { CharacterClass } from "../../../../data/enum/character-Class";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2";
+import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 
@@ -57,7 +56,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     "intellect",
     "strength",
   ];
-  private selectedClass: CharacterClass = CharacterClass.None;
+  private selectedClass: DestinyClass = DestinyClass.Unknown;
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
@@ -118,12 +117,9 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       .filter((v) => {
         if (v.stat == type) return true;
         if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat) {
-          if (this.selectedClass == CharacterClass.Titan && type == ArmorStat.Resilience)
-            return true;
-          if (this.selectedClass == CharacterClass.Hunter && type == ArmorStat.Mobility)
-            return true;
-          if (this.selectedClass == CharacterClass.Warlock && type == ArmorStat.Recovery)
-            return true;
+          if (this.selectedClass == DestinyClass.Titan && type == ArmorStat.Resilience) return true;
+          if (this.selectedClass == DestinyClass.Hunter && type == ArmorStat.Mobility) return true;
+          if (this.selectedClass == DestinyClass.Warlock && type == ArmorStat.Recovery) return true;
         }
         return false;
       })
