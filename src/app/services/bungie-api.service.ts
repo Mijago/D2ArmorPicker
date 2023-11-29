@@ -385,8 +385,7 @@ export class BungieApiService {
 
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
 
-    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Inventory }).delete();
-    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Collections }).delete();
+    await this.db.inventoryArmor.where("source").notEqual(InventoryArmorSource.Vendor).delete();
     await this.db.inventoryArmor.bulkAdd(r);
 
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
