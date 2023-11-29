@@ -86,7 +86,7 @@
 
   <span class="header-spacer"></span>
   <div fxHide.lt-md="true" fxShow="true">
-    <nav id="navbar" mat-tab-nav-bar>
+    <nav id="navbar" mat-tab-nav-bar [tabPanel]="tabPanel">
       <a
         *ngFor="let link of navLinks; let idx = index"
         [active]="activeLinkIndex === idx"
@@ -139,7 +139,9 @@
     </button>
   </div>
 </mat-toolbar>
-<router-outlet></router-outlet>
+<mat-tab-nav-panel #tabPanel>
+  <router-outlet></router-outlet>
+</mat-tab-nav-panel>
 
 <span *ngVar="status.status | async as stat">
   <mat-progress-bar
@@ -155,20 +157,20 @@
 </span>
 
 <span *ngVar="status.status | async as stat">
-  <mat-card *ngIf="stat.updatingManifest" class="info"
+  <mat-card appearance="outlined" *ngIf="stat.updatingManifest" class="info"
     >Updating the cached manifest. Please wait. <br />If this takes too long, please logout and
     login again.</mat-card
   >
-  <mat-card *ngIf="stat.updatingInventory" class="info"
+  <mat-card appearance="outlined" *ngIf="stat.updatingInventory" class="info"
     >Updating the cached inventory. Please wait.</mat-card
   >
-  <mat-card *ngIf="stat.calculatingPermutations" class="info"
+  <mat-card appearance="outlined" *ngIf="stat.calculatingPermutations" class="info"
     >Updating armor combinations. Please wait.</mat-card
   >
-  <mat-card *ngIf="stat.calculatingResults" class="info"
+  <mat-card appearance="outlined" *ngIf="stat.calculatingResults" class="info"
     >Updating possible results. Please wait.</mat-card
   >
-  <mat-card *ngIf="stat.updatingResultsTable" class="info"
+  <mat-card appearance="outlined" *ngIf="stat.updatingResultsTable" class="info"
     >Updating result table. Please wait.</mat-card
   >
 </span>

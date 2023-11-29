@@ -62,7 +62,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   armorHash: string | null = "";
   armorId: string | null = "";
 
-  armorItemsPerSlot: Map<ArmorSlot, LocalArmorInfo[]> = new Map();
+  armorItemsPerSlot: Map<ArmorSlot | 10, LocalArmorInfo[]> = new Map();
 
   plugData: { [p: string]: IManifestArmor } = {};
 
@@ -209,7 +209,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
       p.get(slot)?.push(v);
 
       return p;
-    }, new Map<ArmorSlot, LocalArmorInfo[]>());
+    }, new Map<ArmorSlot | 10, LocalArmorInfo[]>());
   }
 
   private ngUnsubscribe = new Subject();

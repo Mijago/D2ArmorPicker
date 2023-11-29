@@ -73,6 +73,8 @@
   }
 }
 
+/*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.
+ */
 :host ::ng-deep .selector-slots .mat-button-toggle {
   background-color: inherit;
 }

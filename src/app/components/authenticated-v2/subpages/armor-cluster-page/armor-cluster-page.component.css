@@ -21,6 +21,9 @@
   margin-right: auto;
 }
 
+/*
+ TODO(mdc-migration): The following rule targets internal classes of card that may no longer apply for the MDC version.
+ */
 mat-card {
   margin-bottom: 8px;
 }
@@ -64,6 +67,9 @@ mat-card {
   color: red;
 }
 
+/*
+ TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.
+ */
 .red.mat-button-toggle-checked {
   background-color: red;
   color: white;
@@ -73,6 +79,9 @@ mat-card {
   color: green;
 }
 
+/*
+ TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.
+ */
 .green.mat-button-toggle-checked {
   background-color: green;
   color: white;

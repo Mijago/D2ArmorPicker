@@ -86,6 +86,8 @@ tr.example-detail-row {
   color: #d5d5d5;
 }
 
+/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.
+ */
 :host ::ng-deep .info-box .mat-form-field-wrapper {
   padding-bottom: 5px !important;
   cursor: default;
@@ -103,7 +105,7 @@ tr.example-detail-row {
   cursor: pointer;
 }
 
-.mat-row:nth-child(4n + 3) {
+.mat-mdc-row:nth-child(4n + 3) {
   background-color: rgba(116, 116, 116, 0.1);
 }
 

@@ -86,13 +86,15 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
   }
 
   private async loadStoredMaterials() {
-    var k: {
-      "3853748946": number;
-      "4257549985": number;
-      "4257549984": number;
-      "3159615086": number;
-      "1022552290": number;
-    } = JSON.parse(localStorage.getItem("stored-materials") || "{}");
+    var k:
+      | {
+          "3853748946": number;
+          "4257549985": number;
+          "4257549984": number;
+          "3159615086": number;
+          "1022552290": number;
+        }
+      | any = JSON.parse(localStorage.getItem("stored-materials") || "{}");
     if (!("3853748946" in k)) k["3853748946"] = 0;
     if (!("4257549984" in k)) k["4257549984"] = 0;
     if (!("4257549985" in k)) k["4257549985"] = 0;

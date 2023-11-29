@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.mat-slide-toggle.mat-disabled {
+.mat-mdc-slide-toggle.mat-disabled {
   opacity: 1;
 }
 
@@ -28,8 +28,8 @@
   width: 100%;
 }
 
-.mat-header-row,
-.mat-row {
+.mat-mdc-header-row,
+.mat-mdc-row {
   height: 30px;
 }
 
@@ -44,7 +44,7 @@
   text-align: center;
 }
 
-.mat-row:hover {
+.mat-mdc-row:hover {
   background-color: #494949;
 }
 
@@ -65,19 +65,19 @@
   }
 }
 
-.mat-row {
+.mat-mdc-row {
   cursor: pointer;
 }
 
-th.mat-header-cell:last-of-type,
-td.mat-cell:last-of-type,
-td.mat-footer-cell:last-of-type {
+th.mat-mdc-header-cell:last-of-type,
+td.mat-mdc-cell:last-of-type,
+td.mat-mdc-footer-cell:last-of-type {
   padding-right: 0;
 }
 
-.mat-cell:last-of-type,
-.mat-header-cell:last-of-type,
-.mat-footer-cell:last-of-type {
+.mat-mdc-cell:last-of-type,
+.mat-mdc-header-cell:last-of-type,
+.mat-mdc-footer-cell:last-of-type {
   padding-right: 0;
 }
 
@@ -101,13 +101,13 @@ td.mat-footer-cell:last-of-type {
   text-align: right;
 }
 
-.mat-row:hover,
-.mat-row:hover .mat-cell {
+.mat-mdc-row:hover,
+.mat-row:hover .mat-mdc-cell {
   background-color: #494949;
 }
 
-.mat-row.selected:hover,
-.mat-row.selected:hover .mat-cell {
+.mat-mdc-row.selected:hover,
+.mat-row.selected:hover .mat-mdc-cell {
   background-color: rgba(137, 178, 255, 0.19);
 }
 

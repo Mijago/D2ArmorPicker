@@ -25,7 +25,7 @@
     routerLink="/">
     Return to D2ArmorPicker
   </a>
-  <mat-card>
+  <mat-card appearance="outlined">
     <mat-card-title> About this page </mat-card-title>
     <mat-card-content>
       This page <i>can</i> help you to sort out your vault a bit. It takes all your armor entries
@@ -59,7 +59,7 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
+  <mat-card appearance="outlined">
     <mat-card-title>Options</mat-card-title>
     <mat-card-subtitle> Additional options for the clustering results. </mat-card-subtitle>
     <mat-card-content>
@@ -160,7 +160,7 @@
     fxLayout.xs="column"
     fxLayoutGap="5px">
     <ng-container *ngFor="let cluster of clusters; let idx = index">
-      <mat-card *ngIf="cluster.length > 0" class="cluster-item">
+      <mat-card appearance="outlined" *ngIf="cluster.length > 0" class="cluster-item">
         <mat-card-title> Cluster {{ idx + 1 }} </mat-card-title>
         <mat-card-subtitle>
           Contains {{ cluster.length }} item{{ cluster.length > 1 ? "s" : "" }}
