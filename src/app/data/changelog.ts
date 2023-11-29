@@ -29,6 +29,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.2",
+    date: "November 29, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Ascendant Protector' Perk. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed artifice mods, again. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed 'Ghost Items' from the vendor import. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Artifice Mods are now correctly added to the DIM export. Thanks to nznaza!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.1",
     date: "October 29, 2023",
     entries: [
