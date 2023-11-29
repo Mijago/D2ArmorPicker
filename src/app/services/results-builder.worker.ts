@@ -258,8 +258,21 @@ addEventListener("message", async ({ data }) => {
         selectedExotics[0].slot != item.slot ||
         selectedExotics[0].hash == item.hash
     )
-    // config.onlyUseMasterworkedItems - only keep masterworked items
-    .filter((item) => !config.onlyUseMasterworkedItems || item.masterworked)
+
+    // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
+    .filter(
+      (item) =>
+        !config.onlyUseMasterworkedExotics ||
+        !(item.rarity == TierType.Exotic && !item.masterworked)
+    )
+
+    // config.OnlyUseMasterworkedLegendaries - only keep legendaries that are masterworked
+    .filter(
+      (item) =>
+        !config.onlyUseMasterworkedLegendaries ||
+        !(item.rarity == TierType.Superior && !item.masterworked)
+    )
+
     // non-legendaries and non-exotics
     .filter(
       (item) =>
@@ -383,7 +396,7 @@ addEventListener("message", async ({ data }) => {
   )) {
     /**
      *  At this point we already have:
-     *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
+     *  - Masterworked Exotic/Legendaries, if they must be masterworked (config.onlyUseMasterworkedExotics/config.onlyUseMasterworkedLegendaries)
      *  - disabled items were already removed (config.disabledItems)
      */
     const slotCheckResult = checkSlots(

@@ -580,8 +580,10 @@ export class TheorizerPageComponent implements OnInit {
     });
 
     // items = items
-    // config.onlyUseMasterworkedItems - only keep masterworked items
-    //.filter(item => !config.onlyUseMasterworkedItems || item.masterworked)
+    // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
+    //.filter((item) => !config.onlyUseMasterworkedExotics || !(item.rarity == TierType.Exotic && !item.masterworked))
+    // config.OnlyUseMasterworkedLegendaries - only keep exotics that are masterworked
+    //.filter((item) => !config.onlyUseMasterworkedLegendaries || !(item.rarity == TierType.Superior && !item.masterworked))
     // non-legendaries and non-exotics
     //.filter(item => config.allowBlueArmorPieces || item.rarity == TierType.Exotic || item.rarity == TierType.Superior)
     // sunset armor
