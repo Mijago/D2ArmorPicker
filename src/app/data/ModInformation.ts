@@ -25,9 +25,9 @@ import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.WhisperOfDurance]: {
     id: ModOrAbility.WhisperOfDurance,
-    name: "Whisper Of Durance",
+    name: "Whisper of Durance",
     description:
-      "Slow from your abilities lasts longer. For those abilities that linger, their duration will also increase.",
+      "Slow that you apply to targets lasts longer. For those abilities that linger, their duration will also increase.",
     type: ModifierType.Stasis,
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
@@ -36,7 +36,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   },
   [ModOrAbility.WhisperOfChains]: {
     id: ModOrAbility.WhisperOfChains,
-    name: "Whisper Of Chains",
+    name: "Whisper of Chains",
     description:
       "While you are near frozen targets or a friendly Stasis crystal, you take reduced damage from targets.",
     type: ModifierType.Stasis,
@@ -45,25 +45,14 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 537774540,
   },
-  [ModOrAbility.WhisperOfShards]: {
-    id: ModOrAbility.WhisperOfShards,
-    name: "Whisper Of Shards",
-    description:
-      "Shattering a Stasis crystal temporarily boosts your grenade recharge rate. Shattering additional Stasis crystals increases the duration of this benefit.",
-    type: ModifierType.Stasis,
-    bonus: [{ stat: ArmorStat.Resilience, value: 10 }],
-    cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 3469412975,
-  },
   [ModOrAbility.WhisperOfConduction]: {
     id: ModOrAbility.WhisperOfConduction,
-    name: "Whisper Of Conduction",
+    name: "Whisper of Conduction",
     description: "Nearby Stasis shards track to your position.",
     type: ModifierType.Stasis,
     bonus: [
-      { stat: ArmorStat.Resilience, value: 10 },
       { stat: ArmorStat.Intellect, value: 10 },
+      { stat: ArmorStat.Resilience, value: 10 },
     ],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
@@ -72,26 +61,22 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.WhisperOfBonds]: {
     id: ModOrAbility.WhisperOfBonds,
     name: "Whisper of Bonds",
-    description: "Defeating frozen targets grants you Super energy.",
+    description: "Defeating frozen targets generates an Orb of Power.",
     type: ModifierType.Stasis,
-    bonus: [
-      { stat: ArmorStat.Discipline, value: -10 },
-      { stat: ArmorStat.Intellect, value: -10 },
-    ],
+    bonus: [{ stat: ArmorStat.Intellect, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3469412974,
   },
-  [ModOrAbility.WhisperOfHedrons]: {
-    id: ModOrAbility.WhisperOfHedrons,
-    name: "Whisper of Hedrons",
-    description:
-      "Dramatically increases weapon stability, weapon aim assist, Mobility, Resilience, and Recovery after freezing a target with Stasis.",
+  [ModOrAbility.WhisperOfHunger]: {
+    id: ModOrAbility.WhisperOfHunger,
+    name: "Whisper of Hunger",
+    description: "Increases the melee energy gained from picking up Stasis shards.",
     type: ModifierType.Stasis,
-    bonus: [{ stat: ArmorStat.Strength, value: -10 }],
+    bonus: [{ stat: ArmorStat.Strength, value: -20 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 3469412970,
+    hash: 2483898431,
   },
   [ModOrAbility.WhisperOfFractures]: {
     id: ModOrAbility.WhisperOfFractures,
@@ -103,18 +88,16 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 537774542,
   },
-  [ModOrAbility.WhisperOfHunger]: {
-    id: ModOrAbility.WhisperOfHunger,
-    name: "Whisper of Hunger",
-    description: "Increases the melee energy gained from picking up Stasis shards.",
+  [ModOrAbility.WhisperOfImpetus]: {
+    id: ModOrAbility.WhisperOfImpetus,
+    name: "Whisper of Impetus",
+    description:
+      "Damaging targets with a Stasis melee reloads your stowed weapons and grants you a temporary boost to weapon ready speed.",
     type: ModifierType.Stasis,
-    bonus: [
-      { stat: ArmorStat.Mobility, value: -10 },
-      { stat: ArmorStat.Recovery, value: -10 },
-    ],
+    bonus: [{ stat: ArmorStat.Resilience, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 2483898431,
+    hash: 537774543,
   },
   [ModOrAbility.EchoOfExpulsion]: {
     id: ModOrAbility.EchoOfExpulsion,
@@ -142,7 +125,11 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     description:
       "Void buffs applied to you (Invisibility, Overshield, and Devour) have increased duration.",
     type: ModifierType.Void,
-    bonus: [{ stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10 }],
+    bonus: [
+      { stat: ArmorStat.Recovery, value: -10 },
+      { stat: ArmorStat.Mobility, value: -10 },
+      { stat: ArmorStat.Resilience, value: -10 },
+    ],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2272984671,
@@ -161,7 +148,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.EchoOfDomineering,
     name: "Echo of Domineering",
     description:
-      "After suppressing a target, you gain greatly increased Mobility for a short duration and your equipped weapon is reloaded from reserves.",
+      "After suppressing a target, you gain greatly increased mobility for a short duration, and your equipped weapon is reloaded from reserves.\n\nDefeating suppressed targets creates a Void Breach.",
     type: ModifierType.Void,
     bonus: [{ stat: ArmorStat.Discipline, value: 10 }],
     cost: 1,
@@ -201,6 +188,16 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2661180600,
   },
+  [ModOrAbility.EchoOfHarvest]: {
+    id: ModOrAbility.EchoOfHarvest,
+    name: "Echo of Harvest",
+    description: "Defeating weakened targets creates an Orb of Power and a Void Breach.",
+    type: ModifierType.Void,
+    bonus: [{ stat: ArmorStat.Intellect, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 2661180601,
+  },
   [ModOrAbility.EchoOfObscurity]: {
     id: ModOrAbility.EchoOfObscurity,
     name: "Echo of Obscurity",
@@ -211,21 +208,10 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2661180602,
   },
-  [ModOrAbility.EchoOfHarvest]: {
-    id: ModOrAbility.EchoOfHarvest,
-    name: "Echo of Harvest",
-    description:
-      "Defeating weakened targets with precision final blows will create an Orb of Power.",
-    type: ModifierType.Void,
-    bonus: [{ stat: ArmorStat.Intellect, value: -10 }],
-    cost: 1,
-    requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: 2661180601,
-  },
   [ModOrAbility.EchoOfStarvation]: {
     id: ModOrAbility.EchoOfStarvation,
     name: "Echo of Starvation",
-    description: "Picking up an Orb of Power grants Devour.",
+    description: "Picking up a Void Breach or an Orb of Power grants Devour.",
     type: ModifierType.Void,
     bonus: [{ stat: ArmorStat.Recovery, value: -10 }],
     cost: 1,
@@ -245,9 +231,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   },
   [ModOrAbility.EmberOfBenelovence]: {
     id: ModOrAbility.EmberOfBenelovence,
-    name: "Ember of Benelovence",
+    name: "Ember of Benevolence",
     description:
-      "Applying restoration, cure, or radiant to allies grants increased grenade, melee, and class ability regeneration for a short duration.",
+      "Applying restoration, cure,  or radiant to allies grants increased grenade, melee, and class ability regeneration for a short duration.",
     type: ModifierType.Solar,
     bonus: [{ stat: ArmorStat.Discipline, value: -10 }],
     cost: 1,
@@ -278,7 +264,8 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.EmberOfCombustion]: {
     id: ModOrAbility.EmberOfCombustion,
     name: "Ember of Combustion",
-    description: "Final blows with your Solar Super cause targets to ignite.",
+    description:
+      "Final blows with a Solar Super causes targets to ignite and creates a Firesprite.",
     type: ModifierType.Solar,
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
@@ -299,8 +286,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.EmberOfTempering,
     name: "Ember of Tempering",
     description:
-      "Solar weapon final blows grant you and your allies increased recovery for a short duration. Stacks 3 times.\n" +
-      "While Ember of Tempering is active, your weapons have increased airborne effectiveness.",
+      "Solar weapon final blows grant you and your allies increased recovery for a short duration. Stacks 3 times.\n\nWhile Ember of Tempering is active, your weapons have increased airborne effectiveness, and your Solar weapon final blows create a Firesprite.",
     type: ModifierType.Solar,
     bonus: [{ stat: ArmorStat.Recovery, value: -10 }],
     cost: 1,
@@ -331,7 +317,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.EmberOfSearing]: {
     id: ModOrAbility.EmberOfSearing,
     name: "Ember of Searing",
-    description: "Defeating scorched targets grants melee energy.",
+    description: "Defeating scorched targets grants melee energy and creates a Firesprite.",
     type: ModifierType.Solar,
     bonus: [{ stat: ArmorStat.Recovery, value: 10 }],
     cost: 1,
@@ -352,7 +338,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.EmberOfMercy,
     name: "Ember of Mercy",
     description:
-      "When you revive an ally, you and other nearby allies gain restoration. Picking up a Firesprite grants restoration.",
+      "When you revive an ally, you and other nearby allies gain restoration.\n\nPicking up a Firesprite grants restoration.",
     type: ModifierType.Solar,
     bonus: [{ stat: ArmorStat.Resilience, value: 10 }],
     cost: 1,
@@ -394,7 +380,11 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     name: "Spark of Focus",
     description: "After sprinting for a short time, your class ability regeneration is increased.",
     type: ModifierType.Arc,
-    bonus: [{ stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10 }],
+    bonus: [
+      { stat: ArmorStat.Recovery, value: -10 },
+      { stat: ArmorStat.Mobility, value: -10 },
+      { stat: ArmorStat.Resilience, value: -10 },
+    ],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069360,
@@ -443,7 +433,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.ThreadOfAscent,
     name: "Thread of Ascent",
     description:
-      "Activating your grenade ability reloads your equipped weapon and grants bonus airborne effectiveness and handling for a short duration",
+      "Activating your grenade ability reloads your equipped weapon and grants bonus airborne effectiveness and handling for a short duration.",
     type: ModifierType.Strand,
     bonus: [{ stat: ArmorStat.Mobility, value: 10 }],
     cost: 1,
@@ -473,7 +463,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.ThreadOfTransmutation]: {
     id: ModOrAbility.ThreadOfTransmutation,
     name: "Thread of Transmutation",
-    description: "While you have Woven Mail, weapon final blows create a Tangle",
+    description: "While you have Woven Mail, weapon final blows create a Tangle.",
     type: ModifierType.Strand,
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
@@ -513,7 +503,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.ThreadOfPropagation]: {
     id: ModOrAbility.ThreadOfPropagation,
     name: "Thread of Propagation",
-    description: "Powered melee final blows grant your [Strand] Strand weapons Unraveling Rounds",
+    description: "Powered melee final blows grant your Strand weapons Unraveling Rounds.",
     type: ModifierType.Strand,
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
