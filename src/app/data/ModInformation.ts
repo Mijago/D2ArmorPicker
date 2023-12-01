@@ -23,7 +23,6 @@ import { ArmorStat, SpecialArmorStat } from "./enum/armor-stat";
 import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 
 export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
-  // Positive STASIS
   [ModOrAbility.WhisperOfDurance]: {
     id: ModOrAbility.WhisperOfDurance,
     name: "Whisper Of Durance",
@@ -70,8 +69,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2483898429,
   },
-  // NEGATIVE STASIS
-
   [ModOrAbility.WhisperOfBonds]: {
     id: ModOrAbility.WhisperOfBonds,
     name: "Whisper of Bonds",
@@ -119,7 +116,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2483898431,
   },
-  // VOID
   [ModOrAbility.EchoOfExpulsion]: {
     id: ModOrAbility.EchoOfExpulsion,
     name: "Echo of Expulsion",
@@ -247,7 +243,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3854948621,
   },
-  // SOLAR
   [ModOrAbility.EmberOfBenelovence]: {
     id: ModOrAbility.EmberOfBenelovence,
     name: "Ember of Benelovence",
@@ -301,7 +296,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     hash: 362132291,
   },
   [ModOrAbility.EmberOfTempering]: {
-    // may be wrong
     id: ModOrAbility.EmberOfTempering,
     name: "Ember of Tempering",
     description:
@@ -365,8 +359,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 4180586737,
   },
-  /** ARC **/
-
   [ModOrAbility.SparkOfBrilliance]: {
     id: ModOrAbility.SparkOfBrilliance,
     name: "Spark of Brilliance",
@@ -437,7 +429,6 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069364,
   },
-  /* Strand */
   [ModOrAbility.ThreadOfFury]: {
     id: ModOrAbility.ThreadOfFury,
     name: "Thread of Fury",
