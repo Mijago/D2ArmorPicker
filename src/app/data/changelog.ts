@@ -54,6 +54,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Updated the values and descriptions for Subclass Fragments. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Artifice Mods are now correctly added to the DIM export. Thanks to nznaza!",
         issues: [],
       },
