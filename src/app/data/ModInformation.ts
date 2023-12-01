@@ -125,11 +125,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     description:
       "Void buffs applied to you (Invisibility, Overshield, and Devour) have increased duration.",
     type: ModifierType.Void,
-    bonus: [
-      { stat: ArmorStat.Recovery, value: -10 },
-      { stat: ArmorStat.Mobility, value: -10 },
-      { stat: ArmorStat.Resilience, value: -10 },
-    ],
+    bonus: [{ stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 2272984671,
@@ -380,11 +376,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     name: "Spark of Focus",
     description: "After sprinting for a short time, your class ability regeneration is increased.",
     type: ModifierType.Arc,
-    bonus: [
-      { stat: ArmorStat.Recovery, value: -10 },
-      { stat: ArmorStat.Mobility, value: -10 },
-      { stat: ArmorStat.Resilience, value: -10 },
-    ],
+    bonus: [{ stat: SpecialArmorStat.ClassAbilityRegenerationStat, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069360,
