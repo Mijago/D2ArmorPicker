@@ -405,7 +405,7 @@ export class BungieApiService {
     const scks = v.sockets?.socketEntries ?? [];
 
     // Is this necessary? the singleInitialItemHash is also being checked
-    if (scks.find((d) => d.reusablePlugSetHash == 1328)) return ArmorPerkOrSlot.SlotArtifice;
+    if (scks.find((d) => d.reusablePlugSetHash == 1333)) return ArmorPerkOrSlot.SlotArtifice;
 
     for (const socket of scks) {
       const socketHash = socket.singleInitialItemHash;
