@@ -146,7 +146,7 @@ export interface Ability {
 
 export interface Resilience extends CharacterStatData {
   Description: Description;
-  TotalHP: {
+  ShieldHP: {
     Description: Description;
     /**
      * Array index represents the Resilience tier. The numbers represent your total HP at each tier. 'Health' is a static 70 HP, the rest are what Bungie calls 'Shields' in-game. If you wish to display them separately, just subtract 70 from the numbers to get your shield HP.
@@ -242,16 +242,4 @@ export interface SuperAbility {
     number,
     number
   ];
-  /**
-   * Numbers are provided in Damage Resist percentages and represent the Damage Resistance the super provied inside PvP. If the array is empty, the DR value is still unknown. If the array only contains one value, it represents the passive DR of the super. If the value is -9999, the value is still unknown (workaround that allows only inputting one of the PvE or PvP values. If other values are present, check the condition array for the conditions of each of them.
-   */
-  PvPDamageResistance: number[];
-  /**
-   * Same length as the PvPDamageResistance array and works the exact same way except it stores the DR values for PvE.
-   */
-  PvEDamageResistance: number[];
-  /**
-   * Array length matches the length of the DamageResistance arrays. This property can be ignored when the length of the arrays is 1 as that represents the passive DR of the Super that doesn't have a condition. The array contains the condition for each Damage Resist value at the same index in the DamageResistance arrays. Unfortunately, there is no way to realistically account for all the different conditions without using simple text for it so these will be succinct descriptions instead of item hashes or the like.
-   */
-  DRCondition: Description[];
 }

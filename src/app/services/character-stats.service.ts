@@ -99,8 +99,8 @@ export class CharacterStatsService {
       ]),
       Resilience: this.generateEntries(data.Resilience, allAbilities, [
         {
-          key: "TotalHP",
-          name: "Total HP",
+          key: "ShieldHP",
+          name: "Shield HP",
         },
         {
           key: "PvEDamageResistance",
