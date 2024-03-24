@@ -23,7 +23,7 @@ import type { CharacterStats } from "../data/character_stats/schema";
 import { InventoryService } from "./inventory.service";
 
 const BASE_URL = "https://Database-Clarity.github.io/Character-Stats";
-export const SUPPORTED_SCHEMA_VERSION = "1.8";
+export const SUPPORTED_SCHEMA_VERSION = "1.9";
 export const CHARACTER_STATS_URL = `${BASE_URL}/versions/${SUPPORTED_SCHEMA_VERSION}/CharacterStatInfo-NI.json`;
 export const UPDATES_URL = `${BASE_URL}/update.json`;
 
