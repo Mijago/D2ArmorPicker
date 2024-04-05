@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.3",
+    date: "April 5, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted the logic to parse the new Clarity data format. Thanks to ciarán!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.2",
     date: "November 29, 2023",
     entries: [
