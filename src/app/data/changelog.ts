@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.4",
+    date: "April 10, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed a minor issue where the vendor api may be disabled and block the entire page.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.3",
     date: "April 5, 2024",
     entries: [
