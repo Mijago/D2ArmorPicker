@@ -33,7 +33,7 @@ export class HttpClientService {
       });
   }
 
-  async $http(config: HttpClientConfig) {
+  async $http(config: HttpClientConfig, logoutOnError = true) {
     return this.http
       .get<any>(config.url, {
         params: config.params,
@@ -49,7 +49,7 @@ export class HttpClientService {
           console.debug("Offline mode, ignoring API error");
           return;
         }
-        if (err.error?.ErrorStatus == "SystemDisabled") {
+        if (err.error?.ErrorStatus == "SystemDisabled" && logoutOnError) {
           console.info("System is disabled. Revoking auth, must re-login");
           await this.authService.logout();
         }
