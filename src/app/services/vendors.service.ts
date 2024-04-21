@@ -39,7 +39,7 @@ export class VendorsService {
     items: IInventoryArmor[];
     nextRefreshDate: number;
   }> {
-    const vendorsResponse = await getVendors((d) => this.http.$http(d), {
+    const vendorsResponse = await getVendors((d) => this.http.$http(d, false), {
       components: [
         DestinyComponentType.Vendors,
         DestinyComponentType.VendorSales,
@@ -155,16 +155,24 @@ export class VendorsService {
         return acc;
       }, {} as Record<number, IManifestArmor>);
 
-    const vendorArmorItems = await Promise.all(
-      characters.map(({ characterId }) =>
-        this.getVendorArmorItemsForCharacter(manifestItems, destinyMembership, characterId)
-      )
-    );
+    try {
+      const vendorArmorItems = await Promise.all(
+        characters.map(({ characterId }) =>
+          this.getVendorArmorItemsForCharacter(manifestItems, destinyMembership, characterId)
+        )
+      );
 
-    const allItems = vendorArmorItems.flatMap(({ items }) => items);
-    const nextRefreshDate = Math.min(
-      ...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)
-    );
-    return this.writeVendorCache(allItems, new Date(nextRefreshDate));
+      const allItems = vendorArmorItems.flatMap(({ items }) => items);
+      const nextRefreshDate = Math.min(
+        ...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)
+      );
+      return this.writeVendorCache(allItems, new Date(nextRefreshDate));
+    } catch (e) {
+      console.error("Failed to update vendor armor items cache", e);
+      // refresh sooner if we failed to update the cache
+      const nextRefreshDate = new Date();
+      nextRefreshDate.setMinutes(nextRefreshDate.getMinutes() + 5);
+      this.writeVendorCache([], new Date(nextRefreshDate));
+    }
   }
 }

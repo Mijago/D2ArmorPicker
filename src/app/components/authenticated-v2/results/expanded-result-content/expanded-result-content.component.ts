@@ -245,6 +245,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       for (let mod of this.element?.mods || []) {
         mods.push(STAT_MOD_VALUES[mod as StatModifier][3]);
       }
+      // add artifice mods
+      for (let artificemod of this.element?.artifice || []) {
+        mods.push(STAT_MOD_VALUES[artificemod as StatModifier][3]);
+      }
     }
 
     var data: LoadoutParameters = {

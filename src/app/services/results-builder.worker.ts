@@ -311,7 +311,7 @@ addEventListener("message", async ({ data }) => {
   )) {
     /**
      *  At this point we already have:
-     *  - Masterworked items, if they must be masterworked (config.onlyUseMasterworkedItems)
+     *  - Masterworked Exotic/Legendaries, if they must be masterworked (config.onlyUseMasterworkedExotics/config.onlyUseMasterworkedLegendaries)
      *  - disabled items were already removed (config.disabledItems)
      */
     const slotCheckResult = checkSlots(

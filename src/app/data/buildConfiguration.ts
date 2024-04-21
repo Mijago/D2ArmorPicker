@@ -84,7 +84,8 @@ export class BuildConfiguration {
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
-  onlyUseMasterworkedItems = false;
+  onlyUseMasterworkedExotics = false;
+  onlyUseMasterworkedLegendaries = false;
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
@@ -114,7 +115,8 @@ export class BuildConfiguration {
       putArtificeMods: true,
       useFotlArmor: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
-      onlyUseMasterworkedItems: false,
+      onlyUseMasterworkedExotics: false,
+      onlyUseMasterworkedLegendaries: false,
       ignoreSunsetArmor: false,
       includeCollectionRolls: false,
       includeVendorRolls: false,

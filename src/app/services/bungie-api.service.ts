@@ -385,8 +385,7 @@ export class BungieApiService {
 
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
 
-    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Inventory }).delete();
-    await this.db.inventoryArmor.where({ source: InventoryArmorSource.Collections }).delete();
+    await this.db.inventoryArmor.where("source").notEqual(InventoryArmorSource.Vendor).delete();
     await this.db.inventoryArmor.bulkAdd(r);
 
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
@@ -406,7 +405,7 @@ export class BungieApiService {
     const scks = v.sockets?.socketEntries ?? [];
 
     // Is this necessary? the singleInitialItemHash is also being checked
-    if (scks.find((d) => d.reusablePlugSetHash == 1311)) return ArmorPerkOrSlot.SlotArtifice;
+    if (scks.find((d) => d.reusablePlugSetHash == 1346)) return ArmorPerkOrSlot.SlotArtifice;
 
     for (const socket of scks) {
       const socketHash = socket.singleInitialItemHash;

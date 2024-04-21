@@ -29,6 +29,64 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.5.4",
+    date: "April 10, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed a minor issue where the vendor api may be disabled and block the entire page.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.5.3",
+    date: "April 5, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted the logic to parse the new Clarity data format. Thanks to ciarán!",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.5.2",
+    date: "November 29, 2023",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Split the 'Assume all items are masterworked' switch into 'legendary' and 'exotic' switches. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Ascendant Protector' Perk. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed artifice mods, again. Thanks to Mojo!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed 'Ghost Items' from the vendor import. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the values and descriptions for Subclass Fragments. Thanks to ciarán!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Artifice Mods are now correctly added to the DIM export. Thanks to nznaza!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.1",
     date: "October 29, 2023",
     entries: [

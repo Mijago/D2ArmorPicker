@@ -143,18 +143,30 @@
             &nbsp;Assume everything is artifice&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
           </mat-chip>
+
           <mat-chip
             #tooltip="matTooltip"
-            *ngIf="_config_onlyUseMasterworkedItems"
+            *ngIf="_config_onlyUseMasterworkedExotics"
             disableRipple
-            matTooltip="This setting means that only armor pieces are used that are already masterworked."
+            matTooltip="This setting means that only exotic armor pieces that are already masterworked are used."
             selected>
-            Masterworked Only
+            Masterworked Exotics Only
           </mat-chip>
+
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_onlyUseMasterworkedLegendaries"
+            disableRipple
+            matTooltip="This setting means that only legendary armor pieces are already masterworked are used."
+            selected>
+            Masterworked Legendaries Only
+          </mat-chip>
+
           <mat-chip
             #tooltip="matTooltip"
             *ngIf="
-              !_config_onlyUseMasterworkedItems &&
+              !_config_onlyUseMasterworkedExotics &&
+              !_config_onlyUseMasterworkedLegendaries &&
               (_config_assumeLegendariesMasterworked ||
                 _config_assumeExoticsMasterworked ||
                 _config_assumeClassItemMasterworked)

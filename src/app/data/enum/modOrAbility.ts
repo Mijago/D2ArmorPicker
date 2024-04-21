@@ -19,10 +19,10 @@ export enum ModOrAbility {
   WhisperOfDurance = 1000,
   WhisperOfChains,
   WhisperOfConduction,
-  WhisperOfShards,
+  // WhisperOfShards,
 
-  WhisperOfHedrons = 1100,
-  WhisperOfBonds,
+  // WhisperOfHedrons = 1100,
+  WhisperOfBonds = 1101,
   WhisperOfHunger,
   WhisperOfFractures,
 
@@ -79,4 +79,7 @@ export enum ModOrAbility {
   ThreadOfBinding,
   ThreadOfGeneration,
   ThreadOfPropagation,
+
+  // These names are mapped to the fragment hash
+  WhisperOfImpetus = 537774543,
 }
