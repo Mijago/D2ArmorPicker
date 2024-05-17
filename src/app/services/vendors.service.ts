@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { environment } from "../../environments/environment";
 import {
   getVendors,
+  getVendor,
   HttpClientConfig,
   DestinyComponentType,
   DestinyItemType,
@@ -40,68 +41,71 @@ export class VendorsService {
     nextRefreshDate: number;
   }> {
     const vendorsResponse = await getVendors((d) => this.http.$http(d, false), {
-      components: [
-        DestinyComponentType.Vendors,
-        DestinyComponentType.VendorSales,
-        DestinyComponentType.ItemStats,
-      ],
+      components: [DestinyComponentType.Vendors, DestinyComponentType.VendorSales],
       characterId,
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
       filter: 0,
     });
 
-    const vendorItems = Object.entries(vendorsResponse.Response.vendors.data!)
-      .filter(([_vendorHash, vendor]) => vendor.enabled)
-      .flatMap(([vendorHash, vendor]) => {
-        const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
-        const vendorItemStats =
-          vendorsResponse.Response.itemComponents[parseInt(vendorHash)].stats.data ?? {};
+    const enabledVendors = Object.entries(vendorsResponse.Response.vendors.data!).filter(
+      ([_vendorHash, vendor]) => vendor.enabled
+    );
+    const vendors = enabledVendors
+      .filter(
+        ([vendorHash, vendor]) =>
+          Object.entries(vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {}).find(
+            ([vendorItemIndex, saleItem]) => manifestItems[saleItem.itemHash]?.armor2 == true
+          ) !== undefined
+      )
+      .map(([vendorHash, vendor]) => ({
+        vendorHash: vendorHash,
+        refreshDate: new Date(vendor.nextRefreshDate).getTime(),
+      }));
 
-        const vendorArmorItems = Object.entries(saleItems)
-          .map(([vendorItemIndex, saleItem]) => {
-            const manifestItem = manifestItems[saleItem.itemHash];
-            const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
+    const vendorArmorItems: IInventoryArmor[] = [];
+    const nextRefreshDate = Math.min(...vendors.map((v) => v.refreshDate));
+    for (const vendor of vendors) {
+      const vendorHash = vendor.vendorHash;
+      const vendorResponse = await getVendor((d) => this.http.$http(d, false), {
+        components: [DestinyComponentType.ItemStats],
+        characterId,
+        membershipType: destinyMembership.membershipType,
+        destinyMembershipId: destinyMembership.membershipId,
+        vendorHash: parseInt(vendorHash),
+      });
 
-            if (
-              (saleItem.augments & DestinyVendorItemState.Owned) ===
-              DestinyVendorItemState.Owned
-            ) {
-              return;
-            }
+      const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
+      const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
 
-            if (!manifestItem || !itemStats) {
-              return;
-            }
+      const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
+        const manifestItem = manifestItems[saleItem.itemHash];
+        const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
 
-            const statsOverride = Object.values(itemStats.stats).reduce(
-              (acc, { statHash, value }) => {
-                acc[statHash] = value;
-                return acc;
-              },
-              {} as Record<number, number>
-            );
+        if ((saleItem.augments & DestinyVendorItemState.Owned) === DestinyVendorItemState.Owned) {
+          return;
+        }
 
-            const r = createArmorItem(
-              manifestItem,
-              `v${vendorHash}-${saleItem.itemHash}`,
-              InventoryArmorSource.Vendor
-            );
-            applyInvestmentStats(r, statsOverride);
-            return r;
-          })
-          .filter(Boolean) as IInventoryArmor[];
+        if (!manifestItem || !itemStats) {
+          return;
+        }
 
-        return {
-          items: vendorArmorItems,
-          nextRefreshDate: new Date(vendor.nextRefreshDate).getTime(),
-        };
-      })
-      .filter(({ items }) => items.length > 0);
+        const statsOverride = Object.values(itemStats.stats).reduce((acc, { statHash, value }) => {
+          acc[statHash] = value;
+          return acc;
+        }, {} as Record<number, number>);
 
-    const vendorArmorItems = vendorItems.flatMap(({ items }) => items);
+        const r = createArmorItem(
+          manifestItem,
+          `v${vendorHash}-${saleItem.itemHash}`,
+          InventoryArmorSource.Vendor
+        );
+        applyInvestmentStats(r, statsOverride);
+        vendorArmorItems.push(r);
+      });
+    }
 
-    const nextRefreshDate = Math.min(...vendorItems.map(({ nextRefreshDate }) => nextRefreshDate));
+    //const vendorArmorItems = vendorItems.flatMap(({ items }) => items);
 
     console.log(
       `Collected ${vendorArmorItems.length} vendor armor items for character ${characterId}`
