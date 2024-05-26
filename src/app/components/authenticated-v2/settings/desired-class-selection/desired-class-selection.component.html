@@ -42,6 +42,12 @@
 </div>
 
 <div *ngIf="storedMaterials !== null">
+  <span class="material-listing" matTooltip="Exotic Cipher: {{ storedMaterials['3467984096'] }}">
+    <img
+      src="https://www.bungie.net/common/destiny2_content/icons/9970631fe1052642c268132dfc30e16b.jpg"
+      alt="Exotic Cipher" />
+    {{ storedMaterials["3467984096"] | number : "1.0-0" }}
+  </span>
   <span class="material-listing" matTooltip="Ascendant Shards: {{ storedMaterials['4257549985'] }}">
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/0271d214fc3ec91b3def799a4b286b46.jpg"
@@ -69,12 +75,6 @@
       src="https://www.bungie.net/common/destiny2_content/icons/88993eaeedad32f42072df6f77f47311.png"
       alt="Glimmer" />
     {{ storedMaterials["3159615086"] | number : "1.0-0" }}
-  </span>
-  <span class="material-listing" matTooltip="Exotic Cipher: {{ storedMaterials['3467984096'] }}">
-    <img
-      src="https://www.bungie.net/common/destiny2_content/icons/9970631fe1052642c268132dfc30e16b.jpg"
-      alt="Exotic Cipher" />
-    {{ storedMaterials["3467984096"] | number : "1.0-0" }}
   </span>
 </div>
 
