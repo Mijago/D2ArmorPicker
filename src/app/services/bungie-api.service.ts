@@ -271,8 +271,9 @@ export class BungieApiService {
     // 3853748946 enhancement core
     // 4257549984 enhancement prism
     // 4257549985 Ascendant Shard
+    // 3467984096 Exotic Cipher
     var materials = allItems
-      .filter((k) => [3853748946, 4257549984, 4257549985].indexOf(k.itemHash!) > -1)
+      .filter((k) => [3853748946, 4257549984, 4257549985, 3467984096].indexOf(k.itemHash!) > -1)
       .reduce((previousValue, currentValue) => {
         if (!(currentValue.itemHash.toString() in previousValue)) {
           previousValue[currentValue.itemHash] = 0;
@@ -284,10 +285,6 @@ export class BungieApiService {
       profile.Response.profileCurrencies.data?.items.filter((k) => k.itemHash == 3159615086) || [];
     if (glimmerEntry.length > 0) materials["3159615086"] = glimmerEntry[0].quantity;
     else materials["3159615086"] = 0;
-    let legShardEntry =
-      profile.Response.profileCurrencies.data?.items.filter((k) => k.itemHash == 1022552290) || [];
-    if (legShardEntry.length > 0) materials["1022552290"] = legShardEntry[0].quantity;
-    else materials["1022552290"] = 0;
     localStorage.setItem("stored-materials", JSON.stringify(materials));
 
     // Collect a list of all armor item hashes that we need to look up in the manifest
@@ -538,6 +535,7 @@ export class BungieApiService {
         if (v.inventory?.bucketTypeHash == 3551918588) return true; // gauntlets
         if (v.inventory?.bucketTypeHash == 14239492) return true; // chest
         if (v.inventory?.bucketTypeHash == 20886954) return true; // leg
+        if (v.inventory?.bucketTypeHash == 1585787867 && v.inventory.tierType == 6) return true; // exotic class items
         return false;
       })
       .map(([k, v]) => {
