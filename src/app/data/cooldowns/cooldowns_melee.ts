@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { EnumDictionary } from "../types/EnumDictionary";
-import { CharacterClass } from "../enum/character-Class";
 
-export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, string[]> = {
-  [CharacterClass.Titan]: [
+export const MeleeAbilitiesPerClassAndTier: EnumDictionary<DestinyClass, string[]> = {
+  [DestinyClass.Titan]: [
     "Shiver Strike", // 1:53
     "", // 1:49
     "Frontal Assault", // 1:46
@@ -28,7 +28,7 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "", // 1:22
     "", // 0:15
   ],
-  [CharacterClass.Hunter]: [
+  [DestinyClass.Hunter]: [
     "Withering Blade", // 1:53
     "Weighted Throwing Knife", // 1:49
     "", // 1:46
@@ -37,7 +37,7 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "Knife Trick", // 1:22
     "Combination Blow", // 0:15
   ],
-  [CharacterClass.Warlock]: [
+  [DestinyClass.Warlock]: [
     "Penumbral Blast, Ball Lightning", // 1:53
     "", // 1:49
     "", // 1:46
@@ -46,5 +46,5 @@ export const MeleeAbilitiesPerClassAndTier: EnumDictionary<CharacterClass, strin
     "", // 1:22
     "", // 0:15
   ],
-  [CharacterClass.None]: ["", "", "", "", "", "", "", "", "", "", ""],
+  [DestinyClass.Unknown]: ["", "", "", "", "", "", "", "", "", "", ""],
 };

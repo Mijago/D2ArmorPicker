@@ -20,7 +20,6 @@ import { InventoryService } from "../../../services/inventory.service";
 import { DatabaseService } from "../../../services/database.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { BungieApiService } from "../../../services/bungie-api.service";
-import { CharacterClass } from "../../../data/enum/character-Class";
 import { ConfigurationService } from "../../../services/configuration.service";
 import { ArmorPerkOrSlot, ArmorStat, StatModifier } from "../../../data/enum/armor-stat";
 import { ModOrAbility } from "../../../data/enum/modOrAbility";
@@ -30,7 +29,7 @@ import { StatusProviderService } from "../../../services/status-provider.service
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { ModInformation } from "../../../data/ModInformation";
 import { ModifierType } from "../../../data/enum/modifierType";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2";
+import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../../../data/enum/armor-slot";
 import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
@@ -143,7 +142,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   ];
 
   // info values
-  selectedClass: CharacterClass = CharacterClass.None;
+  selectedClass: DestinyClass = DestinyClass.Unknown;
   totalTime: number = 0;
   itemCount: number = 0;
   totalResults: number = 0;
