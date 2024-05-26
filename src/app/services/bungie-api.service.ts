@@ -348,9 +348,6 @@ export class BungieApiService {
           if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
         }
 
-        if (!r.isExotic && this.config_assumeEveryLegendaryIsArtifice)
-          r.perk = ArmorPerkOrSlot.SlotArtifice;
-
         return r as IInventoryArmor;
       })
       .filter(Boolean) as IInventoryArmor[];
