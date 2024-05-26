@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, Input, OnInit } from "@angular/core";
+import { AfterViewInit, Component, Input } from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";

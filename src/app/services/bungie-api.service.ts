@@ -17,10 +17,8 @@
 
 import { Injectable } from "@angular/core";
 import {
-  DestinyClass,
   DestinyComponentType,
   DestinyInventoryItemDefinition,
-  DestinyItemSocketState,
   DestinyItemType,
   DestinyCollectibleState,
   equipItem,

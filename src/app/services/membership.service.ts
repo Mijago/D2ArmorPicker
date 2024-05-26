@@ -1,12 +1,5 @@
 import { Injectable } from "@angular/core";
-
-import { environment } from "../../environments/environment";
-import {
-  HttpClientConfig,
-  DestinyComponentType,
-  getProfile,
-  DestinyClass,
-} from "bungie-api-ts/destiny2";
+import { DestinyComponentType, getProfile, DestinyClass } from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";

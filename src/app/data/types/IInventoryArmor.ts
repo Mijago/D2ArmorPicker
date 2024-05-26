@@ -17,8 +17,6 @@
 
 import { ArmorSlot } from "../enum/armor-slot";
 import { IManifestArmor } from "./IManifestArmor";
-import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
-import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export enum InventoryArmorSource {
   Inventory = 0,

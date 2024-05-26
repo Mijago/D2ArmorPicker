@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { ChangelogService } from "../../../../services/changelog.service";
-import { ChangelogEntry } from "../../../../data/changelog";
 
 @Component({
   selector: "app-changelog-dialog",

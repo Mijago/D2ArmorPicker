@@ -29,6 +29,27 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.0b",
+    date: "May 26, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an 'Assume every exotic has an artifice slot' setting in preparation for the changes in the upcoming expansion. Real artifice exotics should work out-of-the-box at the first day of the expansion, BUT it may happen that I need to update some internal structures. Have fun exploring your options, though!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked worker performace. Thanks to nznaza.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Prepared the API for upcoming Bungie API changes. Thanks to nznaza.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.5.4",
     date: "April 10, 2024",
     entries: [

@@ -15,9 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
-import { ChangelogDialogComponent } from "../changelog-dialog/changelog-dialog.component";
+import { AfterViewInit, Component } from "@angular/core";
 import { ChangelogService } from "../../../../services/changelog.service";
 
 @Component({

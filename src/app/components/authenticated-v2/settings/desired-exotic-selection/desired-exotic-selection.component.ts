@@ -19,7 +19,6 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
-import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";

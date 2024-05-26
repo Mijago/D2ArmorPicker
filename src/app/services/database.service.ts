@@ -16,14 +16,10 @@
  */
 
 import { Injectable } from "@angular/core";
-import Dexie from "dexie";
 import { AuthService } from "./auth.service";
 import { Database } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
-import { IInventoryArmor } from "../data/types/IInventoryArmor";
-import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { environment } from "../../environments/environment";
-import { IVendorInfo } from "../data/types/IVendorInfo";
 
 @Injectable({
   providedIn: "root",

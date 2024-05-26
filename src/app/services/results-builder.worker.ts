@@ -41,8 +41,6 @@ import {
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
 
-const db = new Database();
-
 function checkSlots(
   config: BuildConfiguration,
   constantModslotRequirement: number[],

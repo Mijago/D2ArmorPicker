@@ -16,8 +16,6 @@
  */
 
 import { Component, Input, OnInit } from "@angular/core";
-import { ResultItem } from "../../results/results.component";
-import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { InventoryService } from "../../../../services/inventory.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";

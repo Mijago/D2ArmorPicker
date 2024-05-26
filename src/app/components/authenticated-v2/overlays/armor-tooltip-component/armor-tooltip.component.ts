@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit, TemplateRef } from "@angular/core";
+import { Component, Input } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";

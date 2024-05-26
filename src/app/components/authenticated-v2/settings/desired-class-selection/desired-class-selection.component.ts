@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subject } from "rxjs";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { takeUntil } from "rxjs/operators";

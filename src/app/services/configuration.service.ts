@@ -16,7 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
-import { BuildConfiguration, FixableSelection } from "../data/buildConfiguration";
+import { BuildConfiguration } from "../data/buildConfiguration";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ModOrAbility } from "../data/enum/modOrAbility";
 import * as lzutf8 from "lzutf8";

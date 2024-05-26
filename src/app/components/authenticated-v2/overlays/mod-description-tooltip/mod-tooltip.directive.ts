@@ -18,7 +18,6 @@
 import {
   Directive,
   Input,
-  TemplateRef,
   ElementRef,
   OnInit,
   HostListener,
@@ -27,7 +26,6 @@ import {
 } from "@angular/core";
 import { Overlay, OverlayPositionBuilder, OverlayRef } from "@angular/cdk/overlay";
 import { ComponentPortal } from "@angular/cdk/portal";
-import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { Modifier } from "../../../../data/modifier";
 import { ModDescriptionTooltipComponent } from "./mod-description-tooltip.component";
 
