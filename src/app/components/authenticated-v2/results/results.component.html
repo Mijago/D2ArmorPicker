@@ -140,7 +140,18 @@
             selected
             color="warn">
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-            &nbsp;Assume everything is artifice&nbsp;
+            &nbsp;Assume legendaries are artifice&nbsp;
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
+            *ngIf="_config_assumeEveryExoticIsArtifice"
+            disableRipple
+            matTooltip="EVERY exotic is assumed to be artifice."
+            selected
+            color="warn">
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+            &nbsp;Assume exotics are artifice&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
           </mat-chip>
 

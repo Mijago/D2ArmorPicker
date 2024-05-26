@@ -441,7 +441,8 @@ export function handlePermutation(
   let availableArtificeCount = items.filter(
     (d) =>
       d.perk == ArmorPerkOrSlot.SlotArtifice ||
-      (config.assumeEveryLegendaryIsArtifice && !d.isExotic)
+      (config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
+      (config.assumeEveryExoticIsArtifice && d.isExotic)
   ).length;
 
   if (hasArtificeClassItem) availableArtificeCount += 1;
