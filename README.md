@@ -2,7 +2,7 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -63,6 +63,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/TheMojoDojo"><img src="https://avatars.githubusercontent.com/u/99927863?v=4?s=100" width="100px;" alt="Mojo"/><br /><sub><b>Mojo</b></sub></a><br /><a href="#projectManagement-TheMojoDojo" title="Project Management">📆</a> <a href="#ideas-TheMojoDojo" title="Ideas, Planning, & Feedback">🤔</a> <a href="#userTesting-TheMojoDojo" title="User Testing">📓</a> <a href="#question-TheMojoDojo" title="Answering Questions">💬</a> <a href="https://github.com/Mijago/D2ArmorPicker/commits?author=TheMojoDojo" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://benhollis.net/"><img src="https://avatars.githubusercontent.com/u/313208?v=4?s=100" width="100px;" alt="Ben Hollis"/><br /><sub><b>Ben Hollis</b></sub></a><br /><a href="https://github.com/Mijago/D2ArmorPicker/commits?author=bhollis" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nznaza"><img src="https://avatars.githubusercontent.com/u/5291065?v=4?s=100" width="100px;" alt="nznaza"/><br /><sub><b>nznaza</b></sub></a><br /><a href="#maintenance-nznaza" title="Maintenance">🚧</a> <a href="https://github.com/Mijago/D2ArmorPicker/commits?author=nznaza" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://ciaranwal.sh/"><img src="https://avatars.githubusercontent.com/u/3736?v=4?s=100" width="100px;" alt="Ciarán Walsh"/><br /><sub><b>Ciarán Walsh</b></sub></a><br /><a href="https://github.com/Mijago/D2ArmorPicker/commits?author=ciaran" title="Code">💻</a> <a href="#maintenance-ciaran" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
   <tfoot>

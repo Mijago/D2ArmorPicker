@@ -71,6 +71,16 @@
         "maintenance",
         "code"
       ]
+    },
+    {
+      "login": "ciaran",
+      "name": "Ciarán Walsh",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3736?v=4",
+      "profile": "http://ciaranwal.sh/",
+      "contributions": [
+        "code",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
