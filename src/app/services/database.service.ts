@@ -60,6 +60,7 @@ export class DatabaseService extends Database {
     localStorage.removeItem("LastManifestUpdate");
     localStorage.removeItem("last-manifest-revision");
     localStorage.removeItem("last-manifest-db-name");
+    localStorage.removeItem("vendor-next-refresh-time");
 
     localStorage.removeItem("LastArmorUpdate");
     localStorage.removeItem("last-armor-db-name");
