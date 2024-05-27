@@ -63,48 +63,59 @@ export class VendorsService {
 
     const vendorArmorItems: IInventoryArmor[] = [];
     const nextRefreshDate = Math.min(...vendors.map((v) => v.refreshDate));
-    for (const vendor of vendors) {
-      const vendorHash = vendor.vendorHash;
-      const vendorResponse = await getVendor((d) => this.http.$http(d, false), {
+    const VendorPromises = vendors.map((vendor) => {
+      let vendorHash = vendor.vendorHash;
+      return getVendor((d) => this.http.$http(d, false), {
         components: [DestinyComponentType.ItemStats],
         characterId,
         membershipType: destinyMembership.membershipType,
         destinyMembershipId: destinyMembership.membershipId,
         vendorHash: parseInt(vendorHash),
-      });
+      }).then(
+        (vendorResponse) => {
+          const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
+          const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
 
-      const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
-      const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
+          const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
+            const manifestItem = manifestItems[saleItem.itemHash];
+            const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
 
-      const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
-        const manifestItem = manifestItems[saleItem.itemHash];
-        const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
+            if (
+              (saleItem.augments & DestinyVendorItemState.Owned) ===
+              DestinyVendorItemState.Owned
+            ) {
+              return;
+            }
 
-        if ((saleItem.augments & DestinyVendorItemState.Owned) === DestinyVendorItemState.Owned) {
-          return;
+            if (!manifestItem || !itemStats) {
+              return;
+            }
+
+            const statsOverride = Object.values(itemStats.stats).reduce(
+              (acc, { statHash, value }) => {
+                acc[statHash] = value;
+                return acc;
+              },
+              {} as Record<number, number>
+            );
+
+            const r = createArmorItem(
+              manifestItem,
+              `v${vendorHash}-${saleItem.itemHash}`,
+              InventoryArmorSource.Vendor
+            );
+            applyInvestmentStats(r, statsOverride);
+            vendorArmorItems.push(r);
+          });
+        },
+        (reason) => {
+          console.error(`Failed to get vendor: ${reason}`);
         }
-
-        if (!manifestItem || !itemStats) {
-          return;
-        }
-
-        const statsOverride = Object.values(itemStats.stats).reduce((acc, { statHash, value }) => {
-          acc[statHash] = value;
-          return acc;
-        }, {} as Record<number, number>);
-
-        const r = createArmorItem(
-          manifestItem,
-          `v${vendorHash}-${saleItem.itemHash}`,
-          InventoryArmorSource.Vendor
-        );
-        applyInvestmentStats(r, statsOverride);
-        vendorArmorItems.push(r);
-      });
-    }
+      );
+    });
 
     //const vendorArmorItems = vendorItems.flatMap(({ items }) => items);
-
+    await Promise.all(VendorPromises);
     console.log(
       `Collected ${vendorArmorItems.length} vendor armor items for character ${characterId}`
     );
