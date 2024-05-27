@@ -19,16 +19,60 @@
   cursor: progress;
 }
 
-.info {
+.info-container {
   z-index: 1000;
   position: fixed;
-  width: 200px;
+  top: 37px;
 
-  left: 50%;
-  top: 50px;
-  transform: translateX(-50%);
+  // on small screens, right is 0 and left is auto
+  // on large screens, left is maximum 1200px and right is auto
+  right: 0;
+
+  // large screens
+  @media (min-width: 1650px) {
+    left: 1380px;
+    right: auto;
+  }
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px;
+  overflow: auto;
+
+  pointer-events: none;
+}
+
+.info {
+  width: 200px;
+  margin-bottom: 5px;
 
   border: antiquewhite 1px solid;
+
+  // API calls
+  &.info-updating-manifest {
+    border-color: #f09c4e;
+  }
+  &.info-updating-inventory {
+    border-color: #f0ad4e;
+  }
+  // Async API Call
+  &.info-updating-vendor {
+    border-color: #f0e54e;
+  }
+  // Calculations
+  &.info-calculating-permutations {
+    border-color: #5cb85c;
+  }
+  &.info-calculating-results {
+    border-color: #89b85c;
+  }
+  // display
+  &.info-updating-results {
+    border-color: #5cb85c;
+  }
 }
 
 .sidenav-container {
