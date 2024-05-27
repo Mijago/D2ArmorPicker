@@ -18,6 +18,11 @@
 import { ArmorSlot } from "../enum/armor-slot";
 import { IManifestArmor } from "./IManifestArmor";
 
+export interface ITimestampedEntry {
+  created_at: number;
+  updated_at: number;
+}
+
 export enum InventoryArmorSource {
   Inventory = 0,
   Collections = 1,
@@ -40,7 +45,7 @@ export interface IDestinyArmor {
   source: InventoryArmorSource;
 }
 
-export interface IInventoryArmor extends IManifestArmor, IDestinyArmor {
+export interface IInventoryArmor extends IManifestArmor, IDestinyArmor, ITimestampedEntry {
   itemInstanceId: string;
   mayBeBugged: boolean; // if there was an error in the parsing
   energyLevel: number;
@@ -70,6 +75,8 @@ export function createArmorItem(
       intellect: 0,
       strength: 0,
       source,
+      created_at: Date.now(),
+      updated_at: Date.now(),
     },
     manifestItem
   );

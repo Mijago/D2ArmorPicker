@@ -374,16 +374,70 @@ export class BungieApiService {
       .filter(Boolean) as IInventoryArmor[];
 
     r = r.concat(collectionRollItems);
-
     r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
 
-    await this.db.inventoryArmor.where("source").notEqual(InventoryArmorSource.Vendor).delete();
-    await this.db.inventoryArmor.bulkAdd(r);
+    await this.updateDatabaseItems(r);
 
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
     localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name);
 
     return r;
+  }
+
+  private async updateDatabaseItems(newItems: IInventoryArmor[]) {
+    // get all items from the database. This saves us from having to do a lot of slow (!) queries.
+    const dbItems = await this.db.inventoryArmor.toArray();
+
+    const newItemInstanceIds = new Set(newItems.map((d) => d.itemInstanceId));
+    // get the IDs of all items with no source
+    const ids_noSource = dbItems
+      .filter((d) => d.source == null || d.source == undefined)
+      .map((d) => d.id);
+    // get the IDs of all items that are not in the new inventory (and thus should be deleted)
+    const ids_deleted = dbItems
+      .filter((d) => !newItemInstanceIds.has(d.itemInstanceId))
+      .filter((d) => d.source != InventoryArmorSource.Vendor)
+      .map((d) => d.id);
+
+    // get the IDs that are in both, the db and the new inventory, and thus should be updated
+    let entries_existing = dbItems.filter((d) => newItemInstanceIds.has(d.itemInstanceId));
+    // now filter these that actually have changed
+    entries_existing = entries_existing.filter((d) => {
+      let c = newItems.find((k) => k.itemInstanceId == d.itemInstanceId);
+      if (!c) return false;
+      // if masterwork, energy, etc change, return true
+      if (c.masterworked != d.masterworked) return true;
+      if (c.energyLevel != d.energyLevel) return true;
+      if (c.perk != d.perk) return true;
+      return false;
+    });
+
+    // delete the entries
+    const idsToDelete = ids_noSource.concat(ids_deleted);
+    if (idsToDelete.length > 0) await this.db.inventoryArmor.bulkDelete(idsToDelete);
+
+    // update the entries
+    if (entries_existing.length > 0) {
+      await this.db.inventoryArmor.bulkUpdate(
+        entries_existing.map((d) => {
+          return {
+            key: d.id,
+            changes: {
+              masterworked: d.masterworked,
+              energyLevel: d.energyLevel,
+              perk: d.perk,
+              updated_at: Date.now(),
+            },
+          };
+        })
+      );
+    }
+
+    // add the entries
+    const entriesToAdd = newItems.filter(
+      (d) => !dbItems.find((k) => k.itemInstanceId == d.itemInstanceId)
+    );
+    if (entriesToAdd.length > 0) await this.db.inventoryArmor.bulkAdd(entriesToAdd);
   }
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
