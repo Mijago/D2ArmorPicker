@@ -115,7 +115,7 @@ export class VendorsService {
     };
   }
 
-  private isVendorCacheValid() {
+  isVendorCacheValid() {
     const nextRefreshTimeStr = localStorage.getItem(VENDOR_NEXT_REFRESH_KEY);
     if (!nextRefreshTimeStr) {
       return false;
@@ -140,10 +140,14 @@ export class VendorsService {
     localStorage.setItem(VENDOR_NEXT_REFRESH_KEY, nextRefreshDate.toISOString());
   }
 
+  /**
+   * Updates the vendor armor items cache if it is invalid
+   * @returns true if the cache was updated, false if the cache is still valid
+   */
   async updateVendorArmorItemsCache() {
     if (this.isVendorCacheValid()) {
       console.log("Using vendor items cache");
-      return;
+      return false;
     }
 
     const destinyMembership = await this.membership.getMembershipDataForCurrentUser();
@@ -168,13 +172,15 @@ export class VendorsService {
       const nextRefreshDate = Math.min(
         ...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)
       );
-      return this.writeVendorCache(allItems, new Date(nextRefreshDate));
+      this.writeVendorCache(allItems, new Date(nextRefreshDate));
+      return true;
     } catch (e) {
       console.error("Failed to update vendor armor items cache", e);
       // refresh sooner if we failed to update the cache
       const nextRefreshDate = new Date();
       nextRefreshDate.setMinutes(nextRefreshDate.getMinutes() + 5);
       this.writeVendorCache([], new Date(nextRefreshDate));
+      return false;
     }
   }
 }

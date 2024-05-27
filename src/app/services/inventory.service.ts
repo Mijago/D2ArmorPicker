@@ -40,6 +40,7 @@ import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
 import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { VendorsService } from "./vendors.service";
 
 type info = {
   results: ResultDefinition[];
@@ -88,7 +89,8 @@ export class InventoryService {
     private status: StatusProviderService,
     private api: BungieApiService,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private vendors: VendorsService
   ) {
     this._inventory = new ReplaySubject(1);
     this.inventory = this._inventory.asObservable();
@@ -151,7 +153,6 @@ export class InventoryService {
   }
 
   shouldCalculateResults(): boolean {
-    console.log("this.router.url", this.router.url);
     return this.router.url == "/";
   }
 
@@ -164,16 +165,41 @@ export class InventoryService {
       this.refreshing = true;
       let manifestUpdated = await this.updateManifest(forceManifest);
       let armorUpdated = await this.updateInventoryItems(manifestUpdated || forceArmor);
+      this.updateVendorsAsync();
 
-      // trigger armor update behaviour
-      if (armorUpdated) this._inventory.next(null);
-
-      // Do not update results in Help and Cluster pages
-      if (this.shouldCalculateResults()) {
-        await this.updateResults();
-      }
+      await this.triggerArmorUpdateAndUpdateResults(armorUpdated);
     } finally {
       this.refreshing = false;
+    }
+  }
+
+  private async triggerArmorUpdateAndUpdateResults(
+    triggerInventoryUpdate: boolean = false,
+    triggerResultsUpdate: boolean = true
+  ) {
+    // trigger armor update behaviour
+    if (triggerInventoryUpdate) this._inventory.next(null);
+
+    // Do not update results in Help and Cluster pages
+    if (this.shouldCalculateResults()) {
+      await this.updateResults();
+    }
+  }
+
+  private updateVendorsAsync() {
+    if (this.status.getStatus().updatingVendors) return;
+
+    if (!this.vendors.isVendorCacheValid()) {
+      this.status.modifyStatus((s) => (s.updatingVendors = true));
+      this.vendors
+        .updateVendorArmorItemsCache()
+        .then((success) => {
+          if (!success) return;
+          this.triggerArmorUpdateAndUpdateResults(success, this._config.includeVendorRolls);
+        })
+        .finally(() => {
+          this.status.modifyStatus((s) => (s.updatingVendors = false));
+        });
     }
   }
 

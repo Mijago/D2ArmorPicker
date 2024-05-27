@@ -46,7 +46,6 @@ import { ArmorPerkOrSlot, ArmorPerkSocketHashes } from "../data/enum/armor-stat"
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
-import { VendorsService } from "./vendors.service";
 import { HttpClientService } from "./http-client.service";
 import { IVendorInfo } from "../data/types/IVendorInfo";
 
@@ -97,8 +96,7 @@ export class BungieApiService {
     private http: HttpClientService,
     private db: DatabaseService,
     private config: ConfigurationService,
-    private membership: MembershipService,
-    private vendors: VendorsService
+    private membership: MembershipService
   ) {
     this.config.configuration.subscribe(async (config) => {
       this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
@@ -250,8 +248,6 @@ export class BungieApiService {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
     });
-
-    await this.vendors.updateVendorArmorItemsCache();
 
     const unlockedExoticArmorItemHashes = await this.getUnlockedExoticArmor(
       profile.Response.characterCollectibles.data ?? {}

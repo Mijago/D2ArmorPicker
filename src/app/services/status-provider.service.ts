@@ -24,6 +24,7 @@ export interface Status {
   updatingResultsTable: boolean;
   updatingManifest: boolean;
   updatingInventory: boolean;
+  updatingVendors: boolean;
 }
 
 @Injectable({
@@ -36,6 +37,7 @@ export class StatusProviderService {
     updatingResultsTable: false,
     updatingInventory: false,
     updatingManifest: false,
+    updatingVendors: false,
   };
 
   private _status: BehaviorSubject<Status>;
