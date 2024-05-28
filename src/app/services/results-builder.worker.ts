@@ -711,37 +711,6 @@ function get_mods_precalc(
       }
     }
   }
-  /*
-  if (
-    optimize == ModOptimizationStrategy.ReduceUsedModSockets ||
-    optimize == ModOptimizationStrategy.ReduceUsedModPoints
-  ) {
-    precalculatedMods.forEach((d, idx) => {
-      const minorMul = idx in [1, 2, 4] ? 2 : 1;
-      const majorMul = idx in [1, 2, 4] ? 4 : 3;
-      d.sort((a, b) => {
-        if (a[3] == 0) return 1;
-        if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
-          const ac = a[1] + a[2];
-          const bc = b[1] + b[2];
-
-          if (ac != bc) return ac - bc;
-        }
-
-        const ac = minorMul * a[1] + majorMul * a[2];
-        const bc = minorMul * b[1] + majorMul * b[2];
-
-        if (ac != bc) return ac - bc;
-
-        return a[0] - b[0];
-      });
-    });
-  }
-  //*/
-
-  // we have six stats with possible mod usage
-  // we have to build every possible combination of mods and check if it is possible and if it is better than the current best
-
   let bestMods: any = null;
   let bestScore = 1000;
 
@@ -820,16 +789,29 @@ function get_mods_precalc(
     return true;
   }
 
+  const mustExecuteOptimization = optimize != ModOptimizationStrategy.None;
   root: for (let mobility of precalculatedMods[0]) {
     if (!validate([mobility])) continue;
     for (let resilience of precalculatedMods[1]) {
       if (!validate([mobility, resilience])) continue;
       for (let recovery of precalculatedMods[2]) {
         if (!validate([mobility, resilience, recovery])) continue;
+        if (mustExecuteOptimization && score([mobility, resilience, recovery]) >= bestScore)
+          continue;
         for (let discipline of precalculatedMods[3]) {
           if (!validate([mobility, resilience, recovery, discipline])) continue;
+          if (
+            mustExecuteOptimization &&
+            score([mobility, resilience, recovery, discipline]) >= bestScore
+          )
+            continue;
           for (let intellect of precalculatedMods[4]) {
             if (!validate([mobility, resilience, recovery, discipline, intellect])) continue;
+            if (
+              mustExecuteOptimization &&
+              score([mobility, resilience, recovery, discipline, intellect]) >= bestScore
+            )
+              continue;
             inner: for (let strength of precalculatedMods[5]) {
               let mods = [mobility, resilience, recovery, discipline, intellect, strength];
 
@@ -851,7 +833,7 @@ function get_mods_precalc(
               if (scoreVal < bestScore) {
                 bestScore = scoreVal;
                 bestMods = mods;
-                if (optimize == ModOptimizationStrategy.None) {
+                if (!mustExecuteOptimization) {
                   break root;
                 }
               }
