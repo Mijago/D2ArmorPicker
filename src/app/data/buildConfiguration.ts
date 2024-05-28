@@ -66,6 +66,9 @@ export class BuildConfiguration {
   };
   maximumStatMods: number = 5; // TODO: remove
 
+  // if set, then we can use the exact stats like 6x69. It will be stored as "fixed 6.9" in minimumStatTiers
+  allowExactStats = false;
+
   // Fixable, BUT the bool is not yet used. Maybe in a future update.
   maximumModSlots: EnumDictionary<ArmorSlot, FixableSelection<number>> = {
     [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
@@ -109,6 +112,7 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      allowExactStats: false,
       enabledMods: [],
       disabledItems: [],
       addConstent1Resilience: false,

@@ -49,6 +49,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   config_zero_waste = false;
   config_mod_strategy = ModOptimizationStrategy.None;
   config_reduce_waste = false;
+  config_allowExactStats = false;
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
     this.stats = Object.keys(ArmorStat)
@@ -71,6 +72,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_zero_waste = c.onlyShowResultsWithNoWastedStats;
       this.config_mod_strategy = c.modOptimizationStrategy;
       this.config_reduce_waste = c.tryLimitWastedStats;
+      this.config_allowExactStats = c.allowExactStats;
     });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {

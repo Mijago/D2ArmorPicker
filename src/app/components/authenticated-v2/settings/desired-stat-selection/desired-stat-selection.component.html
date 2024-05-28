@@ -55,6 +55,7 @@
     <td>
       <app-stat-tier-selection
         [stat]="enum.value"
+        [allowExactStats]="config_allowExactStats"
         [statsByMods]="statsByMods[enum.value]"
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
         [selectedTier]="minimumStatTiers[enum.value].value"

@@ -15,27 +15,41 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<mat-button-toggle-group appearance="standard" name="fontStyle">
-  <mat-button-toggle
-    (click)="setValue(i)"
-    *ngFor="let tier of TierRange; let i = index"
-    [checked]="selectedTier === i"
-    [class.isFromMod]="isAddedByConfigMods(i)"
-    [class.mat-button-toggle-checked]="selectedTier >= i"
-    [class.not-checked]="selectedTier < i"
-    [disabled]="maximumAvailableTier < i"
-    class="select-button"
-    value="{{ i }}">
-    <div
-      class="stat-button-content"
-      statCooldownTooltip
-      [tooltipTier]="i"
-      [tooltipDifferenceTier]="selectedTier"
-      [tooltipStat]="stat">
-      {{ i * 10 }}
-    </div>
-  </mat-button-toggle>
-</mat-button-toggle-group>
+<ng-container *ngIf="!allowExactStats">
+  <mat-button-toggle-group appearance="standard" name="fontStyle">
+    <mat-button-toggle
+      (click)="setValue(i)"
+      *ngFor="let tier of TierRange; let i = index"
+      [checked]="selectedTier === i"
+      [class.isFromMod]="isAddedByConfigMods(i)"
+      [class.mat-button-toggle-checked]="selectedTier >= i"
+      [class.not-checked]="selectedTier < i"
+      [disabled]="maximumAvailableTier < i"
+      class="select-button"
+      value="{{ i }}">
+      <div
+        class="stat-button-content"
+        statCooldownTooltip
+        [tooltipTier]="i"
+        [tooltipDifferenceTier]="selectedTier"
+        [tooltipStat]="stat">
+        {{ i * 10 }}
+      </div>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+</ng-container>
+
+<ng-container *ngIf="allowExactStats">
+  <mat-form-field>
+    <input
+      matInput
+      type="number"
+      min="0"
+      [max]="maximumAvailableTier * 10"
+      [value]="selectedTier * 10"
+      (input)="setValueMob($event)" />
+  </mat-form-field>
+</ng-container>
 
 <button
   mat-icon-button

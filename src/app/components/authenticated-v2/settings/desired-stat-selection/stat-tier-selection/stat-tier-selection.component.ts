@@ -25,6 +25,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
 })
 export class StatTierSelectionComponent {
   readonly TierRange = new Array(11);
+  @Input() allowExactStats: boolean = false;
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 10;
@@ -40,6 +41,12 @@ export class StatTierSelectionComponent {
       this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
     }
+  }
+
+  setValueMob(inputEvent: any) {
+    let newValue = parseInt(inputEvent.target.value);
+    newValue = Math.min(Math.max(newValue, 0), 100);
+    this.setValue(newValue / 10);
   }
 
   isAddedByConfigMods(index: number) {

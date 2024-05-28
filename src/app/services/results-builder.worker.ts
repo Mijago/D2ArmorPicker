@@ -432,10 +432,15 @@ export function handlePermutation(
   stats[4] += constantBonus[4];
   stats[5] += constantBonus[5];
 
-  // Abort here if we are already above the limit, in case of fixed stat tiers
-  for (let n: ArmorStat = 0; n < 6; n++)
-    if (config.minimumStatTiers[n].fixed && stats[n] / 10 >= config.minimumStatTiers[n].value + 1)
-      return null;
+  for (let n: ArmorStat = 0; n < 6; n++) {
+    // Abort here if we are already above the limit, in case of fixed stat tiers
+    if (config.minimumStatTiers[n].fixed) {
+      if (config.allowExactStats && stats[n] / 10 - 0.001 > config.minimumStatTiers[n].value)
+        return null;
+      if (!config.allowExactStats && stats[n] / 10 >= config.minimumStatTiers[n].value + 1)
+        return null;
+    }
+  }
 
   // get the amount of armor with artifice slot
   let availableArtificeCount = items.filter(
@@ -683,6 +688,20 @@ function get_mods_precalc(
     modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
   ];
 
+  // we handle locked exact stats as zero-waste in terms  of the mod selection
+  if (config.allowExactStats) {
+    for (let i = 0; i < 6; i++) {
+      if (config.minimumStatTiers[i as ArmorStat].fixed && distances[i] > 0) {
+        precalculatedMods[i] = precalculatedZeroWasteModCombinations[distances[i]] || [
+          [0, 0, 0, 0],
+        ];
+        // and now also remove every solution with >= 10 points of "overshoot"
+        precalculatedMods[i] = precalculatedMods[i].filter((d) => d[3] - distances[i] < 10);
+      }
+    }
+  }
+
+  // add optional distances to the precalculated mods
   const limit = 3;
   for (let i = 0; i < optionalDistances.length; i++) {
     if (optionalDistances[i] > 0) {
