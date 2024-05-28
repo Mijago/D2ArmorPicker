@@ -154,6 +154,8 @@ function buildTestItem(
     statPlugHashes: [],
     socketEntries: [],
     watermarkIcon: "",
+    created_at: Date.now(),
+    updated_at: Date.now(),
   };
 }
 
