@@ -537,17 +537,8 @@ describe("Results Worker", () => {
       // grab the runtime.maximumPossibleTiers and iterate over them to see if it correctly fills them
       // first, pick a random order
       const order = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
-      console.log(n, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      console.log(n, "Order", order);
-      console.log(n, "availableModCost", availableModCost);
 
       for (let statId of order) {
-        console.log(
-          "~~~~~~ stat id",
-          statId,
-          "set to stats",
-          runtime.maximumPossibleTiers.map((x) => Math.floor(x / 10))
-        );
         config.minimumStatTiers[statId as ArmorStat].value = Math.floor(
           runtime.maximumPossibleTiers[statId] / 10
         );
