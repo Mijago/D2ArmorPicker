@@ -514,7 +514,7 @@ export function handlePermutation(
     Math.max(0, 100 - stats[5]),
   ];
 
-  // find every combo of three stats which sum is less than 62; no duplicates
+  // find every combo of three stats which sum is less than 65; no duplicates
   let combos3x100 = [];
   let combos4x100 = [];
   for (let i = 0; i < 4; i++) {
@@ -525,14 +525,14 @@ export function handlePermutation(
         dx[j] = distancesTo100[j];
         dx[k] = distancesTo100[k];
         let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
-        if (distanceSum <= 62) {
+        if (distanceSum <= 65) {
           combos3x100.push([i, j, k]);
 
           for (let l = k + 1; l < 6; l++) {
             let dy = dx.slice();
             dy[l] = distancesTo100[l];
             let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
-            if (distanceSum <= 62) {
+            if (distanceSum <= 65) {
               combos4x100.push([i, j, k, l]);
             }
           }
@@ -665,8 +665,8 @@ function get_mods_precalc(
   availableModCost: number[],
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
-  // check distances <= 62
-  if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 62)
+  // check distances <= 65
+  if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 65)
     return null;
 
   const modCombinations = config.onlyShowResultsWithNoWastedStats
