@@ -38,10 +38,38 @@
   mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
 }
 
-.modIcon.minor {
-  -webkit-filter: contrast(1.3);
-  filter: contrast(1.3);
+.modIcon_Mobility {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(0deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(0deg) brightness(100%) saturate(320%);
 }
+
+.modIcon_Resilience {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(60deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(60deg) brightness(100%) saturate(320%);
+}
+
+.modIcon_Recovery {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(120deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(120deg) brightness(100%) saturate(320%);
+}
+.modIcon_Discipline {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(180deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(180deg) brightness(100%) saturate(320%);
+}
+.modIcon_Intellect {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(240deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(240deg) brightness(100%) saturate(320%);
+}
+
+.modIcon_Strength {
+  -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(300deg) brightness(100%) saturate(320%);
+  filter: contrast(2.3) sepia(100%) hue-rotate(300deg) brightness(100%) saturate(320%);
+}
+
+.modIcon.minor {
+  opacity: 0.8;
+}
+
 
 .artificeIcon {
   height: 28px;

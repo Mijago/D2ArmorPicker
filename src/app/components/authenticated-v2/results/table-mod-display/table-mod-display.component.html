@@ -37,7 +37,10 @@
           *ngIf="count > 0"
           [matTooltip]="getStatName(stat)"
           #tooltip="matTooltip">
-          <img class="modIcon" [class.minor]="modType === 1" [src]="ModUrl[modType + 3 * stat]" />
+          <img
+            class="modIcon modIcon_{{ getStatName(stat) }}"
+            [class.minor]="modType === 1"
+            [src]="ModUrl[modType + 3 * stat]" />
           <span class="modText" [class.minor]="modType === 1">×{{ count }}</span>
         </div>
       </ng-container>
