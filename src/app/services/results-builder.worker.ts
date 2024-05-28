@@ -477,7 +477,7 @@ export function handlePermutation(
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }
-
+  const totalOptionalDistances = optionalDistances.reduce((a, b) => a + b, 0);
   // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
   const distanceSum =
@@ -485,7 +485,7 @@ export function handlePermutation(
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) return null;
 
   let result: StatModifier[] | null;
-  if (distanceSum == 0 && !config.tryLimitWastedStats) result = [];
+  if (distanceSum == 0 && totalOptionalDistances == 0) result = [];
   else
     result = get_mods_precalc(
       config,
@@ -842,7 +842,6 @@ function get_mods_precalc(
       }
     }
   }
-
   if (bestMods === null) return null;
 
   const usedMods = [];

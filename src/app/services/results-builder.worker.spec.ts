@@ -417,45 +417,26 @@ describe("Results Worker", () => {
   });
 
   it("should be able to keep plain zero-waste builds", () => {
-    // this is an edge case in which the artifice mod, which initially will be applied to
-    // mobility, must be moved to Recovery. Otherwise, this set would not be possible.
-
     const runtime = buildRuntime();
 
-    const mockItems: IPermutatorArmor[] = [
-      buildTestItem(
-        ArmorSlot.ArmorSlotHelmet,
-        false,
-        [8, 9, 16, 23, 2, 8]
-      ) as unknown as IPermutatorArmor,
-      buildTestItem(
-        ArmorSlot.ArmorSlotGauntlet,
-        false,
-        [2, 9, 20, 26, 6, 2]
-      ) as unknown as IPermutatorArmor,
-      buildTestItem(
-        ArmorSlot.ArmorSlotChest,
-        true,
-        [7, 2, 23, 21, 10, 2]
-      ) as unknown as IPermutatorArmor,
-      buildTestItem(
-        ArmorSlot.ArmorSlotLegs,
-        true,
-        [3, 20, 11, 20, 2, 8]
-      ) as unknown as IPermutatorArmor,
+    const mockItems: IInventoryArmor[] = [
+      buildTestItem(ArmorSlot.ArmorSlotHelmet, false, [8, 9, 16, 23, 2, 8]),
+      buildTestItem(ArmorSlot.ArmorSlotGauntlet, false, [2, 9, 20, 26, 6, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotChest, true, [7, 2, 23, 21, 10, 2]),
+      buildTestItem(ArmorSlot.ArmorSlotLegs, false, [3, 20, 11, 20, 2, 8]),
     ];
 
-    const config = new BuildConfiguration();
+    const config = BuildConfiguration.buildEmptyConfiguration();
     config.tryLimitWastedStats = true;
     config.onlyShowResultsWithNoWastedStats = true;
 
     let result = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0],
-      mockItems[1],
-      mockItems[2],
-      mockItems[3],
+      mockItems[0] as unknown as IPermutatorArmor,
+      mockItems[1] as unknown as IPermutatorArmor,
+      mockItems[2] as unknown as IPermutatorArmor,
+      mockItems[3] as unknown as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput

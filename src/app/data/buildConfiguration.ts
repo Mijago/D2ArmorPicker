@@ -50,7 +50,7 @@ export class BuildConfiguration {
 
   assumeClassItemIsArtifice = false;
   assumeEveryLegendaryIsArtifice = false;
-  assumeEveryExoticIsArtifice = true;
+  assumeEveryExoticIsArtifice = false;
 
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
