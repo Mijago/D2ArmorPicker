@@ -103,6 +103,15 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         ],
         "Artifice Slots": [
           {
+            name: "Assume every legendary class item is an artifice armor.",
+            cp: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.assumeClassItemIsArtifice = v)),
+            value: c.assumeClassItemIsArtifice || c.assumeEveryLegendaryIsArtifice,
+            disabled: c.assumeEveryLegendaryIsArtifice,
+            impactsResultCount: true,
+            help: "This is for debugging purposes. No support if you enable this.",
+          },
+          {
             name: "Assume every legendary is an artifice armor.",
             cp: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryLegendaryIsArtifice = v)),

@@ -48,6 +48,7 @@ export class BuildConfiguration {
   // Add constant +1 strength
   addConstent1Resilience = false;
 
+  assumeClassItemIsArtifice = false;
   assumeEveryLegendaryIsArtifice = false;
   assumeEveryExoticIsArtifice = true;
 
@@ -113,6 +114,7 @@ export class BuildConfiguration {
       addConstent1Resilience: false,
       assumeEveryLegendaryIsArtifice: false,
       assumeEveryExoticIsArtifice: false,
+      assumeClassItemIsArtifice: false,
       putArtificeMods: true,
       useFotlArmor: false,
       maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,

@@ -28,7 +28,7 @@ import { MAXIMUM_STAT_MOD_AMOUNT } from "../../../../../data/constants";
 import { ArmorSlot } from "../../../../../data/enum/armor-slot";
 import { ConfigurationService } from "../../../../../services/configuration.service";
 import { ArmorPerkOrSlot, ArmorPerkOrSlotNames } from "../../../../../data/enum/armor-stat";
-import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { InventoryService } from "../../../../../services/inventory.service";
 import { DatabaseService } from "../../../../../services/database.service";
 import { Subject } from "rxjs";
@@ -55,6 +55,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   isPossible: boolean = true;
   configSelectedClass: DestinyClass = DestinyClass.Titan;
+  configAssumeLegendaryIsArtifice: boolean = false;
+  configAssumeClassItemIsArtifice: boolean = false;
   armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
   armorPerkLock: boolean = false;
   maximumModSlots: number = 5;
@@ -92,17 +94,24 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   ) {}
 
   public async runPossibilityCheck() {
-    const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.None;
-    if (mustCheckArmorPerk) {
-      var applicablePerk = await this.db.inventoryArmor
-        .where("clazz")
-        .equals(this.configSelectedClass)
-        .and((f) => f.slot == this.slot)
-        .and((f) => f.perk == this.armorPerk)
-        .count();
-      this.isPossible = applicablePerk > 0;
-    } else {
+    if (
+      this.configAssumeLegendaryIsArtifice ||
+      (this.slot == ArmorSlot.ArmorSlotClass && this.configAssumeClassItemIsArtifice)
+    ) {
       this.isPossible = true;
+    } else {
+      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.None;
+      if (mustCheckArmorPerk) {
+        var applicablePerk = await this.db.inventoryArmor
+          .where("clazz")
+          .equals(this.configSelectedClass)
+          .and((f) => f.slot == this.slot)
+          .and((f) => f.perk == this.armorPerk)
+          .count();
+        this.isPossible = applicablePerk > 0;
+      } else {
+        this.isPossible = true;
+      }
     }
     this.possible.next(this.isPossible);
   }
@@ -128,11 +137,15 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (c) => {
       var mustRunPossibilityCheck =
         this.configSelectedClass != (c.characterClass as unknown as DestinyClass) ||
+        this.configAssumeLegendaryIsArtifice != c.assumeEveryLegendaryIsArtifice ||
+        this.configAssumeClassItemIsArtifice != c.assumeClassItemIsArtifice ||
         this.selection != c.maximumModSlots[this.slot].value ||
         this.armorPerk != c.armorPerks[this.slot].value ||
         this.armorPerkLock != c.armorPerks[this.slot].fixed ||
         this.maximumModSlots != c.maximumModSlots[this.slot].value;
 
+      this.configAssumeLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
+      this.configAssumeClassItemIsArtifice = c.assumeClassItemIsArtifice;
       this.configSelectedClass = c.characterClass as unknown as DestinyClass;
       this.selection = c.maximumModSlots[this.slot].value;
       this.armorPerk = c.armorPerks[this.slot].value;

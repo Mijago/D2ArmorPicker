@@ -263,6 +263,8 @@ addEventListener("message", async ({ data }) => {
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
+  if (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemIsArtifice)
+    availableClassItemPerkTypes.add(ArmorPerkOrSlot.SlotArtifice);
 
   console.debug(
     "items",
