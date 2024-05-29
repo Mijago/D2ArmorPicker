@@ -211,7 +211,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         ],
         "Resource-Intensive features, only usable when text fields are enabled": [
           {
-            name: "Automatically select the best fragments for the selected subclass.",
+            name: "Select fragments to reach stat targets, limited to the selected subclass.",
             cp: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.automaticallySelectFragments = v)),
             value: c.automaticallySelectFragments,
