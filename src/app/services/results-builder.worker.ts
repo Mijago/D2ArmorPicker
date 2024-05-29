@@ -40,6 +40,7 @@ import {
   createArmorSet,
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
+import { Modifier } from "../data/modifier";
 
 function checkSlots(
   config: BuildConfiguration,
@@ -166,6 +167,101 @@ function prepareConstantAvailableModslots(config: BuildConfiguration) {
   return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
 }
 
+// NOT RECURSIVE
+function* generateFragmentCombinationsForGroup(
+  fragments: Modifier[],
+  fragmentCount: number,
+  fragmentIndex = 0,
+  currentCombination: Modifier[] = []
+): Generator<Modifier[]> {
+  if (fragmentCount == 0 || fragmentIndex >= fragments.length) {
+    yield currentCombination;
+  } else {
+    for (let i = fragmentIndex; i < fragments.length; i++) {
+      const fragment = fragments[i];
+      const newCombination = [...currentCombination];
+      newCombination.push(fragment);
+      yield* generateFragmentCombinationsForGroup(
+        fragments,
+        fragmentCount - 1,
+        i + 1,
+        newCombination
+      );
+    }
+  }
+}
+
+function* generateFragmentCombinations(config: BuildConfiguration) {
+  yield { subclass: null, fragments: [], stats: [0, 0, 0, 0, 0, 0] };
+  if (config.automaticallySelectFragments) {
+    // group the fragments in ModInformation by subclass (requiredArmorAffinity)
+    const fragmentsBySubclass = new Map<number, Modifier[]>();
+    for (const fragment of Object.values(ModInformation)) {
+      const subclass = fragment.type;
+      if (!fragmentsBySubclass.has(subclass)) fragmentsBySubclass.set(subclass, []);
+      fragmentsBySubclass.get(subclass)!.push(fragment);
+    }
+
+    // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
+    for (const [subclass, fragments] of fragmentsBySubclass) {
+      for (let i = 1; i <= 4; i++) {
+        for (const fragmentCombination of generateFragmentCombinationsForGroup(fragments, i)) {
+          const result = [0, 0, 0, 0, 0, 0];
+          for (const fragment of fragmentCombination) {
+            for (const bonus of fragment.bonus) {
+              const statId =
+                bonus.stat == SpecialArmorStat.ClassAbilityRegenerationStat
+                  ? [1, 0, 2][subclass]
+                  : bonus.stat;
+              result[statId] += bonus.value;
+            }
+          }
+          yield {
+            subclass,
+            fragments: fragmentCombination,
+            stats: result,
+          };
+        }
+      }
+    }
+  }
+}
+
+function prepareFragments(config: BuildConfiguration) {
+  // get all fragment combinations
+  const fragmentCombinations = Array.from(generateFragmentCombinations(config));
+  // remove duplicates. A duplicate has the same stats.
+  const fragmentCombinationsSetIds = new Set(
+    fragmentCombinations.map((d) => JSON.stringify(d.stats))
+  );
+  let fragmentCombinationsSet = Array.from(fragmentCombinationsSetIds).map((d) =>
+    fragmentCombinations.find((f) => JSON.stringify(f.stats) == d)
+  );
+
+  // filter: Only allow negative stats if the corresponding stat is locked
+  fragmentCombinationsSet = fragmentCombinationsSet.filter((d) => {
+    const hasNegative = d!.stats.some((d) => d < 0);
+    if (!hasNegative) return true;
+
+    for (let i = 0; i < d!.stats.length; i++) {
+      if (d!.stats[i] < 0 && config.minimumStatTiers[i as ArmorStat].fixed) return true;
+    }
+    return false;
+  });
+
+  // sort by total stat boost:
+  // first the lowest >= 0, afterwards the lowest <=0 - basically [0,10, 20, -10, -20]
+  fragmentCombinationsSet = fragmentCombinationsSet.sort((a, b) => {
+    const hasNegativeA = a!.stats.some((d) => d < 0);
+    const hasNegativeB = b!.stats.some((d) => d < 0);
+
+    if (!hasNegativeA && hasNegativeB) return -1;
+    if (hasNegativeA && !hasNegativeB) return 1;
+    return a!.stats.reduce((a, b) => a + b) - b!.stats.reduce((a, b) => a + b);
+  });
+  return fragmentCombinationsSet;
+}
+
 function* generateArmorCombinations(
   helmets: IPermutatorArmor[],
   gauntlets: IPermutatorArmor[],
@@ -242,7 +338,6 @@ addEventListener("message", async ({ data }) => {
     config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
   }
   console.log("Using config", data.config);
-
   let selectedExotics = data.selectedExotics;
   let items = data.items as IPermutatorArmor[];
 
@@ -332,6 +427,8 @@ addEventListener("message", async ({ data }) => {
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
 
+  const fragmentCombinationsSet = prepareFragments(config);
+
   console.time(`tm #${threadSplit.current}`);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
@@ -362,18 +459,29 @@ addEventListener("message", async ({ data }) => {
     const canUseArtificeClassItem =
       !slotCheckResult.requiredClassItemType ||
       slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
-    const result = handlePermutation(
-      runtime,
-      config,
-      helmet,
-      gauntlet,
-      chest,
-      leg,
-      constantBonus,
-      constantAvailableModslots,
-      doNotOutput,
-      hasArtificeClassItem && canUseArtificeClassItem
-    );
+
+    let result = null;
+    for (const fragmentCombination of fragmentCombinationsSet) {
+      const constantBonusWithFragments = constantBonus.map(
+        (d, i) => d + fragmentCombination!.stats[i]
+      );
+      result = handlePermutation(
+        runtime,
+        config,
+        helmet,
+        gauntlet,
+        chest,
+        leg,
+        constantBonusWithFragments,
+        constantAvailableModslots,
+        doNotOutput,
+        hasArtificeClassItem && canUseArtificeClassItem
+      );
+      if (result != null) {
+        break;
+      }
+    }
+
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
     if (result != null) {

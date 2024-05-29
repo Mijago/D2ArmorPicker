@@ -205,6 +205,15 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: true,
             help: "This is a beta feature. Usability and quality may vary a lot.",
           },
+          {
+            name: "automaticallySelectFragments",
+            cp: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.automaticallySelectFragments = v)),
+            value: c.automaticallySelectFragments,
+            disabled: false,
+            impactsResultCount: true,
+            help: "automaticallySelectFragments",
+          },
         ],
       };
       this.fieldKeys = Object.keys(this.fields2);
