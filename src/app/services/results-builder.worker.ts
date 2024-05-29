@@ -41,6 +41,7 @@ import {
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
 import { Modifier } from "../data/modifier";
+import { ModifierType } from "../data/enum/modifierType";
 
 function checkSlots(
   config: BuildConfiguration,
@@ -198,13 +199,30 @@ function* generateFragmentCombinations(config: BuildConfiguration) {
     const fragmentsBySubclass = new Map<number, Modifier[]>();
     for (const fragment of Object.values(ModInformation)) {
       const subclass = fragment.type;
+      // filter the fragments by the selected subclass, if it is not AnySubclass
+      if (
+        config.selectedModElement != ModifierType.AnySubclass &&
+        subclass != config.selectedModElement
+      )
+        continue;
+      // if the fragment is already selected in the enabledMods, do not add it again
+      if (config.enabledMods.indexOf(fragment.id) > -1) continue;
+
       if (!fragmentsBySubclass.has(subclass)) fragmentsBySubclass.set(subclass, []);
       fragmentsBySubclass.get(subclass)!.push(fragment);
     }
 
+    // TODO: This must be adapted to selected the class & subclass, as some can use 5 fragments
+    let possibleNumberOfFragments = 4;
+    // for each selected fragment in the subclass, reduce the possibleNumberOfFragments by 1
+    for (const fragment of Object.values(ModInformation)) {
+      // in enabledMods
+      if (config.enabledMods.indexOf(fragment.id) > -1) possibleNumberOfFragments--;
+    }
+
     // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
     for (const [subclass, fragments] of fragmentsBySubclass) {
-      for (let i = 1; i <= 4; i++) {
+      for (let i = 1; i <= possibleNumberOfFragments; i++) {
         for (const fragmentCombination of generateFragmentCombinationsForGroup(fragments, i)) {
           const result = [0, 0, 0, 0, 0, 0];
           for (const fragment of fragmentCombination) {

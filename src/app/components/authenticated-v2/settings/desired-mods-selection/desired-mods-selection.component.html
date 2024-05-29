@@ -34,6 +34,17 @@
       <mat-button-toggle (click)="setElement(ModifierType.Strand)" [value]="ModifierType.Strand">
         Strand
       </mat-button-toggle>
+      <mat-button-toggle
+        (click)="setElement(ModifierType.Prismatic)"
+        [value]="ModifierType.Prismatic"
+        disabled>
+        Prismatic
+      </mat-button-toggle>
+      <mat-button-toggle
+        (click)="setElement(ModifierType.AnySubclass)"
+        [value]="ModifierType.AnySubclass">
+        Any
+      </mat-button-toggle>
     </mat-button-toggle-group>
   </ng-container>
   <ng-container *ngIf="!d.group || d.type === selectedElement">
