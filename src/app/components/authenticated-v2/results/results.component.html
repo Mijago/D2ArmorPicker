@@ -372,11 +372,13 @@
           <th *matHeaderCellDef mat-header-cell> Exotic</th>
           <td *matCellDef="let element" mat-cell>
             <img
+              *ngIf="element.exotic !== undefined"
               #tooltip="matTooltip"
               class="itemIcon"
               matTooltip="{{ element.exotic.name }}"
               src="https://bungie.net/{{ element.exotic.icon }}" />
             <img
+              *ngIf="element.exotic !== undefined"
               class="itemIconWatermark"
               src="https://bungie.net/{{ element.exotic.watermark }}" />
             <img
