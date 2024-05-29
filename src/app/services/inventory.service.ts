@@ -227,6 +227,30 @@ export class InventoryService {
     this.workers = [];
   }
 
+  private estimateCombinationsToBeChecked(
+    helmets: IPermutatorArmor[],
+    gauntlets: IPermutatorArmor[],
+    chests: IPermutatorArmor[],
+    legs: IPermutatorArmor[]
+  ) {
+    let totalCalculations = 0;
+    const exoticHelmets = helmets.filter((d) => d.isExotic).length;
+    const legendaryHelmets = helmets.length - exoticHelmets;
+    const exoticGauntlets = gauntlets.filter((d) => d.isExotic).length;
+    const legendaryGauntlets = gauntlets.length - exoticGauntlets;
+    const exoticChests = chests.filter((d) => d.isExotic).length;
+    const legendaryChests = chests.length - exoticChests;
+    const exoticLegs = legs.filter((d) => d.isExotic).length;
+    const legendaryLegs = legs.length - exoticLegs;
+
+    totalCalculations += exoticHelmets * legendaryGauntlets * legendaryChests * legendaryLegs;
+    totalCalculations += legendaryHelmets * exoticGauntlets * legendaryChests * legendaryLegs;
+    totalCalculations += legendaryHelmets * legendaryGauntlets * exoticChests * legendaryLegs;
+    totalCalculations += legendaryHelmets * legendaryGauntlets * legendaryChests * exoticLegs;
+    totalCalculations += legendaryHelmets * legendaryGauntlets * legendaryChests * legendaryLegs;
+    return totalCalculations;
+  }
+
   async updateResults(nthreads: number = 3) {
     this.clearResults();
 
@@ -360,6 +384,26 @@ export class InventoryService {
           source: armor.source,
         } as IPermutatorArmor;
       });
+
+      const estimatedCalculations = this.estimateCombinationsToBeChecked(
+        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet),
+        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet),
+        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest),
+        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs)
+      );
+      const minimumCalculationPerThread = 5e4;
+      const maximumCalculationPerThread = 2.5e5;
+      const nthreads = Math.max(
+        3, // Enforce a minimum of 3 threads
+        Math.min(
+          Math.max(1, Math.ceil(estimatedCalculations / minimumCalculationPerThread)),
+          Math.ceil(estimatedCalculations / maximumCalculationPerThread),
+          navigator.hardwareConcurrency || 3, // limit it to the amount of cores, if not accessible then 3
+          20 // limit it to a maximum of 20 threads
+        )
+      );
+
+      console.log("nthreads for calculation", nthreads);
 
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
