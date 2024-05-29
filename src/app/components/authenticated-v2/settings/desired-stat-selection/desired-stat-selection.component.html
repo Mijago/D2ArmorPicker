@@ -55,6 +55,7 @@
     <td>
       <app-stat-tier-selection
         [stat]="enum.value"
+        [automaticallySelectFragments]="config_automaticallySelectFragments"
         [allowExactStats]="config_allowExactStats"
         [statsByMods]="statsByMods[enum.value]"
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
@@ -72,7 +73,7 @@
       >Clear</button
     >
   </span>
-  <span class="tierSelectButton">
+  <span class="tierSelectButton" *ngIf="!config_automaticallySelectFragments">
     <button
       mat-stroked-button
       class="selectStatDistributionButton"
@@ -119,7 +120,7 @@
       </button>
     </mat-menu>
   </span>
-  <span class="tierSelectButton">
+  <span class="tierSelectButton" *ngIf="!config_automaticallySelectFragments">
     <button
       mat-stroked-button
       [matMenuTriggerFor]="menu2"
@@ -166,6 +167,10 @@
     </mat-menu>
   </span>
 </span>
+<div class="tierSelectButton" *ngIf="config_automaticallySelectFragments">
+  3x T10 and 4x T10 Buttons are disabled, as they are not <br />implemented for the automatic
+  fragment selection YET.
+</div>
 
 <br />
 <br />

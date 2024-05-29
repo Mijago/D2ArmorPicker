@@ -196,6 +196,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
               this.config.modifyConfiguration((c) => {
                 c.allowExactStats = v;
                 if (!v) {
+                  c.automaticallySelectFragments = false;
                   for (let cf of Object.values(c.minimumStatTiers)) {
                     cf.value = Math.floor(cf.value);
                   }
@@ -208,15 +209,15 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             featureInDevelopment: true,
           },
         ],
-        "Resource-Intensive features": [
+        "Resource-Intensive features, only usable when text fields are enabled": [
           {
             name: "Automatically select the best fragments for the selected subclass.",
             cp: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.automaticallySelectFragments = v)),
             value: c.automaticallySelectFragments,
-            disabled: false,
+            disabled: !c.allowExactStats,
             impactsResultCount: true,
-            help: "This is resource heavy! It takes your subclass and selected fragments into consideration and adds fragments, if necessary.",
+            help: "This is resource heavy! It takes your subclass and selected fragments into consideration and adds fragments, if necessary. Disables 3x100 and 4x100 buttons and currently does not limit your inputs.",
             featureInDevelopment: true,
           },
         ],
