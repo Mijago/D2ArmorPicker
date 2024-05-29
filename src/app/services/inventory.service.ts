@@ -86,7 +86,6 @@ export class InventoryService {
     this._calculationProgress.asObservable();
 
   private _config: BuildConfiguration = BuildConfiguration.buildEmptyConfiguration();
-  private updatingResults: boolean = false;
   private workers: Worker[];
 
   private results: IPermutatorArmorSet[] = [];
@@ -255,16 +254,10 @@ export class InventoryService {
 
   async updateResults(nthreads: number = 3) {
     this.clearResults();
-
-    if (this.updatingResults) {
-      console.warn("Called updateResults, but aborting, as it is already running.");
-      return;
-    }
     this.killWorkers();
 
     try {
       console.time("updateResults with WebWorker");
-      this.updatingResults = true;
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       let doneWorkerCount = 0;
 
@@ -437,7 +430,6 @@ export class InventoryService {
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus((s) => (s.calculatingResults = false));
             this._calculationProgress.next(0);
-            this.updatingResults = false;
 
             this.endResults = [];
 
