@@ -25,6 +25,8 @@ import { environment } from "../environments/environment";
 })
 export class AppComponent {
   title = "D2ArmorPicker";
+  is_beta = environment.beta;
+  is_canary = environment.canary;
 
   constructor() {
     console.log("PRODUCTION?", environment.production);
