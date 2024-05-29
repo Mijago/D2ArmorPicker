@@ -170,6 +170,7 @@
   <mat-card *ngIf="stat.calculatingResults" class="info info-calculating-results">
     Please wait:<br />
     Calculating possible results.
+    <mat-progress-bar [value]="computationProgress"></mat-progress-bar>
   </mat-card>
   <mat-card *ngIf="stat.updatingResultsTable" class="info info-updating-results">
     Please wait:<br />Updating the result display table.</mat-card

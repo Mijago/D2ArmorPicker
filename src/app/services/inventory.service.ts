@@ -80,6 +80,10 @@ export class InventoryService {
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
 
+  private _calculationProgress: Subject<number> = new Subject<number>();
+  public readonly calculationProgress: Observable<number> =
+    this._calculationProgress.asObservable();
+
   private _config: BuildConfiguration = BuildConfiguration.buildEmptyConfiguration();
   private updatingResults: boolean = false;
 
@@ -335,14 +339,32 @@ export class InventoryService {
         } as IPermutatorArmor;
       });
 
+      // Values to calculate ETA
+      const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
+      const threadCalculationDoneArr = [...Array(nthreads).keys()].map(() => 0);
+
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
       items = items.sort((a, b) => totalStats(b) - totalStats(a));
+      this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
         const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
         worker.onmessage = async ({ data }) => {
+          threadCalculationDoneArr[n] = data.checkedCalculations;
+          threadCalculationAmountArr[n] = data.estimatedCalculations;
+          const sumTotal = threadCalculationAmountArr.reduce((a, b) => a + b, 0);
+          const sumDone = threadCalculationDoneArr.reduce((a, b) => a + b, 0);
+
+          if (
+            threadCalculationDoneArr[0] > 0 &&
+            threadCalculationDoneArr[1] > 0 &&
+            threadCalculationDoneArr[2] > 0
+          ) {
+            this._calculationProgress.next((sumDone / sumTotal) * 100);
+          }
+
           results.push(...(data.results as IPermutatorArmorSet[]));
           if (data.done == true) {
             doneWorkerCount++;

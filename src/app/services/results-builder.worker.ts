@@ -200,6 +200,29 @@ function* generateArmorCombinations(
   }
 }
 
+function estimateCombinationsToBeChecked(
+  helmets: IPermutatorArmor[],
+  gauntlets: IPermutatorArmor[],
+  chests: IPermutatorArmor[],
+  legs: IPermutatorArmor[]
+) {
+  let totalCalculations = 0;
+  const exoticHelmets = helmets.filter((d) => d.isExotic).length;
+  const legendaryHelmets = helmets.length - exoticHelmets;
+  const exoticGauntlets = gauntlets.filter((d) => d.isExotic).length;
+  const legendaryGauntlets = gauntlets.length - exoticGauntlets;
+  const exoticChests = chests.filter((d) => d.isExotic).length;
+  const legendaryChests = chests.length - exoticChests;
+  const exoticLegs = legs.filter((d) => d.isExotic).length;
+  const legendaryLegs = legs.length - exoticLegs;
+  totalCalculations += exoticHelmets * legendaryGauntlets * legendaryChests * legendaryLegs;
+  totalCalculations += legendaryHelmets * exoticGauntlets * legendaryChests * legendaryLegs;
+  totalCalculations += legendaryHelmets * legendaryGauntlets * exoticChests * legendaryLegs;
+  totalCalculations += legendaryHelmets * legendaryGauntlets * legendaryChests * exoticLegs;
+  totalCalculations += legendaryHelmets * legendaryGauntlets * legendaryChests * legendaryLegs;
+  return totalCalculations;
+}
+
 addEventListener("message", async ({ data }) => {
   const threadSplit = data.threadSplit as { count: number; current: number };
 
@@ -299,6 +322,10 @@ addEventListener("message", async ({ data }) => {
   let totalResults = 0;
   let doNotOutput = false;
 
+  // contains the value of the total amount of combinations to be checked
+  let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
+  let checkedCalculations = 0;
+
   console.time(`tm #${threadSplit.current}`);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
@@ -309,6 +336,7 @@ addEventListener("message", async ({ data }) => {
     constHasOneExoticLength,
     requiresAtLeastOneExotic
   )) {
+    checkedCalculations++;
     /**
      *  At this point we already have:
      *  - Masterworked Exotic/Legendaries, if they must be masterworked (config.onlyUseMasterworkedExotics/config.onlyUseMasterworkedLegendaries)
@@ -357,9 +385,9 @@ addEventListener("message", async ({ data }) => {
           listedResults >= 1e6 / threadSplit.count;
       }
     }
-    if (resultsLength >= 5000) {
+    if (resultsLength >= 5000 || totalResults % 10000 == 0) {
       // @ts-ignore
-      postMessage({ runtime, results, done: false, total: 0 });
+      postMessage({ runtime, results, done: false, checkedCalculations, estimatedCalculations });
       results = [];
       resultsLength = 0;
     }
@@ -372,6 +400,8 @@ addEventListener("message", async ({ data }) => {
     runtime,
     results,
     done: true,
+    checkedCalculations,
+    estimatedCalculations,
     stats: {
       permutationCount: totalResults,
       itemCount: items.length - classItems.length,
