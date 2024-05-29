@@ -28,6 +28,7 @@ interface AdvancedSettingField {
   help: string | undefined;
   disabled: boolean;
   impactsResultCount: boolean;
+  featureInDevelopment?: boolean;
 }
 
 @Component({
@@ -204,15 +205,19 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: "This is a beta feature. Usability and quality may vary a lot.",
+            featureInDevelopment: true,
           },
+        ],
+        "Resource-Intensive features": [
           {
-            name: "automaticallySelectFragments",
+            name: "Automatically select the best fragments for the selected subclass.",
             cp: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.automaticallySelectFragments = v)),
             value: c.automaticallySelectFragments,
             disabled: false,
             impactsResultCount: true,
-            help: "automaticallySelectFragments",
+            help: "This is resource heavy! It takes your subclass and selected fragments into consideration and adds fragments, if necessary.",
+            featureInDevelopment: true,
           },
         ],
       };
