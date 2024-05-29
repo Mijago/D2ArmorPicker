@@ -360,12 +360,42 @@ export class InventoryService {
             this.updatingResults = false;
 
             let endResults = [];
+            let permutationHashes = new Map<bigint, number>();
+            let permutationSlots = new Set(
+              results
+                .flatMap((a) => a.armor.map((x) => itemz.find((y) => y.id == x)))
+                .filter((a) => a !== undefined)
+                .filter((a) => a!.isExotic)
+                .map((a) => a!.slot)
+            );
 
             for (let armorSet of results) {
               let items = armorSet.armor.map((x) =>
                 itemz.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
+              // if the exotics are in 1 slot use the non exotic armor to allow "hotswappability"
+              // if the exotics are in 2 different slots, generate the Hash with the other 2 armor pieces, to allow "hotswappability" to cluster near
+              // if the exotics are in neither slot we don't care, use all armor
+              // if the exotics are in 3 or 4 slots there's no good strategy, cluster for it's non exotic parts
+              let legendaryArmor =
+                permutationSlots.size == 2
+                  ? items.filter((x) => !permutationSlots.has(x.slot))
+                  : items.filter((x) => !x.isExotic);
+
+              let R = 0x9e3779b97f4a7c13n; //64bit golden ratio
+              let permHash =
+                legendaryArmor.reduce(
+                  (previousValue, currentValue) =>
+                    BigInt(previousValue) *
+                    (R + (BigInt((currentValue.itemInstanceId as any) | 0) << 1n)),
+                  1n
+                ) / 2n;
+              let permutationHash = permHash;
+              permutationHashes.set(
+                permutationHash,
+                (permutationHashes.get(permutationHash) ?? 0) + 1
+              );
               //let stats = getStatSum(items);
               let tiers = getSkillTier(armorSet.statsWithMods);
               let v = {
@@ -424,9 +454,26 @@ export class InventoryService {
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
+                nonExoticsSetHash: permutationHash,
+                nonExoticsSetCount: 1,
               } as ResultDefinition;
               endResults.push(v);
             }
+
+            //Sort to keep sets with same legendary pieces together
+            endResults.sort((ob1, ob2) => ob2.tiers - ob1.tiers);
+            endResults.forEach(
+              (item) => (item.nonExoticsSetCount = permutationHashes.get(item.nonExoticsSetHash)!)
+            );
+            endResults.sort((ob1, ob2) => {
+              if (ob1.nonExoticsSetHash > ob2.nonExoticsSetHash) {
+                return 1;
+              } else if (ob1.nonExoticsSetHash < ob2.nonExoticsSetHash) {
+                return -1;
+              }
+              return 0;
+            });
+            endResults.sort((ob1, ob2) => ob2.nonExoticsSetCount - ob1.nonExoticsSetCount);
 
             console.debug("endResults", endResults);
 

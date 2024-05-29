@@ -59,6 +59,8 @@ export interface ResultDefinition {
   loaded: boolean;
   usesCollectionRoll?: boolean;
   usesVendorRoll?: boolean;
+  nonExoticsSetHash: bigint;
+  nonExoticsSetCount: number;
 }
 
 export enum ResultItemMoveState {
@@ -193,6 +195,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         "mods",
       ];
       if (c.showWastedStatsColumn) columns.push("waste");
+      columns.push("nonExoticsSetCount");
       if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
@@ -281,7 +284,13 @@ export class ResultsComponent implements OnInit, OnDestroy {
     // download the file
     let a = document.createElement("a");
     a.download = "builds.json";
-    const url = window.URL.createObjectURL(new Blob([JSON.stringify(jsonData, null, 2)]));
+    const url = window.URL.createObjectURL(
+      new Blob([
+        JSON.stringify(jsonData, (key, value) =>
+          typeof value === "bigint" ? value.toString() : value
+        ),
+      ])
+    );
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "d2ap_results.json");
