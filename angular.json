@@ -61,13 +61,79 @@
               "outputHashing": "all",
               "vendorChunk": true
             },
+            "beta": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1800kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "80kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "vendorChunk": true
+            },
+            "canary": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1800kb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "80kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "styles": [
+                {
+                  "input": "src/styles.scss",
+                  "inject": true,
+                  "bundleName": "styles-default"
+                },
+                {
+                  "input": "src/theme-canary.scss",
+                  "inject": true,
+                  "bundleName": "theme-dark"
+                }
+            ]
+            },
             "development": {
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "styles": [
+                {
+                  "input": "src/styles.scss",
+                  "inject": true,
+                  "bundleName": "styles-default"
+                },
+                {
+                  "input": "src/theme-development.scss",
+                  "inject": true,
+                  "bundleName": "theme-dark"
+                }
+            ]
             }
           },
           "defaultConfiguration": "production"
@@ -78,9 +144,14 @@
             "production": {
               "browserTarget": "D2ArmorPicker:build:production"
             },
+            "beta": {
+              "browserTarget": "D2ArmorPicker:build:beta"
+            },
+            "canary": {
+              "browserTarget": "D2ArmorPicker:build:canary"
+            },
             "development": {
-              "browserTarget": "D2ArmorPicker:build:development",
-              "allowedHosts": ["angular--main--d2armorpicker--mijago.coder.guardinglight.net"]
+              "browserTarget": "D2ArmorPicker:build:development"
             }
           },
           "defaultConfiguration": "development"

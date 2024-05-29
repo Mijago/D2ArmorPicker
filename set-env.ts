@@ -19,22 +19,29 @@ const writeFile = require("fs").writeFile;
 
 const production = process.env.PRODUCTION === "1";
 const beta_branch = process.env.BETA === "1";
-const version = "2.5.4";
+const canary_branch = process.env.CANARY === "1";
 
 console.log("production: " + production);
 console.log("beta_branch: " + beta_branch);
+console.log("canary_branch: " + canary_branch);
 console.log("version: " + version);
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
   ? "./src/environments/environment.prod.ts"
-  : beta_branch
+  : beta_branch || canary_branch
   ? "./src/environments/environment.prod.ts"
   : "./src/environments/environment.ts";
 // Load node modules
 
 require("dotenv").config({
-  path: production ? ".env" : beta_branch ? ".env_beta" : ".env_dev",
+  path: production
+    ? ".env"
+    : beta_branch
+    ? ".env_beta"
+    : canary_branch
+    ? ".env_canary"
+    : ".env_dev",
 });
 
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
@@ -46,6 +53,7 @@ const data = {
   revision: revision,
   production: production,
   beta: beta_branch,
+  canary: canary_branch,
   apiKey: process.env.D2AP_BUNGIE_API_KEY,
   clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
   client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
