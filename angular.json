@@ -79,7 +79,8 @@
               "browserTarget": "D2ArmorPicker:build:production"
             },
             "development": {
-              "browserTarget": "D2ArmorPicker:build:development"
+              "browserTarget": "D2ArmorPicker:build:development",
+              "allowedHosts": ["angular--main--d2armorpicker--mijago.coder.guardinglight.net"]
             }
           },
           "defaultConfiguration": "development"
