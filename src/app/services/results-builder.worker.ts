@@ -445,6 +445,7 @@ addEventListener("message", async ({ data }) => {
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
 
+  // unless the configuration is set, this will only contain one entry - an empty set
   const fragmentCombinationsSet = prepareFragments(config);
 
   console.time(`tm #${threadSplit.current}`);
@@ -495,7 +496,9 @@ addEventListener("message", async ({ data }) => {
         doNotOutput,
         hasArtificeClassItem && canUseArtificeClassItem
       );
-      if (result != null) {
+      if (result != null && isIPermutatorArmorSet(result)) {
+        const fragmentIds = fragmentCombination!.fragments.map((d) => d.id);
+        (result as unknown as IPermutatorArmorSet).additionalFragments = fragmentIds;
         break;
       }
     }

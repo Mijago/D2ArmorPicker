@@ -49,6 +49,7 @@ export interface ResultDefinition {
     perk: ArmorPerkOrSlot;
   };
   mods: number[];
+  additionalFragments: ModOrAbility[];
   stats: number[];
   statsNoMods: number[];
   items: ResultItem[][];

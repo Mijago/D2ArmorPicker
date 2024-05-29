@@ -496,6 +496,7 @@ export class InventoryService {
                   },
                   [[], [], [], []]
                 ),
+                additionalFragments: armorSet.additionalFragments,
                 classItem: armorSet.classItemPerk,
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
