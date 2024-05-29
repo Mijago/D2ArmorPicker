@@ -593,7 +593,7 @@ export class InventoryService {
       Math.min(
         Math.max(1, Math.ceil(estimatedCalculations / minimumCalculationPerThread)),
         Math.ceil(estimatedCalculations / maximumCalculationPerThread),
-        (navigator.hardwareConcurrency || 2) - 2, // limit it to the amount of cores, and leave two for the PC :)
+        Math.floor((navigator.hardwareConcurrency || 2) * 0.75), // limit it to the amount of cores, and only use 75%
         20, // limit it to a maximum of 20 threads
         largestArmorBucket // limit it to the largest armor bucket, as we will split the work by this value
       )
