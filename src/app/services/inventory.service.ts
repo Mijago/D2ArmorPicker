@@ -342,6 +342,7 @@ export class InventoryService {
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
       const threadCalculationDoneArr = [...Array(nthreads).keys()].map(() => 0);
+      let oldProgressValue = 0;
 
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
@@ -362,8 +363,13 @@ export class InventoryService {
             threadCalculationDoneArr[1] > 0 &&
             threadCalculationDoneArr[2] > 0
           ) {
-            this._calculationProgress.next((sumDone / sumTotal) * 100);
+            const newProgress = (sumDone / sumTotal) * 100;
+            if (newProgress > oldProgressValue + 0.25) {
+              oldProgressValue = newProgress;
+              this._calculationProgress.next(newProgress);
+            }
           }
+          if (data.runtime == null) return;
 
           results.push(...(data.results as IPermutatorArmorSet[]));
           if (data.done == true) {
@@ -375,6 +381,7 @@ export class InventoryService {
           }
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus((s) => (s.calculatingResults = false));
+            this._calculationProgress.next(0);
             this.updatingResults = false;
 
             let endResults = [];
@@ -384,7 +391,6 @@ export class InventoryService {
                 itemz.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
-              //let stats = getStatSum(items);
               let v = {
                 exotic:
                   exotic == null

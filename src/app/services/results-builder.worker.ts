@@ -325,6 +325,7 @@ addEventListener("message", async ({ data }) => {
   // contains the value of the total amount of combinations to be checked
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
+  let lastProgressReportTime = 0;
 
   console.time(`tm #${threadSplit.current}`);
 
@@ -385,7 +386,13 @@ addEventListener("message", async ({ data }) => {
           listedResults >= 1e6 / threadSplit.count;
       }
     }
-    if (resultsLength >= 5000 || totalResults % 10000 == 0) {
+
+    if (totalResults % 5000 == 0 && lastProgressReportTime + 75 < Date.now()) {
+      lastProgressReportTime = Date.now();
+      postMessage({ checkedCalculations, estimatedCalculations });
+    }
+
+    if (resultsLength >= 5000) {
       // @ts-ignore
       postMessage({ runtime, results, done: false, checkedCalculations, estimatedCalculations });
       results = [];
