@@ -582,6 +582,9 @@ export class InventoryService {
     ) {
       calculationMultiplier = 0.7;
     }
+    if (this._config.automaticallySelectFragments) {
+      calculationMultiplier *= 0.35;
+    }
 
     let minimumCalculationPerThread = calculationMultiplier * 5e4;
     let maximumCalculationPerThread = calculationMultiplier * 2.5e5;
