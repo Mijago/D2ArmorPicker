@@ -41,6 +41,7 @@ import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { VendorsService } from "./vendors.service";
+import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 
 type info = {
   results: ResultDefinition[];
@@ -385,23 +386,7 @@ export class InventoryService {
         } as IPermutatorArmor;
       });
 
-      const estimatedCalculations = this.estimateCombinationsToBeChecked(
-        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet),
-        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet),
-        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest),
-        this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs)
-      );
-      const minimumCalculationPerThread = 5e4;
-      const maximumCalculationPerThread = 2.5e5;
-      const nthreads = Math.max(
-        3, // Enforce a minimum of 3 threads
-        Math.min(
-          Math.max(1, Math.ceil(estimatedCalculations / minimumCalculationPerThread)),
-          Math.ceil(estimatedCalculations / maximumCalculationPerThread),
-          navigator.hardwareConcurrency || 3, // limit it to the amount of cores, if not accessible then 3
-          20 // limit it to a maximum of 20 threads
-        )
-      );
+      nthreads = this.estimateRequiredThreads();
 
       console.log("nthreads for calculation", nthreads);
 
@@ -570,6 +555,51 @@ export class InventoryService {
       }
     } finally {
     }
+  }
+
+  estimateRequiredThreads(): number {
+    const helmets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
+    const gauntlets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet);
+    const chests = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
+    const legs = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
+    const estimatedCalculations = this.estimateCombinationsToBeChecked(
+      helmets,
+      gauntlets,
+      chests,
+      legs
+    );
+
+    const largestArmorBucket = Math.max(
+      helmets.length,
+      gauntlets.length,
+      chests.length,
+      legs.length
+    );
+
+    let calculationMultiplier = 1.0;
+    // very expensive calculations reduce the amount per thread
+    if (
+      this._config.tryLimitWastedStats &&
+      this._config.modOptimizationStrategy != ModOptimizationStrategy.None
+    ) {
+      calculationMultiplier = 0.7;
+    }
+
+    let minimumCalculationPerThread = calculationMultiplier * 5e4;
+    let maximumCalculationPerThread = calculationMultiplier * 2.5e5;
+
+    const nthreads = Math.max(
+      3, // Enforce a minimum of 3 threads
+      Math.min(
+        Math.max(1, Math.ceil(estimatedCalculations / minimumCalculationPerThread)),
+        Math.ceil(estimatedCalculations / maximumCalculationPerThread),
+        (navigator.hardwareConcurrency || 2) - 2, // limit it to the amount of cores, and leave two for the PC :)
+        20, // limit it to a maximum of 20 threads
+        largestArmorBucket // limit it to the largest armor bucket, as we will split the work by this value
+      )
+    );
+
+    return nthreads;
   }
 
   async getItemCountForClass(clazz: DestinyClass, slot?: ArmorSlot) {
