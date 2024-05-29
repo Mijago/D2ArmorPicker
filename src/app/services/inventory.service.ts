@@ -88,6 +88,15 @@ export class InventoryService {
   private updatingResults: boolean = false;
   private workers: Worker[];
 
+  private results: IPermutatorArmorSet[] = [];
+  private totalPermutationCount = 0;
+  private resultMaximumTiers: number[][] = [];
+  private resultStatCombo3x100 = new Set<number>();
+  private resultStatCombo4x100 = new Set<number>();
+  private selectedExotics: IManifestArmor[] = [];
+  private itemz: IInventoryArmor[] = [];
+  private items: IPermutatorArmor[] = [];
+
   constructor(
     private db: DatabaseService,
     private config: ConfigurationService,
@@ -211,7 +220,7 @@ export class InventoryService {
   }
 
   private killWorkers() {
-    console.log("killinnng workers");
+    console.log("killing workers");
     this.workers.forEach((w) => {
       w.terminate();
     });
@@ -233,15 +242,15 @@ export class InventoryService {
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       let doneWorkerCount = 0;
 
-      let results: IPermutatorArmorSet[] = [];
-      let totalPermutationCount = 0;
-      let resultMaximumTiers: number[][] = [];
-      let resultStatCombo3x100 = new Set<number>();
-      let resultStatCombo4x100 = new Set<number>();
+      this.results = [];
+      this.totalPermutationCount = 0;
+      this.resultMaximumTiers = [];
+      this.resultStatCombo3x100 = new Set<number>();
+      this.resultStatCombo4x100 = new Set<number>();
       const startTime = Date.now();
 
       let config = this._config;
-      let selectedExotics: IManifestArmor[] = await Promise.all(
+      this.selectedExotics = await Promise.all(
         config.selectedExotics
           .filter((hash) => hash != FORCE_USE_NO_EXOTIC)
           .map(
@@ -249,15 +258,15 @@ export class InventoryService {
               (await this.db.manifestArmor.where("hash").equals(hash).first()) as IManifestArmor
           )
       );
-      selectedExotics = selectedExotics.filter((i) => !!i);
+      this.selectedExotics = this.selectedExotics.filter((i) => !!i);
 
-      let itemz = (await this.db.inventoryArmor
+      this.itemz = (await this.db.inventoryArmor
         .where("clazz")
         .equals(config.characterClass)
         .distinct()
         .toArray()) as IInventoryArmor[];
 
-      itemz = itemz
+      this.itemz = this.itemz
         // only armor :)
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
@@ -279,9 +288,9 @@ export class InventoryService {
         )
         .filter(
           (item) =>
-            selectedExotics.length != 1 ||
-            selectedExotics[0].slot != item.slot ||
-            selectedExotics[0].hash == item.hash
+            this.selectedExotics.length != 1 ||
+            this.selectedExotics[0].slot != item.slot ||
+            this.selectedExotics[0].hash == item.hash
         )
 
         // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
@@ -319,10 +328,10 @@ export class InventoryService {
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
-      itemz = itemz.filter((item) => {
+      this.itemz = this.itemz.filter((item) => {
         if (item.source === InventoryArmorSource.Inventory) return true;
 
-        const purchasedItemInstance = itemz.find(
+        const purchasedItemInstance = this.itemz.find(
           (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
         );
 
@@ -331,7 +340,7 @@ export class InventoryService {
         return purchasedItemInstance === undefined;
       });
 
-      let items = itemz.map((armor) => {
+      this.items = this.itemz.map((armor) => {
         return {
           id: armor.id,
           hash: armor.hash,
@@ -360,7 +369,7 @@ export class InventoryService {
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
-      items = items.sort((a, b) => totalStats(b) - totalStats(a));
+      this.items = this.items.sort((a, b) => totalStats(b) - totalStats(a));
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
@@ -387,13 +396,13 @@ export class InventoryService {
           }
           if (data.runtime == null) return;
 
-          results.push(...(data.results as IPermutatorArmorSet[]));
+          this.results.push(...(data.results as IPermutatorArmorSet[]));
           if (data.done == true) {
             doneWorkerCount++;
-            totalPermutationCount += data.stats.permutationCount;
-            resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
-            for (let elem of data.runtime.statCombo3x100) resultStatCombo3x100.add(elem);
-            for (let elem of data.runtime.statCombo4x100) resultStatCombo4x100.add(elem);
+            this.totalPermutationCount += data.stats.permutationCount;
+            this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
+            for (let elem of data.runtime.statCombo3x100) this.resultStatCombo3x100.add(elem);
+            for (let elem of data.runtime.statCombo4x100) this.resultStatCombo4x100.add(elem);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus((s) => (s.calculatingResults = false));
@@ -402,9 +411,9 @@ export class InventoryService {
 
             let endResults = [];
 
-            for (let armorSet of results) {
+            for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                itemz.find((y) => y.id == x)
+                this.itemz.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
               let v = {
@@ -470,10 +479,10 @@ export class InventoryService {
 
             this._armorResults.next({
               results: endResults,
-              totalResults: totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
+              totalResults: this.totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
               itemCount: data.stats.itemCount,
               totalTime: Date.now() - startTime,
-              maximumPossibleTiers: resultMaximumTiers
+              maximumPossibleTiers: this.resultMaximumTiers
                 .reduce(
                   (p, v) => {
                     for (let k = 0; k < 6; k++) if (p[k] < v[k]) p[k] = v[k];
@@ -483,13 +492,13 @@ export class InventoryService {
                 )
                 .map((k) => Math.floor(Math.min(100, k) / 10)),
               statCombo3x100:
-                Array.from(resultStatCombo3x100 as Set<number>).map((d: number) => {
+                Array.from(this.resultStatCombo3x100 as Set<number>).map((d: number) => {
                   let r: ArmorStat[] = [];
                   for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
                   return r;
                 }) || [],
               statCombo4x100:
-                Array.from(resultStatCombo4x100 as Set<number>).map((d: number) => {
+                Array.from(this.resultStatCombo4x100 as Set<number>).map((d: number) => {
                   let r = [];
                   for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
                   return r;
@@ -501,9 +510,9 @@ export class InventoryService {
           } else if (data.done == true && doneWorkerCount != nthreads) this.workers[n].terminate();
         };
         this.workers[n].onerror = (ev) => {
-          console.error("ERROR IN WEBWORKER, TERMINATING WEBWORKER", ev);
           this.workers[n].terminate();
         };
+
         this.workers[n].postMessage({
           currentClass: this.currentClass,
           config: this._config,
@@ -511,8 +520,8 @@ export class InventoryService {
             count: nthreads,
             current: n,
           },
-          items,
-          selectedExotics,
+          items: this.items,
+          selectedExotics: this.selectedExotics,
         });
       }
     } finally {
