@@ -86,6 +86,7 @@ export class InventoryService {
 
   private _config: BuildConfiguration = BuildConfiguration.buildEmptyConfiguration();
   private updatingResults: boolean = false;
+  private workers: Worker[];
 
   constructor(
     private db: DatabaseService,
@@ -106,6 +107,7 @@ export class InventoryService {
     } as info);
     this.armorResults = this._armorResults.asObservable();
 
+    this.workers = [];
     let dataAlreadyFetched = false;
     let isUpdating = false;
 
@@ -118,6 +120,7 @@ export class InventoryService {
       if (!auth.isAuthenticated()) return;
 
       if (val instanceof NavigationEnd) {
+        this.killWorkers();
         this.clearResults();
         console.debug("Trigger refreshAll due to router.events");
         await this.refreshAll(!dataAlreadyFetched);
@@ -207,6 +210,14 @@ export class InventoryService {
     }
   }
 
+  private killWorkers() {
+    console.log("killinnng workers");
+    this.workers.forEach((w) => {
+      w.terminate();
+    });
+    this.workers = [];
+  }
+
   async updateResults(nthreads: number = 3) {
     this.clearResults();
 
@@ -214,6 +225,8 @@ export class InventoryService {
       console.warn("Called updateResults, but aborting, as it is already running.");
       return;
     }
+    this.killWorkers();
+
     try {
       console.time("updateResults with WebWorker");
       this.updatingResults = true;
@@ -351,8 +364,11 @@ export class InventoryService {
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
-        const worker = new Worker(new URL("./results-builder.worker", import.meta.url));
-        worker.onmessage = async ({ data }) => {
+        this.workers[n] = new Worker(new URL("./results-builder.worker", import.meta.url), {
+          name: n.toString(),
+        });
+        this.workers[n].onmessage = async (ev) => {
+          let data = ev.data;
           threadCalculationDoneArr[n] = data.checkedCalculations;
           threadCalculationAmountArr[n] = data.estimatedCalculations;
           const sumTotal = threadCalculationAmountArr.reduce((a, b) => a + b, 0);
@@ -479,15 +495,16 @@ export class InventoryService {
                   return r;
                 }, []) || [],
             });
+            console.log(ev.origin);
             console.timeEnd("updateResults with WebWorker");
-            worker.terminate();
-          } else if (data.done == true && doneWorkerCount != nthreads) worker.terminate();
+            this.workers[n].terminate();
+          } else if (data.done == true && doneWorkerCount != nthreads) this.workers[n].terminate();
         };
-        worker.onerror = (ev) => {
+        this.workers[n].onerror = (ev) => {
           console.error("ERROR IN WEBWORKER, TERMINATING WEBWORKER", ev);
-          worker.terminate();
+          this.workers[n].terminate();
         };
-        worker.postMessage({
+        this.workers[n].postMessage({
           currentClass: this.currentClass,
           config: this._config,
           threadSplit: {
