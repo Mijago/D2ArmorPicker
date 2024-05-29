@@ -35,11 +35,11 @@ import {
   isEqualItem,
   totalStats,
 } from "../data/types/IInventoryArmor";
-import { DestinyClass, ItemBindStatus, TierType } from "bungie-api-ts/destiny2";
+import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
+import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
-import { FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { VendorsService } from "./vendors.service";
 
 type info = {
@@ -258,7 +258,11 @@ export class InventoryService {
         })
         // filter the selected exotic right here
         .filter(
-          (item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic
+          (item) =>
+            !item.isExotic ||
+            (config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 &&
+              config.selectedExotics.indexOf(item.hash) != -1) ||
+            config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1
         )
         .filter(
           (item) =>
@@ -363,18 +367,19 @@ export class InventoryService {
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
               //let stats = getStatSum(items);
+              let tiers = getSkillTier(armorSet.statsWithMods);
               let v = {
+                loaded: false,
                 exotic:
                   exotic == null
-                    ? []
-                    : [
-                        {
-                          icon: exotic?.icon,
-                          watermark: exotic?.watermarkIcon,
-                          name: exotic?.name,
-                          hash: exotic?.hash,
-                        },
-                      ],
+                    ? undefined
+                    : {
+                        icon: exotic?.icon,
+                        watermark: exotic?.watermarkIcon,
+                        name: exotic?.name,
+                        hash: exotic?.hash,
+                      },
+
                 artifice: armorSet.usedArtifice,
                 modCount: armorSet.usedMods.length,
                 modCost: armorSet.usedMods.reduce(
@@ -384,7 +389,8 @@ export class InventoryService {
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
                 statsNoMods: armorSet.statsWithoutMods,
-                tiers: getSkillTier(armorSet.statsWithMods),
+                tiers: tiers,
+                maxTiers: 10 * (tiers + (5 - armorSet.usedMods.length)),
                 waste: getWaste(armorSet.statsWithMods),
                 items: items.reduce(
                   (p: any, instance) => {
@@ -413,12 +419,12 @@ export class InventoryService {
                   },
                   [[], [], [], []]
                 ),
-                classItem: armorSet.classItemPerk,
+                classItem: { perk: armorSet.classItemPerk },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-              } as unknown as ResultDefinition;
+              } as ResultDefinition;
               endResults.push(v);
             }
 
@@ -460,6 +466,7 @@ export class InventoryService {
           worker.terminate();
         };
         worker.postMessage({
+          type: "builderRequest",
           currentClass: this.currentClass,
           config: this._config,
           threadSplit: {
@@ -467,7 +474,6 @@ export class InventoryService {
             current: n,
           },
           items,
-          selectedExotics,
         });
       }
     } finally {

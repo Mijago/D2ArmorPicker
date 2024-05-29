@@ -20,7 +20,7 @@ import { ClassExoticInfo, InventoryService } from "../../../../services/inventor
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
-import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
@@ -125,11 +125,21 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     if (index > -1) {
       // Always delete an item if it is already in the list
       this.selectedExotics.splice(index, 1);
-    } else if (hash == FORCE_USE_NO_EXOTIC) {
+    } else if (
+      hash == FORCE_USE_NO_EXOTIC ||
+      (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) != -1 && $event.shiftKey)
+    ) {
       this.selectedExotics = [FORCE_USE_NO_EXOTIC];
+    } else if (
+      hash == FORCE_USE_ANY_EXOTIC ||
+      (this.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1 && $event.shiftKey)
+    ) {
+      this.selectedExotics = [FORCE_USE_ANY_EXOTIC];
     } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
-      // if length is 0 or shift is NOT pressed, add the exotic
+      // if length is 0 or shift is NOT pressed, replace the selected exotic
       this.selectedExotics = [hash];
+    } else {
+      this.selectedExotics.push(hash);
     }
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;

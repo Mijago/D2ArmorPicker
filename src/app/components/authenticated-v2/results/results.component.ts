@@ -37,13 +37,12 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 export interface ResultDefinition {
   exotic:
     | undefined
-    | [
-        {
-          icon: string;
-          name: string;
-          hash: string;
-        }
-      ];
+    | {
+        icon: string;
+        watermark: string;
+        name: string;
+        hash: number;
+      };
   artifice: number[];
   classItem: {
     perk: ArmorPerkOrSlot;
@@ -53,6 +52,7 @@ export interface ResultDefinition {
   statsNoMods: number[];
   items: ResultItem[][];
   tiers: number;
+  maxTiers: number;
   waste: number;
   modCost: number;
   modCount: number;
