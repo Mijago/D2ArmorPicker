@@ -97,6 +97,7 @@ export class InventoryService {
   private selectedExotics: IManifestArmor[] = [];
   private itemz: IInventoryArmor[] = [];
   private items: IPermutatorArmor[] = [];
+  private endResults: ResultDefinition[] = [];
 
   constructor(
     private db: DatabaseService,
@@ -438,7 +439,7 @@ export class InventoryService {
             this._calculationProgress.next(0);
             this.updatingResults = false;
 
-            let endResults = [];
+            this.endResults = [];
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
@@ -501,13 +502,11 @@ export class InventoryService {
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
               } as unknown as ResultDefinition;
-              endResults.push(v);
+              this.endResults.push(v);
             }
 
-            console.debug("endResults", endResults);
-
             this._armorResults.next({
-              results: endResults,
+              results: this.endResults,
               totalResults: this.totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
               itemCount: data.stats.itemCount,
               totalTime: Date.now() - startTime,
@@ -533,7 +532,6 @@ export class InventoryService {
                   return r;
                 }, []) || [],
             });
-            console.log(ev.origin);
             console.timeEnd("updateResults with WebWorker");
             this.workers[n].terminate();
           } else if (data.done == true && doneWorkerCount != nthreads) this.workers[n].terminate();
