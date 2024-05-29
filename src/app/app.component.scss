@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.bungie-day {
+.bungie-day,
+.canary-warning {
   height: fit-content;
   position: relative;
   max-width: 100vw;
@@ -33,6 +34,6 @@
   color: white;
 }
 
-.bungie-day .header-spacer {
+.header-spacer {
   flex: 1 1 auto;
 }
