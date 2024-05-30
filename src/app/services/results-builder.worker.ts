@@ -315,6 +315,11 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
+  console.log("estimatedCalculations", estimatedCalculations);
+
+  // define the delay; it can be 75ms if the estimated calculations are low
+  // if the estimated calculations >= 1e6, then we will use 125ms
+  let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
 
   console.time(`tm #${threadSplit.current}`);
 
@@ -375,7 +380,7 @@ addEventListener("message", async ({ data }) => {
       }
     }
 
-    if (totalResults % 5000 == 0 && lastProgressReportTime + 75 < Date.now()) {
+    if (totalResults % 5000 == 0 && lastProgressReportTime + progressBarDelay < Date.now()) {
       lastProgressReportTime = Date.now();
       postMessage({ checkedCalculations, estimatedCalculations });
     }
