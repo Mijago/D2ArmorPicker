@@ -496,9 +496,11 @@ addEventListener("message", async ({ data }) => {
         doNotOutput,
         hasArtificeClassItem && canUseArtificeClassItem
       );
-      if (result != null && isIPermutatorArmorSet(result)) {
-        const fragmentIds = fragmentCombination!.fragments.map((d) => d.id);
-        (result as unknown as IPermutatorArmorSet).additionalFragments = fragmentIds;
+      if (result != null) {
+        if (isIPermutatorArmorSet(result)) {
+          const fragmentIds = fragmentCombination!.fragments.map((d) => d.id);
+          (result as unknown as IPermutatorArmorSet).additionalFragments = fragmentIds;
+        }
         break;
       }
     }
