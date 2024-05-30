@@ -877,7 +877,13 @@ function get_mods_precalc(
   const limit = 3;
   for (let i = 0; i < optionalDistances.length; i++) {
     if (optionalDistances[i] > 0) {
-      const additionalCombosA = modCombinations[optionalDistances[i]];
+      const additionalCombosA = modCombinations[optionalDistances[i]].filter(
+        (d) =>
+          d[2] == 0 && // disallow major mods
+          d[3] % 10 > 0 && // we do not want to add exact stat tiers
+          (optionalDistances[i] + d[3]) % 10 < optionalDistances[i] // and the changes must have less waste than before
+      );
+      //(d) => d[3] % 10 > 0);
       if (additionalCombosA != null) {
         precalculatedMods[i] = additionalCombosA.slice(0, limit).concat(precalculatedMods[i]);
       }
