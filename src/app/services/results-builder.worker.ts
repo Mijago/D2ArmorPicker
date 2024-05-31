@@ -20,7 +20,7 @@ import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
-import { ModInformation } from "../data/ModInformation";
+import { MaximumFragmentsPerClass, ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
   ArmorStat,
@@ -201,7 +201,7 @@ function* generateFragmentCombinationsForGroup(
 function* generateFragmentCombinations(
   config: BuildConfiguration
 ): Generator<IFragmentCombination> {
-  yield { subclass: null, fragments: [], stats: [0, 0, 0, 0, 0, 0] };
+  yield { subclass: ModifierType.AnySubclass, fragments: [], stats: [0, 0, 0, 0, 0, 0] };
   if (config.automaticallySelectFragments) {
     // group the fragments in ModInformation by subclass (requiredArmorAffinity)
     const fragmentsBySubclass = new Map<number, Modifier[]>();
@@ -229,16 +229,17 @@ function* generateFragmentCombinations(
       fragmentsBySubclass.get(subclass)!.push(fragment);
     }
 
-    // TODO: This must be adapted to selected the class & subclass, as some can use 5 fragments
-    let possibleNumberOfFragments = 4;
+    let alreadyReservedFragments = 0;
     // for each selected fragment in the subclass, reduce the possibleNumberOfFragments by 1
     for (const fragment of Object.values(ModInformation)) {
       // in enabledMods
-      if (config.enabledMods.indexOf(fragment.id) > -1) possibleNumberOfFragments--;
+      if (config.enabledMods.indexOf(fragment.id) > -1) alreadyReservedFragments--;
     }
 
     // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
     for (const [subclass, fragments] of fragmentsBySubclass) {
+      const possibleNumberOfFragments =
+        MaximumFragmentsPerClass[config.characterClass][subclass] - alreadyReservedFragments;
       for (let i = 1; i <= possibleNumberOfFragments; i++) {
         for (const fragmentCombination of generateFragmentCombinationsForGroup(fragments, i)) {
           const result = [0, 0, 0, 0, 0, 0];
