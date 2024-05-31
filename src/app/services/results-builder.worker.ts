@@ -512,7 +512,8 @@ addEventListener("message", async ({ data }) => {
         constantAvailableModslots,
         doNotOutput,
         hasArtificeClassItem && canUseArtificeClassItem,
-        fragmentCombination
+        fragmentCombination,
+        fragmentCombinationsSet
       );
       if (result != null) {
         if (isIPermutatorArmorSet(result)) {
@@ -595,7 +596,8 @@ export function handlePermutation(
   availableModCost: number[],
   doNotOutput = false,
   hasArtificeClassItem = false,
-  currentFragmentCombination: IFragmentCombination | null = null
+  currentFragmentCombination: IFragmentCombination | null = null,
+  allFragmentCombinations: IFragmentCombination[] = []
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
   var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
@@ -788,47 +790,13 @@ export function handlePermutation(
   // Tier Availability Testing
   //#################################################################################
   //*
-  const allUsedFragmentIds = new Set([
-    // in the set
-    ...(currentFragmentCombination?.fragments.map((d) => d.id) || []),
-    // in the config
-    ...config.enabledMods,
-  ]);
-  const allUsedFragmentIdsArray = Array.from(allUsedFragmentIds);
-  const selectedSubclass =
-    allUsedFragmentIdsArray.length > 0 && !!currentFragmentCombination
-      ? currentFragmentCombination.subclass
-      : config.selectedModElement;
-  const maxFragments = 4 - allUsedFragmentIdsArray.length;
-  const availableFragments = Object.values(ModInformation)
-    .filter((d) => selectedSubclass == ModifierType.AnySubclass || d.type == selectedSubclass)
-    .filter((d) => allUsedFragmentIdsArray.indexOf(d.id) == -1);
-
-  let n = 0;
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
     }
 
-    let maxFragmentBoost = availableFragments
-      .filter((d) => d.bonus.some((b) => b.stat == stat && b.value > 0)) // !TODO! check that no negatives are here
-      // sort DESC
-      .sort(
-        (a, b) =>
-          b.bonus.find((b) => b.stat == stat)!.value - a.bonus.find((b) => b.stat == stat)!.value
-      )
-      // pick up to maxFragments fragments
-      .slice(0, maxFragments);
-
-    // sum maxFragmentBoost to an array of [0,0,0,0,0,0] + boosts
-
-    const maxFragmentBoostArray = [0, 0, 0, 0, 0, 0];
-    for (let fragment of maxFragmentBoost) {
-      maxFragmentBoostArray[stat] += fragment.bonus.find((b) => b.stat == stat)!.value;
-    }
-
     const oldDistance = distances[stat];
-    for (
+    tier_loop: for (
       let tier = 10;
       tier >= config.minimumStatTiers[stat as ArmorStat].value &&
       tier > runtime.maximumPossibleTiers[stat] / 10;
@@ -837,21 +805,28 @@ export function handlePermutation(
       if (stats[stat] >= tier * 10) break;
       const v = 10 - (stats[stat] % 10);
       distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-      for (let st = 0; st < 6; st++)
-        distances[st] = Math.max(0, distances[st] - maxFragmentBoostArray[st]);
-      n++;
-      const mods = get_mods_precalc(
-        config,
-        distances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        availableModCost,
-        ModOptimizationStrategy.None
-      );
-      //const mods = null;
-      if (mods != null) {
-        runtime.maximumPossibleTiers[stat] = tier * 10;
-        break;
+
+      for (let fragmentCombination of allFragmentCombinations) {
+        const newDist = distances.slice();
+        // now add the fragment combination
+        for (let i = 0; i < 6; i++) {
+          newDist[i] -= fragmentCombination.stats[i];
+          newDist[i] += currentFragmentCombination?.stats[i] || 0;
+          newDist[i] = Math.max(0, newDist[i]);
+        }
+        const mods = get_mods_precalc(
+          config,
+          newDist,
+          [0, 0, 0, 0, 0, 0],
+          availableArtificeCount,
+          availableModCost,
+          ModOptimizationStrategy.None
+        );
+        //const mods = null;
+        if (mods != null) {
+          runtime.maximumPossibleTiers[stat] = tier * 10;
+          break tier_loop;
+        }
       }
     }
     distances[stat] = oldDistance;
