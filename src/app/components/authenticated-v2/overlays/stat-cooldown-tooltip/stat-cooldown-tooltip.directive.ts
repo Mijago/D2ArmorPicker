@@ -40,7 +40,8 @@ export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
    * This can be used to show the tooltip conditionally
    */
   @Input() showToolTip: boolean = true;
-
+  @Input() minimumMaximumExoticAvailableTier: number = 0;
+  @Input() maximumAvailableTier: number = 0;
   @Input() tooltipTier: number = 0;
   @Input() tooltipStat: ArmorStat = ArmorStat.Mobility;
   @Input() tooltipDifferenceTier: number = 0; // the tier we use to show a difference for
@@ -101,6 +102,10 @@ export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
       );
       tooltipRef.instance.tier = this.tooltipTier;
       tooltipRef.instance.differenceTier = this.tooltipDifferenceTier;
+      tooltipRef.instance.stat = this.tooltipStat;
+      tooltipRef.instance.maximumAvailableTier = this.maximumAvailableTier;
+      tooltipRef.instance.minimumMaximumExoticAvailableTier =
+        this.minimumMaximumExoticAvailableTier;
       tooltipRef.instance.stat = this.tooltipStat;
     }
   }
