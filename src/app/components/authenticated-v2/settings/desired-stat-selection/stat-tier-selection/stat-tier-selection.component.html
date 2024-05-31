@@ -22,6 +22,7 @@
       *ngFor="let tier of TierRange; let i = index"
       [checked]="selectedTier === i"
       [class.isFromMod]="isAddedByConfigMods(i)"
+      [class.isFromExotic]="isAddedByMaxExotic(i)"
       [class.mat-button-toggle-checked]="selectedTier >= i"
       [class.not-checked]="selectedTier < i"
       [disabled]="maximumAvailableTier < i"

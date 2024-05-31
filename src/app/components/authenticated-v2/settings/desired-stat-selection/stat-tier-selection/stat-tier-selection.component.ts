@@ -29,6 +29,7 @@ export class StatTierSelectionComponent {
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 10;
+  @Input() minimumMaximumExoticAvailableTier: number = 10;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
   @Output() selectedTierChange = new EventEmitter<number>();
@@ -56,6 +57,10 @@ export class StatTierSelectionComponent {
         // ( index <= this.statsByMods) // on the left
         (this.selectedTier < this.statsByMods && index <= this.statsByMods))
     );
+  }
+
+  isAddedByMaxExotic(index: number) {
+    return index > this.minimumMaximumExoticAvailableTier && index <= this.maximumAvailableTier;
   }
 
   toggleLockState() {

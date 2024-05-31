@@ -291,9 +291,10 @@ addEventListener("message", async ({ data }) => {
 
   // runtime variables
   const runtime = {
+    maximumExoticPossibleTiers: new Map<number, number[]>(),
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
+    statCombo3x100: new Set<number>(),
+    statCombo4x100: new Set<number>(),
   };
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
@@ -315,7 +316,7 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.log("estimatedCalculations", estimatedCalculations);
+  console.log(`estimatedCalculations for thread #${threadSplit.current}`, estimatedCalculations);
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
@@ -424,7 +425,12 @@ export function getStatSum(
 }
 
 export function handlePermutation(
-  runtime: any,
+  runtime: {
+    maximumExoticPossibleTiers: Map<number, number[]>;
+    maximumPossibleTiers: number[];
+    statCombo3x100: Set<number>;
+    statCombo4x100: Set<number>;
+  },
   config: BuildConfiguration,
   helmet: IPermutatorArmor,
   gauntlet: IPermutatorArmor,
@@ -627,9 +633,17 @@ export function handlePermutation(
   //#################################################################################
   //*
   let n = 0;
+  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
+  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
+    0, 0, 0, 0, 0, 0,
+  ];
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
+    }
+
+    if (exoticmaximumPossibleTiers[stat] < stats[stat]) {
+      exoticmaximumPossibleTiers[stat] = stats[stat];
     }
 
     const oldDistance = distances[stat];
@@ -654,11 +668,13 @@ export function handlePermutation(
       //const mods = null;
       if (mods != null) {
         runtime.maximumPossibleTiers[stat] = tier * 10;
+        exoticmaximumPossibleTiers[stat] = tier * 10;
         break;
       }
     }
     distances[stat] = oldDistance;
   }
+  runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
   //console.debug("b "+runtime.maximumPossibleTiers,n)
   //console.warn(n)
   //*/

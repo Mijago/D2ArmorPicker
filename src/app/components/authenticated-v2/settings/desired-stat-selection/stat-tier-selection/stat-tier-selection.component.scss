@@ -36,6 +36,11 @@
   background-color: rgba(63, 110, 181, 0.15);
 }
 
+.not-checked.isFromExotic {
+  background-color: rgba(63, 4, 5, 0.15);
+  //color: rgba(63, 4, 5, 0.7);
+}
+
 .lock-locked {
   color: #f44336;
 }
