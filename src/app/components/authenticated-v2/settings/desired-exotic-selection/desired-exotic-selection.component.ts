@@ -127,16 +127,18 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExotics.splice(index, 1);
     } else if (
       hash == FORCE_USE_NO_EXOTIC ||
-      (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) != -1 && $event.shiftKey)
+      (this.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) != -1 &&
+        ($event.shiftKey || $event.ctrlKey))
     ) {
       this.selectedExotics = [FORCE_USE_NO_EXOTIC];
     } else if (
       hash == FORCE_USE_ANY_EXOTIC ||
-      (this.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1 && $event.shiftKey)
+      (this.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1 &&
+        ($event.shiftKey || $event.ctrlKey))
     ) {
       this.selectedExotics = [FORCE_USE_ANY_EXOTIC];
-    } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
-      // if length is 0 or shift is NOT pressed, replace the selected exotic
+    } else if (this.selectedExotics.length == 0 || !($event.shiftKey || $event.ctrlKey)) {
+      // if length is 0 or shift or control is NOT pressed, replace the selected exotic
       this.selectedExotics = [hash];
     } else {
       this.selectedExotics.push(hash);
