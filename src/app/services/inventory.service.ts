@@ -546,7 +546,8 @@ export class InventoryService {
             }
 
             //Sort to keep sets with same legendary pieces together
-            this.endResults.sort((ob1, ob2) => ob2.tiers - ob1.tiers);
+            //this.endResults.sort((ob1, ob2) => ob2.tiers - ob1.tiers);
+            this.endResults.sort((ob1, ob2) => (ob2.exotic?.hash ?? 0) - (ob1.exotic?.hash ?? 0));
             this.endResults.forEach(
               (item) => (item.nonExoticsSetCount = permutationHashes.get(item.nonExoticsSetHash)!)
             );

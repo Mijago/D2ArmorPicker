@@ -159,6 +159,15 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: false,
             help: "Shows an additional column in the table that shows how many stats are wasted in a build.",
           },
+          {
+            name: "Show the count of builds generated sharing non-exotic armor pieces.",
+            cp: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.includeLegendaryShareColumn = v)),
+            value: c.includeLegendaryShareColumn,
+            disabled: false,
+            impactsResultCount: false,
+            help: "Shows an additional column in the table with the count of how many builds generated use the same non-exotic armor pieces, or when 2 exotic slots are selected, the builds that share the other two slots",
+          },
         ],
         "Wasted Stats": [
           {

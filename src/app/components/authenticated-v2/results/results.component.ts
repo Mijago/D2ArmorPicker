@@ -195,7 +195,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         "mods",
       ];
       if (c.showWastedStatsColumn) columns.push("waste");
-      columns.push("nonExoticsSetCount");
+      if (c.includeLegendaryShareColumn) columns.push("nonExoticsSetCount");
       if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
@@ -232,7 +232,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         case "Tiers":
           return data.tiers;
         case "Max Tiers":
-          return 10 * (data.tiers + (5 - data.modCount));
+          return data.maxTiers;
         case "Waste":
           return data.waste;
         case "Mods":
@@ -241,6 +241,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
             //+ 40 * data.artifice.length
             data.modCost
           );
+        case "HashCount":
+          return data.nonExoticsSetCount;
       }
       return 0;
     };
