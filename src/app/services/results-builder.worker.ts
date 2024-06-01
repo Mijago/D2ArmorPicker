@@ -526,11 +526,14 @@ export function handlePermutation(
   const totalOptionalDistances = optionalDistances.reduce((a, b) => a + b, 0);
   // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
-  const distanceSum =
+  let distanceSum =
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
     for (let stat = 0; stat < 6; stat++) {
-      if (exoticmaximumPossibleTiers[stat] < stats[stat]) {
+      if (
+        exoticmaximumPossibleTiers[stat] < stats[stat] &&
+        distanceSum > 10 * 5 + 3 * availableArtificeCount
+      ) {
         exoticmaximumPossibleTiers[stat] = stats[stat];
       }
       const oldDistance = distances[stat];
@@ -538,6 +541,8 @@ export function handlePermutation(
         if (stats[stat] < tier * 10) {
           const v = 10 - (stats[stat] % 10);
           distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
+          distanceSum =
+            distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
           const mods = get_mods_precalc(
             config,
             distances,
@@ -549,7 +554,10 @@ export function handlePermutation(
           distances[stat] = oldDistance;
           //const mods = null;
           if (mods != null) {
-            if (exoticmaximumPossibleTiers[stat] < tier * 10) {
+            if (
+              exoticmaximumPossibleTiers[stat] < tier * 10 &&
+              distanceSum > 10 * 5 + 3 * availableArtificeCount
+            ) {
               exoticmaximumPossibleTiers[stat] = tier * 10;
               break;
             }
