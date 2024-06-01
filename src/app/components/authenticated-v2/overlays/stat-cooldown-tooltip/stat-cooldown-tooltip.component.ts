@@ -48,6 +48,8 @@ export class StatCooldownTooltipComponent implements OnInit {
   public ArmorStatNames = ArmorStatNames;
 
   @Input() tier: number = 0;
+  @Input() minimumMaximumExoticAvailableTier: number = 0;
+  @Input() maximumAvailableTier: number = 0;
   @Input() differenceTier: number = 0; // the tier we use to show a difference for
   @Input() stat: ArmorStat = ArmorStat.Mobility;
 
@@ -103,5 +105,11 @@ export class StatCooldownTooltipComponent implements OnInit {
 
   getPercentageDifference(v1: number, v2: number) {
     return (v1 - v2) / Math.max(1, v2);
+  }
+
+  getIsAddedByExotic() {
+    return (
+      this.tier > this.minimumMaximumExoticAvailableTier && this.tier <= this.maximumAvailableTier
+    );
   }
 }

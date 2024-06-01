@@ -37,13 +37,12 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 export interface ResultDefinition {
   exotic:
     | undefined
-    | [
-        {
-          icon: string;
-          name: string;
-          hash: string;
-        }
-      ];
+    | {
+        icon: string;
+        watermark: string;
+        name: string;
+        hash: number;
+      };
   artifice: number[];
   classItem: {
     perk: ArmorPerkOrSlot;
@@ -53,12 +52,15 @@ export interface ResultDefinition {
   statsNoMods: number[];
   items: ResultItem[][];
   tiers: number;
+  maxTiers: number;
   waste: number;
   modCost: number;
   modCount: number;
   loaded: boolean;
   usesCollectionRoll?: boolean;
   usesVendorRoll?: boolean;
+  nonExoticsSetHash: bigint;
+  nonExoticsSetCount: number;
 }
 
 export enum ResultItemMoveState {
@@ -193,6 +195,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         "mods",
       ];
       if (c.showWastedStatsColumn) columns.push("waste");
+      if (c.includeLegendaryShareColumn) columns.push("nonExoticsSetCount");
       if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
@@ -229,7 +232,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
         case "Tiers":
           return data.tiers;
         case "Max Tiers":
-          return 10 * (data.tiers + (5 - data.modCount));
+          return data.maxTiers;
         case "Waste":
           return data.waste;
         case "Mods":
@@ -238,6 +241,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
             //+ 40 * data.artifice.length
             data.modCost
           );
+        case "HashCount":
+          return data.nonExoticsSetCount;
       }
       return 0;
     };
@@ -281,7 +286,13 @@ export class ResultsComponent implements OnInit, OnDestroy {
     // download the file
     let a = document.createElement("a");
     a.download = "builds.json";
-    const url = window.URL.createObjectURL(new Blob([JSON.stringify(jsonData, null, 2)]));
+    const url = window.URL.createObjectURL(
+      new Blob([
+        JSON.stringify(jsonData, (key, value) =>
+          typeof value === "bigint" ? value.toString() : value
+        ),
+      ])
+    );
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "d2ap_results.json");

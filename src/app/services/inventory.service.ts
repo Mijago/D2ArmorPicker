@@ -35,17 +35,18 @@ import {
   isEqualItem,
   totalStats,
 } from "../data/types/IInventoryArmor";
-import { DestinyClass, ItemBindStatus, TierType } from "bungie-api-ts/destiny2";
+import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
+import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
-import { FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { VendorsService } from "./vendors.service";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 
 type info = {
   results: ResultDefinition[];
   totalResults: number;
+  minimumMaximumExoticPossibleTiers: number[];
   maximumPossibleTiers: number[];
   statCombo3x100: ArmorStat[][];
   statCombo4x100: ArmorStat[][];
@@ -91,11 +92,12 @@ export class InventoryService {
   private results: IPermutatorArmorSet[] = [];
   private totalPermutationCount = 0;
   private resultMaximumTiers: number[][] = [];
+  private resultMaximumExoticPossibleTiers: Map<number, number[]>[] = [];
   private resultStatCombo3x100 = new Set<number>();
   private resultStatCombo4x100 = new Set<number>();
   private selectedExotics: IManifestArmor[] = [];
-  private itemz: IInventoryArmor[] = [];
-  private items: IPermutatorArmor[] = [];
+  private InventoryArmorItems: IInventoryArmor[] = [];
+  private PermutatorArmorItems: IPermutatorArmor[] = [];
   private endResults: ResultDefinition[] = [];
 
   constructor(
@@ -163,6 +165,7 @@ export class InventoryService {
       totalResults: 0,
       totalTime: 0,
       itemCount: 0,
+      minimumMaximumExoticPossibleTiers: [10, 10, 10, 10, 10, 10],
       maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
       statCombo3x100: [],
       statCombo4x100: [],
@@ -263,7 +266,9 @@ export class InventoryService {
 
       this.results = [];
       this.totalPermutationCount = 0;
+      this.resultMaximumExoticPossibleTiers = [];
       this.resultMaximumTiers = [];
+      this.resultMaximumExoticPossibleTiers = [];
       this.resultStatCombo3x100 = new Set<number>();
       this.resultStatCombo4x100 = new Set<number>();
       const startTime = Date.now();
@@ -279,13 +284,13 @@ export class InventoryService {
       );
       this.selectedExotics = this.selectedExotics.filter((i) => !!i);
 
-      this.itemz = (await this.db.inventoryArmor
+      this.InventoryArmorItems = (await this.db.inventoryArmor
         .where("clazz")
         .equals(config.characterClass)
         .distinct()
         .toArray()) as IInventoryArmor[];
 
-      this.itemz = this.itemz
+      this.InventoryArmorItems = this.InventoryArmorItems
         // only armor :)
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
@@ -303,7 +308,11 @@ export class InventoryService {
         })
         // filter the selected exotic right here
         .filter(
-          (item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic
+          (item) =>
+            !item.isExotic ||
+            config.selectedExotics.indexOf(item.hash) != -1 ||
+            config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) != -1 ||
+            config.selectedExotics.length == 0
         )
         .filter(
           (item) =>
@@ -347,10 +356,10 @@ export class InventoryService {
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
-      this.itemz = this.itemz.filter((item) => {
+      this.InventoryArmorItems = this.InventoryArmorItems.filter((item) => {
         if (item.source === InventoryArmorSource.Inventory) return true;
 
-        const purchasedItemInstance = this.itemz.find(
+        const purchasedItemInstance = this.InventoryArmorItems.find(
           (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
         );
 
@@ -359,7 +368,7 @@ export class InventoryService {
         return purchasedItemInstance === undefined;
       });
 
-      this.items = this.itemz.map((armor) => {
+      this.PermutatorArmorItems = this.InventoryArmorItems.map((armor) => {
         return {
           id: armor.id,
           hash: armor.hash,
@@ -392,7 +401,9 @@ export class InventoryService {
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
-      this.items = this.items.sort((a, b) => totalStats(b) - totalStats(a));
+      this.PermutatorArmorItems = this.PermutatorArmorItems.sort(
+        (a, b) => totalStats(b) - totalStats(a)
+      );
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
@@ -424,6 +435,7 @@ export class InventoryService {
             doneWorkerCount++;
             this.totalPermutationCount += data.stats.permutationCount;
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
+            this.resultMaximumExoticPossibleTiers.push(data.runtime.maximumExoticPossibleTiers);
             for (let elem of data.runtime.statCombo3x100) this.resultStatCombo3x100.add(elem);
             for (let elem of data.runtime.statCombo4x100) this.resultStatCombo4x100.add(elem);
           }
@@ -432,24 +444,57 @@ export class InventoryService {
             this._calculationProgress.next(0);
 
             this.endResults = [];
+            let permutationHashes = new Map<bigint, number>();
+            let permutationSlots = new Set(
+              this.results
+                .flatMap((a) => a.armor.map((x) => this.InventoryArmorItems.find((y) => y.id == x)))
+                .filter((a) => a !== undefined)
+                .filter((a) => a!.isExotic)
+                .map((a) => a!.slot)
+            );
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                this.itemz.find((y) => y.id == x)
+                this.InventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
+              // if the exotics are in 1 slot use the non exotic armor to allow "hotswappability"
+              // if the exotics are in 2 different slots, generate the Hash with the other 2 armor pieces, to allow "hotswappability" to cluster near
+              // if the exotics are in neither slot we don't care, use all armor
+              // if the exotics are in 3 or 4 slots there's no good strategy, cluster for it's non exotic parts
+              let legendaryArmor =
+                permutationSlots.size == 2
+                  ? items.filter((x) => !permutationSlots.has(x.slot))
+                  : items.filter((x) => !x.isExotic);
+
+              let R = 0x9e3779b97f4a7c13n; //64bit golden ratio
+              let permHash =
+                legendaryArmor.reduce(
+                  (previousValue, currentValue) =>
+                    BigInt(previousValue) *
+                    (R + (BigInt((currentValue.itemInstanceId as any) | 0) << 1n)),
+                  1n
+                ) / 2n;
+              let permutationHash = permHash;
+              permutationHashes.set(
+                permutationHash,
+                (permutationHashes.get(permutationHash) ?? 0) + 1
+              );
+              //let stats = getStatSum(items);
+              let tiers = getSkillTier(armorSet.statsWithMods);
+
               let v = {
+                loaded: false,
                 exotic:
                   exotic == null
-                    ? []
-                    : [
-                        {
-                          icon: exotic?.icon,
-                          watermark: exotic?.watermarkIcon,
-                          name: exotic?.name,
-                          hash: exotic?.hash,
-                        },
-                      ],
+                    ? undefined
+                    : {
+                        icon: exotic?.icon,
+                        watermark: exotic?.watermarkIcon,
+                        name: exotic?.name,
+                        hash: exotic?.hash,
+                      },
+
                 artifice: armorSet.usedArtifice,
                 modCount: armorSet.usedMods.length,
                 modCost: armorSet.usedMods.reduce(
@@ -459,7 +504,8 @@ export class InventoryService {
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
                 statsNoMods: armorSet.statsWithoutMods,
-                tiers: getSkillTier(armorSet.statsWithMods),
+                tiers: tiers,
+                maxTiers: 10 * (tiers + (5 - armorSet.usedMods.length)),
                 waste: getWaste(armorSet.statsWithMods),
                 items: items.reduce(
                   (p: any, instance) => {
@@ -488,20 +534,65 @@ export class InventoryService {
                   },
                   [[], [], [], []]
                 ),
-                classItem: armorSet.classItemPerk,
+                classItem: { perk: armorSet.classItemPerk },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-              } as unknown as ResultDefinition;
+                nonExoticsSetHash: permutationHash,
+                nonExoticsSetCount: 1,
+              } as ResultDefinition;
               this.endResults.push(v);
             }
+
+            //Sort to keep sets with same legendary pieces together
+            //this.endResults.sort((ob1, ob2) => ob2.tiers - ob1.tiers);
+            this.endResults.sort((ob1, ob2) => (ob2.exotic?.hash ?? 0) - (ob1.exotic?.hash ?? 0));
+            this.endResults.forEach(
+              (item) => (item.nonExoticsSetCount = permutationHashes.get(item.nonExoticsSetHash)!)
+            );
+            this.endResults.sort((ob1, ob2) => {
+              if (ob1.nonExoticsSetHash > ob2.nonExoticsSetHash) {
+                return 1;
+              } else if (ob1.nonExoticsSetHash < ob2.nonExoticsSetHash) {
+                return -1;
+              }
+              return 0;
+            });
+            this.endResults.sort((ob1, ob2) => ob2.nonExoticsSetCount - ob1.nonExoticsSetCount);
+
+            console.debug("endResults", this.endResults);
+            let minimumMaximumExoticPossibleTiers = [10, 10, 10, 10, 10, 10];
+            let maximumExoticPossibleTiersMap = new Map<number, number[]>();
+            this.resultMaximumExoticPossibleTiers.forEach((m) => {
+              m.forEach((v, k) => {
+                let knownMaxForExotic = maximumExoticPossibleTiersMap.get(k) || [
+                  -1, -1, -1, -1, -1, -1,
+                ];
+                for (let stat = 0; stat < 6; stat++) {
+                  knownMaxForExotic[stat] = Math.max(knownMaxForExotic[stat], v[stat]);
+                }
+                maximumExoticPossibleTiersMap.set(k, knownMaxForExotic);
+              });
+            });
+
+            maximumExoticPossibleTiersMap.forEach((values, key) => {
+              for (let stat = 0; stat < 6; stat++) {
+                minimumMaximumExoticPossibleTiers[stat] = Math.min(
+                  minimumMaximumExoticPossibleTiers[stat],
+                  Math.floor(Math.min(100, values[stat]) / 10)
+                );
+              }
+            });
+
+            console.log(`Values for ${minimumMaximumExoticPossibleTiers}`);
 
             this._armorResults.next({
               results: this.endResults,
               totalResults: this.totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
               itemCount: data.stats.itemCount,
               totalTime: Date.now() - startTime,
+              minimumMaximumExoticPossibleTiers: minimumMaximumExoticPossibleTiers,
               maximumPossibleTiers: this.resultMaximumTiers
                 .reduce(
                   (p, v) => {
@@ -512,13 +603,13 @@ export class InventoryService {
                 )
                 .map((k) => Math.floor(Math.min(100, k) / 10)),
               statCombo3x100:
-                Array.from(this.resultStatCombo3x100 as Set<number>).map((d: number) => {
+                Array.from(this.resultStatCombo3x100).map((d: number) => {
                   let r: ArmorStat[] = [];
                   for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
                   return r;
                 }) || [],
               statCombo4x100:
-                Array.from(this.resultStatCombo4x100 as Set<number>).map((d: number) => {
+                Array.from(this.resultStatCombo4x100).map((d: number) => {
                   let r = [];
                   for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
                   return r;
@@ -531,15 +622,15 @@ export class InventoryService {
         this.workers[n].onerror = (ev) => {
           this.workers[n].terminate();
         };
-
         this.workers[n].postMessage({
+          type: "builderRequest",
           currentClass: this.currentClass,
           config: this._config,
           threadSplit: {
             count: nthreads,
             current: n,
           },
-          items: this.items,
+          items: this.PermutatorArmorItems,
           selectedExotics: this.selectedExotics,
         });
       }
@@ -548,10 +639,12 @@ export class InventoryService {
   }
 
   estimateRequiredThreads(): number {
-    const helmets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
-    const gauntlets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet);
-    const chests = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
-    const legs = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
+    const helmets = this.PermutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
+    const gauntlets = this.PermutatorArmorItems.filter(
+      (d) => d.slot == ArmorSlot.ArmorSlotGauntlet
+    );
+    const chests = this.PermutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
+    const legs = this.PermutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
     const estimatedCalculations = this.estimateCombinationsToBeChecked(
       helmets,
       gauntlets,

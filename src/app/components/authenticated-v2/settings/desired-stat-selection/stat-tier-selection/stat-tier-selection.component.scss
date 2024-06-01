@@ -33,7 +33,15 @@
 }
 
 .not-checked.isFromMod {
-  background-color: rgba(63, 110, 181, 0.15);
+  background-color: rgba(63, 110, 181, 0.5);
+}
+
+.mat-button-toggle-checked.isFromExotic {
+  background-color: rgba(63, 4, 5, 1);
+}
+
+.not-checked.isFromExotic {
+  background-color: rgba(63, 4, 5, 0.15);
 }
 
 .lock-locked {

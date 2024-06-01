@@ -85,6 +85,7 @@ export class BuildConfiguration {
   ignoreSunsetArmor = false;
   includeVendorRolls = false;
   includeCollectionRolls = false;
+  includeLegendaryShareColumn = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
   assumeClassItemMasterworked = true;
@@ -125,6 +126,7 @@ export class BuildConfiguration {
       onlyUseMasterworkedExotics: false,
       onlyUseMasterworkedLegendaries: false,
       ignoreSunsetArmor: false,
+      includeLegendaryShareColumn: false,
       includeCollectionRolls: false,
       includeVendorRolls: false,
       allowBlueArmorPieces: true,

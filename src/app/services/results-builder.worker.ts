@@ -19,7 +19,7 @@ import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
@@ -50,31 +50,30 @@ function checkSlots(
   chest: IPermutatorArmor,
   leg: IPermutatorArmor
 ) {
-  var exoticId = config.selectedExotics[0] || 0;
   let requirements = constantModslotRequirement.slice();
   if (
-    (exoticId <= 0 || helmet.hash != exoticId) &&
+    !helmet.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
   )
     return { valid: false };
   if (
-    (exoticId <= 0 || gauntlet.hash != exoticId) &&
+    !gauntlet.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
   )
     return { valid: false };
   if (
-    (exoticId <= 0 || chest.hash != exoticId) &&
+    !chest.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
   )
     return { valid: false };
   if (
-    (exoticId <= 0 || leg.hash != exoticId) &&
+    !leg.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -93,13 +92,11 @@ function checkSlots(
   requirements[chest.perk]--;
   requirements[leg.perk]--;
 
-  // ignore exotic selection
-  if (exoticId > 0) {
-    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
-    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
-    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
-    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
-  }
+  // ignore perk requirement in exotic
+  if (helmet.isExotic) requirements[config.armorPerks[helmet.slot].value]--;
+  else if (gauntlet.isExotic) requirements[config.armorPerks[gauntlet.slot].value]--;
+  else if (chest.isExotic) requirements[config.armorPerks[chest.slot].value]--;
+  else if (leg.isExotic) requirements[config.armorPerks[leg.slot].value]--;
 
   let bad = 0;
   for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) bad += Math.max(0, requirements[n]);
@@ -171,28 +168,20 @@ function* generateArmorCombinations(
   gauntlets: IPermutatorArmor[],
   chests: IPermutatorArmor[],
   legs: IPermutatorArmor[],
-  constHasOneExoticLength: boolean,
   requiresAtLeastOneExotic: boolean
 ) {
   for (let helmet of helmets) {
     for (let gauntlet of gauntlets) {
-      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
+      if (helmet.isExotic && gauntlet.isExotic) continue;
       for (let chest of chests) {
-        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
-          continue;
+        if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
         for (let leg of legs) {
-          if (
-            constHasOneExoticLength &&
-            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
-            leg.isExotic
-          )
-            continue;
+          if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
           if (
             requiresAtLeastOneExotic &&
             !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
           )
             continue;
-
           yield [helmet, gauntlet, chest, leg];
         }
       }
@@ -224,8 +213,9 @@ function estimateCombinationsToBeChecked(
 }
 
 addEventListener("message", async ({ data }) => {
-  const threadSplit = data.threadSplit as { count: number; current: number };
+  if (data.type != "builderRequest") return;
 
+  const threadSplit = data.threadSplit as { count: number; current: number };
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2");
   console.time(`total #${threadSplit.current}`);
@@ -243,7 +233,6 @@ addEventListener("message", async ({ data }) => {
   }
   console.log("Using config", data.config);
 
-  let selectedExotics = data.selectedExotics;
   let items = data.items as IPermutatorArmor[];
 
   let helmets = items
@@ -302,16 +291,17 @@ addEventListener("message", async ({ data }) => {
 
   // runtime variables
   const runtime = {
+    maximumExoticPossibleTiers: new Map<number, number[]>(),
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
+    statCombo3x100: new Set<number>(),
+    statCombo4x100: new Set<number>(),
   };
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
-  const constHasOneExoticLength = selectedExotics.length <= 1;
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
-  const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
+  const requiresAtLeastOneExotic =
+    config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 && config.selectedExotics.length > 0;
 
   console.log("hasArtificeClassItem", hasArtificeClassItem);
 
@@ -326,7 +316,7 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.log("estimatedCalculations", estimatedCalculations);
+  console.log(`estimatedCalculations for thread #${threadSplit.current}`, estimatedCalculations);
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
@@ -339,7 +329,6 @@ addEventListener("message", async ({ data }) => {
     gauntlets,
     chests,
     legs,
-    constHasOneExoticLength,
     requiresAtLeastOneExotic
   )) {
     checkedCalculations++;
@@ -436,7 +425,12 @@ export function getStatSum(
 }
 
 export function handlePermutation(
-  runtime: any,
+  runtime: {
+    maximumExoticPossibleTiers: Map<number, number[]>;
+    maximumPossibleTiers: number[];
+    statCombo3x100: Set<number>;
+    statCombo4x100: Set<number>;
+  },
   config: BuildConfiguration,
   helmet: IPermutatorArmor,
   gauntlet: IPermutatorArmor,
@@ -448,6 +442,10 @@ export function handlePermutation(
   hasArtificeClassItem = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
+  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
+  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
+    -1, -1, -1, -1, -1, -1,
+  ];
   var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
@@ -524,12 +522,33 @@ export function handlePermutation(
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }
+
   const totalOptionalDistances = optionalDistances.reduce((a, b) => a + b, 0);
   // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
-  const distanceSum =
+  let distanceSum =
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) return null;
+  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
+    for (let stat = 0; stat < 6; stat++) {
+      const oldDistance = distances[stat];
+      for (let tier = 10; tier >= 0; tier--) {
+        const v = 10 - (stats[stat] % 10);
+        distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
+        distanceSum =
+          distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
+        distances[stat] = oldDistance;
+        if (distanceSum <= 10 * 5 + 3 * availableArtificeCount) {
+          if (exoticmaximumPossibleTiers[stat] < tier * 10) {
+            exoticmaximumPossibleTiers[stat] = tier * 10;
+            break;
+          }
+        }
+      }
+    }
+    if (exoticHash != 0)
+      runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
+    return null;
+  }
 
   let result: StatModifier[] | null;
   if (distanceSum == 0 && totalOptionalDistances == 0) result = [];
@@ -638,10 +657,13 @@ export function handlePermutation(
   // Tier Availability Testing
   //#################################################################################
   //*
-  let n = 0;
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
+    }
+
+    if (exoticmaximumPossibleTiers[stat] < stats[stat]) {
+      exoticmaximumPossibleTiers[stat] = stats[stat];
     }
 
     const oldDistance = distances[stat];
@@ -654,7 +676,6 @@ export function handlePermutation(
       if (stats[stat] >= tier * 10) break;
       const v = 10 - (stats[stat] % 10);
       distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-      n++;
       const mods = get_mods_precalc(
         config,
         distances,
@@ -666,11 +687,14 @@ export function handlePermutation(
       //const mods = null;
       if (mods != null) {
         runtime.maximumPossibleTiers[stat] = tier * 10;
+        exoticmaximumPossibleTiers[stat] = tier * 10;
         break;
       }
     }
     distances[stat] = oldDistance;
   }
+  if (exoticHash != 0)
+    runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
   //console.debug("b "+runtime.maximumPossibleTiers,n)
   //console.warn(n)
   //*/

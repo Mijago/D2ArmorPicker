@@ -42,6 +42,7 @@ function calcScore(d: number[]) {
 export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
+  minimumMaximumExoticAvailableTier: number[] = [10, 10, 10, 10, 10, 10];
   maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
@@ -82,6 +83,10 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }
+
+      this.minimumMaximumExoticAvailableTier = d.minimumMaximumExoticPossibleTiers || [
+        10, 10, 10, 10, 10, 10,
+      ];
 
       this._statCombo3x100 = (d.statCombo3x100 || []).sort((a, b) => calcScore(b) - calcScore(a));
       this._statCombo4x100 = d.statCombo4x100 || [];

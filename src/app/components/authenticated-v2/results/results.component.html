@@ -48,7 +48,7 @@
             matTooltip="Note: To speed up the whole process, only {{
               this.parsedResults | number
             }} results are listed in this table.
-                        If you need more entries, disable the limitation in the advanced settings."
+                          If you need more entries, disable the limitation in the advanced settings."
             >report_problem
           </mat-icon>
           <mat-icon
@@ -59,7 +59,7 @@
             matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
               this.parsedResults | number
             }} results are listed in this table.
-                                You should narrow down your settings a bit."
+                                  You should narrow down your settings a bit."
             >report_problem
           </mat-icon>
         </mat-form-field>
@@ -217,7 +217,7 @@
         matSortDirection="asc"
         multiTemplateDataRows>
         <!--- Note that these columns can be defined in any order.
-         The actual rendered columns are set as a property on the row definition" -->
+           The actual rendered columns are set as a property on the row definition" -->
         <!-- Name Column -->
         <ng-container matColumnDef="mobility">
           <th
@@ -343,21 +343,46 @@
           </td>
         </ng-container>
 
+        <!-- Hash Column -->
+        <!--<ng-container matColumnDef="nonExoticsSetHash">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="Hash"
+            matTooltip="Non-exotic build id"
+            >Hash
+          </th>
+          <td *matCellDef="let element" mat-cell> {{ element.nonExoticsSetHash }} </td>
+          </ng-container>
+          -->
+
+        <!-- Hash Count Column -->
+        <ng-container matColumnDef="nonExoticsSetCount">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            mat-sort-header="HashCount"
+            matTooltip="Number of builds generated that use the same non-exotic armor, when 2 different armor slot exotics are generated, shows number of builds generated with at least 2 shared pieces.">
+            # Easy Swap builds
+          </th>
+          <td *matCellDef="let element" mat-cell> {{ element.nonExoticsSetCount }} </td>
+        </ng-container>
         <!-- Name Column -->
         <ng-container matColumnDef="exotic">
           <th *matHeaderCellDef mat-header-cell> Exotic</th>
           <td *matCellDef="let element" mat-cell>
-            <ng-container *ngFor="let exo of element.exotic">
-              <!-- TODO name , icon-->
-              <img
-                #tooltip="matTooltip"
-                class="itemIcon"
-                matTooltip="{{ exo.name }}"
-                src="https://bungie.net/{{ exo.icon }}" />
-              <img class="itemIconWatermark" src="https://bungie.net/{{ exo.watermark }}" />
-            </ng-container>
             <img
-              *ngIf="element.exotic.length === 0"
+              *ngIf="element.exotic !== undefined"
+              #tooltip="matTooltip"
+              class="itemIcon"
+              matTooltip="{{ element.exotic.name }}"
+              src="https://bungie.net/{{ element.exotic.icon }}" />
+            <img
+              *ngIf="element.exotic !== undefined"
+              class="itemIconWatermark"
+              src="https://bungie.net/{{ element.exotic.watermark }}" />
+            <img
+              *ngIf="element.exotic === undefined"
               class="itemIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
           </td>

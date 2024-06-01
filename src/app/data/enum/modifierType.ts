@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { EnumDictionary } from "../types/EnumDictionary";
+
 export enum ModifierType {
   CombatStyleMod,
   Stasis,
@@ -24,3 +26,13 @@ export enum ModifierType {
   Strand,
   RetrofitMods, // Artifact Retrofit mods
 }
+
+export const ModifierNames: EnumDictionary<ModifierType, string> = {
+  [ModifierType.Arc]: "Arc",
+  [ModifierType.Solar]: "Solar",
+  [ModifierType.Void]: "Void",
+  [ModifierType.Stasis]: "Stasis",
+  [ModifierType.Strand]: "Strand",
+  [ModifierType.CombatStyleMod]: "",
+  [ModifierType.RetrofitMods]: "",
+};

@@ -39,7 +39,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { DestinyEnergyType, DestinyClass } from "bungie-api-ts/destiny2";
-import { ModifierType } from "../../../../data/enum/modifierType";
+import { ModifierNames, ModifierType } from "../../../../data/enum/modifierType";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
@@ -110,7 +110,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
-      this.config_characterClass = c.characterClass as unknown as DestinyClass;
+      this.config_characterClass = c.characterClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
@@ -307,16 +307,15 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     if (c.selectedExotics.length == 1) {
       data.exoticArmorHash = c.selectedExotics[0];
     } else {
-      var exos = this.element?.exotic;
-      if (exos && exos.length == 1) {
-        var exoticHash = exos[0].hash;
-        if (!!exoticHash) data.exoticArmorHash = parseInt(exoticHash, 10);
-      }
+      var exoticHash = this.element?.exotic?.hash;
+      if (!!exoticHash) data.exoticArmorHash = exoticHash;
     }
 
     const loadout: Loadout = {
       id: "d2ap", // this doesn't matter and will be replaced
-      name: "D2ArmorPicker Loadout",
+      name: `${ModifierNames[c.selectedModElement]} ${
+        this.element?.exotic?.name
+      } D2ArmorPicker Loadout `,
       classType: c.characterClass as number,
       parameters: data,
       equipped: (this.element?.items || []).map(([i]) => ({
