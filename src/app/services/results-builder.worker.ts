@@ -530,6 +530,9 @@ export function handlePermutation(
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
     for (let stat = 0; stat < 6; stat++) {
+      if (exoticmaximumPossibleTiers[stat] < stats[stat]) {
+        exoticmaximumPossibleTiers[stat] = stats[stat];
+      }
       const oldDistance = distances[stat];
       for (let tier = 10; tier >= 0; tier--) {
         if (stats[stat] < tier * 10) {
