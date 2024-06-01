@@ -442,6 +442,10 @@ export function handlePermutation(
   hasArtificeClassItem = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
+  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
+  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
+    -1, -1, -1, -1, -1, -1,
+  ];
   var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
@@ -505,10 +509,6 @@ export function handlePermutation(
     }
   }
 
-  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
-  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
-    -1, -1, -1, -1, -1, -1,
-  ];
   // distances required to reduce wasted stat points :)
   const optionalDistances = [0, 0, 0, 0, 0, 0];
   if (config.tryLimitWastedStats)
@@ -530,37 +530,17 @@ export function handlePermutation(
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
     for (let stat = 0; stat < 6; stat++) {
-      if (
-        exoticmaximumPossibleTiers[stat] < stats[stat] &&
-        distanceSum > 10 * 5 + 3 * availableArtificeCount
-      ) {
-        exoticmaximumPossibleTiers[stat] = stats[stat];
-      }
       const oldDistance = distances[stat];
       for (let tier = 10; tier >= 0; tier--) {
-        if (stats[stat] < tier * 10) {
-          const v = 10 - (stats[stat] % 10);
-          distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-          distanceSum =
-            distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-          const mods = get_mods_precalc(
-            config,
-            distances,
-            [0, 0, 0, 0, 0, 0],
-            availableArtificeCount,
-            availableModCost,
-            ModOptimizationStrategy.None
-          );
-          distances[stat] = oldDistance;
-          //const mods = null;
-          if (mods != null) {
-            if (
-              exoticmaximumPossibleTiers[stat] < tier * 10 &&
-              distanceSum > 10 * 5 + 3 * availableArtificeCount
-            ) {
-              exoticmaximumPossibleTiers[stat] = tier * 10;
-              break;
-            }
+        const v = 10 - (stats[stat] % 10);
+        distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
+        distanceSum =
+          distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
+        distances[stat] = oldDistance;
+        if (distanceSum <= 10 * 5 + 3 * availableArtificeCount) {
+          if (exoticmaximumPossibleTiers[stat] < tier * 10) {
+            exoticmaximumPossibleTiers[stat] = tier * 10;
+            break;
           }
         }
       }
