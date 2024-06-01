@@ -740,10 +740,9 @@ function get_mods_precalc(
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
   // check distances <= 65
-  if (
-    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] >
-    getAvailableStatsByMods(availableArtificeCount, availableModCost)
-  )
+  const totalDistance =
+    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
+  if (totalDistance > getAvailableStatsByMods(availableArtificeCount, availableModCost))
     return null;
 
   const modCombinations = config.onlyShowResultsWithNoWastedStats
@@ -777,7 +776,13 @@ function get_mods_precalc(
   const limit = 3;
   for (let i = 0; i < optionalDistances.length; i++) {
     if (optionalDistances[i] > 0) {
-      const additionalCombosA = modCombinations[optionalDistances[i]];
+      const additionalCombosA = modCombinations[optionalDistances[i]].filter(
+        (d) =>
+          d[2] == 0 && // disallow major mods
+          d[3] % 10 > 0 && // we do not want to add exact stat tiers
+          (optionalDistances[i] + d[3]) % 10 < optionalDistances[i] // and the changes must have less waste than before
+      );
+      //(d) => d[3] % 10 > 0);
       if (additionalCombosA != null) {
         precalculatedMods[i] = additionalCombosA.slice(0, limit).concat(precalculatedMods[i]);
       }
@@ -861,7 +866,7 @@ function get_mods_precalc(
     return true;
   }
 
-  const mustExecuteOptimization = optimize != ModOptimizationStrategy.None;
+  const mustExecuteOptimization = totalDistance > 0 && optimize != ModOptimizationStrategy.None;
   root: for (let mobility of precalculatedMods[0]) {
     if (!validate([mobility])) continue;
     for (let resilience of precalculatedMods[1]) {
@@ -889,15 +894,7 @@ function get_mods_precalc(
 
               if (!validate(mods, true)) continue;
 
-              const sum = mods.reduce(
-                (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
-                [0, 0, 0, 0]
-              );
-
-              if (sum[3] < 0) continue; // did not reach the target
-              if (sum[0] > availableArtificeCount) continue;
-              if (sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0) continue;
-
+              // Fill optional distances
               for (let m = 0; m < 6; m++)
                 if (optionalDistances[m] > 0 && mods[m][3] == 0 && bestMods != null) continue inner;
 
