@@ -47,7 +47,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
-  currentClass: DestinyClass = DestinyClass.Titan;
+  currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
 
   constructor(public inventory: InventoryService, public config: ConfigurationService) {}
@@ -89,6 +89,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     }
 
     this.exotics = [
+      [],
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotHelmet)),
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotGauntlet)),
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotChest)),

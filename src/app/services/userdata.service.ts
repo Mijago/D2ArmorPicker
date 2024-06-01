@@ -20,6 +20,7 @@ import { AuthService } from "./auth.service";
 import { InventoryService } from "./inventory.service";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
 import { MembershipService } from "./membership.service";
+import { ConfigurationService } from "./configuration.service";
 
 @Injectable({
   providedIn: "root",
@@ -31,6 +32,7 @@ export class UserdataService {
 
   constructor(
     private auth: AuthService,
+    private config: ConfigurationService,
     private membership: MembershipService,
     private inventory: InventoryService
   ) {
@@ -55,6 +57,9 @@ export class UserdataService {
 
   private async updateCharacterData() {
     this.characters = await this.membership.getCharacters();
+    this.config.modifyConfiguration((d) => {
+      if (d.characterClass == DestinyClass.Unknown) d.characterClass = this.characters[0].clazz;
+    });
     localStorage.setItem("cachedCharacters", JSON.stringify(this.characters));
   }
 }

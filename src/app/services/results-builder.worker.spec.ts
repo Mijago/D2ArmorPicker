@@ -125,7 +125,7 @@ function buildTestItem(
   return {
     name: "item_" + slot,
     armor2: true,
-    clazz: DestinyClass.Titan,
+    clazz: DestinyClass.Unknown,
     source: InventoryArmorSource.Inventory,
     description: "",
     slot: slot,

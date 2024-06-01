@@ -54,7 +54,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   possible: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   isPossible: boolean = true;
-  configSelectedClass: DestinyClass = DestinyClass.Titan;
+  configSelectedClass: DestinyClass = DestinyClass.Unknown;
   configAssumeLegendaryIsArtifice: boolean = false;
   configAssumeClassItemIsArtifice: boolean = false;
   armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;

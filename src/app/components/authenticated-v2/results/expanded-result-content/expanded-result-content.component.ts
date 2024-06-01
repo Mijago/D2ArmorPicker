@@ -64,7 +64,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public ArmorStatIconUrls = ArmorStatIconUrls;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
-  public config_characterClass = DestinyClass.Titan;
+  public config_characterClass = DestinyClass.Unknown;
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
   public config_assumeClassItemMasterworked = false;
