@@ -22,7 +22,9 @@
         <td class="exotic-name" colspan="3">{{ ArmorStatNames[stat] }} at Tier {{ tier }}</td>
       </tr>
       <tr>
-        <td colspan="3" *ngIf="getIsAddedByExotic()">Only achievable with some of your exotics</td>
+        <td colspan="3" *ngIf="getIsAddedByExotic()"
+          >Not achievable by all selected exotics with the current settings</td
+        >
         <td colspan="3" *ngIf="tier > maximumAvailableTier"
           >Not achievable with the current settings</td
         >

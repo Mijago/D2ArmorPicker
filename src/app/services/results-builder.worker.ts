@@ -505,6 +505,10 @@ export function handlePermutation(
     }
   }
 
+  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
+  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
+    -1, -1, -1, -1, -1, -1,
+  ];
   // distances required to reduce wasted stat points :)
   const optionalDistances = [0, 0, 0, 0, 0, 0];
   if (config.tryLimitWastedStats)
@@ -518,12 +522,42 @@ export function handlePermutation(
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }
+
   const totalOptionalDistances = optionalDistances.reduce((a, b) => a + b, 0);
   // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
   const distanceSum =
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) return null;
+  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
+    for (let stat = 0; stat < 6; stat++) {
+      const oldDistance = distances[stat];
+      for (let tier = 10; tier >= 0; tier--) {
+        if (stats[stat] < tier * 10) {
+          const v = 10 - (stats[stat] % 10);
+          distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
+          const mods = get_mods_precalc(
+            config,
+            distances,
+            [0, 0, 0, 0, 0, 0],
+            availableArtificeCount,
+            availableModCost,
+            ModOptimizationStrategy.None
+          );
+          distances[stat] = oldDistance;
+          //const mods = null;
+          if (mods != null) {
+            if (exoticmaximumPossibleTiers[stat] < tier * 10) {
+              exoticmaximumPossibleTiers[stat] = tier * 10;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (exoticHash != 0)
+      runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
+    return null;
+  }
 
   let result: StatModifier[] | null;
   if (distanceSum == 0 && totalOptionalDistances == 0) result = [];
@@ -632,11 +666,6 @@ export function handlePermutation(
   // Tier Availability Testing
   //#################################################################################
   //*
-  let n = 0;
-  let exoticHash = items.find((x) => x.isExotic)?.hash ?? 0;
-  let exoticmaximumPossibleTiers = runtime.maximumExoticPossibleTiers.get(exoticHash) ?? [
-    0, 0, 0, 0, 0, 0,
-  ];
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
@@ -656,7 +685,6 @@ export function handlePermutation(
       if (stats[stat] >= tier * 10) break;
       const v = 10 - (stats[stat] % 10);
       distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-      n++;
       const mods = get_mods_precalc(
         config,
         distances,
@@ -674,7 +702,8 @@ export function handlePermutation(
     }
     distances[stat] = oldDistance;
   }
-  runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
+  if (exoticHash != 0)
+    runtime.maximumExoticPossibleTiers.set(exoticHash, exoticmaximumPossibleTiers);
   //console.debug("b "+runtime.maximumPossibleTiers,n)
   //console.warn(n)
   //*/

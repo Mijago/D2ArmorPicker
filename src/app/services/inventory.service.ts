@@ -165,7 +165,7 @@ export class InventoryService {
       totalResults: 0,
       totalTime: 0,
       itemCount: 0,
-      minimumMaximumExoticPossibleTiers: [0, 0, 0, 0, 0, 0],
+      minimumMaximumExoticPossibleTiers: [10, 10, 10, 10, 10, 10],
       maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
       statCombo3x100: [],
       statCombo4x100: [],
@@ -566,7 +566,9 @@ export class InventoryService {
             let maximumExoticPossibleTiersMap = new Map<number, number[]>();
             this.resultMaximumExoticPossibleTiers.forEach((m) => {
               m.forEach((v, k) => {
-                let knownMaxForExotic = maximumExoticPossibleTiersMap.get(k) || [0, 0, 0, 0, 0, 0];
+                let knownMaxForExotic = maximumExoticPossibleTiersMap.get(k) || [
+                  -1, -1, -1, -1, -1, -1,
+                ];
                 for (let stat = 0; stat < 6; stat++) {
                   knownMaxForExotic[stat] = Math.max(knownMaxForExotic[stat], v[stat]);
                 }
