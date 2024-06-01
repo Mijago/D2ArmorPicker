@@ -531,17 +531,15 @@ export function handlePermutation(
   if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
     for (let stat = 0; stat < 6; stat++) {
       const oldDistance = distances[stat];
-      for (let tier = 10; tier >= 0; tier--) {
+      for (let tier = 10; tier >= exoticmaximumPossibleTiers[stat]; tier--) {
         const v = 10 - (stats[stat] % 10);
         distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
         distanceSum =
           distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
         distances[stat] = oldDistance;
-        if (distanceSum <= 10 * 5 + 3 * availableArtificeCount) {
-          if (exoticmaximumPossibleTiers[stat] < tier * 10) {
-            exoticmaximumPossibleTiers[stat] = tier * 10;
-            break;
-          }
+        if (distanceSum <= getAvailableStatsByMods(availableArtificeCount, availableModCost)) {
+          exoticmaximumPossibleTiers[stat] = tier * 10;
+          break;
         }
       }
     }
@@ -670,7 +668,7 @@ export function handlePermutation(
     for (
       let tier = 10;
       tier >= config.minimumStatTiers[stat as ArmorStat].value &&
-      tier > runtime.maximumPossibleTiers[stat] / 10;
+      tier > exoticmaximumPossibleTiers[stat] / 10;
       tier--
     ) {
       if (stats[stat] >= tier * 10) break;
@@ -686,7 +684,8 @@ export function handlePermutation(
       );
       //const mods = null;
       if (mods != null) {
-        runtime.maximumPossibleTiers[stat] = tier * 10;
+        if (runtime.maximumPossibleTiers[stat] < tier * 100)
+          runtime.maximumPossibleTiers[stat] = tier * 10;
         exoticmaximumPossibleTiers[stat] = tier * 10;
         break;
       }
@@ -737,7 +736,10 @@ function get_mods_precalc(
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
   // check distances <= 65
-  if (distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] > 65)
+  if (
+    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5] >
+    getAvailableStatsByMods(availableArtificeCount, availableModCost)
+  )
     return null;
 
   const modCombinations = config.onlyShowResultsWithNoWastedStats
@@ -919,6 +921,24 @@ function get_mods_precalc(
   }
 
   return usedMods;
+}
+
+function getAvailableStatsByMods(
+  availableArtificeCount: number,
+  availableModCost: number[]
+): number {
+  let LargeMajorMod = availableModCost.filter((x) => x >= 4).length;
+  let MediumMajorMod = availableModCost.filter((x) => x >= 3).length - LargeMajorMod;
+  let LargeMinorMod =
+    availableModCost.filter((x) => x >= 2).length - LargeMajorMod - MediumMajorMod;
+  let MediumMinorMod =
+    availableModCost.filter((x) => x >= 1).length - LargeMajorMod - MediumMajorMod - LargeMinorMod;
+
+  return (
+    (LargeMajorMod + MediumMajorMod) * 10 +
+    (LargeMinorMod + MediumMinorMod) * 5 +
+    availableArtificeCount * 3
+  );
 }
 
 export function getSkillTier(stats: number[]) {
