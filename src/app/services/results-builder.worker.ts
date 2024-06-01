@@ -528,17 +528,33 @@ export function handlePermutation(
   //const distanceSum = distances.reduce((a, b) => a + b, 0);
   let distanceSum =
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) {
+  if (distanceSum > getAvailableStatsByMods(availableArtificeCount, availableModCost)) {
     for (let stat = 0; stat < 6; stat++) {
       const oldDistance = distances[stat];
-      for (let tier = 10; tier >= exoticmaximumPossibleTiers[stat]; tier--) {
+      for (
+        let tier = 10;
+        tier >=
+        Math.floor(
+          Math.min(exoticmaximumPossibleTiers[stat], runtime.maximumPossibleTiers[stat]) / 10
+        );
+        tier--
+      ) {
         const v = 10 - (stats[stat] % 10);
         distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-        distanceSum =
-          distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
+        const mods = get_mods_precalc(
+          config,
+          distances,
+          [0, 0, 0, 0, 0, 0],
+          availableArtificeCount,
+          availableModCost,
+          ModOptimizationStrategy.None
+        );
+        //const mods = null;
         distances[stat] = oldDistance;
-        if (distanceSum <= getAvailableStatsByMods(availableArtificeCount, availableModCost)) {
-          exoticmaximumPossibleTiers[stat] = tier * 10;
+
+        if (mods != null) {
+          if (exoticmaximumPossibleTiers[stat] < tier * 10)
+            exoticmaximumPossibleTiers[stat] = tier * 10;
           break;
         }
       }
