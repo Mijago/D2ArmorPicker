@@ -31,11 +31,7 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
   itemCounts: (null | number)[] = [null, null, null];
   selectedClass = -1;
   public storedMaterials: {
-    "3853748946": number;
-    "4257549985": number;
-    "4257549984": number;
-    "3159615086": number;
-    "3467984096": number;
+    [Key: string]: number;
   } | null = null;
 
   constructor(
@@ -86,11 +82,7 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
 
   private async loadStoredMaterials() {
     var k: {
-      "3853748946": number;
-      "4257549985": number;
-      "4257549984": number;
-      "3159615086": number;
-      "3467984096": number;
+      [Key: string]: number;
     } = JSON.parse(localStorage.getItem("stored-materials") || "{}");
     if (!("3853748946" in k)) k["3853748946"] = 0;
     if (!("4257549984" in k)) k["4257549984"] = 0;

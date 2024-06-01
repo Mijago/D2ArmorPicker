@@ -668,7 +668,10 @@ export function handlePermutation(
     for (
       let tier = 10;
       tier >= config.minimumStatTiers[stat as ArmorStat].value &&
-      tier > exoticmaximumPossibleTiers[stat] / 10;
+      tier >
+        Math.floor(
+          Math.min(exoticmaximumPossibleTiers[stat], runtime.maximumPossibleTiers[stat]) / 10
+        );
       tier--
     ) {
       if (stats[stat] >= tier * 10) break;
@@ -684,9 +687,10 @@ export function handlePermutation(
       );
       //const mods = null;
       if (mods != null) {
-        if (runtime.maximumPossibleTiers[stat] < tier * 100)
+        if (runtime.maximumPossibleTiers[stat] < tier * 10)
           runtime.maximumPossibleTiers[stat] = tier * 10;
-        exoticmaximumPossibleTiers[stat] = tier * 10;
+        if (exoticmaximumPossibleTiers[stat] < tier * 10)
+          exoticmaximumPossibleTiers[stat] = tier * 10;
         break;
       }
     }
