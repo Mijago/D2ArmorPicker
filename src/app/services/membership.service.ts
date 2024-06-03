@@ -4,12 +4,13 @@ import { AuthService } from "./auth.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
 import { HttpClientService } from "./http-client.service";
+import { StatusProviderService } from "./status-provider.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class MembershipService {
-  constructor(private authService: AuthService, private http: HttpClientService) {}
+  constructor(private http: HttpClientService, private status: StatusProviderService) {}
 
   async getMembershipDataForCurrentUser(): Promise<GroupUserInfoCard> {
     var membershipData = JSON.parse(localStorage.getItem("auth-membershipInfo") || "null");
@@ -66,8 +67,10 @@ export class MembershipService {
   async getCharacters() {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      await this.authService.logout();
+      this.status.setApiError();
       return [];
+    } else {
+      this.status.clearApiError();
     }
 
     const profile = await getProfile((d) => this.http.$http(d), {
