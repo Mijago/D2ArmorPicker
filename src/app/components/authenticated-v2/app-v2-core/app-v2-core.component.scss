@@ -114,7 +114,7 @@
   margin-bottom: 5px;
 }
 
-#header .header-spacer {
+.header-spacer {
   flex: 1 1 auto;
 }
 
@@ -136,4 +136,13 @@
 :host ::ng-deep .mat-tab-link {
   min-width: 75px;
   opacity: 1;
+}
+
+.bar-api-warn {
+  background-color: #f0894e;
+  position: relative;
+  height: 20px;
+  margin-bottom: 2px;
+
+  font-size: 16px;
 }

@@ -3,12 +3,17 @@ import { HttpClientConfig } from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment";
+import { StatusProviderService } from "./status-provider.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class HttpClientService {
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private status: StatusProviderService
+  ) {}
 
   async $httpWithoutKey(config: HttpClientConfig) {
     return this.http
@@ -43,6 +48,11 @@ export class HttpClientService {
         },
       })
       .toPromise()
+      .then((res) => {
+        // Clear API error, if it was set
+        this.status.clearApiError();
+        return res;
+      })
       .catch(async (err) => {
         console.error(err);
         if (environment.offlineMode) {
@@ -51,11 +61,11 @@ export class HttpClientService {
         }
         if (err.error?.ErrorStatus == "SystemDisabled" && logoutOnError) {
           console.info("System is disabled. Revoking auth, must re-login");
-          await this.authService.logout();
+          this.status.setApiError();
         }
         if (err.ErrorStatus != "Internal Server Error") {
           console.info("API-Error");
-          //await this.authService.logout();
+          this.status.setApiError();
         }
         // TODO: go to login page
       });

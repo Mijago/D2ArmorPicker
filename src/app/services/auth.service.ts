@@ -20,6 +20,7 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment";
 import { Router } from "@angular/router";
 import { Observable, ReplaySubject } from "rxjs";
+import { StatusProviderService } from "./status-provider.service";
 
 @Injectable({
   providedIn: "root",
@@ -28,7 +29,11 @@ export class AuthService {
   private _logoutEvent: ReplaySubject<null>;
   public readonly logoutEvent: Observable<null>;
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private status: StatusProviderService
+  ) {
     this._logoutEvent = new ReplaySubject(1);
     this.logoutEvent = this._logoutEvent.asObservable();
   }
@@ -92,11 +97,12 @@ export class AuthService {
         this.refreshToken = value.refresh_token;
         this.refreshTokenExpiringAt = Date.now() + value.refresh_expires_in * 1000 - 10 * 1000;
         this.lastRefresh = Date.now();
+        this.status.modifyStatus((s) => (s.authError = false));
         return true;
       })
       .catch(async (err) => {
         console.log({ err });
-        await this.logout();
+        this.status.modifyStatus((s) => (s.authError = true));
         return false;
       });
   }

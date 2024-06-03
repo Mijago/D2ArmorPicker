@@ -25,6 +25,9 @@ export interface Status {
   updatingManifest: boolean;
   updatingInventory: boolean;
   updatingVendors: boolean;
+
+  apiError: boolean;
+  authError: boolean;
 }
 
 @Injectable({
@@ -38,6 +41,9 @@ export class StatusProviderService {
     updatingInventory: false,
     updatingManifest: false,
     updatingVendors: false,
+
+    apiError: false, // in case the api is inaccesible or disabled
+    authError: false, // in case the login tokens are invalid and can not be refreshed
   };
 
   private _status: BehaviorSubject<Status>;
@@ -56,5 +62,19 @@ export class StatusProviderService {
     cb(this.__status);
     console.log("modifyStatus", this.__status);
     this._status.next(this.__status);
+  }
+
+  setApiError() {
+    if (this.__status.apiError) return;
+    this.modifyStatus((status) => {
+      status.apiError = true;
+    });
+  }
+
+  clearApiError() {
+    if (!this.__status.apiError) return;
+    this.modifyStatus((status) => {
+      status.apiError = false;
+    });
   }
 }
