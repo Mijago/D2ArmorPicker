@@ -233,7 +233,7 @@ function* generateFragmentCombinations(
     // for each selected fragment in the subclass, reduce the possibleNumberOfFragments by 1
     for (const fragment of Object.values(ModInformation)) {
       // in enabledMods
-      if (config.enabledMods.indexOf(fragment.id) > -1) alreadyReservedFragments--;
+      if (config.enabledMods.indexOf(fragment.id) > -1) alreadyReservedFragments++;
     }
 
     // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
