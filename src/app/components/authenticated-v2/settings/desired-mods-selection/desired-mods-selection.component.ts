@@ -44,7 +44,7 @@ import { Subject } from "rxjs";
   ],
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
-  readonly MaxFragmentRange = new Array(6);
+  readonly MaxFragmentRange = new Array(7);
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];

@@ -670,8 +670,8 @@ export const MaximumFragmentsPerClass: { [key in DestinyClass]: { [key: number]:
     [ModifierType.Solar]: 4,
     [ModifierType.Arc]: 4,
     [ModifierType.Strand]: 4,
-    [ModifierType.Prismatic]: 4,
-    [ModifierType.AnySubclass]: 5,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
   },
   [DestinyClass.Hunter]: {
     [ModifierType.Stasis]: 5,
@@ -679,8 +679,8 @@ export const MaximumFragmentsPerClass: { [key in DestinyClass]: { [key: number]:
     [ModifierType.Solar]: 5,
     [ModifierType.Arc]: 4,
     [ModifierType.Strand]: 4,
-    [ModifierType.Prismatic]: 4,
-    [ModifierType.AnySubclass]: 5,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
   },
   [DestinyClass.Warlock]: {
     [ModifierType.Stasis]: 4,
@@ -688,8 +688,8 @@ export const MaximumFragmentsPerClass: { [key in DestinyClass]: { [key: number]:
     [ModifierType.Solar]: 4,
     [ModifierType.Arc]: 4,
     [ModifierType.Strand]: 4,
-    [ModifierType.Prismatic]: 4,
-    [ModifierType.AnySubclass]: 5,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
   },
   [DestinyClass.Unknown]: {},
 };
