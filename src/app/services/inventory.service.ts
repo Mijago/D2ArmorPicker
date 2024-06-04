@@ -124,8 +124,8 @@ export class InventoryService {
     // TODO: This gives a race condition on some parts.
     router.events.pipe(debounceTime(5)).subscribe(async (val) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
-        await this.auth.logout();
-        return;
+        //await this.auth.logout();
+        //return;
       }
       if (!auth.isAuthenticated()) return;
 
@@ -140,8 +140,8 @@ export class InventoryService {
 
     config.configuration.pipe(debounceTime(500)).subscribe(async (c) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
-        await this.auth.logout();
-        return;
+        //await this.auth.logout();
+        //return;
       }
       if (!auth.isAuthenticated()) return;
 
@@ -180,9 +180,14 @@ export class InventoryService {
     console.debug("Execute refreshAll");
     try {
       this.refreshing = true;
-      let manifestUpdated = await this.updateManifest(forceManifest);
-      let armorUpdated = await this.updateInventoryItems(manifestUpdated || forceArmor);
-      this.updateVendorsAsync();
+      let armorUpdated = false;
+      try {
+        let manifestUpdated = await this.updateManifest(forceManifest);
+        armorUpdated = await this.updateInventoryItems(manifestUpdated || forceArmor);
+        this.updateVendorsAsync();
+      } catch (e) {
+        console.error(e);
+      }
 
       await this.triggerArmorUpdateAndUpdateResults(armorUpdated);
     } finally {
@@ -634,28 +639,21 @@ export class InventoryService {
       console.error("Already updating the manifest - abort");
       return false;
     }
-
-    console.debug("updateManifest", "Set s.updatingManifest = true");
     this.status.modifyStatus((s) => (s.updatingManifest = true));
-    console.debug("updateManifest", "Call this.api.updateManifest(force) with force=" + force);
-    let r = await this.api.updateManifest(force);
-    console.debug("updateManifest", "Result is ", r);
+    let r = await this.api.updateManifest(force).finally(() => {
+      this.status.modifyStatus((s) => (s.updatingManifest = false));
+    });
     if (!!r) this._manifest.next(null);
-
-    console.debug("updateManifest", "Set s.updatingManifest = false");
-    this.status.modifyStatus((s) => (s.updatingManifest = false));
     return !!r;
   }
 
   async updateInventoryItems(force: boolean = false, errorLoop = 0): Promise<boolean> {
-    console.debug("updateManifest", "Set s.updatingInventory = true");
     this.status.modifyStatus((s) => (s.updatingInventory = true));
 
     try {
-      let r = await this.api.updateArmorItems(force);
-      console.debug("updateManifest", "Result is ", r);
-      console.debug("updateManifest", "Set s.updatingInventory = false");
-      this.status.modifyStatus((s) => (s.updatingInventory = false));
+      let r = await this.api.updateArmorItems(force).finally(() => {
+        this.status.modifyStatus((s) => (s.updatingInventory = false));
+      });
       return !!r;
     } catch (e) {
       // After three tries, call it a day.
@@ -668,7 +666,6 @@ export class InventoryService {
 
       this.status.modifyStatus((s) => (s.updatingInventory = false));
       console.error(e);
-      console.warn("Automatically re-fetching manifest");
       await this.updateManifest(true);
       return await this.updateInventoryItems(true, errorLoop++);
     }
