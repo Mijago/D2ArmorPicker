@@ -190,8 +190,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: false,
             help: "You usually do not want to use this.",
           },
-        ],
-        "Resource-Intensive features": [
           {
             name: "Replace the tier selection with text fields for exact stat values.",
             cp: (v: boolean) =>
@@ -207,16 +205,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: "This is a beta feature. Usability and quality may vary a lot.",
-            featureInDevelopment: true,
-          },
-          {
-            name: "Select fragments to reach stat targets, limited to the selected subclass.",
-            cp: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.automaticallySelectFragments = v)),
-            value: c.automaticallySelectFragments,
-            disabled: false, // !c.allowExactStats,
-            impactsResultCount: true,
-            help: "This is resource heavy! It takes your subclass and selected fragments into consideration and adds fragments, if necessary. Disables 3x100 and 4x100 buttons.",
             featureInDevelopment: true,
           },
         ],

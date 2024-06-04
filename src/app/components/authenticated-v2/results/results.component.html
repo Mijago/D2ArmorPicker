@@ -75,6 +75,13 @@
         <mat-chip-list aria-label="Configuration Summary">
           <mat-chip
             #tooltip="matTooltip"
+            *ngIf="_config_automaticallySelectFragments"
+            disableRipple
+            matTooltip="This setting enforces that all exotics are ignored."
+            >Automatically add up to {{ _config_maximumAutoSelectableFragments }} fragments
+          </mat-chip>
+          <mat-chip
+            #tooltip="matTooltip"
             *ngIf="_config_selectedExotics.indexOf(-1) > -1"
             disableRipple
             matTooltip="This setting enforces that all exotics are ignored."

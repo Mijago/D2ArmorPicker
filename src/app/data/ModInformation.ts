@@ -688,6 +688,7 @@ export const MaximumFragmentsPerClass: { [key in DestinyClass]: { [key: number]:
     [ModifierType.Solar]: 4,
     [ModifierType.Arc]: 4,
     [ModifierType.Strand]: 4,
+    [ModifierType.Prismatic]: 4,
     [ModifierType.AnySubclass]: 5,
   },
   [DestinyClass.Unknown]: {},

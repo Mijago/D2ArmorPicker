@@ -17,7 +17,6 @@
 
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
-import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { MaximumFragmentsPerClass, ModInformation } from "../data/ModInformation";
@@ -238,8 +237,10 @@ function* generateFragmentCombinations(
 
     // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
     for (const [subclass, fragments] of fragmentsBySubclass) {
-      const possibleNumberOfFragments =
-        MaximumFragmentsPerClass[config.characterClass][subclass] - alreadyReservedFragments;
+      const possibleNumberOfFragments = Math.min(
+        config.maximumAutoSelectableFragments,
+        MaximumFragmentsPerClass[config.characterClass][subclass] - alreadyReservedFragments
+      );
       for (let i = 1; i <= possibleNumberOfFragments; i++) {
         for (const fragmentCombination of generateFragmentCombinationsForGroup(fragments, i)) {
           const result = [0, 0, 0, 0, 0, 0];

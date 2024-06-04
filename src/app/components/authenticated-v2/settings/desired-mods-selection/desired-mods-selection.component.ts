@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ModInformation } from "../../../../data/ModInformation";
+import { MaximumFragmentsPerClass, ModInformation } from "../../../../data/ModInformation";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
 import {
@@ -44,6 +44,7 @@ import { Subject } from "rxjs";
   ],
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
+  readonly MaxFragmentRange = new Array(6);
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
@@ -60,6 +61,11 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
+
+  config_automaticallySelectFragments: boolean = false;
+  config_maximumAutoSelectableFragments: number = 5;
+  currentlySelectedFragments: number = 0;
+  maxFragmentsFromSubclass: number = 5;
 
   constructor(private config: ConfigurationService) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
@@ -109,6 +115,12 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
         group: true,
         type: ModifierType.Prismatic,
       },
+      {
+        name: "Automatically add up to N fragments:",
+        data: [],
+        group: false,
+        type: ModifierType.AnySubclass,
+      },
     ];
 
     this.dataSource = modifiers;
@@ -119,6 +131,23 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       this.selectedMods = c.enabledMods;
       this.selectedClass = c.characterClass;
       this.selectedElement = c.selectedModElement;
+
+      this.config_automaticallySelectFragments = c.automaticallySelectFragments;
+      this.currentlySelectedFragments = c.enabledMods.length;
+      this.config_maximumAutoSelectableFragments = c.maximumAutoSelectableFragments;
+      this.maxFragmentsFromSubclass =
+        MaximumFragmentsPerClass[c.characterClass][c.selectedModElement];
+
+      if (!c.automaticallySelectFragments && c.maximumAutoSelectableFragments > 0) {
+        this.setFragmentLimit(0);
+      }
+    });
+  }
+
+  setFragmentLimit(newValue: number) {
+    this.config.modifyConfiguration((c) => {
+      c.automaticallySelectFragments = newValue > 0;
+      c.maximumAutoSelectableFragments = newValue;
     });
   }
 
@@ -151,6 +180,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     this.config.modifyConfiguration((c) => {
       c.enabledMods = [];
     });
+    this.setFragmentLimit(0);
   }
 
   getAffinityName(id: DestinyEnergyType) {

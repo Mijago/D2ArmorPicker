@@ -33,6 +33,7 @@ import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { MaximumFragmentsPerClass } from "src/app/data/ModInformation";
 
 export interface ResultDefinition {
   exotic:
@@ -111,6 +112,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   private _config_enabledMods: ModOrAbility[] = [];
   private _config_limitParsedResults: Boolean = false;
 
+  _config_automaticallySelectFragments: boolean = false;
+  _config_maximumAutoSelectableFragments: number = 0;
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
@@ -166,6 +169,15 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_enabledMods = c.enabledMods || [];
       this._config_limitParsedResults = c.limitParsedResults;
 
+      this._config_maximumAutoSelectableFragments = Math.min(
+        c.maximumAutoSelectableFragments,
+        Math.max(
+          0,
+          MaximumFragmentsPerClass[c.characterClass][c.selectedModElement] - c.enabledMods.length
+        )
+      );
+      this._config_automaticallySelectFragments =
+        this._config_maximumAutoSelectableFragments > 0 && c.automaticallySelectFragments;
       this._config_maximumStatMods = c.maximumStatMods;
       this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
       this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;

@@ -71,6 +71,7 @@ export class BuildConfiguration {
 
   // allows us to automatically select the best fragments for the selected subclass
   automaticallySelectFragments = false;
+  maximumAutoSelectableFragments = 0;
 
   // Fixable, BUT the bool is not yet used. Maybe in a future update.
   maximumModSlots: EnumDictionary<ArmorSlot, FixableSelection<number>> = {
@@ -115,6 +116,7 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      maximumAutoSelectableFragments: 0,
       automaticallySelectFragments: false,
       allowExactStats: false,
       enabledMods: [],
