@@ -225,11 +225,17 @@ function estimateCombinationsToBeChecked(
 
 addEventListener("message", async ({ data }) => {
   const threadSplit = data.threadSplit as { count: number; current: number };
+  const config = data.config as BuildConfiguration;
+  let selectedExotics = data.selectedExotics;
+  let items = data.items as IPermutatorArmor[];
+
+  if (threadSplit == undefined || config == undefined || items == undefined) {
+    return;
+  }
 
   const startTime = Date.now();
   console.debug("START RESULTS BUILDER 2");
   console.time(`total #${threadSplit.current}`);
-  const config = data.config as BuildConfiguration;
 
   // toggle feature flags
   config.onlyShowResultsWithNoWastedStats =
@@ -242,9 +248,6 @@ addEventListener("message", async ({ data }) => {
     config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
   }
   console.log("Using config", data.config);
-
-  let selectedExotics = data.selectedExotics;
-  let items = data.items as IPermutatorArmor[];
 
   let helmets = items
     .filter((i) => i.slot == ArmorSlot.ArmorSlotHelmet)
