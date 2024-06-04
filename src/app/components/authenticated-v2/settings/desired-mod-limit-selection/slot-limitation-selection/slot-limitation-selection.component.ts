@@ -64,6 +64,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   isPossible: boolean = true;
   configSelectedClass: DestinyClass = DestinyClass.Titan;
   configAssumeLegendaryIsArtifice: boolean = false;
+  configSelectedExoticSum: number = 0;
+  configSelectedExotic: number[] = [];
   configAssumeClassItemIsArtifice: boolean = false;
   armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
   armorPerkLock: boolean = false;
@@ -114,10 +116,29 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
         var applicablePerk = await this.db.inventoryArmor
           .where("clazz")
           .equals(this.configSelectedClass)
+          .and((f) => this.configSelectedExoticSum == 0 || f.isExotic == 0)
           .and((f) => f.slot == this.slot)
           .and((f) => f.perk == this.armorPerk)
-          .count();
-        this.isPossible = applicablePerk > 0;
+          .toArray();
+
+        // filter applicablePerk for exotics: if there are exotics in the current slot (like e.item.slot)
+        // then we need to check if the selected perk is available on at least one of them
+        if (this.configSelectedExoticSum > 0) {
+          this.configSelectedExotic.forEach(async (exoticHash) => {
+            var exotics = await this.db.inventoryArmor
+              .where("clazz")
+              .equals(this.configSelectedClass)
+              .and((f) => f.isExotic == 1)
+              .and((f) => f.hash == exoticHash)
+              .and((f) => f.perk == this.armorPerk)
+              .toArray();
+
+            applicablePerk = applicablePerk.concat(exotics);
+            this.isPossible = applicablePerk.length > 0;
+            this.possible.next(this.isPossible);
+          });
+        }
+        this.isPossible = applicablePerk.length > 0;
       } else {
         this.isPossible = true;
       }
@@ -144,6 +165,8 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (c) => {
+      const newExoticSum = c.selectedExotics.reduce((acc, x) => acc + x, 0);
+
       var mustRunPossibilityCheck =
         this.configSelectedClass != (c.characterClass as unknown as DestinyClass) ||
         this.configAssumeLegendaryIsArtifice != c.assumeEveryLegendaryIsArtifice ||
@@ -151,6 +174,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
         this.selection != c.maximumModSlots[this.slot].value ||
         this.armorPerk != c.armorPerks[this.slot].value ||
         this.armorPerkLock != c.armorPerks[this.slot].fixed ||
+        this.configSelectedExoticSum != newExoticSum ||
         this.maximumModSlots != c.maximumModSlots[this.slot].value;
 
       this.configAssumeLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
@@ -160,12 +184,14 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
       this.armorPerk = c.armorPerks[this.slot].value;
       this.armorPerkLock = c.armorPerks[this.slot].fixed;
       this.maximumModSlots = c.maximumModSlots[this.slot].value;
+      this.configSelectedExoticSum = newExoticSum;
+      this.configSelectedExotic = c.selectedExotics;
 
-      this.disabled =
-        (await this.inventory.getExoticsForClass(c.characterClass))
-          .filter((x) => c.selectedExotics.indexOf(x.item.hash) > -1)
-          .map((e) => e.item.slot)
-          .indexOf(this.slot) > -1;
+      //      this.disabled =
+      //        (await this.inventory.getExoticsForClass(c.characterClass))
+      //          .filter((x) => c.selectedExotics.indexOf(x.item.hash) > -1)
+      //          .map((e) => e.item.slot)
+      //          .indexOf(this.slot) > -1;
 
       if (mustRunPossibilityCheck) await this.runPossibilityCheck();
     });
