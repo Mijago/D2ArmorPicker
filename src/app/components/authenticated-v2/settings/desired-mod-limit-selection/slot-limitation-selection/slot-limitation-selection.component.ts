@@ -27,13 +27,19 @@ import {
 import { MAXIMUM_STAT_MOD_AMOUNT } from "../../../../../data/constants";
 import { ArmorSlot } from "../../../../../data/enum/armor-slot";
 import { ConfigurationService } from "../../../../../services/configuration.service";
-import { ArmorPerkOrSlot, ArmorPerkOrSlotNames } from "../../../../../data/enum/armor-stat";
+import {
+  ArmorPerkOrSlot,
+  ArmorPerkOrSlotNames,
+  StatModifier,
+} from "../../../../../data/enum/armor-stat";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { InventoryService } from "../../../../../services/inventory.service";
 import { DatabaseService } from "../../../../../services/database.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { environment } from "../../../../../../environments/environment";
+import { ItemIconServiceService } from "src/app/services/item-icon-service.service";
+import { ModUrl } from "../../../results/table-mod-display/table-mod-display.component";
 
 @Component({
   selector: "app-slot-limitation-selection",
@@ -42,6 +48,8 @@ import { environment } from "../../../../../../environments/environment";
 })
 export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly featureDisabled = !environment.featureFlags.enableModslotLimitation;
+  readonly ModUrls = ModUrl;
+  readonly StatModifier = StatModifier;
   readonly ArmorSlot = ArmorSlot;
   readonly ArmorPerkOrSlotNames = ArmorPerkOrSlotNames;
   readonly ArmorPerkOrSlot = ArmorPerkOrSlot;
@@ -90,6 +98,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   constructor(
     public config: ConfigurationService,
     public inventory: InventoryService,
+    private iconService: ItemIconServiceService,
     private db: DatabaseService
   ) {}
 
@@ -190,6 +199,11 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
     this.maximumModSlots = i;
     this.config.modifyConfiguration((c) => (c.maximumModSlots[this.slot].value = i));
+  }
+
+  async getStatIconUrl(statHash: number) {
+    const item = await this.iconService.getItemCached(statHash);
+    return item?.icon;
   }
 
   private ngUnsubscribe = new Subject();
