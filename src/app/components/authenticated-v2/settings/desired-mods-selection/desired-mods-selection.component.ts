@@ -71,33 +71,43 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       }
       return 0;
     });
-    let combatStyleMods = modifiers.filter((value) => value.type == ModifierType.CombatStyleMod);
-    let stasisFragments = modifiers.filter((value) => value.type == ModifierType.Stasis);
-    let voidFragments = modifiers.filter((value) => value.type == ModifierType.Void);
-    let solarFragments = modifiers.filter((value) => value.type == ModifierType.Solar);
-    let arcFragments = modifiers.filter((value) => value.type == ModifierType.Arc);
-    let strandFragments = modifiers.filter((value) => value.type == ModifierType.Strand);
 
     this.data = [
       {
         name: "Stasis Fragments",
-        data: stasisFragments,
+        data: modifiers.filter((value) => value.type == ModifierType.Stasis),
         group: true,
         type: ModifierType.Stasis,
       },
-      { name: "Void Fragments", data: voidFragments, group: true, type: ModifierType.Void },
+      {
+        name: "Void Fragments",
+        data: modifiers.filter((value) => value.type == ModifierType.Void),
+        group: true,
+        type: ModifierType.Void,
+      },
       {
         name: "Solar Fragments",
-        data: solarFragments,
+        data: modifiers.filter((value) => value.type == ModifierType.Solar),
         group: true,
         type: ModifierType.Solar,
       },
-      { name: "Arc Fragments", data: arcFragments, group: true, type: ModifierType.Arc },
+      {
+        name: "Arc Fragments",
+        data: modifiers.filter((value) => value.type == ModifierType.Arc),
+        group: true,
+        type: ModifierType.Arc,
+      },
       {
         name: "Strand Fragments",
-        data: strandFragments,
+        data: modifiers.filter((value) => value.type == ModifierType.Strand),
         group: true,
         type: ModifierType.Strand,
+      },
+      {
+        name: "Prismatic Fragments",
+        data: modifiers.filter((value) => value.type == ModifierType.Prismatic),
+        group: true,
+        type: ModifierType.Prismatic,
       },
     ];
 
