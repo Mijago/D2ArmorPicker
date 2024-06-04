@@ -29,22 +29,97 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
-    version: "2.6.0b",
-    date: "May 26, 2024",
+    version: "2.6.0",
+    date: "June 4, 2024",
     entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a progressbar that shows the progress of the calculation process.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an advanced setting to replace the stat selection boxes with text fields. While it does not look quite nice (as of now), it will allow you to select any value you want. Go get your 6x69 builds done (but don't forget, D2AP still does not add fragments by itself ....YET?!? BUT VERY SOON!)!",
+        issues: [],
+      },
       {
         type: ChangelogEntryType.ADD,
         text: "Added an 'Assume every exotic has an artifice slot' setting in preparation for the changes in the upcoming expansion. Real artifice exotics should work out-of-the-box at the first day of the expansion, BUT it may happen that I need to update some internal structures. Have fun exploring your options, though!",
         issues: [],
       },
       {
-        type: ChangelogEntryType.MODIFIED,
-        text: "Reworked worker performace. Thanks to nznaza.",
+        type: ChangelogEntryType.ADD,
+        text: "Added an 'Assume every legendary class item is an artifice armor' setting to allow finer control over the artifice armor assumption.",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Prepared the API for upcoming Bungie API changes. Thanks to nznaza.",
+        text: "You will no longer be logged out when the API is offline. The app will use the last known data until the API is back online.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked how calculation workers are spawned, thus improving performace. Thanks to nznaza.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Mod Optimization, leading in drastically reduced runtime when paired with 'Add mods to reduce waste'.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved 'Reduce Waste' optimization. Smarter, better, faster, stronger.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changing the configuration during a running calculation now restarts the calculation process. Outdated results are a thing of the past!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The amount of workers is now variable and depends on the workload at hand. This should help the insane armor hoarders to reduce the calculation time.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Prepared the vendor API for upcoming Bungie API changes. Thanks to nznaza.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added 'Exotic Cipher' to the resource overview and removed legendary shards.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Modified the inventory update procedure to be more efficient. This may result in a few hiccups in the first stage - if you encounter any issues, please let me know!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Vendor data is now updated asynchronously. This means that the page will load faster, but the vendor data may be outdated for a few seconds.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The progress notifications are now color-coded and on the right. If there are multiple notifications, then they are stacked.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The display of the used mods is now color-coded to make it easier to distinguish between the different mod types in a single glance.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Locked locks are now red. Mainly because adisypher wouldn't stop asking.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor bugfixes and performance optimizations.",
         issues: [],
       },
     ],
