@@ -60,6 +60,7 @@ function checkSlots(
   var exoticId = config.selectedExotics[0] || 0;
   let requirements = constantModslotRequirement.slice();
   if (
+    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || helmet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
@@ -67,6 +68,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || gauntlet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
@@ -74,6 +76,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || chest.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
@@ -81,6 +84,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || leg.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
