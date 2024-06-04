@@ -82,4 +82,19 @@ export enum ModOrAbility {
 
   // These names are mapped to the fragment hash
   WhisperOfImpetus = 537774543,
+
+  // Prismatic
+  FacetOfAwakening = 1700,
+  FacetOfCourage,
+  FacetOfDawn,
+  FacetOfDefiance,
+  FacetOfDevotion,
+  FacetOfDominance,
+  FacetOfGrace,
+  FacetOfHonor,
+  FacetOfJustice,
+  FacetOfProtection,
+  FacetOfPurpose,
+  FacetOfRuin,
+  FacetOfSacrifice,
 }

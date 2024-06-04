@@ -23,6 +23,7 @@ import { ArmorStat, SpecialArmorStat } from "./enum/armor-stat";
 import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 
 export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
+  // region Stasis
   [ModOrAbility.WhisperOfDurance]: {
     id: ModOrAbility.WhisperOfDurance,
     name: "Whisper of Durance",
@@ -99,6 +100,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 537774543,
   },
+  // endregion Stasis
+
+  // region Void
   [ModOrAbility.EchoOfExpulsion]: {
     id: ModOrAbility.EchoOfExpulsion,
     name: "Echo of Expulsion",
@@ -225,6 +229,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 3854948621,
   },
+  // endregion Void
+
+  // region Solar
   [ModOrAbility.EmberOfBenelovence]: {
     id: ModOrAbility.EmberOfBenelovence,
     name: "Ember of Benevolence",
@@ -341,6 +348,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 4180586737,
   },
+  // endregion Solar
+
+  // region Arc
   [ModOrAbility.SparkOfBrilliance]: {
     id: ModOrAbility.SparkOfBrilliance,
     name: "Spark of Brilliance",
@@ -411,6 +421,9 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 1727069364,
   },
+  // endregion Arc
+
+  // region Strand
   [ModOrAbility.ThreadOfFury]: {
     id: ModOrAbility.ThreadOfFury,
     name: "Thread of Fury",
@@ -502,6 +515,150 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 4208512210,
   },
+  // endregion Strand
+
+  // region Prismatic
+  [ModOrAbility.FacetOfAwakening]: {
+    id: ModOrAbility.FacetOfAwakening,
+    name: "Facet of Awakening",
+    description:
+      "Rapid elemental final blows and Super final blows generate an elemental pickup of the matching damage type.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Resilience, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfCourage]: {
+    id: ModOrAbility.FacetOfCourage,
+    name: "Facet of Courage",
+    description:
+      "Your Light abilities deal increased damage to targets afflicted with Darkness debuffs.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Discipline, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfDawn]: {
+    id: ModOrAbility.FacetOfDawn,
+    name: "Facet of Dawn",
+    description:
+      "Powered melee hits against targets make you Radiant. Powered melee final blows make both you and nearby allies Radiant.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Strength, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfDefiance]: {
+    id: ModOrAbility.FacetOfDefiance,
+    name: "Facet of Defiance",
+    description:
+      "Finishers create a detonation that either jolts, scorches, slows, severs, or makes targets volatile based on the damage type of your equipped Super.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Recovery, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfDevotion]: {
+    id: ModOrAbility.FacetOfDevotion,
+    name: "Facet of Devotion",
+    description:
+      "Defeating targets afflicted with a Darkness debuff grants bonus Light Transcendence energy.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Strength, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfDominance]: {
+    id: ModOrAbility.FacetOfDominance,
+    name: "Facet of Dominance",
+    description: "Your Void grenades weaken targets, and your Arc grenades jolt targets.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Discipline, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfGrace]: {
+    id: ModOrAbility.FacetOfGrace,
+    name: "Facet of Grace",
+    description:
+      "Damaging targets with Kinetic weapons grants you bonus Transcendence energy. Defeating targets with your Super grants you and nearby allies bonus Transcendence energy.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Resilience, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfHonor]: {
+    id: ModOrAbility.FacetOfHonor,
+    name: "Facet of Honor",
+    description:
+      "Collecting an elemental pickup or destroying a Tangle grants Transcendence energy of the same type.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Strength, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfJustice]: {
+    id: ModOrAbility.FacetOfJustice,
+    name: "Facet of Justice",
+    description: "While Transcendent, your ability final blows explode.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Intellect, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfProtection]: {
+    id: ModOrAbility.FacetOfProtection,
+    name: "Facet of Protection",
+    description: "While surrounded by enemies, you are more resistant to incoming damage.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Strength, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfPurpose]: {
+    id: ModOrAbility.FacetOfPurpose,
+    name: "Facet of Purpose",
+    description:
+      "Picking up an Orb of Power grants either Amplified, Restoration, Frost Armor, Woven Mail, or Overshield, based on the damage type of your equipped super.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Recovery, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfRuin]: {
+    id: ModOrAbility.FacetOfRuin,
+    name: "Facet of Ruin",
+    description:
+      "Increases the size and damage of the burst when you shatter a Stasis crystal or frozen target and increases the area of effect of Solar ignitions.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Mobility, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  [ModOrAbility.FacetOfSacrifice]: {
+    id: ModOrAbility.FacetOfSacrifice,
+    name: "Facet of Sacrifice",
+    description:
+      "While you have a Light buff, ability final blows grant bonus Darkness Transcendence energy.",
+    type: ModifierType.Prismatic,
+    bonus: [{ stat: ArmorStat.Discipline, value: 10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: -1, //! TODO: replace this placeholder with the actual hash
+  },
+  // endregion Prismatic
 };
 
 // The number of maximum selectable fragments per class & subclass

@@ -22,7 +22,6 @@ export enum ModifierType {
   Solar,
   Arc,
   Strand,
-  RetrofitMods, // Artifact Retrofit mods
   Prismatic,
   AnySubclass,
 }
