@@ -34,6 +34,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.ADD,
+        text: "Added prismatic fragments.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
         text: "Added a progressbar that shows the progress of the calculation process.",
         issues: [],
       },
@@ -59,17 +64,17 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Reworked how calculation workers are spawned, thus improving performace. Thanks to nznaza.",
+        text: "Reworked how calculation workers are spawned, thus improving performance. Thanks to nznaza.",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Improved Mod Optimization, leading in drastically reduced runtime when paired with 'Add mods to reduce waste'.",
+        text: "Improved Mod optimisation, leading in drastically reduced runtime when paired with 'Add mods to reduce waste'.",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Improved 'Reduce Waste' optimization. Smarter, better, faster, stronger.",
+        text: "Improved 'Reduce Waste' optimisation. Smarter, better, faster, stronger.",
         issues: [],
       },
       {
@@ -119,7 +124,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Minor bugfixes and performance optimizations.",
+        text: "Minor bugfixes and performance optimisation.",
         issues: [],
       },
     ],
@@ -255,7 +260,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added the ability to select the optimization strategy. You can now choose between 'Reduce waste', 'Reduce used mods' and 'Reduce used modslots'. The default is 'Reduce waste'.",
+        text: "Added the ability to select the optimisation strategy. You can now choose between 'Reduce waste', 'Reduce used mods' and 'Reduce used modslots'. The default is 'Reduce waste'.",
         issues: [],
       },
       {
@@ -270,7 +275,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.REMOVE,
-        text: "Removed the 'Extra optimization steps' setting. It is now always enabled.",
+        text: "Removed the 'Extra optimisation steps' setting. It is now always enabled.",
         issues: [],
       },
     ],
@@ -286,7 +291,7 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Added a 'Perform further optimization' setting. This will give you better results, but it will take a bit longer.",
+        text: "Added a 'Perform further optimisation' setting. This will give you better results, but it will take a bit longer.",
         issues: [],
       },
       {
@@ -529,12 +534,12 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "The 'Performance Optimization' settings will now always re-enable after a reload to prevent your browser being stuck in a crash-loop. (This is for you, iOS Safari users)",
+        text: "The 'Performance Optimisation' settings will now always re-enable after a reload to prevent your browser being stuck in a crash-loop. (This is for you, iOS Safari users)",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Changed wording of the 'Performance Optimization' setting to prevent people from using it incorrectly.",
+        text: "Changed wording of the 'Performance Optimisation' setting to prevent people from using it incorrectly.",
         issues: [],
       },
     ],
