@@ -527,7 +527,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Resilience, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726505,
   },
   [ModOrAbility.FacetOfCourage]: {
     id: ModOrAbility.FacetOfCourage,
@@ -538,7 +538,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Discipline, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922124,
   },
   [ModOrAbility.FacetOfDawn]: {
     id: ModOrAbility.FacetOfDawn,
@@ -549,7 +549,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Strength, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922126,
   },
   [ModOrAbility.FacetOfDefiance]: {
     id: ModOrAbility.FacetOfDefiance,
@@ -560,7 +560,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Recovery, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 74393640,
   },
   [ModOrAbility.FacetOfDevotion]: {
     id: ModOrAbility.FacetOfDevotion,
@@ -571,7 +571,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922125,
   },
   [ModOrAbility.FacetOfDominance]: {
     id: ModOrAbility.FacetOfDominance,
@@ -581,7 +581,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Discipline, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726504,
   },
   [ModOrAbility.FacetOfGrace]: {
     id: ModOrAbility.FacetOfGrace,
@@ -592,7 +592,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Resilience, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922121,
   },
   [ModOrAbility.FacetOfHonor]: {
     id: ModOrAbility.FacetOfHonor,
@@ -603,7 +603,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726501,
   },
   [ModOrAbility.FacetOfJustice]: {
     id: ModOrAbility.FacetOfJustice,
@@ -613,7 +613,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Intellect, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922115,
   },
   [ModOrAbility.FacetOfProtection]: {
     id: ModOrAbility.FacetOfProtection,
@@ -623,7 +623,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Strength, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 2626922120,
   },
   [ModOrAbility.FacetOfPurpose]: {
     id: ModOrAbility.FacetOfPurpose,
@@ -634,7 +634,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Recovery, value: -10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726498,
   },
   [ModOrAbility.FacetOfRuin]: {
     id: ModOrAbility.FacetOfRuin,
@@ -645,7 +645,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Mobility, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726499,
   },
   [ModOrAbility.FacetOfSacrifice]: {
     id: ModOrAbility.FacetOfSacrifice,
@@ -656,7 +656,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     bonus: [{ stat: ArmorStat.Discipline, value: 10 }],
     cost: 1,
     requiredArmorAffinity: DestinyEnergyType.Any,
-    hash: -1, //! TODO: replace this placeholder with the actual hash
+    hash: 124726502,
   },
   // endregion Prismatic
 };
