@@ -137,6 +137,12 @@ export class VendorsService {
       return false;
     }
 
+    console.log("VENDOR C", {
+      nextVendorRefresh,
+      finite: isFinite(nextVendorRefresh.getTime()),
+      ok: nextVendorRefresh > new Date(),
+      now: new Date(),
+    });
     return nextVendorRefresh > new Date();
   }
 
@@ -180,8 +186,9 @@ export class VendorsService {
       );
 
       const allItems = vendorArmorItems.flatMap(({ items }) => items);
-      const nextRefreshDate = Math.min(
-        ...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)
+      const nextRefreshDate = Math.max(
+        Math.min(...vendorArmorItems.map(({ nextRefreshDate }) => nextRefreshDate)),
+        Date.now() + 1000 * 60 * 10
       );
       this.writeVendorCache(allItems, new Date(nextRefreshDate));
       return true;
