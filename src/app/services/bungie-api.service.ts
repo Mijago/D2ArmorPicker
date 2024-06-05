@@ -388,6 +388,7 @@ export class BungieApiService {
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
     localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name);
 
+    this.status.clearApiError();
     return r;
   }
 
