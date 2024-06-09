@@ -393,6 +393,10 @@ export class BungieApiService {
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
+    await this.db.inventoryArmor.clear();
+    await this.db.inventoryArmor.bulkAdd(newItems);
+    return;
+
     // get all items from the database. This saves us from having to do a lot of slow (!) queries.
     const dbItems = await this.db.inventoryArmor.toArray();
 
