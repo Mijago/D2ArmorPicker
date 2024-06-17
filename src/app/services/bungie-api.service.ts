@@ -393,10 +393,18 @@ export class BungieApiService {
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
-    await this.db.inventoryArmor.clear();
+    await this.db.inventoryArmor.filter((d) => d.source == InventoryArmorSource.Inventory).delete();
+    const dbItems = await this.db.inventoryArmor.toArray();
+    // get the IDs of all items with no source
+    const ids_noSource = dbItems
+      .filter((d) => d.source == null || d.source == undefined)
+      .map((d) => d.id);
+    await this.db.inventoryArmor.bulkDelete(ids_noSource);
+
     await this.db.inventoryArmor.bulkAdd(newItems);
     return;
-
+  }
+  /*
     // get all items from the database. This saves us from having to do a lot of slow (!) queries.
     const dbItems = await this.db.inventoryArmor.toArray();
 
@@ -451,6 +459,7 @@ export class BungieApiService {
     );
     if (entriesToAdd.length > 0) await this.db.inventoryArmor.bulkAdd(entriesToAdd);
   }
+    */
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
     // Guardian Games
