@@ -29,6 +29,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.1",
+    date: "June 17, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Add exotic class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the way minor mods are displayed. Minor mods are now 25% smaller.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Corrected the description of Facet of Grace.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added Whisper of Torment, as it now has a -10 in Discipline.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.0",
     date: "June 4, 2024",
     entries: [

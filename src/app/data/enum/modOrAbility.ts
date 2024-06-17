@@ -25,6 +25,7 @@ export enum ModOrAbility {
   WhisperOfBonds = 1101,
   WhisperOfHunger,
   WhisperOfFractures,
+  WhisperOfTorment,
 
   // VOID
   EchoOfExpulsion = 1200,

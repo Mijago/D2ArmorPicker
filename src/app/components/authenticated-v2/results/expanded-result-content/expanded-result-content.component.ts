@@ -57,6 +57,7 @@ import { MembershipService } from "src/app/services/membership.service";
   styleUrls: ["./expanded-result-content.component.scss"],
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
+  public showGenericClassItemRow = false;
   public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
@@ -128,6 +129,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // set this.showGenericClassItemRow to true if the number of non-empty elements in this.element.items is <= 4
+    this.showGenericClassItemRow =
+      (this.element?.items.filter((i) => i.length > 0).length || 0) <= 4;
+
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.config_characterClass = c.characterClass as unknown as DestinyClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
@@ -329,10 +334,12 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       name: "D2ArmorPicker Loadout",
       classType: c.characterClass as number,
       parameters: data,
-      equipped: (this.element?.items || []).map(([i]) => ({
-        id: i.itemInstanceId,
-        hash: i.hash,
-      })),
+      equipped: (this.element?.items || [])
+        .filter((i) => i.length > 0)
+        .map(([i]) => ({
+          id: i.itemInstanceId,
+          hash: i.hash,
+        })),
       unequipped: [],
       clearSpace: false,
     };
