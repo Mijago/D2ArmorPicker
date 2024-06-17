@@ -598,7 +598,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.FacetOfGrace,
     name: "Facet of Grace",
     description:
-      "Damaging targets with Kinetic weapons grants you bonus Transcendence energy. Defeating targets with your Super grants you and nearby allies bonus Transcendence energy.",
+      "Defeating targets with Kinetic weapons grants you bonus Transcendence energy. Defeating targets with your Super grants you and nearby allies bonus Transcendence energy.",
     type: ModifierType.Prismatic,
     bonus: [{ stat: ArmorStat.Resilience, value: -10 }],
     cost: 1,
