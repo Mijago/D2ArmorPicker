@@ -313,8 +313,8 @@ export class InventoryService {
         .filter(
           (item) =>
             this.selectedExotics.length != 1 ||
-            this.selectedExotics[0].slot != item.slot ||
-            this.selectedExotics[0].hash == item.hash
+            (item.isExotic && this.selectedExotics[0].hash == item.hash) ||
+            (!item.isExotic && this.selectedExotics[0].slot != item.slot)
         )
 
         // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
@@ -491,7 +491,7 @@ export class InventoryService {
                     });
                     return p;
                   },
-                  [[], [], [], []]
+                  [[], [], [], [], []]
                 ),
                 classItem: armorSet.classItemPerk,
                 usesCollectionRoll: items.some(
