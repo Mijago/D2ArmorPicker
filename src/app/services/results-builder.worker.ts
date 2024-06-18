@@ -567,9 +567,10 @@ addEventListener("message", async ({ data }) => {
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None);
 
         // add the exotic class item if we have one and we do not have an exotic armor piece in this selection
-        //if (!hasOneExotic && exoticClassItem) {
-        //result.armor.push(exoticClassItem.id);
-        //}
+
+        if (!hasOneExotic && exoticClassItem && exoticClassItemIsEnforced) {
+          result.armor.push(exoticClassItem.id);
+        }
 
         results.push(result);
         resultsLength++;
