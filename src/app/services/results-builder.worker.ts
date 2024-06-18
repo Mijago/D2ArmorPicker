@@ -470,7 +470,8 @@ addEventListener("message", async ({ data }) => {
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
   const exoticClassItem: IPermutatorArmor | null =
     classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
-
+  const exoticClassItemIsEnforced =
+    !!exoticClassItem && config.selectedExotics.indexOf(exoticClassItem.hash) > -1;
   console.log("hasArtificeClassItem", hasArtificeClassItem);
 
   let results: IPermutatorArmorSet[] = [];
@@ -543,6 +544,7 @@ addEventListener("message", async ({ data }) => {
         constantAvailableModslots,
         doNotOutput,
         tmpHasArtificeClassItem && canUseArtificeClassItem,
+        exoticClassItemIsEnforced,
         fragmentCombination,
         fragmentCombinationsSet
       );
@@ -565,9 +567,9 @@ addEventListener("message", async ({ data }) => {
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None);
 
         // add the exotic class item if we have one and we do not have an exotic armor piece in this selection
-        if (!hasOneExotic && exoticClassItem) {
-          result.armor.push(exoticClassItem.id);
-        }
+        //if (!hasOneExotic && exoticClassItem) {
+        //result.armor.push(exoticClassItem.id);
+        //}
 
         results.push(result);
         resultsLength++;
@@ -633,11 +635,19 @@ export function handlePermutation(
   availableModCost: number[],
   doNotOutput = false,
   hasArtificeClassItem = false,
+  hasExoticClassItem = false,
   currentFragmentCombination: IFragmentCombination | null = null,
   allFragmentCombinations: IFragmentCombination[] = []
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
-  var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
+  var totalStatBonus = 0;
+  if (hasExoticClassItem && config.assumeEveryExoticIsArtifice) totalStatBonus += 2;
+  else if (
+    !hasExoticClassItem &&
+    (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemMasterworked)
+  )
+    totalStatBonus += 2;
+
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
     if (
