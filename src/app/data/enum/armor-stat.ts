@@ -124,6 +124,9 @@ export enum ArmorPerkOrSlot {
   // A special case just for guardian games class items.
   GuardianGamesClassItem,
   PerkAscendantProtector,
+
+  PerkEchoesOfGlory,
+  SlotSalvationsEdge,
   COUNT,
 }
 
@@ -148,6 +151,8 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
   [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
+  [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
+  [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -192,6 +197,10 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
   [ArmorPerkOrSlot.GuardianGamesClassItem]:
     "https://www.bungie.net/common/destiny2_content/icons/DestinyEventCardDefinition_ce6c2cf855dce694bcc89803b6bc44b7.png",
+  [ArmorPerkOrSlot.SlotSalvationsEdge]:
+    "https://www.bungie.net/common/destiny2_content/icons/f4a1f99b49ecf412726d71ea9ee15540.png",
+  [ArmorPerkOrSlot.PerkEchoesOfGlory]:
+    "https://www.bungie.net/common/destiny2_content/icons/c67322c917e16f3b8a4cb962e3f11166.png",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -222,6 +231,8 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.PerkSeraphSensorArray]: 3525583702,
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: 400659041,
   [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
+  [ArmorPerkOrSlot.SlotSalvationsEdge]: 1382005115,
+  [ArmorPerkOrSlot.PerkEchoesOfGlory]: 1760565003, // or 2352831367 ?
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -245,6 +256,8 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
   [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
+  [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
+  [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
