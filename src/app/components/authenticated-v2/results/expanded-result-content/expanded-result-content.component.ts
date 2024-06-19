@@ -50,6 +50,7 @@ import {
   LoadoutParameters,
 } from "@destinyitemmanager/dim-api-types";
 import { MembershipService } from "src/app/services/membership.service";
+import { ArmorSlot } from "src/app/data/enum/armor-slot";
 
 @Component({
   selector: "app-expanded-result-content",
@@ -84,17 +85,29 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   ) {}
 
   public buildItemIdString(element: ResultDefinition | null) {
-    let result = element?.items
+    if (!element) return "";
+    let result = element.items
       .flat()
+      .filter((d) => d.slot != ArmorSlot.ArmorSlotClass)
       .map((d) => `id:'${d.itemInstanceId}'`)
       .join(" or ");
 
     let classItemFilters = ["is:classitem"];
+    // Exotic class item
+    let classItems = element.items
+      .flat()
+      .filter((d) => d.slot == ArmorSlot.ArmorSlotClass)
+      .map((d) => `exactname:'${d.name}'`)
+      .join(" or ");
+
+    if (classItems.length > 0) {
+      classItemFilters = [classItems];
+    }
     if (
-      element?.classItem.perk != ArmorPerkOrSlot.None &&
-      element?.classItem.perk != ArmorPerkOrSlot.COUNT
+      element.classItem.perk != ArmorPerkOrSlot.None &&
+      element.classItem.perk != ArmorPerkOrSlot.COUNT
     ) {
-      classItemFilters.push(ArmorPerkOrSlotDIMText[element?.classItem.perk || 0]);
+      classItemFilters.push(ArmorPerkOrSlotDIMText[element.classItem.perk || 0]);
     }
 
     if (classItemFilters.length > 1) result += ` or (${classItemFilters.join(" ")})`;
