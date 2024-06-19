@@ -487,7 +487,7 @@ export function handlePermutation(
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
   var totalStatBonus = 0;
-  if (hasExoticClassItem && config.assumeEveryExoticIsArtifice) totalStatBonus += 2;
+  if (hasExoticClassItem && config.assumeExoticsMasterworked) totalStatBonus += 2;
   else if (
     !hasExoticClassItem &&
     (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemMasterworked)
