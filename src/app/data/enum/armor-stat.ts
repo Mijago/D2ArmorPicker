@@ -196,7 +196,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
   [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
   [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
-  [ArmorPerkOrSlot.SlotSalvationsEdge]: 1382005115,
+  [ArmorPerkOrSlot.SlotSalvationsEdge]: 4059283783,
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
 };
 
