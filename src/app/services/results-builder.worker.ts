@@ -762,26 +762,33 @@ export function handlePermutation(
   ];
 
   // find every combo of three stats which sum is less than 65; no duplicates
-  let combos3x100 = [];
-  let combos4x100 = [];
+  let combos3x100: [number[], IFragmentCombination][] = [];
+  let combos4x100: [number[], IFragmentCombination][] = [];
   for (let i = 0; i < 4; i++) {
     for (let j = i + 1; j < 5; j++) {
-      for (let k = j + 1; k < 6; k++) {
-        let dx = distances.slice();
-        dx[i] = distancesTo100[i];
-        dx[j] = distancesTo100[j];
-        dx[k] = distancesTo100[k];
-        let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
-        if (distanceSum <= 65) {
-          combos3x100.push([i, j, k]);
+      inner_loop: for (let k = j + 1; k < 6; k++) {
+        for (let fragmentCombo of allFragmentCombinations) {
+          let dx = distances.slice();
+          dx[i] = distancesTo100[i];
+          dx[j] = distancesTo100[j];
+          dx[k] = distancesTo100[k];
+          for (let p = 0; p < 6; p++) {
+            dx[p] = Math.max(0, dx[p] - fragmentCombo.stats[p]);
+          }
+          let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
+          if (distanceSum <= 65) {
+            combos3x100.push([[i, j, k], fragmentCombo]);
 
-          for (let l = k + 1; l < 6; l++) {
-            let dy = dx.slice();
-            dy[l] = distancesTo100[l];
-            let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
-            if (distanceSum <= 65) {
-              combos4x100.push([i, j, k, l]);
+            for (let l = k + 1; l < 6; l++) {
+              let dy = dx.slice();
+              dy[l] = distancesTo100[l];
+              dy[l] = Math.max(0, dy[l] - fragmentCombo.stats[l]);
+              let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
+              if (distanceSum <= 65) {
+                combos4x100.push([[i, j, k, l], fragmentCombo]);
+              }
             }
+            break inner_loop;
           }
         }
       }
@@ -789,10 +796,13 @@ export function handlePermutation(
   }
   if (combos3x100.length > 0) {
     // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos3x100) {
+    for (let entry of combos3x100) {
+      const combo = entry[0];
+      const fragmentCombo = entry[1];
+
       const newDistances = distances.slice();
       for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
+        newDistances[i] = Math.max(0, distancesTo100[i] - fragmentCombo.stats[i]);
       }
       const mods = get_mods_precalc(
         config,
@@ -807,10 +817,13 @@ export function handlePermutation(
       }
     }
     // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos4x100) {
+    for (let entry of combos4x100) {
+      const combo = entry[0];
+      const fragmentCombo = entry[1];
+
       const newDistances = distances.slice();
       for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
+        newDistances[i] = Math.max(0, distancesTo100[i] - fragmentCombo.stats[i]);
       }
       const mods = get_mods_precalc(
         config,

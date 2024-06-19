@@ -73,7 +73,7 @@
       >Clear</button
     >
   </span>
-  <span class="tierSelectButton" *ngIf="!config_automaticallySelectFragments">
+  <span class="tierSelectButton">
     <button
       mat-stroked-button
       class="selectStatDistributionButton"
@@ -120,7 +120,7 @@
       </button>
     </mat-menu>
   </span>
-  <span class="tierSelectButton" *ngIf="!config_automaticallySelectFragments">
+  <span class="tierSelectButton">
     <button
       mat-stroked-button
       [matMenuTriggerFor]="menu2"
@@ -167,11 +167,6 @@
     </mat-menu>
   </span>
 </span>
-<div class="tierSelectButton" *ngIf="config_automaticallySelectFragments">
-  3x T10 and 4x T10 Buttons are disabled, as they are not <br />implemented for the automatic
-  fragment selection YET.
-</div>
-
 <br />
 <br />
 <!-- modOptimizationStrategy -->
