@@ -3,9 +3,7 @@
   "projectOwner": "Mijago",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": [
-    "README.md"
-  ],
+  "files": ["README.md"],
   "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
@@ -32,57 +30,45 @@
       "name": "TheYeshir",
       "avatar_url": "https://avatars.githubusercontent.com/u/88265590?v=4",
       "profile": "https://github.com/TheYeshir13",
-      "contributions": [
-        "projectManagement",
-        "ideas",
-        "review",
-        "userTesting",
-        "question"
-      ]
+      "contributions": ["projectManagement", "ideas", "review", "userTesting", "question"]
     },
     {
       "login": "TheMojoDojo",
       "name": "Mojo",
       "avatar_url": "https://avatars.githubusercontent.com/u/99927863?v=4",
       "profile": "https://github.com/TheMojoDojo",
-      "contributions": [
-        "projectManagement",
-        "ideas",
-        "userTesting",
-        "question",
-        "code"
-      ]
+      "contributions": ["projectManagement", "ideas", "userTesting", "question", "code"]
     },
     {
       "login": "bhollis",
       "name": "Ben Hollis",
       "avatar_url": "https://avatars.githubusercontent.com/u/313208?v=4",
       "profile": "http://benhollis.net/",
-      "contributions": [
-        "code"
-      ]
+      "contributions": ["code"]
     },
     {
       "login": "nznaza",
       "name": "nznaza",
       "avatar_url": "https://avatars.githubusercontent.com/u/5291065?v=4",
       "profile": "https://github.com/nznaza",
-      "contributions": [
-        "maintenance",
-        "code"
-      ]
+      "contributions": ["maintenance", "code"]
     },
     {
       "login": "ciaran",
       "name": "Ciarán Walsh",
       "avatar_url": "https://avatars.githubusercontent.com/u/3736?v=4",
       "profile": "http://ciaranwal.sh/",
-      "contributions": [
-        "code",
-        "maintenance"
-      ]
+      "contributions": ["code", "maintenance"]
+    },
+    {
+      "login": "SlaggyWolfie",
+      "name": "Slavi Stoev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2999718?v=4",
+      "profile": "https://www.slasto.eu/",
+      "contributions": ["data"]
     }
   ],
   "contributorsPerLine": 7,
   "linkToUsage": true
 }
+

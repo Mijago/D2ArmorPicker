@@ -38,6 +38,11 @@ export const CHANGELOG_DATA = [
         issues: [],
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Added Salvation's Edge Raid modslot and the Echoes of Glory perk.",
+        issues: [],
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
         text: "Changed the way minor mods are displayed. Minor mods are now 25% smaller.",
         issues: [],
@@ -50,6 +55,11 @@ export const CHANGELOG_DATA = [
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Added Whisper of Torment, as it now has a -10 in Discipline.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed old armor modslots (and perks) that no longer exist or function.",
         issues: [],
       },
     ],
