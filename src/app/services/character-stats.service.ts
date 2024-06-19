@@ -266,6 +266,8 @@ function getClassAndElementForAbility(ability: DestinyInventoryItemDefinition): 
     element = ModifierType.Stasis;
   } else if (elementName === "strand") {
     element = ModifierType.Strand;
+  } else if (elementName === "prism") {
+    element = ModifierType.Prismatic;
   }
 
   return { characterClass, element };

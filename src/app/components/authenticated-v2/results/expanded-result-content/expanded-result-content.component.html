@@ -160,7 +160,7 @@
       </tr>
     </ng-container>
     <!-- Class Item -->
-    <tr *ngIf="config_assumeClassItemMasterworked">
+    <tr *ngIf="showGenericClassItemRow && config_assumeClassItemMasterworked">
       <td #tooltip="matTooltip" class="item-name-mw" matTooltip="Class item should be masterworked."
         >Any Class Item</td
       >
@@ -186,7 +186,7 @@
         </button>
       </td>
     </tr>
-    <tr *ngIf="!config_assumeClassItemMasterworked">
+    <tr *ngIf="showGenericClassItemRow && !config_assumeClassItemMasterworked">
       <td>Any Class Item</td>
       <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>

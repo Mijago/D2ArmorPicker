@@ -53,6 +53,7 @@ function checkSlots(
   var exoticId = config.selectedExotics[0] || 0;
   let requirements = constantModslotRequirement.slice();
   if (
+    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || helmet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
@@ -60,6 +61,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || gauntlet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
@@ -67,6 +69,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || chest.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
@@ -74,6 +77,7 @@ function checkSlots(
   )
     return { valid: false };
   if (
+    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
     (exoticId <= 0 || leg.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
@@ -288,9 +292,22 @@ addEventListener("message", async ({ data }) => {
   }
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
-  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
-  if (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemIsArtifice)
+  let amountExoticClassItems = classItems.filter((d) => d.isExotic).length;
+  let amountLegendaryClassItems = classItems.length - amountExoticClassItems;
+
+  let availableClassItemPerkTypes = new Set(
+    classItems.filter((d) => !d.isExotic).map((d) => d.perk)
+  );
+  let availableClassItemPerkTypesExotic = new Set(
+    classItems.filter((d) => d.isExotic).map((d) => d.perk)
+  );
+  if (
+    amountLegendaryClassItems > 0 &&
+    (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemIsArtifice)
+  )
     availableClassItemPerkTypes.add(ArmorPerkOrSlot.SlotArtifice);
+  if (amountExoticClassItems > 0 && config.assumeEveryExoticIsArtifice)
+    availableClassItemPerkTypesExotic.add(ArmorPerkOrSlot.SlotArtifice);
 
   console.debug(
     "items",
@@ -314,8 +331,14 @@ addEventListener("message", async ({ data }) => {
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
   const constHasOneExoticLength = selectedExotics.length <= 1;
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
+  const hasArtificeClassItemExotic = availableClassItemPerkTypesExotic.has(
+    ArmorPerkOrSlot.SlotArtifice
+  );
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
-
+  const exoticClassItem: IPermutatorArmor | null =
+    classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
+  const exoticClassItemIsEnforced =
+    !!exoticClassItem && config.selectedExotics.indexOf(exoticClassItem.hash) > -1;
   console.log("hasArtificeClassItem", hasArtificeClassItem);
 
   let results: IPermutatorArmorSet[] = [];
@@ -365,6 +388,10 @@ addEventListener("message", async ({ data }) => {
     const canUseArtificeClassItem =
       !slotCheckResult.requiredClassItemType ||
       slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
+
+    const hasOneExotic = helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic;
+    const tmpHasArtificeClassItem =
+      hasArtificeClassItem || (!hasOneExotic && hasArtificeClassItemExotic);
     const result = handlePermutation(
       runtime,
       config,
@@ -375,7 +402,8 @@ addEventListener("message", async ({ data }) => {
       constantBonus,
       constantAvailableModslots,
       doNotOutput,
-      hasArtificeClassItem && canUseArtificeClassItem
+      tmpHasArtificeClassItem && canUseArtificeClassItem,
+      exoticClassItemIsEnforced
     );
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
@@ -385,6 +413,12 @@ addEventListener("message", async ({ data }) => {
         result.classItemPerk =
           slotCheckResult.requiredClassItemType ||
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None);
+
+        // add the exotic class item if we have one and we do not have an exotic armor piece in this selection
+        if (!hasOneExotic && exoticClassItem && exoticClassItemIsEnforced) {
+          result.armor.push(exoticClassItem.id);
+        }
+
         results.push(result);
         resultsLength++;
         listedResults++;
@@ -448,10 +482,18 @@ export function handlePermutation(
   constantBonus: number[],
   availableModCost: number[],
   doNotOutput = false,
-  hasArtificeClassItem = false
+  hasArtificeClassItem = false,
+  hasExoticClassItem = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
-  var totalStatBonus = config.assumeClassItemMasterworked ? 2 : 0;
+  var totalStatBonus = 0;
+  if (hasExoticClassItem && config.assumeEveryExoticIsArtifice) totalStatBonus += 2;
+  else if (
+    !hasExoticClassItem &&
+    (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemMasterworked)
+  )
+    totalStatBonus += 2;
+
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
     if (

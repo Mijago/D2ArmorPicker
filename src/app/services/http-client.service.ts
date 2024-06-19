@@ -65,9 +65,8 @@ export class HttpClientService {
         }
         if (err.ErrorStatus != "Internal Server Error") {
           console.info("API-Error");
-          this.status.setApiError();
+          //this.status.setApiError();
         }
-        // TODO: go to login page
       });
   }
 }

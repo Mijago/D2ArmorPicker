@@ -69,8 +69,6 @@ export class MembershipService {
     if (!destinyMembership) {
       this.status.setApiError();
       return [];
-    } else {
-      this.status.clearApiError();
     }
 
     const profile = await getProfile((d) => this.http.$http(d), {
@@ -78,6 +76,8 @@ export class MembershipService {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
     });
+
+    if (!!profile?.Response.characters.data) this.status.clearApiError();
 
     return (
       Object.values(profile?.Response.characters.data || {}).map((d) => {

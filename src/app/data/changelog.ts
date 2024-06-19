@@ -29,6 +29,42 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.1",
+    date: "June 17, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Add exotic class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added Salvation's Edge Raid modslot and the Echoes of Glory perk.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the way minor mods are displayed. Minor mods are now 25% smaller.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Corrected the description of Facet of Grace.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added Whisper of Torment, as it now has a -10 in Discipline.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed old armor modslots (and perks) that no longer exist or function.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.0",
     date: "June 4, 2024",
     entries: [

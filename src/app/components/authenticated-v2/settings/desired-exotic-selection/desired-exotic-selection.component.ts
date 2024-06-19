@@ -93,6 +93,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotGauntlet)),
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotChest)),
       uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotLegs)),
+      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotClass)),
     ];
   }
 

@@ -341,6 +341,13 @@ export class BungieApiService {
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
           if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
+        } else if (r.isExotic) {
+          // 720825311 is "UNLOCKED exotic artifice slot"
+          // 1656746282 is "LOCKED exotic artifice slot"
+          const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
+          if (hasPerk) {
+            r.perk = ArmorPerkOrSlot.SlotArtifice;
+          }
         }
 
         return r as IInventoryArmor;
@@ -381,10 +388,23 @@ export class BungieApiService {
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
     localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name);
 
+    this.status.clearApiError();
     return r;
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
+    await this.db.inventoryArmor.filter((d) => d.source == InventoryArmorSource.Inventory).delete();
+    const dbItems = await this.db.inventoryArmor.toArray();
+    // get the IDs of all items with no source
+    const ids_noSource = dbItems
+      .filter((d) => d.source == null || d.source == undefined)
+      .map((d) => d.id);
+    await this.db.inventoryArmor.bulkDelete(ids_noSource);
+
+    await this.db.inventoryArmor.bulkAdd(newItems);
+    return;
+  }
+  /*
     // get all items from the database. This saves us from having to do a lot of slow (!) queries.
     const dbItems = await this.db.inventoryArmor.toArray();
 
@@ -439,6 +459,7 @@ export class BungieApiService {
     );
     if (entriesToAdd.length > 0) await this.db.inventoryArmor.bulkAdd(entriesToAdd);
   }
+    */
 
   private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
     // Guardian Games

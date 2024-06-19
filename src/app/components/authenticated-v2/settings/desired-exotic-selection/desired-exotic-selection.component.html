@@ -19,7 +19,7 @@
     class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
     src="https://www.bungie.net/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg"
-    matTooltip="Force to use ANY exotic"
+    matTooltip="Force to use ANY exotic (that is NOT a class item)"
     #tooltip="matTooltip"
     (click)="selectExotic(-2, $event)" />
   <img

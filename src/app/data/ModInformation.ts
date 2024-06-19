@@ -100,6 +100,17 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     requiredArmorAffinity: DestinyEnergyType.Any,
     hash: 537774543,
   },
+  [ModOrAbility.WhisperOfTorment]: {
+    id: ModOrAbility.WhisperOfTorment,
+    name: "Whisper of Torment",
+    description:
+      "You gain grenade energy each time you take damage from targets. Having Frost Armor increases the amount of energy gained.",
+    type: ModifierType.Stasis,
+    bonus: [{ stat: ArmorStat.Discipline, value: -10 }],
+    cost: 1,
+    requiredArmorAffinity: DestinyEnergyType.Any,
+    hash: 537774541,
+  },
   // endregion Stasis
 
   // region Void
@@ -587,7 +598,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.FacetOfGrace,
     name: "Facet of Grace",
     description:
-      "Damaging targets with Kinetic weapons grants you bonus Transcendence energy. Defeating targets with your Super grants you and nearby allies bonus Transcendence energy.",
+      "Defeating targets with Kinetic weapons grants you bonus Transcendence energy. Defeating targets with your Super grants you and nearby allies bonus Transcendence energy.",
     type: ModifierType.Prismatic,
     bonus: [{ stat: ArmorStat.Resilience, value: -10 }],
     cost: 1,

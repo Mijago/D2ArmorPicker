@@ -112,8 +112,10 @@
                   "input": "src/theme-canary.scss",
                   "inject": true,
                   "bundleName": "theme-dark"
-                }
-            ]
+                }],
+              
+                "outputHashing": "all",
+                "vendorChunk": true
             },
             "development": {
               "buildOptimizer": false,
