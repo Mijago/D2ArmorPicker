@@ -490,7 +490,7 @@ export function handlePermutation(
   if (hasExoticClassItem && config.assumeExoticsMasterworked) totalStatBonus += 2;
   else if (
     !hasExoticClassItem &&
-    (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemMasterworked)
+    (config.assumeLegendariesMasterworked || config.assumeClassItemMasterworked)
   )
     totalStatBonus += 2;
 
