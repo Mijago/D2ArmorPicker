@@ -104,8 +104,7 @@ export enum SpecialArmorStat {
 
 export enum ArmorPerkOrSlot {
   None,
-  PerkExhumedExcess,
-  SlotCrotasEnd,
+  SlotCrotasEnd = 2,
   SlotRootOfNightmares,
   SlotKingsFall,
   SlotVowOfTheDisciple,
@@ -116,23 +115,16 @@ export enum ArmorPerkOrSlot {
   SlotArtifice,
   PerkIronBanner,
   SlotNightmare,
-  SonarAmplifier,
-  PerkQueensFavor,
-  PerkSeraphSensorArray,
-  PerkPlunderersTrappings,
-  PerkUniformedOfficer,
   // A special case just for guardian games class items.
-  GuardianGamesClassItem,
-  PerkAscendantProtector,
+  GuardianGamesClassItem = 18,
 
-  PerkEchoesOfGlory,
+  PerkEchoesOfGlory = 20,
   SlotSalvationsEdge,
   COUNT,
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
-  [ArmorPerkOrSlot.PerkAscendantProtector]: "Ascendant Protector",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
@@ -144,13 +136,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotArtifice]: "Artifice Modslot",
   [ArmorPerkOrSlot.PerkIronBanner]: "Iron Banner Perk",
   [ArmorPerkOrSlot.SlotNightmare]: "Nightmare Hunt Modslot",
-  [ArmorPerkOrSlot.PerkExhumedExcess]: "Exhumed Excess",
-  [ArmorPerkOrSlot.SonarAmplifier]: "Sonar Amplifier",
-  [ArmorPerkOrSlot.PerkQueensFavor]: "Queen's Favor",
-  [ArmorPerkOrSlot.PerkSeraphSensorArray]: "Seraph Sensor Array",
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]: "Plunderer's Trappings",
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: "Uniformed Officer",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.COUNT]: "",
@@ -159,8 +145,6 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
-  [ArmorPerkOrSlot.PerkAscendantProtector]:
-    "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
   [ArmorPerkOrSlot.SlotCrotasEnd]:
     "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
   [ArmorPerkOrSlot.SlotRootOfNightmares]:
@@ -183,18 +167,6 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://bungie.net/common/destiny2_content/icons/DestinyActivityModeDefinition_fe57052d7cf971f7502daa75a2ca2437.png",
   [ArmorPerkOrSlot.SlotNightmare]:
     "https://www.bungie.net/common/destiny2_content/icons/53d6e3505cd03d4026b3dbbd9ccc19b6.jpg",
-  [ArmorPerkOrSlot.PerkExhumedExcess]:
-    "https://www.bungie.net/common/destiny2_content/icons/8b10e265736c3ca1778c3f54fdb62bad.png",
-  [ArmorPerkOrSlot.SonarAmplifier]:
-    "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
-  [ArmorPerkOrSlot.PerkQueensFavor]:
-    "https://www.bungie.net/common/destiny2_content/icons/8d844c97fa13f4cb649358404d011be7.png",
-  [ArmorPerkOrSlot.PerkSeraphSensorArray]:
-    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]:
-    "https://www.bungie.net/common/destiny2_content/icons/7394ce8bcde3a665584b988cc133d62c.png",
-  [ArmorPerkOrSlot.PerkUniformedOfficer]:
-    "https://www.bungie.net/common/destiny2_content/icons/b4f6064c3757f9a6725b80f88ee824c0.png",
   [ArmorPerkOrSlot.GuardianGamesClassItem]:
     "https://www.bungie.net/common/destiny2_content/icons/DestinyEventCardDefinition_ce6c2cf855dce694bcc89803b6bc44b7.png",
   [ArmorPerkOrSlot.SlotSalvationsEdge]:
@@ -213,7 +185,6 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   >,
   number
 > = {
-  [ArmorPerkOrSlot.PerkAscendantProtector]: 1493063130,
   [ArmorPerkOrSlot.SlotCrotasEnd]: 717667840,
   [ArmorPerkOrSlot.SlotRootOfNightmares]: 4144354978,
   [ArmorPerkOrSlot.SlotKingsFall]: 1728096240,
@@ -225,19 +196,12 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotArtifice]: 3727270518,
   [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
   [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
-  [ArmorPerkOrSlot.PerkExhumedExcess]: 717722696,
-  [ArmorPerkOrSlot.SonarAmplifier]: 2779380852,
-  [ArmorPerkOrSlot.PerkQueensFavor]: 1101259514,
-  [ArmorPerkOrSlot.PerkSeraphSensorArray]: 3525583702,
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 400659041,
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: 2392155347,
   [ArmorPerkOrSlot.SlotSalvationsEdge]: 1382005115,
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 1760565003, // or 2352831367 ?
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "",
-  [ArmorPerkOrSlot.PerkAscendantProtector]: 'exactperk:"ascendant protector"',
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
@@ -249,12 +213,6 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotArtifice]: 'perkname:"artifice armor"',
   [ArmorPerkOrSlot.PerkIronBanner]: 'perkname:"iron lord\'s pride"',
   [ArmorPerkOrSlot.SlotNightmare]: "modslot:nightmare",
-  [ArmorPerkOrSlot.PerkExhumedExcess]: 'perkname:"exhumed excess"',
-  [ArmorPerkOrSlot.SonarAmplifier]: 'perkname:"sonar amplifier"',
-  [ArmorPerkOrSlot.PerkQueensFavor]: 'perkname:"queen\'s favor"',
-  [ArmorPerkOrSlot.PerkSeraphSensorArray]: 'perkname:"seraph sensor array"',
-  [ArmorPerkOrSlot.PerkPlunderersTrappings]: 'perkname:"plunderer\'s trappings"',
-  [ArmorPerkOrSlot.PerkUniformedOfficer]: 'perkname:"Uniformed Officer"',
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
