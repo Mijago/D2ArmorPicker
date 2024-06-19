@@ -2,7 +2,7 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
@@ -64,6 +64,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="http://benhollis.net/"><img src="https://avatars.githubusercontent.com/u/313208?v=4?s=100" width="100px;" alt="Ben Hollis"/><br /><sub><b>Ben Hollis</b></sub></a><br /><a href="https://github.com/Mijago/D2ArmorPicker/commits?author=bhollis" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nznaza"><img src="https://avatars.githubusercontent.com/u/5291065?v=4?s=100" width="100px;" alt="nznaza"/><br /><sub><b>nznaza</b></sub></a><br /><a href="#maintenance-nznaza" title="Maintenance">🚧</a> <a href="https://github.com/Mijago/D2ArmorPicker/commits?author=nznaza" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://ciaranwal.sh/"><img src="https://avatars.githubusercontent.com/u/3736?v=4?s=100" width="100px;" alt="Ciarán Walsh"/><br /><sub><b>Ciarán Walsh</b></sub></a><br /><a href="https://github.com/Mijago/D2ArmorPicker/commits?author=ciaran" title="Code">💻</a> <a href="#maintenance-ciaran" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.slasto.eu/"><img src="https://avatars.githubusercontent.com/u/2999718?v=4?s=100" width="100px;" alt="Slavi Stoev"/><br /><sub><b>Slavi Stoev</b></sub></a><br /><a href="#data-SlaggyWolfie" title="Data">🔣</a></td>
     </tr>
   </tbody>
   <tfoot>
