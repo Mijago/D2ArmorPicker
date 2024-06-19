@@ -197,7 +197,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.PerkIronBanner]: 2472875850,
   [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
   [ArmorPerkOrSlot.SlotSalvationsEdge]: 1382005115,
-  [ArmorPerkOrSlot.PerkEchoesOfGlory]: 1760565003, // or 2352831367 ?
+  [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
