@@ -44,6 +44,16 @@
       #tooltip="matTooltip">
       report_problem
     </mat-icon>
+    <mat-icon
+      inline
+      aria-hidden="false"
+      aria-label="Help"
+      *ngIf="f.featureInDevelopment"
+      class="indevelopment-icon"
+      matTooltip="This setting is currently in development and may not work as expected. Report bugs if possible."
+      #tooltip="matTooltip">
+      developer_board
+    </mat-icon>
   </div>
   <div class="category-spacer"></div>
 </div>

@@ -247,57 +247,75 @@
           src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
       </td>
     </tr>
-    <!-- Config Mods -->
-    <tr class="result-config">
-      <td>Configuration</td>
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Mobility] !== 0"
-          [class]="this.configValues[ArmorStat.Mobility] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Mobility] > 0">+</span
-          >{{ this.configValues[ArmorStat.Mobility] }}
-        </span></td
-      >
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Resilience] !== 0"
-          [class]="this.configValues[ArmorStat.Resilience] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Resilience] > 0">+</span
-          >{{ this.configValues[ArmorStat.Resilience] }}
-        </span></td
-      >
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Recovery] !== 0"
-          [class]="this.configValues[ArmorStat.Recovery] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Recovery] > 0">+</span
-          >{{ this.configValues[ArmorStat.Recovery] }}
-        </span></td
-      >
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Discipline] !== 0"
-          [class]="this.configValues[ArmorStat.Discipline] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Discipline] > 0">+</span
-          >{{ this.configValues[ArmorStat.Discipline] }}
-        </span></td
-      >
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Intellect] !== 0"
-          [class]="this.configValues[ArmorStat.Intellect] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Intellect] > 0">+</span
-          >{{ this.configValues[ArmorStat.Intellect] }}
-        </span></td
-      >
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.Strength] !== 0"
-          [class]="this.configValues[ArmorStat.Strength] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Strength] > 0">+</span
-          >{{ this.configValues[ArmorStat.Strength] }}
-        </span></td
-      >
+
+    <!-- ALTERNATIVE: each fragment -->
+    <tr class="result-frags" *ngFor="let fragment of getAllEnabledModsAndFragments()">
+      <ng-container
+        *ngVar="
+          calculateStatValuesFromFragmentsAndMods(
+            [fragment],
+            config_characterClass
+          ) as fragmentValues
+        ">
+        <td>
+          {{ ModInformation[fragment].name }}
+        </td>
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Mobility] !== 0"
+            [class]="fragmentValues[ArmorStat.Mobility] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Mobility] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Mobility] }}
+          </span></td
+        >
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Resilience] !== 0"
+            [class]="fragmentValues[ArmorStat.Resilience] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Resilience] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Resilience] }}
+          </span></td
+        >
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Recovery] !== 0"
+            [class]="fragmentValues[ArmorStat.Recovery] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Recovery] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Recovery] }}
+          </span></td
+        >
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Discipline] !== 0"
+            [class]="fragmentValues[ArmorStat.Discipline] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Discipline] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Discipline] }}
+          </span></td
+        >
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Intellect] !== 0"
+            [class]="fragmentValues[ArmorStat.Intellect] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Intellect] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Intellect] }}
+          </span></td
+        >
+        <td
+          ><span
+            *ngIf="fragmentValues[ArmorStat.Strength] !== 0"
+            [class]="fragmentValues[ArmorStat.Strength] > 0 ? 'positive' : 'negative'">
+            <span *ngIf="fragmentValues[ArmorStat.Strength] > 0">+</span
+            >{{ fragmentValues[ArmorStat.Strength] }}
+          </span></td
+        >
+        <td class="icon-column">
+          <!-- Item Icon -->
+          <div class="item-icon-container">
+            <app-item-icon [itemHash]="ModInformation[fragment].hash" class="item-icon">
+            </app-item-icon>
+          </div>
+        </td>
+      </ng-container>
     </tr>
     <!-- +5 Mods -->
     <tr *ngVar="element?.mods as mods" class="highlight-row">

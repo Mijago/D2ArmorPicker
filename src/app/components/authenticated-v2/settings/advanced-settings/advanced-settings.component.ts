@@ -28,6 +28,7 @@ interface AdvancedSettingField {
   help: string | undefined;
   disabled: boolean;
   impactsResultCount: boolean;
+  featureInDevelopment?: boolean;
 }
 
 @Component({
@@ -204,6 +205,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: "This is a beta feature. Usability and quality may vary a lot.",
+            featureInDevelopment: true,
           },
         ],
       };

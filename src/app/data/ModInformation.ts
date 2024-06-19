@@ -20,7 +20,7 @@ import { ModOrAbility } from "./enum/modOrAbility";
 import { Modifier } from "./modifier";
 import { ModifierType } from "./enum/modifierType";
 import { ArmorStat, SpecialArmorStat } from "./enum/armor-stat";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
+import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
 
 export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   // region Stasis
@@ -670,4 +670,37 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     hash: 124726502,
   },
   // endregion Prismatic
+};
+
+// The number of maximum selectable fragments per class & subclass
+
+export const MaximumFragmentsPerClass: { [key in DestinyClass]: { [key: number]: number } } = {
+  [DestinyClass.Titan]: {
+    [ModifierType.Stasis]: 5,
+    [ModifierType.Void]: 4,
+    [ModifierType.Solar]: 4,
+    [ModifierType.Arc]: 4,
+    [ModifierType.Strand]: 4,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
+  },
+  [DestinyClass.Hunter]: {
+    [ModifierType.Stasis]: 5,
+    [ModifierType.Void]: 4,
+    [ModifierType.Solar]: 5,
+    [ModifierType.Arc]: 4,
+    [ModifierType.Strand]: 4,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
+  },
+  [DestinyClass.Warlock]: {
+    [ModifierType.Stasis]: 4,
+    [ModifierType.Void]: 4,
+    [ModifierType.Solar]: 4,
+    [ModifierType.Arc]: 4,
+    [ModifierType.Strand]: 4,
+    [ModifierType.Prismatic]: 6,
+    [ModifierType.AnySubclass]: 6,
+  },
+  [DestinyClass.Unknown]: {},
 };

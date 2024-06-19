@@ -50,6 +50,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   config_mod_strategy = ModOptimizationStrategy.None;
   config_reduce_waste = false;
   config_allowExactStats = false;
+  config_automaticallySelectFragments = false;
 
   constructor(public config: ConfigurationService, private inventory: InventoryService) {
     this.stats = Object.keys(ArmorStat)
@@ -73,6 +74,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_mod_strategy = c.modOptimizationStrategy;
       this.config_reduce_waste = c.tryLimitWastedStats;
       this.config_allowExactStats = c.allowExactStats;
+      this.config_automaticallySelectFragments = c.automaticallySelectFragments;
     });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {

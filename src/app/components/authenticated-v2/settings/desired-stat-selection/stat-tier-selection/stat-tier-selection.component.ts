@@ -26,6 +26,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
 export class StatTierSelectionComponent {
   readonly TierRange = new Array(11);
   @Input() allowExactStats: boolean = false;
+  @Input() automaticallySelectFragments: boolean = false;
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 10;
@@ -37,7 +38,7 @@ export class StatTierSelectionComponent {
   constructor() {}
 
   setValue(newValue: number) {
-    if (newValue <= this.maximumAvailableTier) {
+    if (newValue <= this.maximumAvailableTier || this.automaticallySelectFragments) {
       this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
     }
