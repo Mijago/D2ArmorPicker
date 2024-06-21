@@ -20,6 +20,14 @@ import { DatabaseService } from "./database.service";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
+interface VendorWithParent {
+  vendorHash: string;
+  parentHash: string;
+}
+
+const VendorsWithParent: VendorWithParent[] = [
+  { vendorHash: "3751514131", parentHash: "2190858386" }, // Strange Gear Offers, Tower Xûr
+];
 @Injectable({
   providedIn: "root",
 })
@@ -46,9 +54,19 @@ export class VendorsService {
       filter: 0,
     });
 
-    const enabledVendors = Object.entries(vendorsResponse.Response.vendors.data!).filter(
-      ([_vendorHash, vendor]) => vendor.enabled
-    );
+    const allVendors = Object.entries(vendorsResponse.Response.vendors.data!);
+    const allVendorsMap = new Map(allVendors);
+
+    const enabledVendors = allVendors
+      .filter(([_vendorHash, vendor]) => vendor.enabled)
+      .filter(([vendorHash, vendor]) => {
+        const parent = VendorsWithParent.find((v) => v.vendorHash == vendorHash)?.parentHash;
+        if (parent == undefined) return true;
+        console.debug(
+          `${vendorHash} has parent ${parent} with value ${allVendorsMap.get(parent)?.enabled}`
+        );
+        return allVendorsMap.get(parent)?.enabled ?? false;
+      });
     const vendors = enabledVendors
       .filter(
         ([vendorHash, vendor]) =>
