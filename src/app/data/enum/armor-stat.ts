@@ -123,6 +123,11 @@ export enum ArmorPerkOrSlot {
   COUNT,
 }
 
+// In the case that a perk has multiple possible hashes, we can use this to determine a mapping
+export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
+};
+
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",

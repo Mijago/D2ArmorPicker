@@ -42,7 +42,11 @@ import {
   applyInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot, ArmorPerkSocketHashes } from "../data/enum/armor-stat";
+import {
+  ArmorPerkOrSlot,
+  ArmorPerkSocketHashes,
+  MapAlternativeToArmorPerkOrSlot,
+} from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
@@ -476,8 +480,11 @@ export class BungieApiService {
     if (scks.find((d) => d.reusablePlugSetHash == 1403)) return ArmorPerkOrSlot.SlotArtifice;
 
     for (const socket of scks) {
-      const socketHash = socket.singleInitialItemHash;
+      let socketHash = socket.singleInitialItemHash;
       if (!socketHash) continue;
+
+      // Map the socket hash to another perk, if necessary (mostly if the perk exists multiple times)
+      socketHash = MapAlternativeToArmorPerkOrSlot[socketHash] || socketHash;
 
       // find the key of ArmorPerkSocketHashes that matches the socketHash
       const slotType = Object.entries(ArmorPerkSocketHashes).find(
