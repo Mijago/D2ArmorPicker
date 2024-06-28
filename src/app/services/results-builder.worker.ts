@@ -391,7 +391,8 @@ addEventListener("message", async ({ data }) => {
 
     const hasOneExotic = helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic;
     const tmpHasArtificeClassItem =
-      hasArtificeClassItem || (!hasOneExotic && hasArtificeClassItemExotic);
+      hasArtificeClassItem ||
+      (!hasOneExotic && hasArtificeClassItemExotic && !config.ignoreExistingExoticArtificeSlots);
     const result = handlePermutation(
       runtime,
       config,
@@ -532,7 +533,8 @@ export function handlePermutation(
   // get the amount of armor with artifice slot
   let availableArtificeCount = items.filter(
     (d) =>
-      d.perk == ArmorPerkOrSlot.SlotArtifice ||
+      ((!d.isExotic || !config.ignoreExistingExoticArtificeSlots) &&
+        d.perk == ArmorPerkOrSlot.SlotArtifice) ||
       (config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
       (config.assumeEveryExoticIsArtifice && d.isExotic)
   ).length;

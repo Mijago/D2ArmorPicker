@@ -100,6 +100,8 @@ export class BuildConfiguration {
   selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = [];
+  // mainly for the exotic class item
+  ignoreExistingExoticArtificeSlots = false;
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
     [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.None },
@@ -112,6 +114,7 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      ignoreExistingExoticArtificeSlots: false,
       allowExactStats: false,
       enabledMods: [],
       disabledItems: [],
