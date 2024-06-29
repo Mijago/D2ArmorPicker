@@ -120,6 +120,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_assumeEveryExoticIsArtifice: Boolean = false;
+  _config_ignoreExistingExoticArtificeSlots: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
 
@@ -173,6 +174,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
       this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
+      this._config_ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
       this._config_selectedExotics = c.selectedExotics;
       this._config_armorPerkLimitation = Object.entries(c.armorPerks)
         .filter((v) => v[1].value != ArmorPerkOrSlot.None)
