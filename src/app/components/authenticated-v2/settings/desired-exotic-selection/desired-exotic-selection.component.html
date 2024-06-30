@@ -64,6 +64,16 @@
 </div>
 
 <div>
+  <button
+    *ngIf="exotics.length === 0 || exotics[0].length === 0"
+    mat-raised-button
+    color="warn"
+    (click)="refreshAll()">
+    Manually refresh manifest and inventory
+  </button>
+</div>
+
+<div>
   <mat-slide-toggle
     color="primary"
     [checked]="includeCollectionRolls"

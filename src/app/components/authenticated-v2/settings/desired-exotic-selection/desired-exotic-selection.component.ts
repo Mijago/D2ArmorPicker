@@ -145,6 +145,10 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
+  async refreshAll() {
+    await this.inventory.refreshAll(true, true);
+  }
+
   private ngUnsubscribe = new Subject();
 
   ngOnDestroy() {
