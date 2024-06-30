@@ -15,12 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+:host {
+  position: sticky;
+  top: 0;
+}
+
 #card-results {
   display: inline-block;
   vertical-align: top;
   white-space: normal;
   width: fit-content;
   margin-left: 3px;
+}
+
+.results-content {
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .statColumn {
