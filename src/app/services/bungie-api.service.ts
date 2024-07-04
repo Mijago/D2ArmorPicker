@@ -564,7 +564,7 @@ export class BungieApiService {
     let destinyManifest = null;
     if (manifestCache && !force) {
       if (Date.now() - manifestCache.updatedAt > 1000 * 3600 * 0.25) {
-        destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
+        destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutKey(d));
         const version = destinyManifest.Response.version;
         if (manifestCache.version == version) {
           console.debug(
@@ -585,7 +585,7 @@ export class BungieApiService {
     }
 
     if (destinyManifest == null) {
-      destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
+      destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutKey(d));
     }
 
     const manifestVersion = destinyManifest.Response.version;
