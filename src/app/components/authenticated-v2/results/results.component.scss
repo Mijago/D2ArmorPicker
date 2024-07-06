@@ -15,6 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+$icon-with: 25px;
+.item-icon {
+  width: $icon-with;
+}
+
+.item-sub {
+  margin-right: 3px;
+  position: relative;
+
+  .overlay {
+    position: absolute;
+    top: -12px;
+    left: 0;
+    width: $icon-with;
+    height: $icon-with;
+    background-color: #030303d6;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 1.5em;
+
+    // no mouse interaction
+    pointer-events: none;
+  }
+}
+
+.item-icon-container {
+  position: relative;
+  contain: layout paint style;
+  box-sizing: border-box;
+  width: var(--item-size);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
 #card-results {
   display: inline-block;
   vertical-align: top;

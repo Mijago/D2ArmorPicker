@@ -1,0 +1,16 @@
+/*!
+ * Copyright (c) 2023 D2ArmorPicker by Mijago.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */.item-icon{width:25px}.item-sub{margin-right:3px;position:relative}.item-sub .overlay{position:absolute;top:-12px;left:0;width:25px;height:25px;background-color:rgba(3,3,3,.8392156863);justify-content:center;align-items:center;color:#fff;font-size:1.5em}.item-icon-container{position:relative;contain:layout paint style;box-sizing:border-box;width:var(--item-size);transition:opacity .2s,transform .2s}#card-results{display:inline-block;vertical-align:top;white-space:normal;width:-moz-fit-content;width:fit-content;margin-left:3px}.statColumn{position:relative}.statIcon{position:absolute;height:22px;margin-left:2px;top:11px}.itemIcon{width:32px;height:32px;margin-right:3px}.itemIconWatermark{width:32px;height:32px;margin-right:3px;margin-left:-35px;pointer-events:none}.source-column{float:left}.source-column img:nth-of-type(2){margin-top:5px;margin-bottom:-3px}.collectionIcon,.vendorIcon{width:32px;margin-left:3px;display:block}tr.example-element-row td{border-bottom-width:0}tr.example-detail-row{height:0 !important}.example-element-detail{overflow:hidden;display:flex}.report-problem-icon{color:#f08080}.hint-text{font-size:small;color:#d5d5d5}:host ::ng-deep .info-box .mat-form-field-wrapper{padding-bottom:5px !important;cursor:default}.hidden-input{display:none}.config-summary-box{width:100%}.result-table tr.example-element-row{cursor:pointer}.mat-row:nth-child(4n+3){background-color:rgba(116,116,116,.1)}.warning-none-found{color:red}.no-found-sadcat-container{width:20px;position:relative;display:inline-block}.no-found-sadcat{position:absolute;width:18px;top:-1px}.cdk-column-exotic{min-width:45px}.cdk-column-waste{padding-left:5px}

@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
-import { InventoryService } from "../../../services/inventory.service";
+import { InventoryService, ItemIdToScoreInfoMap } from "../../../services/inventory.service";
 import { DatabaseService } from "../../../services/database.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { BungieApiService } from "../../../services/bungie-api.service";
@@ -32,7 +32,7 @@ import { ArmorSlot } from "../../../data/enum/armor-slot";
 import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { IInventoryArmor, InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 
 export interface ResultDefinition {
   exotic:
@@ -147,6 +147,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
   itemCount: number = 0;
   totalResults: number = 0;
   parsedResults: number = 0;
+  itemMap: [IInventoryArmor, number][] = [];
+  itemMapBySlot: [ArmorSlot, [Array<[IInventoryArmor, number]>, number]][] = [];
+  _itemScores: ItemIdToScoreInfoMap = new Map();
 
   constructor(
     private inventory: InventoryService,
@@ -210,6 +213,45 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this.status.modifyStatus((s) => (s.updatingResultsTable = true));
       await this.updateData();
       this.status.modifyStatus((s) => (s.updatingResultsTable = false));
+    });
+
+    this.inventory.itemScores.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (value) => {
+      this._itemScores = value;
+
+      // get all items
+      const clazz = this.selectedClass;
+      let items = await this.db.inventoryArmor.where("clazz").equals(clazz).toArray();
+      items = items.filter(
+        (i) => i.slot !== ArmorSlot.ArmorSlotNone && i.slot !== ArmorSlot.ArmorSlotClass
+      );
+
+      const itemMap = new Map<string, [IInventoryArmor, number]>();
+      for (const item of items) {
+        if (!this._itemScores.has(item.itemInstanceId)) {
+          itemMap.set(item.itemInstanceId, [item, 0]);
+          continue;
+        }
+        const scoreEntry = this._itemScores.get(item.itemInstanceId)!;
+        itemMap.set(item.itemInstanceId, [item, scoreEntry.totalScore / scoreEntry.count]);
+      }
+
+      this.itemMap = Array.from(itemMap.values());
+      // now group by slot
+      const itemMapForSlot = this.itemMap.reduce((acc, [item, count]) => {
+        if (!acc.has(item.slot)) {
+          acc.set(item.slot, [[], 1]);
+        }
+        let slot = acc.get(item.slot)!;
+        slot[0].push([item, count]);
+
+        if (count > slot[1]) {
+          slot[1] = count;
+        }
+        return acc;
+        // [item, count], maxValue
+      }, new Map<ArmorSlot, [[IInventoryArmor, number][], number]>());
+      this.itemMapBySlot = Array.from(itemMapForSlot.entries()).sort((a, b) => a[0] - b[0]);
+      this.itemMapBySlot.forEach((v) => v[1][0].sort((a, b) => b[1] - a[1]));
     });
 
     this.tableDataSource.paginator = this.paginator;

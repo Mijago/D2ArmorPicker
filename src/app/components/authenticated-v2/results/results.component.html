@@ -29,6 +29,22 @@
       You should loosen your settings a bit.
     </ng-container>
   </mat-card-subtitle>
+
+  <mat-card-content class="item-icon-container">
+    <div *ngFor="let slot of itemMapBySlot">
+      <ng-container *ngFor="let i of slot[1][0]; let idx = index">
+        <span class="item-sub">
+          <img
+            class="item-icon"
+            src="https://bungie.net/{{ i[0].icon }}"
+            matTooltip="{{ i[0].name }} with a score of {{ i[1] }}"
+            matTooltipClass="allow-cr" />
+          <div class="overlay" [style.opacity]="1 - i[1] / slot[1][1]">&nbsp;</div>
+        </span>
+        <br *ngIf="(idx + 1) % 20 === 0" />
+      </ng-container>
+    </div>
+  </mat-card-content>
   <mat-card-content>
     <div>
       <div class="config-summary-box" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">

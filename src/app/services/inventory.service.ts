@@ -60,6 +60,12 @@ export type ClassExoticInfo = {
   item: IManifestArmor;
 };
 
+export type ItemScoreInfo = {
+  totalScore: number;
+  count: number;
+};
+
+export type ItemIdToScoreInfoMap = Map<string, ItemScoreInfo>;
 @Injectable({
   providedIn: "root",
 })
@@ -80,6 +86,9 @@ export class InventoryService {
 
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
+
+  private _itemScores: BehaviorSubject<ItemIdToScoreInfoMap>;
+  public readonly itemScores: Observable<ItemIdToScoreInfoMap>;
 
   private _calculationProgress: Subject<number> = new Subject<number>();
   public readonly calculationProgress: Observable<number> =
@@ -116,6 +125,9 @@ export class InventoryService {
       results: this.allArmorResults,
     } as info);
     this.armorResults = this._armorResults.asObservable();
+
+    this._itemScores = new BehaviorSubject(new Map<string, ItemScoreInfo>());
+    this.itemScores = this._itemScores.asObservable();
 
     this.workers = [];
     let dataAlreadyFetched = false;
@@ -158,6 +170,7 @@ export class InventoryService {
 
   private clearResults() {
     this.allArmorResults = [];
+    this._itemScores.next(new Map<string, ItemScoreInfo>());
     this._armorResults.next({
       results: this.allArmorResults,
       totalResults: 0,
@@ -400,6 +413,8 @@ export class InventoryService {
       this.items = this.items.sort((a, b) => totalStats(b) - totalStats(a));
       this._calculationProgress.next(0);
 
+      const itemScores: Map<string, { totalScore: number; count: number }> = new Map();
+
       for (let n = 0; n < nthreads; n++) {
         this.workers[n] = new Worker(new URL("./results-builder.worker", import.meta.url), {
           name: n.toString(),
@@ -426,6 +441,19 @@ export class InventoryService {
 
           this.results.push(...(data.results as IPermutatorArmorSet[]));
           if (data.done == true) {
+            for (let [id, count, score] of data.itemScores as [number, number, number][]) {
+              const hash = this.itemz.find((y) => y.id == id)?.itemInstanceId || "";
+              if (itemScores.has(hash)) {
+                let current = itemScores.get(hash);
+                itemScores.set(hash, {
+                  totalScore: current!.totalScore + score,
+                  count: current!.count + count,
+                });
+              } else {
+                itemScores.set(hash, { totalScore: score, count: count });
+              }
+            }
+
             doneWorkerCount++;
             this.totalPermutationCount += data.stats.permutationCount;
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
@@ -433,6 +461,7 @@ export class InventoryService {
             for (let elem of data.runtime.statCombo4x100) this.resultStatCombo4x100.add(elem);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
+            console.log("itemScores", itemScores);
             this.status.modifyStatus((s) => (s.calculatingResults = false));
             this._calculationProgress.next(0);
 
@@ -529,6 +558,7 @@ export class InventoryService {
                   return r;
                 }, []) || [],
             });
+            this._itemScores.next(itemScores);
             console.timeEnd("updateResults with WebWorker");
             this.workers[n].terminate();
           } else if (data.done == true && doneWorkerCount != nthreads) this.workers[n].terminate();

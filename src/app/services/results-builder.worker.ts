@@ -321,6 +321,13 @@ addEventListener("message", async ({ data }) => {
   );
 
   // runtime variables
+  const itemScores: Map<
+    number,
+    {
+      count: number;
+      scoreSum: number;
+    }
+  > = new Map();
   const runtime = {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
     statCombo3x100: new Set(),
@@ -402,7 +409,7 @@ addEventListener("message", async ({ data }) => {
       leg,
       constantBonus,
       constantAvailableModslots,
-      doNotOutput,
+      false,
       tmpHasArtificeClassItem && canUseArtificeClassItem,
       exoticClassItemIsEnforced
     );
@@ -410,7 +417,23 @@ addEventListener("message", async ({ data }) => {
     // We will still calculate the rest so that we get accurate results for the runtime values
     if (result != null) {
       totalResults++;
-      if (isIPermutatorArmorSet(result)) {
+      const isPerm = isIPermutatorArmorSet(result);
+      if (isPerm) {
+        const modcost = result.usedMods
+          .map((d) => STAT_MOD_VALUES[d][2])
+          .reduce((a, b) => a + b, 0);
+        const tiers = result.statsWithMods.reduce((a, b) => a + Math.floor(b / 10), 0);
+        const score = (tiers / 40) * (1 - modcost / 26);
+        for (let armor of result.armor) {
+          if (!itemScores.has(armor)) {
+            itemScores.set(armor, { count: 0, scoreSum: 0 });
+          }
+          const itemScore = itemScores.get(armor)!;
+          itemScore.count++;
+          itemScore.scoreSum += score;
+        }
+      }
+      if (!doNotOutput && isPerm) {
         result.classItemPerk =
           slotCheckResult.requiredClassItemType ||
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None);
@@ -457,6 +480,11 @@ addEventListener("message", async ({ data }) => {
       itemCount: items.length - classItems.length,
       totalTime: Date.now() - startTime,
     },
+    itemScores: Array.from(itemScores.entries()).map(([k, v]) => [
+      k,
+      v.count,
+      Math.round(v.scoreSum * 1e4) / 1e4,
+    ]),
   });
 });
 
