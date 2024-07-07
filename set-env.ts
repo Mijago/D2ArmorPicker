@@ -21,7 +21,7 @@ const production = process.env.PRODUCTION === "1";
 const beta_branch = process.env.BETA === "1";
 const canary_branch = process.env.CANARY === "1";
 
-const version = "2.6.1";
+const version = "2.6.2";
 
 console.log("production: " + production);
 console.log("beta_branch: " + beta_branch);
