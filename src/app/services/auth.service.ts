@@ -189,8 +189,6 @@ export class AuthService {
     this.authCode = null;
     this.accessToken = null;
     this.refreshToken = null;
-
-    localStorage.removeItem("auth-membershipInfo");
   }
 
   async logout() {

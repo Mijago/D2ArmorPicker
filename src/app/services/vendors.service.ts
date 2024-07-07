@@ -17,6 +17,7 @@ import {
 } from "../data/types/IInventoryArmor";
 import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
+import { AuthService } from "./auth.service";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
@@ -35,8 +36,16 @@ export class VendorsService {
   constructor(
     private membership: MembershipService,
     private http: HttpClientService,
-    private db: DatabaseService
-  ) {}
+    private db: DatabaseService,
+    private auth: AuthService
+  ) {
+    this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
+  }
+
+  private clearCachedData() {
+    localStorage.removeItem(VENDOR_NEXT_REFRESH_KEY);
+    this.db.inventoryArmor.where({ source: InventoryArmorSource.Vendor }).delete();
+  }
 
   private async getVendorArmorItemsForCharacter(
     manifestItems: Record<number, IManifestArmor>,
@@ -94,7 +103,7 @@ export class VendorsService {
           const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
           const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
 
-          const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
+          for (const [vendorItemIndex, saleItem] of Object.entries(saleItems)) {
             const manifestItem = manifestItems[saleItem.itemHash];
             const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
 
@@ -124,7 +133,7 @@ export class VendorsService {
             );
             applyInvestmentStats(r, statsOverride);
             vendorArmorItems.push(r);
-          });
+          }
         },
         (reason) => {
           console.error(`Failed to get vendor: ${reason}`);

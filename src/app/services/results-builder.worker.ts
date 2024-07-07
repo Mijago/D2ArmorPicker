@@ -17,7 +17,6 @@
 
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
-import { Database } from "../data/database";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
@@ -713,7 +712,6 @@ export function handlePermutation(
   // Tier Availability Testing
   //#################################################################################
   //*
-  let n = 0;
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
@@ -729,7 +727,6 @@ export function handlePermutation(
       if (stats[stat] >= tier * 10) break;
       const v = 10 - (stats[stat] % 10);
       distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-      n++;
       const mods = get_mods_precalc(
         config,
         distances,

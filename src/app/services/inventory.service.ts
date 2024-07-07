@@ -35,9 +35,9 @@ import {
   isEqualItem,
   totalStats,
 } from "../data/types/IInventoryArmor";
-import { DestinyClass, ItemBindStatus, TierType } from "bungie-api-ts/destiny2";
+import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { getSkillTier, getStatSum, getWaste } from "./results-builder.worker";
+import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { VendorsService } from "./vendors.service";
@@ -131,7 +131,6 @@ export class InventoryService {
 
     this.workers = [];
     let dataAlreadyFetched = false;
-    let isUpdating = false;
 
     // TODO: This gives a race condition on some parts.
     router.events.pipe(debounceTime(5)).subscribe(async (val) => {
@@ -150,7 +149,7 @@ export class InventoryService {
       }
     });
 
-    config.configuration.pipe(debounceTime(500)).subscribe(async (c) => {
+    this.config.configuration.pipe(debounceTime(500)).subscribe(async (c) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
         //await this.auth.logout();
         //return;
@@ -159,12 +158,9 @@ export class InventoryService {
 
       this._config = c;
 
-      isUpdating = true;
       console.debug("Trigger refreshAll due to config change");
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
-
-      isUpdating = false;
     });
   }
 

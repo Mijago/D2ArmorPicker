@@ -17,7 +17,7 @@
 
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable, BehaviorSubject, of } from "rxjs";
+import { Observable, BehaviorSubject } from "rxjs";
 
 import type { CharacterStats } from "../data/character_stats/schema";
 import { InventoryService } from "./inventory.service";

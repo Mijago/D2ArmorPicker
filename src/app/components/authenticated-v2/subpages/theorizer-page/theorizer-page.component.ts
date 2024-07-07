@@ -29,8 +29,6 @@ import {
   ArmorPerkOrSlotIcons,
   ArmorPerkOrSlotNames,
 } from "../../../../data/enum/armor-stat";
-import { Table } from "dexie";
-import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 
 const statNames = ["mobility", "resilience", "recovery", "discipline", "intellect", "strength"];
 
