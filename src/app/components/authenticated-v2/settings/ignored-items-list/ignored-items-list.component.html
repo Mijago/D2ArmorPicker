@@ -15,14 +15,22 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div class="item-icon-container">
-  <span *ngFor="let i of disabledItems; let idx = index" class="item-sub">
-    <img
-      class="item-icon"
-      src="https://bungie.net/{{ i.icon }}"
-      (click)="enableItem(i.itemInstanceId)"
-      matTooltipClass="allow-cr"
-      [matTooltip]="generateTooltip(i)" />
-    <br *ngIf="(idx + 1) % 10 === 0" />
-  </span>
+<div class="item-icon-container" *ngIf="characterClass !== null">
+  <div *ngFor="let entries of disabledItems; let idx = index">
+    <div *ngIf="idx === 1 && entries.length > 0">Helmets</div>
+    <div *ngIf="idx === 2 && entries.length > 0">Gauntlets</div>
+    <div *ngIf="idx === 3 && entries.length > 0">Chest Pieces</div>
+    <div *ngIf="idx === 4 && entries.length > 0">Legs</div>
+    <div *ngIf="idx === 5 && entries.length > 0">Class Items</div>
+
+    <span *ngFor="let i of entries; let idx = index" class="item-sub">
+      <img
+        class="item-icon"
+        src="https://bungie.net/{{ i.icon }}"
+        (click)="enableItem(i.itemInstanceId)"
+        matTooltipClass="allow-cr"
+        [matTooltip]="generateTooltip(i)" />
+      <br *ngIf="(idx + 1) % 10 === 0" />
+    </span>
+  </div>
 </div>

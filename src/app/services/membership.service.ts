@@ -10,7 +10,18 @@ import { StatusProviderService } from "./status-provider.service";
   providedIn: "root",
 })
 export class MembershipService {
-  constructor(private http: HttpClientService, private status: StatusProviderService) {}
+  constructor(
+    private http: HttpClientService,
+    private status: StatusProviderService,
+    private auth: AuthService
+  ) {
+    this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
+  }
+
+  private clearCachedData() {
+    localStorage.removeItem("auth-membershipInfo");
+    localStorage.removeItem("auth-membershipInfo-date");
+  }
 
   async getMembershipDataForCurrentUser(): Promise<GroupUserInfoCard> {
     var membershipData = JSON.parse(localStorage.getItem("auth-membershipInfo") || "null");
