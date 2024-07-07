@@ -22,7 +22,6 @@ import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { ArmorSlot } from "src/app/data/enum/armor-slot";
 
 @Component({
   selector: "app-ignored-items-list",

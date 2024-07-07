@@ -31,7 +31,6 @@ import {
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
 } from "bungie-api-ts/destiny2";
-import { AuthService } from "./auth.service";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
 import { IManifestArmor } from "../data/types/IManifestArmor";

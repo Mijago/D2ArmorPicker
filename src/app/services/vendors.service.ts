@@ -103,7 +103,7 @@ export class VendorsService {
           const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
           const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
 
-          const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
+          for (const [vendorItemIndex, saleItem] of Object.entries(saleItems)) {
             const manifestItem = manifestItems[saleItem.itemHash];
             const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
 
@@ -133,7 +133,7 @@ export class VendorsService {
             );
             applyInvestmentStats(r, statsOverride);
             vendorArmorItems.push(r);
-          });
+          }
         },
         (reason) => {
           console.error(`Failed to get vendor: ${reason}`);

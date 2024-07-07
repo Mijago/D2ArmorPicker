@@ -17,9 +17,9 @@
 
 const writeFile = require("fs").writeFile;
 
-const production = process.env.PRODUCTION === "1";
-const beta_branch = process.env.BETA === "1";
-const canary_branch = process.env.CANARY === "1";
+const production = process.env["PRODUCTION"] === "1";
+const beta_branch = process.env["BETA"] === "1";
+const canary_branch = process.env["CANARY"] === "1";
 
 const version = "2.6.2";
 
@@ -56,15 +56,15 @@ const data = {
   production: production,
   beta: beta_branch,
   canary: canary_branch,
-  apiKey: process.env.D2AP_BUNGIE_API_KEY,
-  clientId: process.env.D2AP_BUNGIE_CLIENT_ID,
-  client_secret: process.env.D2AP_BUNGIE_CLIENT_SECRET,
-  nodeEnv: process.env.NODE_ENV,
+  apiKey: process.env["D2AP_BUNGIE_API_KEY"],
+  clientId: process.env["D2AP_BUNGIE_CLIENT_ID"],
+  client_secret: process.env["D2AP_BUNGIE_CLIENT_SECRET"],
+  nodeEnv: process.env["NODE_ENV"],
   offlineMode: false,
   featureFlags: {
-    enableModslotLimitation: process.env.D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION == "1",
-    enableZeroWaste: process.env.D2AP_FEATURE_ENABLE_ZERO_WASTE == "1",
-    enableGuardianGamesFeatures: process.env.D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES == "1",
+    enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
+    enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",
+    enableGuardianGamesFeatures: process.env["D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES"] == "1",
   },
 };
 

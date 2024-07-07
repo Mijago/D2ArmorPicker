@@ -17,12 +17,9 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { InventoryService } from "../../../services/inventory.service";
-import { DatabaseService } from "../../../services/database.service";
 import { MatTableDataSource } from "@angular/material/table";
-import { BungieApiService } from "../../../services/bungie-api.service";
 import { ConfigurationService } from "../../../services/configuration.service";
 import { ArmorPerkOrSlot, ArmorStat, StatModifier } from "../../../data/enum/armor-stat";
-import { ModOrAbility } from "../../../data/enum/modOrAbility";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatSort } from "@angular/material/sort";
 import { StatusProviderService } from "../../../services/status-provider.service";
@@ -107,8 +104,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
   _config_assumeClassItemMasterworked: Boolean = false;
-  private _config_enabledMods: ModOrAbility[] = [];
-  private _config_limitParsedResults: Boolean = false;
 
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
@@ -150,8 +145,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private inventory: InventoryService,
-    private db: DatabaseService,
-    private bungieApi: BungieApiService,
     private config: ConfigurationService,
     private status: StatusProviderService
   ) {}
@@ -163,8 +156,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
-      this._config_enabledMods = c.enabledMods || [];
-      this._config_limitParsedResults = c.limitParsedResults;
 
       this._config_maximumStatMods = c.maximumStatMods;
       this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
