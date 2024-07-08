@@ -39,6 +39,11 @@ export const CHANGELOG_DATA = [
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Prismatic fragments are now correctly added to the DIM export.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "The 'Ignored Items' section is now filtered by the selected class, grouped into armor slots and ordered by item type.",
         issues: [],
       },
