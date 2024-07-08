@@ -365,6 +365,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [ModifierType.Solar]: 2240888816,
           [ModifierType.Arc]: 2328211300,
           [ModifierType.Strand]: 3785442599,
+          [ModifierType.Prismatic]: 4282591831,
         },
         [DestinyClass.Titan]: {
           [ModifierType.Stasis]: 613647804,
@@ -372,6 +373,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [ModifierType.Solar]: 2550323932,
           [ModifierType.Arc]: 2932390016,
           [ModifierType.Strand]: 242419885,
+          [ModifierType.Prismatic]: 1616346845,
         },
         [DestinyClass.Warlock]: {
           [ModifierType.Stasis]: 3291545503,
@@ -379,6 +381,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [ModifierType.Solar]: 3941205951,
           [ModifierType.Arc]: 3168997075,
           [ModifierType.Strand]: 4204413574,
+          [ModifierType.Prismatic]: 3893112950,
         },
       };
 
