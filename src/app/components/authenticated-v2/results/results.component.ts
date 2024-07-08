@@ -263,9 +263,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
       config: this.config.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
-        p.items = p.items.map((i) => {
-          return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
-        });
+        p.items = p.items
+          .filter((i) => !!i[0])
+          .map((i) => {
+            return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
+          });
         delete p.exotic;
         return p;
       }),
