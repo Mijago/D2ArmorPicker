@@ -20,16 +20,16 @@
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import {
-  ArmorAffinityIcons,
-  ArmorAffinityNames,
   ArmorPerkOrSlot,
   ArmorPerkOrSlotDIMText,
   ArmorStat,
+  ArmorStatHashes,
   ArmorStatIconUrls,
   ArmorStatNames,
   SpecialArmorStat,
   STAT_MOD_VALUES,
   StatModifier,
+  SubclassHashes,
 } from "src/app/data/enum/armor-stat";
 import { ResultDefinition, ResultItem, ResultItemMoveState } from "../results.component";
 import { ConfigurationService } from "../../../../services/configuration.service";
@@ -38,7 +38,7 @@ import { ModifierValue } from "../../../../data/modifier";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
-import { DestinyEnergyType, DestinyClass } from "bungie-api-ts/destiny2";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { takeUntil } from "rxjs/operators";
@@ -270,50 +270,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     }
 
     var data: LoadoutParameters = {
-      statConstraints: [
-        {
-          statHash: 2996146975,
-          minTier: c.minimumStatTiers[ArmorStat.Mobility].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Mobility].fixed
-            ? c.minimumStatTiers[ArmorStat.Mobility].value
-            : 10,
-        },
-        {
-          statHash: 392767087,
-          minTier: c.minimumStatTiers[ArmorStat.Resilience].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Resilience].fixed
-            ? c.minimumStatTiers[ArmorStat.Resilience].value
-            : 10,
-        },
-        {
-          statHash: 1943323491,
-          minTier: c.minimumStatTiers[ArmorStat.Recovery].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Recovery].fixed
-            ? c.minimumStatTiers[ArmorStat.Recovery].value
-            : 10,
-        },
-        {
-          statHash: 1735777505,
-          minTier: c.minimumStatTiers[ArmorStat.Discipline].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Recovery].fixed
-            ? c.minimumStatTiers[ArmorStat.Recovery].value
-            : 10,
-        },
-        {
-          statHash: 144602215,
-          minTier: c.minimumStatTiers[ArmorStat.Intellect].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Intellect].fixed
-            ? c.minimumStatTiers[ArmorStat.Intellect].value
-            : 10,
-        },
-        {
-          statHash: 4244567218,
-          minTier: c.minimumStatTiers[ArmorStat.Strength].value,
-          maxTier: c.minimumStatTiers[ArmorStat.Strength].fixed
-            ? c.minimumStatTiers[ArmorStat.Strength].value
-            : 10,
-        },
-      ],
+      statConstraints: [],
       mods,
       assumeArmorMasterwork: c.assumeLegendariesMasterworked
         ? c.assumeExoticsMasterworked
@@ -321,6 +278,15 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           : AssumeArmorMasterwork.Legendary
         : AssumeArmorMasterwork.None,
     };
+
+    // iterate over ArmorStat enum
+    for (let stat of this.armorStatIds) {
+      data.statConstraints.push({
+        statHash: ArmorStatHashes[stat],
+        minTier: c.minimumStatTiers[stat].value,
+        maxTier: c.minimumStatTiers[stat].fixed ? c.minimumStatTiers[stat].value : 10,
+      });
+    }
 
     if (c.selectedExotics.length == 1) {
       data.exoticArmorHash = c.selectedExotics[0];
@@ -356,43 +322,19 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
         return m;
       }, {});
 
-      const subclassHashes: {
-        [characterClass: number]: { [modifierType: number]: number | undefined } | undefined;
-      } = {
-        [DestinyClass.Hunter]: {
-          [ModifierType.Stasis]: 873720784,
-          [ModifierType.Void]: 2453351420,
-          [ModifierType.Solar]: 2240888816,
-          [ModifierType.Arc]: 2328211300,
-          [ModifierType.Strand]: 3785442599,
-          [ModifierType.Prismatic]: 4282591831,
-        },
-        [DestinyClass.Titan]: {
-          [ModifierType.Stasis]: 613647804,
-          [ModifierType.Void]: 2842471112,
-          [ModifierType.Solar]: 2550323932,
-          [ModifierType.Arc]: 2932390016,
-          [ModifierType.Strand]: 242419885,
-          [ModifierType.Prismatic]: 1616346845,
-        },
-        [DestinyClass.Warlock]: {
-          [ModifierType.Stasis]: 3291545503,
-          [ModifierType.Void]: 2849050827,
-          [ModifierType.Solar]: 3941205951,
-          [ModifierType.Arc]: 3168997075,
-          [ModifierType.Strand]: 4204413574,
-          [ModifierType.Prismatic]: 3893112950,
-        },
-      };
-
-      const subclassHash = subclassHashes[c.characterClass]?.[c.selectedModElement];
-
-      if (subclassHash) {
-        loadout.equipped.push({
-          id: "12345", // This shouldn't need to be specified but right now it does. The value doesn't matter
-          hash: subclassHash,
-          socketOverrides,
-        });
+      if (
+        c.characterClass != DestinyClass.Unknown &&
+        c.selectedModElement != ModifierType.CombatStyleMod
+      ) {
+        const cl = SubclassHashes[c.characterClass];
+        const subclassHash = cl[c.selectedModElement];
+        if (subclassHash) {
+          loadout.equipped.push({
+            id: "12345", // This shouldn't need to be specified but right now it does. The value doesn't matter
+            hash: subclassHash,
+            socketOverrides,
+          });
+        }
       }
     }
 
@@ -446,14 +388,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
         ) || []
       ).length * 2
     );
-  }
-
-  getAffinityName(id: DestinyEnergyType) {
-    return ArmorAffinityNames[id];
-  }
-
-  getAffinityUrl(id: DestinyEnergyType) {
-    return ArmorAffinityIcons[id];
   }
 
   private ngUnsubscribe = new Subject();

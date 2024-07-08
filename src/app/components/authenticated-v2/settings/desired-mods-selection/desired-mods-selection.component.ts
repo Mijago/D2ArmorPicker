@@ -19,16 +19,11 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
-import {
-  ArmorAffinityIcons,
-  ArmorAffinityNames,
-  ArmorStat,
-  SpecialArmorStat,
-} from "../../../../data/enum/armor-stat";
+import { ArmorStat, SpecialArmorStat } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle";
-import { DestinyClass, DestinyEnergyType } from "bungie-api-ts/destiny2";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 
@@ -151,14 +146,6 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     this.config.modifyConfiguration((c) => {
       c.enabledMods = [];
     });
-  }
-
-  getAffinityName(id: DestinyEnergyType) {
-    return ArmorAffinityNames[id];
-  }
-
-  getAffinityUrl(id: DestinyEnergyType) {
-    return ArmorAffinityIcons[id];
   }
 
   setElement(element: ModifierType) {

@@ -23,5 +23,6 @@ export enum ModifierType {
   Arc,
   Strand,
   Prismatic,
-  RetrofitMods, // Artifact Retrofit mods
 }
+
+export type Subclass = Exclude<ModifierType, ModifierType.CombatStyleMod>;

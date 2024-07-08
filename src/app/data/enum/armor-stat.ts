@@ -16,7 +16,8 @@
  */
 
 import { EnumDictionary } from "../types/EnumDictionary";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2";
+import { DestinyClass } from "bungie-api-ts/destiny2";
+import { ModifierType, Subclass } from "./modifierType";
 
 export enum StatModifier {
   NONE,
@@ -80,6 +81,16 @@ export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Intellect]: "Intellect",
   [ArmorStat.Strength]: "Strength",
 };
+
+export const ArmorStatHashes: EnumDictionary<ArmorStat, number> = {
+  [ArmorStat.Mobility]: 2996146975,
+  [ArmorStat.Resilience]: 392767087,
+  [ArmorStat.Recovery]: 1943323491,
+  [ArmorStat.Discipline]: 1735777505,
+  [ArmorStat.Intellect]: 144602215,
+  [ArmorStat.Strength]: 4244567218,
+};
+
 export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Mobility]:
     "https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png",
@@ -94,9 +105,6 @@ export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.Strength]:
     "https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png",
 };
-
-type Literal<T extends ArmorStat> = `${T}`;
-export type ArmorStatLiteral = Literal<ArmorStat>;
 
 export enum SpecialArmorStat {
   ClassAbilityRegenerationStat = 10,
@@ -205,8 +213,10 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
 };
 
-export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "",
+export const ArmorPerkOrSlotDIMText: EnumDictionary<
+  Exclude<ArmorPerkOrSlot, ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT>,
+  string
+> = {
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
@@ -221,28 +231,34 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
-  [ArmorPerkOrSlot.COUNT]: "",
 };
 
-export const ArmorAffinityNames: EnumDictionary<DestinyEnergyType, string> = {
-  [DestinyEnergyType.Any]: "Any",
-  [DestinyEnergyType.Arc]: "Arc",
-  [DestinyEnergyType.Thermal]: "Solar",
-  [DestinyEnergyType.Void]: "Void",
-  [DestinyEnergyType.Stasis]: "Stasis",
-  [DestinyEnergyType.Ghost]: "Ghost",
-  [DestinyEnergyType.Subclass]: "Subclass",
-};
-export const ArmorAffinityIcons: EnumDictionary<DestinyEnergyType, string> = {
-  [DestinyEnergyType.Any]: "",
-  [DestinyEnergyType.Arc]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_092d066688b879c807c3b460afdd61e6.png",
-  [DestinyEnergyType.Thermal]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png",
-  [DestinyEnergyType.Void]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png",
-  [DestinyEnergyType.Stasis]:
-    "https://www.bungie.net/common/destiny2_content/icons/DestinyDamageTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png",
-  [DestinyEnergyType.Ghost]: "",
-  [DestinyEnergyType.Subclass]: "",
+export const SubclassHashes: EnumDictionary<
+  Exclude<DestinyClass, DestinyClass.Unknown>,
+  EnumDictionary<Subclass, number>
+> = {
+  [DestinyClass.Hunter]: {
+    [ModifierType.Stasis]: 873720784,
+    [ModifierType.Void]: 2453351420,
+    [ModifierType.Solar]: 2240888816,
+    [ModifierType.Arc]: 2328211300,
+    [ModifierType.Strand]: 3785442599,
+    [ModifierType.Prismatic]: 4282591831,
+  },
+  [DestinyClass.Titan]: {
+    [ModifierType.Stasis]: 613647804,
+    [ModifierType.Void]: 2842471112,
+    [ModifierType.Solar]: 2550323932,
+    [ModifierType.Arc]: 2932390016,
+    [ModifierType.Strand]: 242419885,
+    [ModifierType.Prismatic]: 1616346845,
+  },
+  [DestinyClass.Warlock]: {
+    [ModifierType.Stasis]: 3291545503,
+    [ModifierType.Void]: 2849050827,
+    [ModifierType.Solar]: 3941205951,
+    [ModifierType.Arc]: 3168997075,
+    [ModifierType.Strand]: 4204413574,
+    [ModifierType.Prismatic]: 3893112950,
+  },
 };
