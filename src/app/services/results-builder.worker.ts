@@ -687,7 +687,8 @@ export function handlePermutation(
   // get the amount of armor with artifice slot
   let availableArtificeCount = items.filter(
     (d) =>
-      d.perk == ArmorPerkOrSlot.SlotArtifice ||
+      ((!d.isExotic || !config.ignoreExistingExoticArtificeSlots) &&
+        d.perk == ArmorPerkOrSlot.SlotArtifice) ||
       (config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
       (config.assumeEveryExoticIsArtifice && d.isExotic)
   ).length;

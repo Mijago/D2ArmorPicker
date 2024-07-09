@@ -46,6 +46,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeCollectionRolls = false;
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
+  ignoreExistingExoticArtificeSlots = false;
   allowBlueArmorPieces = false;
   currentClass: DestinyClass = DestinyClass.Titan;
   exotics: ClassExoticInfo[][] = [];
@@ -63,6 +64,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExotics = c.selectedExotics;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
+      this.ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
     });
 
     this.inventory.manifest
@@ -121,6 +123,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
+  setIgnoreExistingExoticArtificeSlots(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.ignoreExistingExoticArtificeSlots = allow;
+    });
+  }
+
   selectExotic(hash: number, $event: any) {
     const index = this.selectedExotics.indexOf(hash);
     if (index > -1) {
@@ -135,6 +143,10 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;
     });
+  }
+
+  async refreshAll() {
+    await this.inventory.refreshAll(true, true);
   }
 
   private ngUnsubscribe = new Subject();

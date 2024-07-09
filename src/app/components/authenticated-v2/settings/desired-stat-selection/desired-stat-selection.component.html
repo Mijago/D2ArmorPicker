@@ -20,38 +20,7 @@
     <td>
       {{ enum.name }}
     </td>
-    <td class="statContainerWrapper">
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png"
-        alt="Mobility"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 0" />
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png"
-        alt="Resilience"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 1" />
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png"
-        alt="Recovery"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 2" />
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png"
-        alt="Discipline"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 3" />
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png"
-        alt="Intellect"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 4" />
-      <img
-        src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png"
-        alt="Strength"
-        class="dialogStatIcon"
-        *ngIf="enum.value === 5" />
-    </td>
+    <td><app-stat-icon [stat]="enum.value"></app-stat-icon></td>
     <td>
       <app-stat-tier-selection
         [stat]="enum.value"
@@ -85,38 +54,7 @@
     </button>
     <mat-menu #menu1="matMenu" menu>
       <button mat-menu-item *ngFor="let d of _statCombo3x100" (click)="useStatPreset(d)">
-        <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png"
-            alt="Mobility"
-            class="dialogStatIcon"
-            *ngIf="p === 0" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png"
-            alt="Resilience"
-            class="dialogStatIcon"
-            *ngIf="p === 1" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png"
-            alt="Recovery"
-            class="dialogStatIcon"
-            *ngIf="p === 2" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png"
-            alt="Discipline"
-            class="dialogStatIcon"
-            *ngIf="p === 3" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png"
-            alt="Intellect"
-            class="dialogStatIcon"
-            *ngIf="p === 4" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png"
-            alt="Strength"
-            class="dialogStatIcon"
-            *ngIf="p === 5" />
-        </span>
+        <app-stat-icon *ngFor="let p of d" [stat]="p" class="dialogStatIcon"></app-stat-icon>
       </button>
     </mat-menu>
   </span>
@@ -131,38 +69,7 @@
     </button>
     <mat-menu #menu2="matMenu">
       <button mat-menu-item *ngFor="let d of _statCombo4x100" (click)="useStatPreset(d)">
-        <span class="statContainerWrapper" *ngFor="let p of d; let i = index">
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png"
-            alt="Mobility"
-            class="dialogStatIcon"
-            *ngIf="p === 0" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png"
-            alt="Resilience"
-            class="dialogStatIcon"
-            *ngIf="p === 1" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png"
-            alt="Recovery"
-            class="dialogStatIcon"
-            *ngIf="p === 2" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png"
-            alt="Discipline"
-            class="dialogStatIcon"
-            *ngIf="p === 3" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png"
-            alt="Intellect"
-            class="dialogStatIcon"
-            *ngIf="p === 4" />
-          <img
-            src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png"
-            alt="Strength"
-            class="dialogStatIcon"
-            *ngIf="p === 5" />
-        </span>
+        <app-stat-icon *ngFor="let p of d" [stat]="p" class="dialogStatIcon"></app-stat-icon>
       </button>
     </mat-menu>
   </span>

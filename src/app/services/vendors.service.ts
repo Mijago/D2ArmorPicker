@@ -17,9 +17,18 @@ import {
 } from "../data/types/IInventoryArmor";
 import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
+import { AuthService } from "./auth.service";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
+interface VendorWithParent {
+  vendorHash: string;
+  parentHash: string;
+}
+
+const VendorsWithParent: VendorWithParent[] = [
+  { vendorHash: "3751514131", parentHash: "2190858386" }, // Strange Gear Offers, Tower Xûr
+];
 @Injectable({
   providedIn: "root",
 })
@@ -27,8 +36,16 @@ export class VendorsService {
   constructor(
     private membership: MembershipService,
     private http: HttpClientService,
-    private db: DatabaseService
-  ) {}
+    private db: DatabaseService,
+    private auth: AuthService
+  ) {
+    this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
+  }
+
+  private clearCachedData() {
+    localStorage.removeItem(VENDOR_NEXT_REFRESH_KEY);
+    this.db.inventoryArmor.where({ source: InventoryArmorSource.Vendor }).delete();
+  }
 
   private async getVendorArmorItemsForCharacter(
     manifestItems: Record<number, IManifestArmor>,
@@ -46,9 +63,19 @@ export class VendorsService {
       filter: 0,
     });
 
-    const enabledVendors = Object.entries(vendorsResponse.Response.vendors.data!).filter(
-      ([_vendorHash, vendor]) => vendor.enabled
-    );
+    const allVendors = Object.entries(vendorsResponse.Response.vendors.data!);
+    const allVendorsMap = new Map(allVendors);
+
+    const enabledVendors = allVendors
+      .filter(([_vendorHash, vendor]) => vendor.enabled)
+      .filter(([vendorHash, vendor]) => {
+        const parent = VendorsWithParent.find((v) => v.vendorHash == vendorHash)?.parentHash;
+        if (parent == undefined) return true;
+        console.debug(
+          `${vendorHash} has parent ${parent} with value ${allVendorsMap.get(parent)?.enabled}`
+        );
+        return allVendorsMap.get(parent)?.enabled ?? false;
+      });
     const vendors = enabledVendors
       .filter(
         ([vendorHash, vendor]) =>
@@ -76,7 +103,7 @@ export class VendorsService {
           const saleItems = vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {};
           const vendorItemStats = vendorResponse.Response.itemComponents.stats.data ?? {};
 
-          const armor = Object.entries(saleItems).map(([vendorItemIndex, saleItem]) => {
+          for (const [vendorItemIndex, saleItem] of Object.entries(saleItems)) {
             const manifestItem = manifestItems[saleItem.itemHash];
             const itemStats = vendorItemStats[parseInt(vendorItemIndex)];
 
@@ -106,7 +133,7 @@ export class VendorsService {
             );
             applyInvestmentStats(r, statsOverride);
             vendorArmorItems.push(r);
-          });
+          }
         },
         (reason) => {
           console.error(`Failed to get vendor: ${reason}`);

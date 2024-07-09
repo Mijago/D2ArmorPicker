@@ -29,6 +29,42 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.2",
+    date: "July 7, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added option to ignore existing exotic artifice slots. This is useful for the exotic class item.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Prismatic fragments are now correctly added to the DIM export.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The 'Ignored Items' section is now filtered by the selected class, grouped into armor slots and ordered by item type.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor change for the vendor API handling. Thanks nznaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor change for the manifest API handling.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Mostly minor bugfixes and code improvements.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.1",
     date: "June 17, 2024",
     entries: [

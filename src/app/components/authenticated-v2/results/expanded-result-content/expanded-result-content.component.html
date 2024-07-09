@@ -619,21 +619,6 @@
               <ng-container *ngVar="ModInformation[mod] as info">
                 <li *ngIf="info.type === ModifierType.CombatStyleMod">
                   Equip the mod {{ info.name }}
-                  <span *ngIf="info.requiredArmorAffinity !== 0">
-                    ( {{ info.cost }}
-                    <span *ngIf="info.requiredArmorAffinity === 1"> Arc </span>
-                    <span *ngIf="info.requiredArmorAffinity === 2"> Solar </span>
-                    <span *ngIf="info.requiredArmorAffinity === 3"> Void </span>
-                    <span *ngIf="info.requiredArmorAffinity === 6"> Stasis </span>
-                    <!-- Item affinity -->
-                    <img
-                      #tooltip="matTooltip"
-                      *ngIf="info.requiredArmorAffinity !== 0"
-                      [src]="getAffinityUrl(info.requiredArmorAffinity)"
-                      class="element-icon-mini"
-                      matTooltip="{{ getAffinityName(info.requiredArmorAffinity) }} affinity" />
-                    )
-                  </span>
                 </li>
               </ng-container>
             </ng-container>

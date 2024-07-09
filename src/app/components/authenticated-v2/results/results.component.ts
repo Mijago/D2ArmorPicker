@@ -17,12 +17,9 @@
 
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { InventoryService } from "../../../services/inventory.service";
-import { DatabaseService } from "../../../services/database.service";
 import { MatTableDataSource } from "@angular/material/table";
-import { BungieApiService } from "../../../services/bungie-api.service";
 import { ConfigurationService } from "../../../services/configuration.service";
 import { ArmorPerkOrSlot, ArmorStat, StatModifier } from "../../../data/enum/armor-stat";
-import { ModOrAbility } from "../../../data/enum/modOrAbility";
 import { MatPaginator } from "@angular/material/paginator";
 import { MatSort } from "@angular/material/sort";
 import { StatusProviderService } from "../../../services/status-provider.service";
@@ -34,6 +31,7 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MaximumFragmentsPerClass } from "src/app/data/ModInformation";
+import { ModOrAbility } from "src/app/data/enum/modOrAbility";
 
 export interface ResultDefinition {
   exotic:
@@ -109,8 +107,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
   _config_assumeClassItemMasterworked: Boolean = false;
-  private _config_enabledMods: ModOrAbility[] = [];
-  private _config_limitParsedResults: Boolean = false;
 
   _config_automaticallySelectFragments: boolean = false;
   _config_maximumAutoSelectableFragments: number = 0;
@@ -124,6 +120,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_assumeEveryExoticIsArtifice: Boolean = false;
+  _config_ignoreExistingExoticArtificeSlots: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
 
@@ -153,8 +150,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   constructor(
     private inventory: InventoryService,
-    private db: DatabaseService,
-    private bungieApi: BungieApiService,
     private config: ConfigurationService,
     private status: StatusProviderService
   ) {}
@@ -166,8 +161,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
-      this._config_enabledMods = c.enabledMods || [];
-      this._config_limitParsedResults = c.limitParsedResults;
 
       this._config_maximumAutoSelectableFragments = Math.min(
         c.maximumAutoSelectableFragments,
@@ -186,6 +179,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
       this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
+      this._config_ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
       this._config_selectedExotics = c.selectedExotics;
       this._config_armorPerkLimitation = Object.entries(c.armorPerks)
         .filter((v) => v[1].value != ArmorPerkOrSlot.None)
@@ -293,9 +287,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
       config: this.config.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
-        p.items = p.items.map((i) => {
-          return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
-        });
+        p.items = p.items
+          .filter((i) => !!i[0])
+          .map((i) => {
+            return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
+          });
         delete p.exotic;
         return p;
       }),

@@ -1,6 +1,6 @@
 {
   "name": "d2-armor-picker",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "scripts": {
     "ng": "ng",
     "config": "ts-node set-env.ts",
@@ -33,7 +33,7 @@
     "all-contributors-cli": "^6.26.1",
     "angular-cli-ghpages": "^1.0.7",
     "angular-oauth2-oidc": "^12.1.0",
-    "bungie-api-ts": "^4.22.3",
+    "bungie-api-ts": "^5.1.0",
     "dexie": "^4.0.7",
     "glpk.js": "^4.0.2",
     "lzutf8": "^0.6.3",

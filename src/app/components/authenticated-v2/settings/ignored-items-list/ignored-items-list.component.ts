@@ -21,6 +21,7 @@ import { DatabaseService } from "../../../../services/database.service";
 import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 
 @Component({
   selector: "app-ignored-items-list",
@@ -28,7 +29,8 @@ import { takeUntil } from "rxjs/operators";
   styleUrls: ["./ignored-items-list.component.scss"],
 })
 export class IgnoredItemsListComponent implements OnInit, OnDestroy {
-  disabledItems: IInventoryArmor[] = [];
+  disabledItems: IInventoryArmor[][] = [];
+  characterClass: DestinyClass | null = null;
 
   constructor(private config: ConfigurationService, private db: DatabaseService) {}
 
@@ -66,6 +68,9 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (cb) => {
+      this.characterClass = null;
+      const newDisabledItems: IInventoryArmor[][] = [[], [], [], [], [], []];
+
       let items = [];
       for (let hash of cb.disabledItems) {
         let itemInstance = await this.db.inventoryArmor
@@ -74,7 +79,18 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
           .first();
         if (itemInstance) items.push(itemInstance);
       }
-      this.disabledItems = items;
+
+      for (let item of items) {
+        //if (item.clazz != this.characterClass) continue;
+        newDisabledItems[item.slot].push(item);
+      }
+
+      this.characterClass = cb.characterClass;
+
+      for (let row of newDisabledItems) {
+        row.sort((a, b) => a.hash - b.hash);
+      }
+      this.disabledItems = newDisabledItems;
     });
   }
 

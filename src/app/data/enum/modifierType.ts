@@ -25,3 +25,8 @@ export enum ModifierType {
   Prismatic,
   AnySubclass,
 }
+
+export type Subclass = Exclude<
+  ModifierType,
+  ModifierType.CombatStyleMod | ModifierType.AnySubclass
+>;

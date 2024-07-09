@@ -27,7 +27,6 @@ import {
 } from "@angular/core";
 import { Overlay, OverlayPositionBuilder, OverlayRef } from "@angular/cdk/overlay";
 import { ComponentPortal } from "@angular/cdk/portal";
-import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { StatCooldownTooltipComponent } from "./stat-cooldown-tooltip.component";
 import { ArmorStat } from "../../../../data/enum/armor-stat";
 

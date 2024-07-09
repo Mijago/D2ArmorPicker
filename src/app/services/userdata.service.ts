@@ -36,7 +36,7 @@ export class UserdataService {
   ) {
     this.loadCachedData();
 
-    auth.logoutEvent.subscribe((k) => this.clearCachedData());
+    this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
 
     this.inventory.inventory.subscribe(async () => {
       await this.updateCharacterData();

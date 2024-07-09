@@ -31,7 +31,6 @@ import {
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
 } from "bungie-api-ts/destiny2";
-import { AuthService } from "./auth.service";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
 import { IManifestArmor } from "../data/types/IManifestArmor";
@@ -42,7 +41,11 @@ import {
   applyInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot, ArmorPerkSocketHashes } from "../data/enum/armor-stat";
+import {
+  ArmorPerkOrSlot,
+  ArmorPerkSocketHashes,
+  MapAlternativeToArmorPerkOrSlot,
+} from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
 import { IManifestCollectible } from "../data/types/IManifestCollectible";
 import { MembershipService } from "./membership.service";
@@ -476,8 +479,11 @@ export class BungieApiService {
     if (scks.find((d) => d.reusablePlugSetHash == 1403)) return ArmorPerkOrSlot.SlotArtifice;
 
     for (const socket of scks) {
-      const socketHash = socket.singleInitialItemHash;
+      let socketHash = socket.singleInitialItemHash;
       if (!socketHash) continue;
+
+      // Map the socket hash to another perk, if necessary (mostly if the perk exists multiple times)
+      socketHash = MapAlternativeToArmorPerkOrSlot[socketHash] || socketHash;
 
       // find the key of ArmorPerkSocketHashes that matches the socketHash
       const slotType = Object.entries(ArmorPerkSocketHashes).find(
@@ -557,7 +563,7 @@ export class BungieApiService {
     let destinyManifest = null;
     if (manifestCache && !force) {
       if (Date.now() - manifestCache.updatedAt > 1000 * 3600 * 0.25) {
-        destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
+        destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutKey(d));
         const version = destinyManifest.Response.version;
         if (manifestCache.version == version) {
           console.debug(
@@ -578,7 +584,7 @@ export class BungieApiService {
     }
 
     if (destinyManifest == null) {
-      destinyManifest = await getDestinyManifest((d) => this.http.$http(d));
+      destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutKey(d));
     }
 
     const manifestVersion = destinyManifest.Response.version;

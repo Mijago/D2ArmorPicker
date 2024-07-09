@@ -64,6 +64,16 @@
 </div>
 
 <div>
+  <button
+    *ngIf="exotics.length === 0 || exotics[0].length === 0"
+    mat-raised-button
+    color="warn"
+    (click)="refreshAll()">
+    Manually refresh manifest and inventory
+  </button>
+</div>
+
+<div>
   <mat-slide-toggle
     color="primary"
     [checked]="includeCollectionRolls"
@@ -93,5 +103,13 @@
     [checked]="!ignoreSunsetArmor"
     (change)="setIgnoreSunsetArmor(!$event.checked)">
     Include sunset armor
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="warn"
+    [checked]="ignoreExistingExoticArtificeSlots"
+    (change)="setIgnoreExistingExoticArtificeSlots($event.checked)">
+    Ignore existing artifice slots on exotics (useful for the exotic class item)
   </mat-slide-toggle>
 </div>

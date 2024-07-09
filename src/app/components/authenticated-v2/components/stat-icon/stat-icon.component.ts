@@ -16,7 +16,7 @@
  */
 
 import { Component, Input } from "@angular/core";
-import { ArmorStat } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatIconUrls, ArmorStatNames } from "../../../../data/enum/armor-stat";
 
 @Component({
   selector: "app-stat-icon",
@@ -24,6 +24,8 @@ import { ArmorStat } from "../../../../data/enum/armor-stat";
   styleUrls: ["./stat-icon.component.css"],
 })
 export class StatIconComponent {
+  ArmorStatNames = ArmorStatNames;
+  ArmorStatIconUrls = ArmorStatIconUrls;
   @Input()
   stat: ArmorStat = ArmorStat.Mobility;
 

@@ -53,6 +53,8 @@ export class DatabaseService extends Database {
   private async clearDatabase() {
     localStorage.removeItem("LastManifestUpdate");
     localStorage.removeItem("LastArmorUpdate");
+    localStorage.removeItem("last-manifest-revision");
+    localStorage.removeItem("last-manifest-db-name");
     await this.inventoryArmor.clear();
   }
 
