@@ -23,6 +23,10 @@ export enum ModifierType {
   Arc,
   Strand,
   Prismatic,
+  AnySubclass,
 }
 
-export type Subclass = Exclude<ModifierType, ModifierType.CombatStyleMod>;
+export type Subclass = Exclude<
+  ModifierType,
+  ModifierType.CombatStyleMod | ModifierType.AnySubclass
+>;

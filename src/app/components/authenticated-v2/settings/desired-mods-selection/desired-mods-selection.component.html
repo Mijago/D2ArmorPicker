@@ -39,13 +39,15 @@
         [value]="ModifierType.Prismatic">
         Prismatic
       </mat-button-toggle>
+      <mat-button-toggle
+        (click)="setElement(ModifierType.AnySubclass)"
+        [value]="ModifierType.AnySubclass">
+        Any
+      </mat-button-toggle>
     </mat-button-toggle-group>
   </ng-container>
   <ng-container *ngIf="!d.group || d.type === selectedElement">
     <h3 class="stat-part-title" *ngIf="!d.group">{{ d.name }}</h3>
-    <span *ngIf="d.data.length === 0"
-      >There are no fragments configured yet. Please be patient.</span
-    >
     <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
       <!-- Position Column -->
       <ng-container matColumnDef="name">
@@ -148,6 +150,29 @@
     </table>
   </ng-container>
 </span>
+
+<div id="switch-container">
+  <mat-button-toggle-group>
+    <mat-button-toggle
+      *ngFor="let fragmentCount of MaxFragmentRange; let i = index"
+      (click)="setFragmentLimit(i)"
+      [value]="i"
+      [disabled]="
+        maxFragmentsFromSubclass < i || maxFragmentsFromSubclass - currentlySelectedFragments < i
+      "
+      [class.mat-button-toggle-checked]="
+        config_maximumAutoSelectableFragments >= i &&
+        maxFragmentsFromSubclass - currentlySelectedFragments >= i
+      "
+      [class.not-checked]="config_maximumAutoSelectableFragments < i"
+      >{{ i }}</mat-button-toggle
+    >
+  </mat-button-toggle-group>
+  <br />
+  This will automatically add fragments to fulfill the desired stat distribution, if necessary.
+  <br />
+  <b>Activating this setting will drastically increase the calculation time.</b>
+</div>
 
 <div id="clear-container">
   <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>

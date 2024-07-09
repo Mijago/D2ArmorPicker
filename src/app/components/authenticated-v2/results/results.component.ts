@@ -30,6 +30,8 @@ import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { MaximumFragmentsPerClass } from "src/app/data/ModInformation";
+import { ModOrAbility } from "src/app/data/enum/modOrAbility";
 
 export interface ResultDefinition {
   exotic:
@@ -46,6 +48,7 @@ export interface ResultDefinition {
     perk: ArmorPerkOrSlot;
   };
   mods: number[];
+  additionalFragments: ModOrAbility[];
   stats: number[];
   statsNoMods: number[];
   items: ResultItem[][];
@@ -105,6 +108,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_assumeExoticsMasterworked: Boolean = false;
   _config_assumeClassItemMasterworked: Boolean = false;
 
+  _config_automaticallySelectFragments: boolean = false;
+  _config_maximumAutoSelectableFragments: number = 0;
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
@@ -157,6 +162,15 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
+      this._config_maximumAutoSelectableFragments = Math.min(
+        c.maximumAutoSelectableFragments,
+        Math.max(
+          0,
+          MaximumFragmentsPerClass[c.characterClass][c.selectedModElement] - c.enabledMods.length
+        )
+      );
+      this._config_automaticallySelectFragments =
+        this._config_maximumAutoSelectableFragments > 0 && c.automaticallySelectFragments;
       this._config_maximumStatMods = c.maximumStatMods;
       this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
       this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
@@ -206,33 +220,43 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      let value = 0;
       switch (sortHeaderId) {
         case "Mobility":
-          return data.stats[ArmorStat.Mobility];
+          value = data.stats[ArmorStat.Mobility];
+          break;
         case "Resilience":
-          return data.stats[ArmorStat.Resilience];
+          value = data.stats[ArmorStat.Resilience];
+          break;
         case "Recovery":
-          return data.stats[ArmorStat.Recovery];
+          value = data.stats[ArmorStat.Recovery];
+          break;
         case "Discipline":
-          return data.stats[ArmorStat.Discipline];
+          value = data.stats[ArmorStat.Discipline];
+          break;
         case "Intellect":
-          return data.stats[ArmorStat.Intellect];
+          value = data.stats[ArmorStat.Intellect];
+          break;
         case "Strength":
-          return data.stats[ArmorStat.Strength];
+          value = data.stats[ArmorStat.Strength];
+          break;
         case "Tiers":
-          return data.tiers;
+          value = data.tiers;
+          break;
         case "Max Tiers":
-          return 10 * (data.tiers + (5 - data.modCount));
+          value = 10 * (data.tiers + (5 - data.modCount));
+          break;
         case "Waste":
-          return data.waste;
+          value = data.waste;
+          break;
         case "Mods":
-          return (
-            +100 * data.modCount +
-            //+ 40 * data.artifice.length
-            data.modCost
-          );
+          value = +100 * data.modCount + data.modCost;
       }
-      return 0;
+
+      // subtract the count of additional used fragments divided by 10
+      value += data.additionalFragments.length / 6;
+
+      return value;
     };
   }
 
@@ -263,9 +287,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
       config: this.config.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
-        p.items = p.items.map((i) => {
-          return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
-        });
+        p.items = p.items
+          .filter((i) => !!i[0])
+          .map((i) => {
+            return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
+          });
         delete p.exotic;
         return p;
       }),

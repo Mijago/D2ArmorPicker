@@ -69,6 +69,10 @@ export class BuildConfiguration {
   // if set, then we can use the exact stats like 6x69. It will be stored as "fixed 6.9" in minimumStatTiers
   allowExactStats = false;
 
+  // allows us to automatically select the best fragments for the selected subclass
+  automaticallySelectFragments = false;
+  maximumAutoSelectableFragments = 0;
+
   // Fixable, BUT the bool is not yet used. Maybe in a future update.
   maximumModSlots: EnumDictionary<ArmorSlot, FixableSelection<number>> = {
     [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
@@ -114,6 +118,8 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      maximumAutoSelectableFragments: 0,
+      automaticallySelectFragments: false,
       ignoreExistingExoticArtificeSlots: false,
       allowExactStats: false,
       enabledMods: [],

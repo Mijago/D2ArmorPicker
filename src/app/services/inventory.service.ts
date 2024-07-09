@@ -489,6 +489,7 @@ export class InventoryService {
                   },
                   [[], [], [], [], []]
                 ),
+                additionalFragments: armorSet.additionalFragments,
                 classItem: armorSet.classItemPerk,
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
@@ -574,6 +575,9 @@ export class InventoryService {
       this._config.modOptimizationStrategy != ModOptimizationStrategy.None
     ) {
       calculationMultiplier = 0.7;
+    }
+    if (this._config.automaticallySelectFragments) {
+      calculationMultiplier *= 0.35;
     }
 
     let minimumCalculationPerThread = calculationMultiplier * 5e4;

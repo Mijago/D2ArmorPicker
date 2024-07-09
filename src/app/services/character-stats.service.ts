@@ -160,28 +160,41 @@ export class CharacterStatsService {
 
     const exoticOverrides = this.overrides.filter((o) => exoticHashes.includes(o.Hash));
 
-    return entries
-      .filter((entry) => {
-        if (
-          characterClass !== undefined &&
-          entry.characterClass !== undefined &&
-          entry.characterClass !== characterClass
-        ) {
-          return false;
-        }
+    return (
+      entries
+        .filter((entry) => {
+          if (
+            characterClass !== undefined &&
+            entry.characterClass !== undefined &&
+            entry.characterClass !== characterClass
+          ) {
+            return false;
+          }
 
-        if (element !== undefined && entry.element !== undefined && entry.element !== element) {
-          return false;
-        }
+          if (
+            element !== undefined &&
+            entry.element !== undefined &&
+            entry.element !== element &&
+            element != ModifierType.AnySubclass
+          ) {
+            return false;
+          }
 
-        return true;
-      })
-      .map((entry) => {
-        return exoticOverrides.reduce(
-          (acc, override) => applyExoticArmorOverride(acc, override),
-          entry
-        );
-      });
+          return true;
+        })
+        // sort by element
+        .sort((a, b) => a.element! - b.element! || 0)
+        // remove duplicates by name
+        .filter((entry, index, self) => self.findIndex((e) => e.name === entry.name) === index)
+        // Limit to N entries to not overflow the tooltip
+        .slice(0, 12)
+        .map((entry) => {
+          return exoticOverrides.reduce(
+            (acc, override) => applyExoticArmorOverride(acc, override),
+            entry
+          );
+        })
+    );
   }
 
   private generateEntries<T extends CharacterStats[keyof CharacterStats]>(

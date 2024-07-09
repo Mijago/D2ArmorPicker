@@ -70,9 +70,9 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
   public config_assumeClassItemMasterworked = false;
+  public config_automaticallySelectFragments = false;
   public config_enabledMods: ModOrAbility[] = [];
   public DIMUrl: string = "";
-  configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
   element: ResultDefinition | null = null;
@@ -83,6 +83,25 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private bungieApi: BungieApiService,
     private membership: MembershipService
   ) {}
+
+  calculateStatValuesFromFragmentsAndMods(
+    m: ModOrAbility[],
+    cls: DestinyClass
+  ): [number, number, number, number, number, number] {
+    return m
+      .reduce((p, v) => {
+        p = p.concat(ModInformation[v].bonus);
+        return p;
+      }, [] as ModifierValue[])
+      .reduce(
+        (p, v) => {
+          if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat) p[[1, 0, 2][cls]] += v.value;
+          else p[v.stat as number] += v.value;
+          return p;
+        },
+        [0, 0, 0, 0, 0, 0]
+      );
+  }
 
   public buildItemIdString(element: ResultDefinition | null) {
     if (!element) return "";
@@ -133,20 +152,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this.config_enabledMods = c.enabledMods;
-      this.configValues = c.enabledMods
-        .reduce((p, v) => {
-          p = p.concat(ModInformation[v].bonus);
-          return p;
-        }, [] as ModifierValue[])
-        .reduce(
-          (p, v) => {
-            if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat)
-              p[[1, 0, 2][c.characterClass]] += v.value;
-            else p[v.stat as number] += v.value;
-            return p;
-          },
-          [0, 0, 0, 0, 0, 0]
-        );
+      this.config_automaticallySelectFragments = c.automaticallySelectFragments;
 
       this.DIMUrl = this.generateDIMLink(c);
     });
@@ -244,12 +250,16 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     return cost;
   }
 
+  getAllEnabledModsAndFragments() {
+    return this.config_enabledMods.concat(this.element?.additionalFragments || []);
+  }
+
   generateDIMLink(c: BuildConfiguration): string {
     const mods: number[] = [];
     const fragments: number[] = [];
 
     // add selected mods
-    for (let mod of this.config_enabledMods) {
+    for (let mod of this.getAllEnabledModsAndFragments()) {
       const modInfo = ModInformation[mod];
       if (modInfo.type === ModifierType.CombatStyleMod) {
         mods.push(modInfo.hash);
@@ -324,7 +334,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
       if (
         c.characterClass != DestinyClass.Unknown &&
-        c.selectedModElement != ModifierType.CombatStyleMod
+        c.selectedModElement != ModifierType.CombatStyleMod &&
+        c.selectedModElement != ModifierType.AnySubclass
       ) {
         const cl = SubclassHashes[c.characterClass];
         const subclassHash = cl[c.selectedModElement];
@@ -354,7 +365,11 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   }
 
   getColumnForStat(statId: number) {
-    var configValueTiers = Math.floor(this.configValues[statId] / 10);
+    const configValues = this.calculateStatValuesFromFragmentsAndMods(
+      this.getAllEnabledModsAndFragments(),
+      this.config_characterClass
+    );
+    var configValueTiers = Math.floor(configValues[statId] / 10);
     let d = [];
     let total = 0;
 

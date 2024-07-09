@@ -24,6 +24,7 @@
     <td>
       <app-stat-tier-selection
         [stat]="enum.value"
+        [automaticallySelectFragments]="config_automaticallySelectFragments"
         [allowExactStats]="config_allowExactStats"
         [statsByMods]="statsByMods[enum.value]"
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
@@ -73,7 +74,6 @@
     </mat-menu>
   </span>
 </span>
-
 <br />
 <br />
 <!-- modOptimizationStrategy -->

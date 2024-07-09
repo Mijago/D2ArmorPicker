@@ -19,7 +19,7 @@ import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
-import { ModInformation } from "../data/ModInformation";
+import { MaximumFragmentsPerClass, ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
   ArmorStat,
@@ -39,6 +39,14 @@ import {
   createArmorSet,
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
+import { Modifier } from "../data/modifier";
+import { ModifierType } from "../data/enum/modifierType";
+
+interface IFragmentCombination {
+  subclass: number | null;
+  fragments: Modifier[];
+  stats: number[];
+}
 
 function checkSlots(
   config: BuildConfiguration,
@@ -167,6 +175,132 @@ function prepareConstantAvailableModslots(config: BuildConfiguration) {
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
   return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
+}
+
+// NOT RECURSIVE
+function* generateFragmentCombinationsForGroup(
+  fragments: Modifier[],
+  fragmentCount: number,
+  fragmentIndex = 0,
+  currentCombination: Modifier[] = []
+): Generator<Modifier[]> {
+  if (fragmentCount == 0 || fragmentIndex >= fragments.length) {
+    yield currentCombination;
+  } else {
+    for (let i = fragmentIndex; i < fragments.length; i++) {
+      const fragment = fragments[i];
+      const newCombination = [...currentCombination];
+      newCombination.push(fragment);
+      yield* generateFragmentCombinationsForGroup(
+        fragments,
+        fragmentCount - 1,
+        i + 1,
+        newCombination
+      );
+    }
+  }
+}
+
+function* generateFragmentCombinations(
+  config: BuildConfiguration
+): Generator<IFragmentCombination> {
+  yield { subclass: ModifierType.AnySubclass, fragments: [], stats: [0, 0, 0, 0, 0, 0] };
+  if (config.automaticallySelectFragments) {
+    // group the fragments in ModInformation by subclass (requiredArmorAffinity)
+    const fragmentsBySubclass = new Map<number, Modifier[]>();
+    find_fragments: for (const fragment of Object.values(ModInformation)) {
+      const subclass = fragment.type;
+      // filter the fragments by the selected subclass, if it is not AnySubclass
+      if (
+        config.selectedModElement != ModifierType.AnySubclass &&
+        subclass != config.selectedModElement
+      )
+        continue;
+
+      // only allow negative fragments if the corresponding stat is locked
+      if (fragment.bonus.some((d) => d.value < 0)) {
+        for (let i = 0; i < fragment.bonus.length; i++) {
+          if (fragment.bonus[i].value < 0 && !config.minimumStatTiers[i as ArmorStat].fixed)
+            continue find_fragments;
+        }
+      }
+
+      // if the fragment is already selected in the enabledMods, do not add it again
+      if (config.enabledMods.indexOf(fragment.id) > -1) continue;
+
+      if (!fragmentsBySubclass.has(subclass)) fragmentsBySubclass.set(subclass, []);
+      fragmentsBySubclass.get(subclass)!.push(fragment);
+    }
+
+    let alreadyReservedFragments = 0;
+    // for each selected fragment in the subclass, reduce the possibleNumberOfFragments by 1
+    for (const fragment of Object.values(ModInformation)) {
+      // in enabledMods
+      if (config.enabledMods.indexOf(fragment.id) > -1) alreadyReservedFragments++;
+    }
+
+    // generate all possible combinations of fragments in a group, starting with 1 fragment, up to 4
+    for (const [subclass, fragments] of fragmentsBySubclass) {
+      const possibleNumberOfFragments = Math.min(
+        config.maximumAutoSelectableFragments,
+        MaximumFragmentsPerClass[config.characterClass][subclass] - alreadyReservedFragments
+      );
+      for (let i = 1; i <= possibleNumberOfFragments; i++) {
+        for (const fragmentCombination of generateFragmentCombinationsForGroup(fragments, i)) {
+          const result = [0, 0, 0, 0, 0, 0];
+          for (const fragment of fragmentCombination) {
+            for (const bonus of fragment.bonus) {
+              const statId =
+                bonus.stat == SpecialArmorStat.ClassAbilityRegenerationStat
+                  ? [1, 0, 2][subclass]
+                  : bonus.stat;
+              result[statId] += bonus.value;
+            }
+          }
+          yield {
+            subclass,
+            fragments: fragmentCombination,
+            stats: result,
+          };
+        }
+      }
+    }
+  }
+}
+
+function prepareFragments(config: BuildConfiguration): IFragmentCombination[] {
+  // get all fragment combinations
+  const fragmentCombinations = Array.from(generateFragmentCombinations(config));
+  // remove duplicates. A duplicate has the same stats.
+  const fragmentCombinationsSetIds = new Set(
+    fragmentCombinations.map((d) => JSON.stringify(d.stats))
+  );
+  let fragmentCombinationsSet: IFragmentCombination[] = Array.from(fragmentCombinationsSetIds)
+    .map((d) => fragmentCombinations.find((f) => JSON.stringify(f.stats) == d))
+    .filter((d) => d != null && d != undefined) as IFragmentCombination[];
+
+  // filter: Only allow negative stats if the corresponding stat is locked
+  fragmentCombinationsSet = fragmentCombinationsSet.filter((d) => {
+    const hasNegative = d!.stats.some((d) => d < 0);
+    if (!hasNegative) return true;
+
+    for (let i = 0; i < d!.stats.length; i++) {
+      if (d!.stats[i] < 0 && config.minimumStatTiers[i as ArmorStat].fixed) return true;
+    }
+    return false;
+  });
+
+  // sort by total stat boost:
+  // first the lowest >= 0, afterwards the lowest <=0 - basically [0,10, 20, -10, -20]
+  fragmentCombinationsSet = fragmentCombinationsSet.sort((a, b) => {
+    const hasNegativeA = a!.stats.some((d) => d < 0);
+    const hasNegativeB = b!.stats.some((d) => d < 0);
+
+    if (!hasNegativeA && hasNegativeB) return -1;
+    if (hasNegativeA && !hasNegativeB) return 1;
+    return a!.stats.reduce((a, b) => a + b) - b!.stats.reduce((a, b) => a + b);
+  });
+  return fragmentCombinationsSet;
 }
 
 function* generateArmorCombinations(
@@ -357,6 +491,9 @@ addEventListener("message", async ({ data }) => {
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
 
+  // unless the configuration is set, this will only contain one entry - an empty set
+  const fragmentCombinationsSet = prepareFragments(config);
+
   console.time(`tm #${threadSplit.current}`);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
@@ -387,24 +524,39 @@ addEventListener("message", async ({ data }) => {
     const canUseArtificeClassItem =
       !slotCheckResult.requiredClassItemType ||
       slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
-
     const hasOneExotic = helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic;
     const tmpHasArtificeClassItem =
-      hasArtificeClassItem ||
-      (!hasOneExotic && hasArtificeClassItemExotic && !config.ignoreExistingExoticArtificeSlots);
-    const result = handlePermutation(
-      runtime,
-      config,
-      helmet,
-      gauntlet,
-      chest,
-      leg,
-      constantBonus,
-      constantAvailableModslots,
-      doNotOutput,
-      tmpHasArtificeClassItem && canUseArtificeClassItem,
-      exoticClassItemIsEnforced
-    );
+      hasArtificeClassItem || (!hasOneExotic && hasArtificeClassItemExotic);
+
+    let result = null;
+    for (const fragmentCombination of fragmentCombinationsSet) {
+      const constantBonusWithFragments = constantBonus.map(
+        (d, i) => d + fragmentCombination!.stats[i]
+      );
+      result = handlePermutation(
+        runtime,
+        config,
+        helmet,
+        gauntlet,
+        chest,
+        leg,
+        constantBonusWithFragments,
+        constantAvailableModslots,
+        doNotOutput,
+        tmpHasArtificeClassItem && canUseArtificeClassItem,
+        exoticClassItemIsEnforced,
+        fragmentCombination,
+        fragmentCombinationsSet
+      );
+
+      if (result != null) {
+        if (isIPermutatorArmorSet(result)) {
+          const fragmentIds = fragmentCombination!.fragments.map((d) => d.id);
+          (result as unknown as IPermutatorArmorSet).additionalFragments = fragmentIds;
+        }
+        break;
+      }
+    }
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
     if (result != null) {
@@ -415,6 +567,7 @@ addEventListener("message", async ({ data }) => {
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.None);
 
         // add the exotic class item if we have one and we do not have an exotic armor piece in this selection
+
         if (!hasOneExotic && exoticClassItem && exoticClassItemIsEnforced) {
           result.armor.push(exoticClassItem.id);
         }
@@ -483,7 +636,9 @@ export function handlePermutation(
   availableModCost: number[],
   doNotOutput = false,
   hasArtificeClassItem = false,
-  hasExoticClassItem = false
+  hasExoticClassItem = false,
+  currentFragmentCombination: IFragmentCombination | null = null,
+  allFragmentCombinations: IFragmentCombination[] = []
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
   var totalStatBonus = 0;
@@ -608,26 +763,33 @@ export function handlePermutation(
   ];
 
   // find every combo of three stats which sum is less than 65; no duplicates
-  let combos3x100 = [];
-  let combos4x100 = [];
+  let combos3x100: [number[], IFragmentCombination][] = [];
+  let combos4x100: [number[], IFragmentCombination][] = [];
   for (let i = 0; i < 4; i++) {
     for (let j = i + 1; j < 5; j++) {
-      for (let k = j + 1; k < 6; k++) {
-        let dx = distances.slice();
-        dx[i] = distancesTo100[i];
-        dx[j] = distancesTo100[j];
-        dx[k] = distancesTo100[k];
-        let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
-        if (distanceSum <= 65) {
-          combos3x100.push([i, j, k]);
+      inner_loop: for (let k = j + 1; k < 6; k++) {
+        for (let fragmentCombo of allFragmentCombinations) {
+          let dx = distances.slice();
+          dx[i] = distancesTo100[i];
+          dx[j] = distancesTo100[j];
+          dx[k] = distancesTo100[k];
+          for (let p = 0; p < 6; p++) {
+            dx[p] = Math.max(0, dx[p] - fragmentCombo.stats[p]);
+          }
+          let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
+          if (distanceSum <= 65) {
+            combos3x100.push([[i, j, k], fragmentCombo]);
 
-          for (let l = k + 1; l < 6; l++) {
-            let dy = dx.slice();
-            dy[l] = distancesTo100[l];
-            let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
-            if (distanceSum <= 65) {
-              combos4x100.push([i, j, k, l]);
+            for (let l = k + 1; l < 6; l++) {
+              let dy = dx.slice();
+              dy[l] = distancesTo100[l];
+              dy[l] = Math.max(0, dy[l] - fragmentCombo.stats[l]);
+              let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
+              if (distanceSum <= 65) {
+                combos4x100.push([[i, j, k, l], fragmentCombo]);
+              }
             }
+            break inner_loop;
           }
         }
       }
@@ -635,10 +797,13 @@ export function handlePermutation(
   }
   if (combos3x100.length > 0) {
     // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos3x100) {
+    for (let entry of combos3x100) {
+      const combo = entry[0];
+      const fragmentCombo = entry[1];
+
       const newDistances = distances.slice();
       for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
+        newDistances[i] = Math.max(0, distancesTo100[i] - fragmentCombo.stats[i]);
       }
       const mods = get_mods_precalc(
         config,
@@ -653,10 +818,13 @@ export function handlePermutation(
       }
     }
     // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos4x100) {
+    for (let entry of combos4x100) {
+      const combo = entry[0];
+      const fragmentCombo = entry[1];
+
       const newDistances = distances.slice();
       for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
+        newDistances[i] = Math.max(0, distancesTo100[i] - fragmentCombo.stats[i]);
       }
       const mods = get_mods_precalc(
         config,
@@ -690,7 +858,7 @@ export function handlePermutation(
     }
 
     const oldDistance = distances[stat];
-    for (
+    tier_loop: for (
       let tier = 10;
       tier >= config.minimumStatTiers[stat as ArmorStat].value &&
       tier > runtime.maximumPossibleTiers[stat] / 10;
@@ -699,18 +867,28 @@ export function handlePermutation(
       if (stats[stat] >= tier * 10) break;
       const v = 10 - (stats[stat] % 10);
       distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
-      const mods = get_mods_precalc(
-        config,
-        distances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        availableModCost,
-        ModOptimizationStrategy.None
-      );
-      //const mods = null;
-      if (mods != null) {
-        runtime.maximumPossibleTiers[stat] = tier * 10;
-        break;
+
+      for (let fragmentCombination of allFragmentCombinations) {
+        const newDist = distances.slice();
+        // now add the fragment combination
+        for (let i = 0; i < 6; i++) {
+          newDist[i] -= fragmentCombination.stats[i];
+          newDist[i] += currentFragmentCombination?.stats[i] || 0;
+          newDist[i] = Math.max(0, newDist[i]);
+        }
+        const mods = get_mods_precalc(
+          config,
+          newDist,
+          [0, 0, 0, 0, 0, 0],
+          availableArtificeCount,
+          availableModCost,
+          ModOptimizationStrategy.None
+        );
+        //const mods = null;
+        if (mods != null) {
+          runtime.maximumPossibleTiers[stat] = tier * 10;
+          break tier_loop;
+        }
       }
     }
     distances[stat] = oldDistance;

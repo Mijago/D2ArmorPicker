@@ -1,4 +1,5 @@
 import { ArmorPerkOrSlot, StatModifier } from "../enum/armor-stat";
+import { ModOrAbility } from "../enum/modOrAbility";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export interface IPermutatorArmorSet {
@@ -8,6 +9,8 @@ export interface IPermutatorArmorSet {
   classItemPerk: ArmorPerkOrSlot;
   statsWithMods: number[];
   statsWithoutMods: number[];
+  // Contains the additional fragments that were automatically picked by the system
+  additionalFragments: ModOrAbility[];
 }
 
 export function createArmorSet(
@@ -27,6 +30,7 @@ export function createArmorSet(
     classItemPerk: ArmorPerkOrSlot.None,
     statsWithMods,
     statsWithoutMods,
+    additionalFragments: [],
   };
 }
 

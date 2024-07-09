@@ -168,6 +168,19 @@
 
           <mat-chip
             #tooltip="matTooltip"
+            *ngIf="_config_automaticallySelectFragments"
+            disableRipple
+            color="warn"
+            selected
+            matTooltip="This setting enforces that all exotics are ignored.">
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+            &nbsp;Automatically add up to
+            {{ _config_maximumAutoSelectableFragments }} fragments&nbsp;
+            <mat-icon inline style="height: 100%">report_problem</mat-icon>
+          </mat-chip>
+
+          <mat-chip
+            #tooltip="matTooltip"
             *ngIf="_config_onlyUseMasterworkedExotics"
             disableRipple
             matTooltip="This setting means that only exotic armor pieces that are already masterworked are used."
