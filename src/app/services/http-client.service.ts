@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment";
 import { StatusProviderService } from "./status-provider.service";
+import { retry } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root",
@@ -20,7 +21,25 @@ export class HttpClientService {
       .get<any>(config.url, {
         params: config.params,
       })
+      .pipe(retry(2))
       .toPromise();
+  }
+
+  /**
+   * This function is used to make a http request without an api key.
+   * If the request fails, it will retry *with* the api key.
+   */
+  async $httpWithoutAndWithKey(config: HttpClientConfig) {
+    return this.http
+      .get<any>(config.url, {
+        params: config.params,
+      })
+      .pipe(retry(2))
+      .toPromise()
+      .catch(async (err) => {
+        console.error(err);
+        return this.$http(config);
+      });
   }
 
   async $httpPost(config: HttpClientConfig) {
@@ -32,6 +51,7 @@ export class HttpClientService {
           Authorization: "Bearer " + this.authService.accessToken,
         },
       })
+      .pipe(retry(2))
       .toPromise()
       .catch(async (err) => {
         console.error(err);
@@ -47,6 +67,7 @@ export class HttpClientService {
           Authorization: "Bearer " + this.authService.accessToken,
         },
       })
+      .pipe(retry(2))
       .toPromise()
       .then((res) => {
         // Clear API error, if it was set
