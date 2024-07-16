@@ -29,6 +29,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.3",
+    date: "July 16, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor bugfix for issues with the manifest retrieval. This should fix issues where the items or characters are not loading correctly.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the 'Download Results as JSON' button to reflect required changes for Final Shape.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.2",
     date: "July 7, 2024",
     entries: [
