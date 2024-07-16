@@ -16,30 +16,11 @@ export class HttpClientService {
     private status: StatusProviderService
   ) {}
 
-  async $httpWithoutKey(config: HttpClientConfig) {
-    return this.http
-      .get<any>(config.url, {
-        params: config.params,
-      })
-      .pipe(retry(2))
-      .toPromise();
+  async $httpWithoutBearerToken(config: HttpClientConfig) {
+    return this.$http(config, true, false, 2);
   }
-
-  /**
-   * This function is used to make a http request without an api key.
-   * If the request fails, it will retry *with* the api key.
-   */
-  async $httpWithoutAndWithKey(config: HttpClientConfig) {
-    return this.http
-      .get<any>(config.url, {
-        params: config.params,
-      })
-      .pipe(retry(2))
-      .toPromise()
-      .catch(async (err) => {
-        console.error(err);
-        return this.$http(config);
-      });
+  async $httpWithoutApiKey(config: HttpClientConfig) {
+    return this.$http(config, false, false, 2);
   }
 
   async $httpPost(config: HttpClientConfig) {
@@ -58,16 +39,18 @@ export class HttpClientService {
       });
   }
 
-  async $http(config: HttpClientConfig, logoutOnError = true) {
+  async $http(config: HttpClientConfig, apiKey = true, bearerToken = true, retryCount = 2) {
+    let options = {
+      params: config.params,
+      headers: {} as any,
+    };
+    if (apiKey) options.headers["X-API-Key"] = environment.apiKey;
+
+    if (bearerToken) options.headers["Authorization"] = "Bearer " + this.authService.accessToken;
+
     return this.http
-      .get<any>(config.url, {
-        params: config.params,
-        headers: {
-          "X-API-Key": environment.apiKey,
-          Authorization: "Bearer " + this.authService.accessToken,
-        },
-      })
-      .pipe(retry(2))
+      .get<any>(config.url, options)
+      .pipe(retry(retryCount))
       .toPromise()
       .then((res) => {
         // Clear API error, if it was set
@@ -80,7 +63,7 @@ export class HttpClientService {
           console.debug("Offline mode, ignoring API error");
           return;
         }
-        if (err.error?.ErrorStatus == "SystemDisabled" && logoutOnError) {
+        if (err.error?.ErrorStatus == "SystemDisabled") {
           console.info("System is disabled. Revoking auth, must re-login");
           this.status.setApiError();
         }
