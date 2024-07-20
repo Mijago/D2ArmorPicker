@@ -359,6 +359,11 @@ addEventListener("message", async ({ data }) => {
 
   console.time(`tm #${threadSplit.current}`);
 
+  const hasMasterworkedClassItemExotic =
+    !!exoticClassItem && (exoticClassItem.masterworked || config.assumeExoticsMasterworked);
+  const hasMasterworkedClassItemLegendary =
+    config.assumeClassItemMasterworked || config.assumeLegendariesMasterworked;
+
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
     helmets,
     gauntlets,
@@ -392,6 +397,10 @@ addEventListener("message", async ({ data }) => {
     const tmpHasArtificeClassItem =
       hasArtificeClassItem ||
       (!hasOneExotic && hasArtificeClassItemExotic && !config.ignoreExistingExoticArtificeSlots);
+    const hasMasterworkedClassItem = exoticClassItemIsEnforced
+      ? hasMasterworkedClassItemExotic
+      : hasMasterworkedClassItemLegendary || (!hasOneExotic && hasMasterworkedClassItemExotic);
+
     const result = handlePermutation(
       runtime,
       config,
@@ -403,7 +412,8 @@ addEventListener("message", async ({ data }) => {
       constantAvailableModslots,
       doNotOutput,
       tmpHasArtificeClassItem && canUseArtificeClassItem,
-      exoticClassItemIsEnforced
+      exoticClassItemIsEnforced,
+      hasMasterworkedClassItem
     );
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
@@ -483,16 +493,12 @@ export function handlePermutation(
   availableModCost: number[],
   doNotOutput = false,
   hasArtificeClassItem = false,
-  hasExoticClassItem = false
+  hasExoticClassItem = false,
+  hasMasterworkedClassItem = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
   var totalStatBonus = 0;
-  if (hasExoticClassItem && config.assumeExoticsMasterworked) totalStatBonus += 2;
-  else if (
-    !hasExoticClassItem &&
-    (config.assumeLegendariesMasterworked || config.assumeClassItemMasterworked)
-  )
-    totalStatBonus += 2;
+  if (hasMasterworkedClassItem) totalStatBonus += 2;
 
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
