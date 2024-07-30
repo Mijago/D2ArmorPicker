@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.4",
+    date: "July 30, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue with the vendor api. Thanks to nznaza!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.3",
     date: "July 16, 2024",
     entries: [
