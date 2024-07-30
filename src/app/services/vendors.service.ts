@@ -111,11 +111,11 @@ export class VendorsService {
               (saleItem.augments & DestinyVendorItemState.Owned) ===
               DestinyVendorItemState.Owned
             ) {
-              return;
+              continue;
             }
 
             if (!manifestItem || !itemStats) {
-              return;
+              continue;
             }
 
             const statsOverride = Object.values(itemStats.stats).reduce(
