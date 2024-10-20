@@ -128,6 +128,7 @@ export enum ArmorPerkOrSlot {
 
   PerkEchoesOfGlory = 20,
   SlotSalvationsEdge,
+  SlotEidosApprentice,
   COUNT,
 }
 
@@ -152,6 +153,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "Guardian Games",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
+  [ArmorPerkOrSlot.SlotEidosApprentice]: "Eido's Apprentice Perk",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -186,6 +188,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/f4a1f99b49ecf412726d71ea9ee15540.png",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]:
     "https://www.bungie.net/common/destiny2_content/icons/c67322c917e16f3b8a4cb962e3f11166.png",
+  [ArmorPerkOrSlot.SlotEidosApprentice]:
+    "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
   [ArmorPerkOrSlot.COUNT]: "",
 };
 
@@ -211,6 +215,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotNightmare]: 1180997867,
   [ArmorPerkOrSlot.SlotSalvationsEdge]: 4059283783,
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
+  [ArmorPerkOrSlot.SlotEidosApprentice]: 273417606,
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<
@@ -231,6 +236,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<
   [ArmorPerkOrSlot.GuardianGamesClassItem]: "(hash:537041732 or hash:366019830 or hash:1013401891)",
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
+  [ArmorPerkOrSlot.SlotEidosApprentice]: 'perkname:"eido\'s apprentice"',
 };
 
 export const SubclassHashes: EnumDictionary<

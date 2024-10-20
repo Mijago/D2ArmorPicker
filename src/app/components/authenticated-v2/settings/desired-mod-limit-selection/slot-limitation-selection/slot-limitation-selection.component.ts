@@ -79,6 +79,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   readonly availableArmorPerks = [
     ArmorPerkOrSlot.None,
+    ArmorPerkOrSlot.SlotEidosApprentice,
     ArmorPerkOrSlot.SlotSalvationsEdge,
     ArmorPerkOrSlot.SlotCrotasEnd,
     ArmorPerkOrSlot.SlotRootOfNightmares,
