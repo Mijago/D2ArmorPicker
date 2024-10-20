@@ -1,6 +1,6 @@
 {
   "name": "d2-armor-picker",
-  "version": "2.6.4",
+  "version": "2.6.5",
   "scripts": {
     "ng": "ng",
     "config": "ts-node set-env.ts",

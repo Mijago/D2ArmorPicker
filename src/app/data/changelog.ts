@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.5",
+    date: "October 20, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added 'Eido's Apprentice Perk'.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.4",
     date: "July 30, 2024",
     entries: [
