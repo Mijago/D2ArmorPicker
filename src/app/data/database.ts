@@ -32,7 +32,7 @@ export class Database extends Dexie {
 
   constructor() {
     super("d2armorpicker-v2");
-    this.version(25).stores({
+    this.version(26).stores({
       manifestArmor: "id++, hash, isExotic",
       inventoryArmor:
         "id++, itemInstanceId, isExotic, hash, name, masterworked, clazz, slot, source",
