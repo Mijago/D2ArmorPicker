@@ -77,4 +77,18 @@ export class StatusProviderService {
       status.apiError = false;
     });
   }
+
+  setAuthError() {
+    if (this.__status.authError) return;
+    this.modifyStatus((status) => {
+      status.authError = true;
+    });
+  }
+
+  clearAuthError() {
+    if (!this.__status.authError) return;
+    this.modifyStatus((status) => {
+      status.authError = false;
+    });
+  }
 }

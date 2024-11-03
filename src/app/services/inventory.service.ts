@@ -180,6 +180,11 @@ export class InventoryService {
     console.debug("Execute refreshAll");
     try {
       this.refreshing = true;
+      if (this.auth.refreshTokenExpired && !(await this.auth.autoRegenerateTokens())) {
+        this.status.setAuthError(); // Better way to logout the user?
+        if (!this.status.getStatus().apiError) await this.auth.logout();
+        return;
+      }
       let armorUpdated = false;
       try {
         let manifestUpdated = await this.updateManifest(forceManifest);
