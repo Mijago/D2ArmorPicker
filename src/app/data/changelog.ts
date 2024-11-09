@@ -29,6 +29,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.6.6",
+    date: "November 9, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the artifice modslot for the new season. Again.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "You will be logged when your auth token is invalid. We disabled this a while ago, but it is now re-enabled. Thanks to nznaza!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.5",
     date: "October 20, 2024",
     entries: [
