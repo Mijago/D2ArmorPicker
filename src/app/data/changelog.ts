@@ -34,6 +34,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue that lead to duplicated collection roll entries, thus drastically impacting the performance of the application.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Fixed the artifice modslot for the new season. Again.",
         issues: [],
       },

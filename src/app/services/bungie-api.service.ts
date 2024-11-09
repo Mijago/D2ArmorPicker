@@ -397,6 +397,9 @@ export class BungieApiService {
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
     await this.db.inventoryArmor.filter((d) => d.source == InventoryArmorSource.Inventory).delete();
+    await this.db.inventoryArmor
+      .filter((d) => d.source == InventoryArmorSource.Collections)
+      .delete();
     const dbItems = await this.db.inventoryArmor.toArray();
     // get the IDs of all items with no source
     const ids_noSource = dbItems
