@@ -15,28 +15,43 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<mat-card id="card-results">
-  <mat-card-title>Results</mat-card-title>
-  <mat-card-subtitle>
-    <ng-container *ngIf="this.totalResults > 0">
-      Click on a row to expand it and to see the list of the items required for this build.<br />
-    </ng-container>
-    <ng-container *ngIf="this.totalResults === 0">
-      <div class="no-found-sadcat-container">
-        <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat" />&nbsp;
-      </div>
-      <span class="warning-none-found"><b>No combinations found.</b></span>
-      You should loosen your settings a bit.
-    </ng-container>
-  </mat-card-subtitle>
+<mat-card appearance="outlined" id="card-results">
+  <mat-card-header>
+    <mat-card-title>Results</mat-card-title>
+    <mat-card-subtitle>
+      <ng-container *ngIf="this.totalResults > 0">
+        Click on a row to expand it and to see the list of the items required for this build.<br />
+      </ng-container>
+      <ng-container *ngIf="this.totalResults === 0">
+        <div class="no-found-sadcat-container">
+          <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat" />&nbsp;
+        </div>
+        <span class="warning-none-found"><b>No combinations found.</b></span>
+        You should loosen your settings a bit.
+      </ng-container>
+    </mat-card-subtitle>
+  </mat-card-header>
   <mat-card-content>
     <div>
-      <div class="config-summary-box" fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
-        <mat-form-field appearance="outline" class="info-box" fxFlex>
+      <div
+        class="config-summary-box"
+        [style.display]="'flex'"
+        [style.flex-direction]="'row'"
+        [style.align-items]="'start center'"
+        [style.gap]="'5px'">
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          class="info-box"
+          [style.display]="'flex'">
           <mat-label>Items Used</mat-label>
           <input matInput readonly value="{{ this.itemCount | number }}" />
         </mat-form-field>
-        <mat-form-field appearance="outline" class="info-box" fxFlex>
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          class="info-box"
+          [style.display]="'flex'">
           <mat-label>Combinations generated</mat-label>
           <input matInput readonly value="{{ this.totalResults | number }}" />
 
@@ -63,24 +78,33 @@
             >report_problem
           </mat-icon>
         </mat-form-field>
-        <mat-form-field appearance="outline" class="info-box" fxFlex>
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          class="info-box"
+          [style.display]="'flex'">
           <mat-label>Time required</mat-label>
           <input matInput readonly value="{{ this.totalTime | number }}ms" />
         </mat-form-field>
       </div>
 
-      <mat-form-field appearance="outline" class="config-summary-box" disabled>
+      <mat-form-field
+        appearance="outline"
+        subscriptSizing="dynamic"
+        subscriptSizing="dynamic"
+        class="config-summary-box"
+        disabled>
         <mat-label>Summary of important configuration choices</mat-label>
         <input matInput readonly value="&nbsp;" class="hidden-input" />
-        <mat-chip-list aria-label="Configuration Summary">
-          <mat-chip
+        <mat-chip-listbox aria-label="Configuration Summary">
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_selectedExotics.indexOf(-1) > -1"
             disableRipple
             matTooltip="This setting enforces that all exotics are ignored."
             >No Exotic
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="
               _config_selectedExotics.length === 1 && _config_selectedExotics.indexOf(-1) === -1
@@ -88,51 +112,51 @@
             disableRipple
             matTooltip="This setting enforces that only one specific exotic is used."
             >Exotic
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_selectedExotics.length > 1 && _config_selectedExotics.indexOf(-1) === -1"
             disableRipple
             matTooltip="The tool will try to fulfill your settings for all the selected exotics. If you select exotics in different slots then it will search for legendary items to allow hotswapping with the same stats.">
             Multiple Exotics
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_maximumStatMods === 0"
             disableRipple
             matTooltip="You enforced that no stat mods are used."
             >No stat mods
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_tryLimitWastedStats"
             disableRipple
             matTooltip="The tool will add minor stat mods to reduce wasted stats."
             >Reduce wasted stats
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_modslotLimitation.length > 0"
             disableRipple
             matTooltip="This setting limits available stat mod types, like major Intellect or Recovery."
             >Stat Mod Limitation
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_armorPerkLimitation.length > 0"
             disableRipple
             matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
             Armor Perk or Slot
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_onlyShowResultsWithNoWastedStats"
             disableRipple
             matTooltip="This setting means that only builds with no wasted stats are shown."
             selected
             >Zero Waste
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_assumeEveryLegendaryIsArtifice"
             disableRipple
@@ -142,8 +166,8 @@
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
             &nbsp;Assume legendaries are artifice&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_assumeEveryExoticIsArtifice"
             disableRipple
@@ -153,8 +177,8 @@
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
             &nbsp;Assume exotics are artifice&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_ignoreExistingExoticArtificeSlots"
             disableRipple
@@ -164,27 +188,27 @@
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
             &nbsp;Ignoring existing artifice slots on exotic items&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-          </mat-chip>
+          </mat-chip-option>
 
-          <mat-chip
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_onlyUseMasterworkedExotics"
             disableRipple
             matTooltip="This setting means that only exotic armor pieces that are already masterworked are used."
             selected>
             Masterworked Exotics Only
-          </mat-chip>
+          </mat-chip-option>
 
-          <mat-chip
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_onlyUseMasterworkedLegendaries"
             disableRipple
             matTooltip="This setting means that only legendary armor pieces are already masterworked are used."
             selected>
             Masterworked Legendaries Only
-          </mat-chip>
+          </mat-chip-option>
 
-          <mat-chip
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="
               !_config_onlyUseMasterworkedExotics &&
@@ -196,22 +220,22 @@
             disableRipple
             matTooltip="Some masterwork assumptions are in place. This means that you may have to masterwork items. Look at your advanced settings to see which ones are activated.">
             Masterwork Assumption
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_includeCollectionRolls"
             disableRipple
             matTooltip="Collection Exotic rolls will be included in the search.">
             Include Collection Rolls
-          </mat-chip>
-          <mat-chip
+          </mat-chip-option>
+          <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_includeVendorRolls"
             disableRipple
             matTooltip="Currently available Vendor items will be included in the search.">
             Include Vendor Items
-          </mat-chip>
-        </mat-chip-list>
+          </mat-chip-option>
+        </mat-chip-listbox>
       </mat-form-field>
 
       <div class="hint-text">

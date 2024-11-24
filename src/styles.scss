@@ -15,27 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-html,
-body {
-  height: 100%;
-  background-color: #292929;
-  color: white;
-}
+html {
+  body {
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+  }
 
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-}
+  .allow-cr {
+    white-space: pre;
+  }
 
-.allow-cr {
-  white-space: pre;
-}
+  .logo-twitter {
+    width: 17px;
+  }
 
-.logo-twitter {
-  width: 17px;
-}
+  .mat-tooltip-panel,
+  .overlay-no-pointer-event {
+    pointer-events: none !important;
+  }
 
-.mat-tooltip-panel,
-.overlay-no-pointer-event {
-  pointer-events: none !important;
+  .hide-xs {
+    @media screen and (max-width: 599px) {
+      display: none;
+    }
+  } // Hide on mobile.
+  .hide-gt-xs {
+    @media screen and (min-width: 600px) {
+      display: none;
+    }
+  } // Show only on mobile. Hide on desktop.
+  .hide-sm {
+    @media screen and (max-width: 959px) {
+      display: none;
+    }
+  } // Hide on mobile/tablet.
+  .hide-gt-sm {
+    @media screen and (min-width: 960px) {
+      display: none;
+    }
+  } // Show only on mobile/tablet. Hide on desktop.
 }

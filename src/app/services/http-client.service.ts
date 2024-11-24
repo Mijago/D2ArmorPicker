@@ -67,6 +67,12 @@ export class HttpClientService {
           console.info("System is disabled. Revoking auth, must re-login");
           this.status.setApiError();
         }
+        // if error 500, log out
+        else if (err.status == 500) {
+          console.info("Auth Error, probably expired token");
+          this.status.setAuthError();
+          this.authService.logout();
+        }
         if (err.ErrorStatus != "Internal Server Error") {
           console.info("API-Error");
           //this.status.setApiError();

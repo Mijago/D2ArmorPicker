@@ -16,17 +16,13 @@
   -->
 
 <div id="cluster-container">
-  <a
-    class="returnbutton"
-    color="primary"
-    fxShow="false"
-    fxShow.lt-md="true"
-    mat-raised-button
-    routerLink="/">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
-  <mat-card>
-    <mat-card-title> About this page </mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title> About this page </mat-card-title>
+    </mat-card-header>
     <mat-card-content>
       This page <i>can</i> help you to sort out your vault a bit. It takes all your armor entries
       and tries to sort them into {{ clusterInformation.length }} clusters. It then gives you a DIM
@@ -40,8 +36,10 @@
       <br />
       Please also note that this feature is new and may have some inaccuracy for some items.
     </mat-card-content>
+    <mat-card-header>
+      <mat-card-title> How do I use this page? </mat-card-title>
+    </mat-card-header>
 
-    <mat-card-title> How do I use this page? </mat-card-title>
     <mat-card-content>
       <ol>
         <li>Pick one of the clusters below.</li>
@@ -59,9 +57,12 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title>Options</mat-card-title>
-    <mat-card-subtitle> Additional options for the clustering results. </mat-card-subtitle>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Options</mat-card-title>
+      <mat-card-subtitle> Additional options for the clustering results. </mat-card-subtitle>
+    </mat-card-header>
+
     <mat-card-content>
       <div class="settings-container">
         <span><b>Exotics</b><br />Decide whether you want to see or hide exotics.</span>
@@ -155,16 +156,18 @@
 
   <div
     class="cluster-container"
-    fxFlexFill="1"
-    fxLayout="row"
-    fxLayout.xs="column"
-    fxLayoutGap="5px">
+    [style.display]="'flex'"
+    [style.flex-direction]="'row'"
+    [style.gap]="'5px'"
+    [style.flex-fill]="1">
     <ng-container *ngFor="let cluster of clusters; let idx = index">
-      <mat-card *ngIf="cluster.length > 0" class="cluster-item">
-        <mat-card-title> Cluster {{ idx + 1 }} </mat-card-title>
-        <mat-card-subtitle>
-          Contains {{ cluster.length }} item{{ cluster.length > 1 ? "s" : "" }}
-        </mat-card-subtitle>
+      <mat-card appearance="outlined" *ngIf="cluster.length > 0" class="cluster-item">
+        <mat-card-header>
+          <mat-card-title> Cluster {{ idx + 1 }} </mat-card-title>
+          <mat-card-subtitle>
+            Contains {{ cluster.length }} item{{ cluster.length > 1 ? "s" : "" }}
+          </mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
           <div>
             <table width="100%">
@@ -179,7 +182,7 @@
                       'Recovery',
                       'Discipline',
                       'Intellect',
-                      'Strength'
+                      'Strength',
                     ][idx1]
                   ">
                   <td>
@@ -191,7 +194,7 @@
                         "Recovery",
                         "Discipline",
                         "Intellect",
-                        "Strength"
+                        "Strength",
                       ][idx1]
                     }}
                   </td>
@@ -199,9 +202,9 @@
                     <div class="stat-range">
                       <div
                         class="stat-range-bar"
-                        style="width:{{ (clusterInformation[idx].mean[idx1] / 32) * 100 }}%"></div>
+                        [style.width]="(clusterInformation[idx].mean[idx1] / 32) * 100 + '%'"></div>
                       <span class="avg-stat-value">
-                        {{ clusterInformation[idx].mean[idx1] | number : "1.0-0" }}
+                        {{ clusterInformation[idx].mean[idx1] | number: "1.0-0" }}
                       </span>
                     </div>
                   </td>
@@ -227,13 +230,7 @@
     </ng-container>
   </div>
 
-  <a
-    class="returnbutton"
-    color="primary"
-    mat-raised-button
-    routerLink="/"
-    fxShow="false"
-    fxShow.lt-md="true">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
 </div>

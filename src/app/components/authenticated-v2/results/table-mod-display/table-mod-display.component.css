@@ -35,7 +35,7 @@
   border: #00000000 solid 2px;
 
   -webkit-mask-image: url("../../../../../assets/masks/modmask.svg");
-  mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
+  mask-image: url("../../../../../assets/masks/modmask.svg");
 }
 
 .modIcon_Mobility {

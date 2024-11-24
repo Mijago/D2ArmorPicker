@@ -78,9 +78,11 @@ export class MembershipService {
   async getCharacters() {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      this.status.setApiError();
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
       return [];
     }
+    this.status.clearAuthError();
+    this.status.clearApiError();
 
     const profile = await getProfile((d) => this.http.$http(d), {
       components: [DestinyComponentType.Characters],

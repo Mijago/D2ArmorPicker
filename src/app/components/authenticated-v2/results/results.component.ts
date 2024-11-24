@@ -39,7 +39,7 @@ export interface ResultDefinition {
           icon: string;
           name: string;
           hash: string;
-        }
+        },
       ];
   artifice: number[];
   classItem: {

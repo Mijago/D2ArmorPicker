@@ -19,7 +19,8 @@ const writeFile = require("fs").writeFile;
 
 const production = process.env["PRODUCTION"] === "1";
 const beta_branch = process.env["BETA"] === "1";
-const canary_branch = process.env["CANARY"] === "1";
+const canary_branch = process.env["CANARY"] === "1" || (production && beta_branch) == false;
+const highlight_project_id = process.env["D2AP_HIGHLIGHT_MONITORING_ID"] === "1";
 
 const version = "2.6.6";
 
@@ -32,18 +33,18 @@ console.log("version: " + version);
 const targetPath = production
   ? "./src/environments/environment.prod.ts"
   : beta_branch || canary_branch
-  ? "./src/environments/environment.prod.ts"
-  : "./src/environments/environment.ts";
+    ? "./src/environments/environment.prod.ts"
+    : "./src/environments/environment.ts";
 // Load node modules
 
 require("dotenv").config({
   path: production
     ? ".env"
     : beta_branch
-    ? ".env_beta"
-    : canary_branch
-    ? ".env_canary"
-    : ".env_dev",
+      ? ".env_beta"
+      : canary_branch
+        ? ".env_canary"
+        : ".env_dev",
 });
 
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();

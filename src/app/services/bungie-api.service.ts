@@ -114,9 +114,10 @@ export class BungieApiService {
   ): Promise<boolean> {
     let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      this.status.setApiError();
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
       return false;
     }
+    this.status.clearAuthError();
     this.status.clearApiError();
 
     let r1 = await getItem((d) => this.http.$http(d), {
@@ -169,9 +170,10 @@ export class BungieApiService {
     console.info("moveItemToVault", itemInstanceId);
     let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      this.status.setApiError();
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
       return;
     }
+    this.status.clearAuthError();
     this.status.clearApiError();
 
     const r1 = await getItem((d) => this.http.$http(d), {
@@ -233,9 +235,10 @@ export class BungieApiService {
           return;
     let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      this.status.setApiError();
-      return;
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return [];
     }
+    this.status.clearAuthError();
     this.status.clearApiError();
 
     console.info("BungieApiService", "getProfile");

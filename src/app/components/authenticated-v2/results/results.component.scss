@@ -86,17 +86,18 @@ tr.example-detail-row {
   color: #d5d5d5;
 }
 
-:host ::ng-deep .info-box .mat-form-field-wrapper {
+:host .info-box .mat-form-field-wrapper {
   padding-bottom: 5px !important;
   cursor: default;
 }
 
 .hidden-input {
-  display: none;
+  display: none !important;
 }
 
 .config-summary-box {
   width: 100%;
+  padding: 5px;
 }
 
 .result-table tr.example-element-row {

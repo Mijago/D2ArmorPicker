@@ -281,7 +281,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
     // iterate over ArmorStat enum
     for (let stat of this.armorStatIds) {
-      data.statConstraints.push({
+      data.statConstraints!.push({
         statHash: ArmorStatHashes[stat],
         minTier: c.minimumStatTiers[stat].value,
         maxTier: c.minimumStatTiers[stat].fixed ? c.minimumStatTiers[stat].value : 10,
