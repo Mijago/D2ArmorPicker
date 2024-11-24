@@ -19,8 +19,7 @@ const writeFile = require("fs").writeFile;
 
 const production = process.env["PRODUCTION"] === "1";
 const beta_branch = process.env["BETA"] === "1";
-const canary_branch = process.env["CANARY"] === "1" || (production && beta_branch) == false;
-const highlight_project_id = process.env["D2AP_HIGHLIGHT_MONITORING_ID"] === "1";
+const canary_branch = process.env["CANARY"] === "1";
 
 const version = "2.6.6";
 
@@ -62,6 +61,7 @@ const data = {
   client_secret: process.env["D2AP_BUNGIE_CLIENT_SECRET"],
   nodeEnv: process.env["NODE_ENV"],
   offlineMode: false,
+  highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
   featureFlags: {
     enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
     enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",

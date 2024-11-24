@@ -62,6 +62,7 @@
                 }
               ],
               "outputHashing": "all",
+              "sourceMap": true,
               "vendorChunk": true
             },
             "beta": {
@@ -84,6 +85,7 @@
                 }
               ],
               "outputHashing": "all",
+              "sourceMap": true,
               "vendorChunk": true
             },
             "canary": {
@@ -118,6 +120,7 @@
                 }
               ],
               "outputHashing": "all",
+              "sourceMap": true,
               "vendorChunk": true
             },
             "development": {

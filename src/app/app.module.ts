@@ -73,6 +73,30 @@ import {
   VendorNamePipe,
 } from "./components/authenticated-v2/pipes/vendor-name-pipe";
 
+import { environment } from "../environments/environment";
+import { H } from "highlight.run";
+
+H.init(environment.highlight_project_id, {
+  environment: environment.production
+    ? "production"
+    : environment.beta
+      ? "beta"
+      : environment.canary
+        ? "canary"
+        : "dev",
+  tracingOrigins: true,
+  inlineImages: false,
+  version: environment.version,
+  networkRecording: {
+    enabled: true,
+    recordHeadersAndBody: false,
+    urlBlocklist: [
+      "https://bungie.net/common/destiny2_content/icons/",
+      "https://www.bungie.net/img/",
+    ],
+  },
+});
+
 const routes: Routes = [
   {
     path: "",

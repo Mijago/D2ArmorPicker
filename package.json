@@ -35,6 +35,7 @@
     "bungie-api-ts": "^5.1.0",
     "dexie": "^4.0.7",
     "glpk.js": "^4.0.2",
+    "highlight.run": "^9.7.1",
     "lzutf8": "^0.6.3",
     "rxjs": "^6.6.7",
     "tslib": "^2.6.2",
