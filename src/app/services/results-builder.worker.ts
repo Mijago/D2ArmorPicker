@@ -237,9 +237,7 @@ addEventListener("message", async ({ data }) => {
   }
 
   const startTime = Date.now();
-  console.debug("START RESULTS BUILDER 2");
-  console.time(`total #${threadSplit.current}`);
-
+  console.time(`Total run thread#${threadSplit.current}`);
   // toggle feature flags
   config.onlyShowResultsWithNoWastedStats =
     environment.featureFlags.enableZeroWaste && config.onlyShowResultsWithNoWastedStats;
@@ -250,7 +248,6 @@ addEventListener("message", async ({ data }) => {
     config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value = 5;
     config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
   }
-  console.log("Using config", data.config);
 
   let helmets = items
     .filter((i) => i.slot == ArmorSlot.ArmorSlotHelmet)
@@ -308,17 +305,6 @@ addEventListener("message", async ({ data }) => {
   if (amountExoticClassItems > 0 && config.assumeEveryExoticIsArtifice)
     availableClassItemPerkTypesExotic.add(ArmorPerkOrSlot.SlotArtifice);
 
-  console.debug(
-    "items",
-    JSON.stringify({
-      helmets: helmets.length,
-      gauntlets: gauntlets.length,
-      chests: chests.length,
-      legs: legs.length,
-      availableClassItemTypes: availableClassItemPerkTypes,
-    })
-  );
-
   // runtime variables
   const runtime = {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
@@ -338,7 +324,6 @@ addEventListener("message", async ({ data }) => {
     classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
   const exoticClassItemIsEnforced =
     !!exoticClassItem && config.selectedExotics.indexOf(exoticClassItem.hash) > -1;
-  console.log("hasArtificeClassItem", hasArtificeClassItem);
 
   let results: IPermutatorArmorSet[] = [];
   let resultsLength = 0;
@@ -351,13 +336,21 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.log("estimatedCalculations", estimatedCalculations);
+  console.info(`Estimated calculations for Thread#${threadSplit.current}`, estimatedCalculations);
+  console.debug(
+    `Thread#${threadSplit.current} items`,
+    JSON.stringify({
+      helmets: helmets.length,
+      gauntlets: gauntlets.length,
+      chests: chests.length,
+      legs: legs.length,
+      availableClassItemTypes: availableClassItemPerkTypes,
+    })
+  );
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
-
-  console.time(`tm #${threadSplit.current}`);
 
   const hasMasterworkedClassItemExotic =
     !!exoticClassItem && (exoticClassItem.masterworked || config.assumeExoticsMasterworked);
@@ -451,8 +444,7 @@ addEventListener("message", async ({ data }) => {
       resultsLength = 0;
     }
   }
-  console.timeEnd(`tm #${threadSplit.current}`);
-  console.timeEnd(`total #${threadSplit.current}`);
+  console.timeEnd(`Total run thread#${threadSplit.current}`);
 
   // @ts-ignore
   postMessage({

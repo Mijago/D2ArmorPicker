@@ -237,6 +237,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   async updateData() {
+    console.info("Table total results:", this._results.length);
     console.time("Update Table Data");
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;

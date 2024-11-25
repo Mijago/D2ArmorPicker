@@ -23,11 +23,6 @@ const canary_branch = process.env["CANARY"] === "1";
 
 const version = "2.6.6";
 
-console.log("production: " + production);
-console.log("beta_branch: " + beta_branch);
-console.log("canary_branch: " + canary_branch);
-console.log("version: " + version);
-
 // Configure Angular `environment.ts` file path
 const targetPath = production
   ? "./src/environments/environment.prod.ts"
@@ -49,6 +44,8 @@ require("dotenv").config({
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
 
 var version_tag = production ? "" : beta_branch ? "-beta-" + revision : "-dev-" + revision;
+
+console.log(version + version_tag);
 
 const data = {
   version: version + version_tag,

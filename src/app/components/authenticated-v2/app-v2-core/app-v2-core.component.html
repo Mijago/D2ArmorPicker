@@ -79,36 +79,48 @@
   </mat-sidenav-container>
 
   <mat-toolbar id="header" role="heading">
+    <!-- Toggle Button for Sidenav -->
     <button
       (click)="drawer.toggle()"
       *ngIf="isHandset$ | async"
       aria-label="Toggle sidenav"
       mat-icon-button
       type="button">
-      <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      <mat-icon>menu</mat-icon>
     </button>
-    <span
-      >D2ArmorPicker <small> by Mijago</small>
-      <a href="https://twitter.com/MijagoCoding/" matTooltip="Birb App" target="_blank">
-        <img alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png" />
+
+    <!-- Header Title with Links -->
+    <span>
+      D2ArmorPicker <small>by Mijago</small>
+      <a
+        href="https://twitter.com/MijagoCoding/"
+        matTooltip="Follow me on Twitter"
+        target="_blank"
+        rel="noopener noreferrer">
+        <img alt="Twitter logo" class="logo-twitter" src="assets/logo-twitter.png" />
       </a>
       <a
         href="https://ko-fi.com/mijago"
-        matTooltip="If you like my work, you can always buy me a coffee!"
-        target="_blank">
-        <img alt="Ko-Fi" class="logo-twitter" src="assets/logo-kofi.png" />
+        matTooltip="Buy me a coffee on Ko-Fi!"
+        target="_blank"
+        rel="noopener noreferrer">
+        <img alt="Ko-Fi logo" class="logo-kofi" src="assets/logo-kofi.png" />
       </a>
       <a
         href="http://discord.d2armorpicker.com/"
-        matTooltip="Visit me at the development & support discord."
-        target="_blank">
-        <img alt="Discord" class="logo-twitter" src="assets/logo-discord.png" />
+        matTooltip="Join the Discord for support and development!"
+        target="_blank"
+        rel="noopener noreferrer">
+        <img alt="Discord logo" class="logo-discord" src="assets/logo-discord.png" />
       </a>
     </span>
 
+    <!-- Spacer for Flex Layout -->
     <span class="header-spacer"></span>
+
+    <!-- Navigation Links (Hidden on Small Screens) -->
     <div class="hide-sm">
-      <nav id="navbar" mat-tab-nav-bar>
+      <nav id="navbar" mat-tab-nav-bar [tabPanel]="tabPanel">
         <a
           *ngFor="let link of navLinks; let idx = index"
           [active]="activeLinkIndex === idx"
@@ -117,16 +129,20 @@
           {{ link.name }}
         </a>
       </nav>
+      <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
     </div>
 
+    <!-- Another Spacer -->
     <span class="header-spacer"></span>
+
+    <!-- Buttons on the Right -->
     <div id="buttonContainer">
       <a
         (click)="changelog.openChangelogDialog()"
         style="color: white"
         class="changelogText hide-sm"
-        matTooltip="Click to show the changelog dialog."
-        >v{{ version }}&nbsp;</a
+        matTooltip="View the changelog dialog."
+        >v{{ version }}</a
       >
 
       <a
@@ -134,8 +150,9 @@
         class="hide-sm"
         href="https://ko-fi.com/mijago"
         mat-stroked-button
-        matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
-        target="_blank">
+        matTooltip="Support me on Ko-Fi!"
+        target="_blank"
+        rel="noopener noreferrer">
         <mat-icon inline>attach_money</mat-icon>
         Buy me a coffee!
       </a>
@@ -160,6 +177,7 @@
       </button>
     </div>
   </mat-toolbar>
+
   <router-outlet></router-outlet>
 
   <span *ngVar="status.status | async as stat">

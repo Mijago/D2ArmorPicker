@@ -42,6 +42,8 @@ import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { VendorsService } from "./vendors.service";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
+import { isEqual as _isEqual } from "lodash";
+import { getDifferences } from "../data/commonFunctions";
 
 type info = {
   results: ResultDefinition[];
@@ -144,9 +146,10 @@ export class InventoryService {
       }
       if (!auth.isAuthenticated()) return;
 
-      this._config = c;
+      if (_isEqual(c, this._config)) return;
+      console.debug("Build configuration changed", getDifferences(this._config, c));
 
-      console.debug("Trigger refreshAll due to config change");
+      this._config = structuredClone(c);
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
     });
@@ -173,7 +176,7 @@ export class InventoryService {
 
   async refreshAll(forceArmor: boolean = false, forceManifest = false) {
     if (this.refreshing) return;
-    console.debug("Execute refreshAll");
+    console.info("Refreshing User information");
     try {
       this.refreshing = true;
       if (this.auth.refreshTokenExpired && !(await this.auth.autoRegenerateTokens())) {
@@ -227,7 +230,7 @@ export class InventoryService {
   }
 
   private killWorkers() {
-    console.log("killing workers");
+    console.debug("Terminating workers");
     this.workers.forEach((w) => {
       w.terminate();
     });
@@ -259,6 +262,8 @@ export class InventoryService {
   }
 
   async updateResults(nthreads: number = 3) {
+    let config = this._config;
+    console.debug("Using config for Workers", { configuration: config });
     this.clearResults();
     this.killWorkers();
 
@@ -274,7 +279,6 @@ export class InventoryService {
       this.resultStatCombo4x100 = new Set<number>();
       const startTime = Date.now();
 
-      let config = this._config;
       this.selectedExotics = await Promise.all(
         config.selectedExotics
           .filter((hash) => hash != FORCE_USE_NO_EXOTIC)
@@ -388,7 +392,7 @@ export class InventoryService {
 
       nthreads = this.estimateRequiredThreads();
 
-      console.log("nthreads for calculation", nthreads);
+      console.info("Threads for calculation", nthreads);
 
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
