@@ -49,30 +49,31 @@ function checkSlots(
   chest: IPermutatorArmor,
   leg: IPermutatorArmor
 ) {
+  var exoticId = config.selectedExotics[0] || 0;
   let requirements = constantModslotRequirement.slice();
   if (
-    !helmet.isExotic &&
+    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
   )
     return { valid: false };
   if (
-    !gauntlet.isExotic &&
+    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
   )
     return { valid: false };
   if (
-    !chest.isExotic &&
+    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
   )
     return { valid: false };
   if (
-    !leg.isExotic &&
+    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -91,11 +92,13 @@ function checkSlots(
   requirements[chest.perk]--;
   requirements[leg.perk]--;
 
-  // ignore perk requirement in exotic
-  if (helmet.isExotic) requirements[config.armorPerks[helmet.slot].value]--;
-  else if (gauntlet.isExotic) requirements[config.armorPerks[gauntlet.slot].value]--;
-  else if (chest.isExotic) requirements[config.armorPerks[chest.slot].value]--;
-  else if (leg.isExotic) requirements[config.armorPerks[leg.slot].value]--;
+  // ignore exotic selection
+  if (exoticId > 0) {
+    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
+    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
+    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
+    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
+  }
 
   let bad = 0;
   for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) bad += Math.max(0, requirements[n]);
@@ -123,6 +126,7 @@ function checkSlots(
 
   return { valid: bad <= 0, requiredClassItemType };
 }
+
 function prepareConstantStatBonus(config: BuildConfiguration) {
   const constantBonus = [0, 0, 0, 0, 0, 0];
   // Apply configurated mods to the stat value
