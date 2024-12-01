@@ -18,6 +18,7 @@
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
+import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
@@ -179,6 +180,7 @@ function* generateArmorCombinations(
             !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
           )
             continue;
+
           yield [helmet, gauntlet, chest, leg];
         }
       }
@@ -214,7 +216,6 @@ addEventListener("message", async ({ data }) => {
 
   const threadSplit = data.threadSplit as { count: number; current: number };
   const config = data.config as BuildConfiguration;
-  let selectedExotics = data.selectedExotics;
   let items = data.items as IPermutatorArmor[];
 
   if (threadSplit == undefined || config == undefined || items == undefined) {
@@ -299,11 +300,11 @@ addEventListener("message", async ({ data }) => {
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
-  const constHasOneExoticLength = selectedExotics.length <= 1;
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
   const hasArtificeClassItemExotic = availableClassItemPerkTypesExotic.has(
     ArmorPerkOrSlot.SlotArtifice
   );
+  const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
   const exoticClassItem: IPermutatorArmor | null =
     classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
   const exoticClassItemIsEnforced =
@@ -346,7 +347,7 @@ addEventListener("message", async ({ data }) => {
     gauntlets,
     chests,
     legs,
-    constHasOneExoticLength
+    requiresAtLeastOneExotic
   )) {
     checkedCalculations++;
     /**
