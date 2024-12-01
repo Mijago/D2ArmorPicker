@@ -3,6 +3,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "sourceMap": true,
+    "inlineSources": true,
     "types": []
   },
   "files": ["src/main.ts", "src/polyfills.ts"],

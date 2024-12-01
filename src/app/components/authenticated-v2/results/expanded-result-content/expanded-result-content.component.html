@@ -108,6 +108,7 @@
         <td class="icon-column">
           <button
             (click)="disableItem(i.itemInstanceId)"
+            style="padding: 0; top: 0; left: 0"
             class="item-info-menu-btn"
             mat-icon-button
             matTooltip="Disable this item from the results. It will not be used to generate results anymore, but you can always undo this.">
@@ -179,6 +180,7 @@
       <td>
         <button
           (click)="disableAllItems()"
+          style="padding: 0; top: 0; left: 0"
           class="item-info-menu-btn report-problem-icon"
           mat-icon-button
           matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
@@ -194,6 +196,7 @@
       <td>
         <button
           (click)="disableAllItems()"
+          style="padding: 0; top: 0; left: 0"
           class="item-info-menu-btn report-problem-icon"
           mat-icon-button
           matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
@@ -302,66 +305,66 @@
     <!-- +5 Mods -->
     <tr *ngVar="element?.mods as mods" class="highlight-row">
       <td>Minor Mods</td>
-      <td *ngVar="mods | count : StatModifier.MINOR_MOBILITY as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_MOBILITY as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MINOR_RESILIENCE as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_RESILIENCE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MINOR_RECOVERY as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_RECOVERY as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MINOR_DISCIPLINE as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_DISCIPLINE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MINOR_INTELLECT as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_INTELLECT as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MINOR_STRENGTH as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_STRENGTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
     </tr>
     <!-- +10 Mods -->
     <tr *ngVar="element?.mods as mods">
       <td>Major Mods</td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_MOBILITY as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_MOBILITY as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_RESILIENCE as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_RESILIENCE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_RECOVERY as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_RECOVERY as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_DISCIPLINE as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_DISCIPLINE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_INTELLECT as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_INTELLECT as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count : StatModifier.MAJOR_STRENGTH as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_STRENGTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
     </tr>
     <ng-container *ngVar="element?.artifice as mods">
       <tr>
         <td>Artifice Mods</td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_MOBILITY as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_MOBILITY as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_RESILIENCE as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_RESILIENCE as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_RECOVERY as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_RECOVERY as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_DISCIPLINE as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_DISCIPLINE as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_INTELLECT as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_INTELLECT as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count : StatModifier.ARTIFICE_STRENGTH as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_STRENGTH as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
       </tr>
@@ -516,13 +519,13 @@
         <!-- Mods -->
         <li
           *ngIf="
-            $any(element?.mods).length > 0 && ($any(element?.mods) | count : StatModifier.NONE) < 5
+            $any(element?.mods).length > 0 && ($any(element?.mods) | count: StatModifier.NONE) < 5
           "
           >Equip the following stat mods:
           <ul *ngVar="element?.mods as mods">
             <!-- MOBILITY -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_MOBILITY as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_MOBILITY as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_MOBILITY as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_MOBILITY as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -533,8 +536,8 @@
             </ng-container>
             <!-- /MOBILITY -->
             <!-- RESILIENCE -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_RESILIENCE as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_RESILIENCE as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_RESILIENCE as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_RESILIENCE as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -545,8 +548,8 @@
             </ng-container>
             <!-- /RESILIENCE -->
             <!-- RECOVERY -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_RECOVERY as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_RECOVERY as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_RECOVERY as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_RECOVERY as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -557,8 +560,8 @@
             </ng-container>
             <!-- /RECOVERY -->
             <!-- DISCIPLINE -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_DISCIPLINE as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_DISCIPLINE as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_DISCIPLINE as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_DISCIPLINE as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -569,8 +572,8 @@
             </ng-container>
             <!-- /DISCIPLINE -->
             <!-- INTELLECT -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_INTELLECT as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_INTELLECT as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_INTELLECT as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_INTELLECT as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -581,8 +584,8 @@
             </ng-container>
             <!-- /INTELLECT -->
             <!-- STRENGTH -->
-            <ng-container *ngVar="mods | count : StatModifier.MINOR_STRENGTH as minorCount">
-              <ng-container *ngVar="mods | count : StatModifier.MAJOR_STRENGTH as majorCount">
+            <ng-container *ngVar="mods | count: StatModifier.MINOR_STRENGTH as minorCount">
+              <ng-container *ngVar="mods | count: StatModifier.MAJOR_STRENGTH as majorCount">
                 <li *ngIf="minorCount + majorCount > 0" class="positive">
                   <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
                   <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
@@ -666,13 +669,13 @@
         </td>
       </tr>
       <ng-container *ngVar="element?.exotic as exotic">
-        <tr *ngIf="exotic[0]">
+        <tr *ngIf="exotic">
           <td>Exotic:</td>
-          <td colspan="10">{{ exotic[0].name }}</td>
+          <td colspan="10">{{ exotic.name }}</td>
           <td colspan="1">
             <div class="item-icon-container">
-              <img class="item-icon" src="https://bungie.net/{{ exotic[0].icon }}" />
-              <img class="item-icon-overlay" src="https://bungie.net/{{ exotic[0].watermark }}" />
+              <img class="item-icon" src="https://bungie.net/{{ exotic.icon }}" />
+              <img class="item-icon-overlay" src="https://bungie.net/{{ exotic.watermark }}" />
             </div>
           </td>
         </tr>

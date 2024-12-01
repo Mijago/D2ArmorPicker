@@ -133,7 +133,7 @@
   cursor: pointer;
 }
 
-:host ::ng-deep .mat-tab-link {
+:host ::ng-deep .mat-mdc-tab-link {
   min-width: 75px;
   opacity: 1;
 }
@@ -145,4 +145,11 @@
   margin-bottom: 2px;
 
   font-size: 16px;
+}
+#buttonContainer {
+  display: flex;
+
+  a {
+    margin: auto;
+  }
 }

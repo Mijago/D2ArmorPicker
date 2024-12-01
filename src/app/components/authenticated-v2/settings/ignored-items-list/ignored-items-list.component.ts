@@ -18,10 +18,14 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { DatabaseService } from "../../../../services/database.service";
-import { IInventoryArmor } from "../../../../data/types/IInventoryArmor";
+import {
+  IDisplayInventoryArmor,
+  InventoryArmorSource,
+} from "../../../../data/types/IInventoryArmor";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { DestinyClass } from "bungie-api-ts/destiny2";
+import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
+import { ArmorSlot } from "src/app/data/enum/armor-slot";
 
 @Component({
   selector: "app-ignored-items-list",
@@ -29,10 +33,13 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
   styleUrls: ["./ignored-items-list.component.scss"],
 })
 export class IgnoredItemsListComponent implements OnInit, OnDestroy {
-  disabledItems: IInventoryArmor[][] = [];
+  disabledItems: IDisplayInventoryArmor[][] = [];
   characterClass: DestinyClass | null = null;
 
-  constructor(private config: ConfigurationService, private db: DatabaseService) {}
+  constructor(
+    private config: ConfigurationService,
+    private db: DatabaseService
+  ) {}
 
   enableItem(instanceId: string) {
     this.config.modifyConfiguration((cb) => {
@@ -40,7 +47,7 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
     });
   }
 
-  generateTooltip(armor: IInventoryArmor) {
+  generateTooltip(armor: IDisplayInventoryArmor) {
     return (
       "Click this icon to activate this item again.\r\n" +
       "" +
@@ -69,15 +76,37 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (cb) => {
       this.characterClass = null;
-      const newDisabledItems: IInventoryArmor[][] = [[], [], [], [], [], []];
+      const newDisabledItems: IDisplayInventoryArmor[][] = [[], [], [], [], [], []];
 
       let items = [];
       for (let hash of cb.disabledItems) {
-        let itemInstance = await this.db.inventoryArmor
+        let itemInstance = (await this.db.inventoryArmor
           .where("itemInstanceId")
           .equals(hash)
-          .first();
-        if (itemInstance) items.push(itemInstance);
+          .first()) as IDisplayInventoryArmor;
+        if (!itemInstance)
+          itemInstance = {
+            id: 0,
+            hash: 0,
+            itemInstanceId: hash,
+            energyLevel: 0,
+            name: "Missing Armor",
+            icon: "/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg",
+            description: "This armor has been deleted",
+            clazz: DestinyClass.Unknown,
+            slot: ArmorSlot.ArmorSlotNone,
+            isExotic: 0 as 0,
+            rarity: TierType.Unknown,
+            masterworked: false,
+            source: InventoryArmorSource.Inventory,
+            mobility: 0,
+            resilience: 0,
+            recovery: 0,
+            discipline: 0,
+            intellect: 0,
+            strength: 0,
+          };
+        items.push(itemInstance);
       }
 
       for (let item of items) {

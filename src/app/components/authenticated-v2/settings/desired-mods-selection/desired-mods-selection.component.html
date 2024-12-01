@@ -18,7 +18,7 @@
 <span *ngFor="let d of data; let idx = index">
   <ng-container *ngIf="idx === 0">
     <br />
-    <mat-button-toggle-group [value]="selectedElement">
+    <mat-button-toggle-group [value]="selectedElement" class="mat-primary">
       <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
         Arc
       </mat-button-toggle>
@@ -54,8 +54,7 @@
           <mat-slide-toggle
             [checked]="selectedMods.indexOf(element.id) > -1"
             color="primary"
-            disabled
-            style="cursor: pointer !important">
+            style="cursor: pointer !important; user-select: none">
             <app-item-icon [itemHash]="element.hash"></app-item-icon>
             {{ element.name }}
           </mat-slide-toggle>

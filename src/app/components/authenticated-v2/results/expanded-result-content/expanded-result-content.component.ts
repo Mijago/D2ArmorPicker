@@ -39,7 +39,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { ModifierType } from "../../../../data/enum/modifierType";
+import { SubclassNames, ModifierType, Subclass } from "../../../../data/enum/modifierType";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
@@ -66,7 +66,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public ArmorStatIconUrls = ArmorStatIconUrls;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
-  public config_characterClass = DestinyClass.Titan;
+  public config_characterClass = DestinyClass.Unknown;
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
   public config_assumeClassItemMasterworked = false;
@@ -128,7 +128,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       (this.element?.items.filter((i) => i.length > 0).length || 0) <= 4;
 
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
-      this.config_characterClass = c.characterClass as unknown as DestinyClass;
+      this.config_characterClass = c.characterClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
       this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
@@ -281,7 +281,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
     // iterate over ArmorStat enum
     for (let stat of this.armorStatIds) {
-      data.statConstraints.push({
+      data.statConstraints!.push({
         statHash: ArmorStatHashes[stat],
         minTier: c.minimumStatTiers[stat].value,
         maxTier: c.minimumStatTiers[stat].fixed ? c.minimumStatTiers[stat].value : 10,
@@ -292,15 +292,15 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       data.exoticArmorHash = c.selectedExotics[0];
     } else {
       var exos = this.element?.exotic;
-      if (exos && exos.length == 1) {
-        var exoticHash = exos[0].hash;
+      if (exos) {
+        var exoticHash = exos.hash;
         if (!!exoticHash) data.exoticArmorHash = parseInt(exoticHash, 10);
       }
     }
 
     const loadout: Loadout = {
       id: "d2ap", // this doesn't matter and will be replaced
-      name: "D2ArmorPicker Loadout",
+      name: `${SubclassNames[c.selectedModElement as Subclass]}: (${this.element?.exotic?.name}) D2ArmorPicker Loadout`,
       classType: c.characterClass as number,
       parameters: data,
       equipped: (this.element?.items || [])

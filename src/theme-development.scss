@@ -28,19 +28,42 @@ $my-theme: mat.define-dark-theme(
       primary: $my-primary,
       accent: $my-accent,
     ),
+    typography: mat.define-typography-config(),
   )
 );
 
-@include mat.all-component-themes($my-theme);
+@mixin mix-app-theme($my-theme) {
+  $primary: $my-primary;
+  $primary-contrast: $my-primary;
+  html,
+  body {
+    height: 100%;
+    background-color: #292929;
+    color: white;
+  }
 
-@mixin mix-app-theme-buttons($my-theme) {
-  $primary: map-get($my-theme, primary);
-  $accent: map-get($my-theme, accent);
+  a:not(.mdc-button) {
+    color: #99afe3;
+  }
+  a:visited:not(.mdc-button) {
+    color: #7294dc;
+  }
 
-  .mat-button-toggle-checked {
-    background-color: mat-color($primary);
-    color: mat-color($primary, default-contrast);
+  .mat-button-toggle {
+    &.mat-button-toggle-checked:not(.isFromMod) {
+      background-color: mat-color($primary) !important;
+      color: mat-color($primary, default-contrast) !important;
+    }
+
+    &.mat-button-toggle-checked.isFromMod {
+      background-color: color-mix(in srgb, mat-color($primary) 70%, transparent);
+    }
+
+    &.not-checked.isFromMod {
+      background-color: color-mix(in srgb, mat-color($primary) 20%, transparent);
+    }
   }
 }
 
-@include mix-app-theme-buttons($my-theme);
+@include mat.all-component-themes($my-theme);
+@include mix-app-theme($my-theme);

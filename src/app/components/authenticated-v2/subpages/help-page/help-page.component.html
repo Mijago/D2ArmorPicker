@@ -16,37 +16,33 @@
   -->
 
 <div id="help-container">
-  <a
-    class="returnbutton"
-    color="primary"
-    fxShow="false"
-    fxShow.lt-md="true"
-    mat-raised-button
-    routerLink="/">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
 
-  <mat-card>
-    <mat-card-title>
-      <span
-        >About D2ArmorPicker <small> by Mijago</small>
-        <a href="https://twitter.com/MijagoCoding/" target="_blank" matTooltip="Birb App">
-          <img alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png" />
-        </a>
-        <a
-          href="https://ko-fi.com/mijago"
-          target="_blank"
-          matTooltip="If you like my work, you can always buy me a coffee!">
-          <img alt="Ko-Fi" class="logo-twitter" src="assets/logo-kofi.png" />
-        </a>
-        <a
-          href="http://discord.d2armorpicker.com/"
-          target="_blank"
-          matTooltip="Visit me at the development & support discord.">
-          <img alt="Discord" class="logo-twitter" src="assets/logo-discord.png" />
-        </a>
-      </span>
-    </mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>
+        <span
+          >About D2ArmorPicker <small> by Mijago</small>
+          <a href="https://twitter.com/MijagoCoding/" target="_blank" matTooltip="Birb App">
+            <img alt="Me on twitter" class="logo-twitter" src="assets/logo-twitter.png" />
+          </a>
+          <a
+            href="https://ko-fi.com/mijago"
+            target="_blank"
+            matTooltip="If you like my work, you can always buy me a coffee!">
+            <img alt="Ko-Fi" class="logo-twitter" src="assets/logo-kofi.png" />
+          </a>
+          <a
+            href="http://discord.d2armorpicker.com/"
+            target="_blank"
+            matTooltip="Visit me at the development & support discord.">
+            <img alt="Discord" class="logo-twitter" src="assets/logo-discord.png" />
+          </a>
+        </span>
+      </mat-card-title>
+    </mat-card-header>
     <mat-card-content>
       D2ArmorPicker (or short D2AP) is a small web-app to quickly find armor that fits your desired
       stat requirements. It uses the armor in your vault, inventory and postmaster, calculates every
@@ -74,8 +70,10 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title> How do I use D2ArmorPicker? </mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title> How do I use D2ArmorPicker? </mat-card-title>
+    </mat-card-header>
     <mat-card-content>
       Follow these few steps:
       <ol>
@@ -121,8 +119,10 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title> Where can I grind high stat armor? </mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title> Where can I grind high stat armor? </mat-card-title>
+    </mat-card-header>
     <mat-card-content>
       There are many spots that give you mediocre armor, but for the really good builds you need the
       correct armor. Here I provide a list of high-stat armor sources. It may not be complete, but a
@@ -141,7 +141,7 @@
         <li> The list will be extended sometime in Witch Queen!</li>
       </ul>
       Some good armor rolls may look like these:
-      <div fxLayout="row" id="armor-image-container">
+      <div [style.display]="'flex'" [style.flex-direction]="'row'" id="armor-image-container">
         <img src="assets/armor-images/kabrs_battlecage.png" />
         <img src="assets/armor-images/lightkin_gauntlets.png" />
         <img src="assets/armor-images/phobos_warden_helm.png" />
@@ -150,8 +150,10 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title>Known Issues</mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Known Issues</mat-card-title>
+    </mat-card-header>
     <mat-card-content>
       <ul>
         <li *ngFor="let text of knownIssues">{{ text }}</li>
@@ -159,20 +161,16 @@
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title>Changelog</mat-card-title>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Changelog</mat-card-title>
+    </mat-card-header>
     <mat-card-content class="changelog-table-container">
       <app-changelog-list></app-changelog-list>
     </mat-card-content>
   </mat-card>
 
-  <a
-    class="returnbutton"
-    color="primary"
-    fxShow="false"
-    fxShow.lt-md="true"
-    mat-raised-button
-    routerLink="/">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
 </div>

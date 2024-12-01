@@ -43,13 +43,14 @@ export class AuthService {
   }
 
   async autoRegenerateTokens() {
-    const timing = 1000 * 3600 * 0.5; // every half hour
-    console.log("autoRegenerateTokens", {
-      token: this.refreshToken,
-      datenow: Date.now(),
-      refreshTokenExpiringAt: this.refreshTokenExpiringAt,
-      lastRefresh: this.lastRefresh,
-      "Date.now() > (this.lastRefresh + timing)": Date.now() > this.lastRefresh + timing,
+    const timing = 1000 * 3600 * 0.5; // Refresh every half hour
+    console.debug("Refresh Token", {
+      tokenInfo: {
+        /*refreshToken: this.refreshToken,*/
+        refreshTokenExpiringAt: this.refreshTokenExpiringAt,
+        lastRefresh: this.lastRefresh,
+        dateNow: Date.now(),
+      },
     });
 
     if (
