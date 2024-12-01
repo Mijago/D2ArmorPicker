@@ -96,8 +96,8 @@ export class InventoryService {
   private resultStatCombo3x100 = new Set<number>();
   private resultStatCombo4x100 = new Set<number>();
   private selectedExotics: IManifestArmor[] = [];
-  private itemz: IInventoryArmor[] = [];
-  private items: IPermutatorArmor[] = [];
+  private inventoryArmorItems: IInventoryArmor[] = [];
+  private permutatorArmorItems: IPermutatorArmor[] = [];
   private endResults: ResultDefinition[] = [];
 
   constructor(
@@ -289,13 +289,13 @@ export class InventoryService {
       );
       this.selectedExotics = this.selectedExotics.filter((i) => !!i);
 
-      this.itemz = (await this.db.inventoryArmor
+      this.inventoryArmorItems = (await this.db.inventoryArmor
         .where("clazz")
         .equals(config.characterClass)
         .distinct()
         .toArray()) as IInventoryArmor[];
 
-      this.itemz = this.itemz
+      this.inventoryArmorItems = this.inventoryArmorItems
         // only armor :)
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
@@ -357,10 +357,10 @@ export class InventoryService {
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
-      this.itemz = this.itemz.filter((item) => {
+      this.inventoryArmorItems = this.inventoryArmorItems.filter((item) => {
         if (item.source === InventoryArmorSource.Inventory) return true;
 
-        const purchasedItemInstance = this.itemz.find(
+        const purchasedItemInstance = this.inventoryArmorItems.find(
           (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
         );
 
@@ -369,7 +369,7 @@ export class InventoryService {
         return purchasedItemInstance === undefined;
       });
 
-      this.items = this.itemz.map((armor) => {
+      this.permutatorArmorItems = this.inventoryArmorItems.map((armor) => {
         return {
           id: armor.id,
           hash: armor.hash,
@@ -402,7 +402,9 @@ export class InventoryService {
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
-      this.items = this.items.sort((a, b) => totalStats(b) - totalStats(a));
+      this.permutatorArmorItems = this.permutatorArmorItems.sort(
+        (a, b) => totalStats(b) - totalStats(a)
+      );
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
@@ -445,21 +447,19 @@ export class InventoryService {
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                this.itemz.find((y) => y.id == x)
+                this.inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
               let v = {
                 exotic:
                   exotic == null
-                    ? []
-                    : [
-                        {
-                          icon: exotic?.icon,
-                          watermark: exotic?.watermarkIcon,
-                          name: exotic?.name,
-                          hash: exotic?.hash,
-                        },
-                      ],
+                    ? undefined
+                    : {
+                        icon: exotic?.icon,
+                        watermark: exotic?.watermarkIcon,
+                        name: exotic?.name,
+                        hash: exotic?.hash,
+                      },
                 artifice: armorSet.usedArtifice,
                 modCount: armorSet.usedMods.length,
                 modCost: armorSet.usedMods.reduce(
@@ -543,13 +543,14 @@ export class InventoryService {
         };
 
         this.workers[n].postMessage({
+          type: "builderRequest",
           currentClass: this.currentClass,
           config: this._config,
           threadSplit: {
             count: nthreads,
             current: n,
           },
-          items: this.items,
+          items: this.permutatorArmorItems,
           selectedExotics: this.selectedExotics,
         });
       }
@@ -558,10 +559,12 @@ export class InventoryService {
   }
 
   estimateRequiredThreads(): number {
-    const helmets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
-    const gauntlets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet);
-    const chests = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
-    const legs = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
+    const helmets = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
+    const gauntlets = this.permutatorArmorItems.filter(
+      (d) => d.slot == ArmorSlot.ArmorSlotGauntlet
+    );
+    const chests = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
+    const legs = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
     const estimatedCalculations = this.estimateCombinationsToBeChecked(
       helmets,
       gauntlets,

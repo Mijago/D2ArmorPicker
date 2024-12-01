@@ -34,13 +34,11 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 export interface ResultDefinition {
   exotic:
     | undefined
-    | [
-        {
-          icon: string;
-          name: string;
-          hash: string;
-        },
-      ];
+    | {
+        icon: string;
+        name: string;
+        hash: string;
+      };
   artifice: number[];
   classItem: {
     perk: ArmorPerkOrSlot;

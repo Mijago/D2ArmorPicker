@@ -18,7 +18,6 @@
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
@@ -49,35 +48,30 @@ function checkSlots(
   chest: IPermutatorArmor,
   leg: IPermutatorArmor
 ) {
-  var exoticId = config.selectedExotics[0] || 0;
   let requirements = constantModslotRequirement.slice();
   if (
-    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || helmet.hash != exoticId) &&
+    !helmet.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
   )
     return { valid: false };
   if (
-    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || gauntlet.hash != exoticId) &&
+    !gauntlet.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
   )
     return { valid: false };
   if (
-    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || chest.hash != exoticId) &&
+    !chest.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
   )
     return { valid: false };
   if (
-    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || leg.hash != exoticId) &&
+    !leg.isExotic &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -96,13 +90,11 @@ function checkSlots(
   requirements[chest.perk]--;
   requirements[leg.perk]--;
 
-  // ignore exotic selection
-  if (exoticId > 0) {
-    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
-    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
-    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
-    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
-  }
+  // ignore perk requirement in exotic
+  if (helmet.isExotic) requirements[config.armorPerks[helmet.slot].value]--;
+  else if (gauntlet.isExotic) requirements[config.armorPerks[gauntlet.slot].value]--;
+  else if (chest.isExotic) requirements[config.armorPerks[chest.slot].value]--;
+  else if (leg.isExotic) requirements[config.armorPerks[leg.slot].value]--;
 
   let bad = 0;
   for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) bad += Math.max(0, requirements[n]);
@@ -130,7 +122,6 @@ function checkSlots(
 
   return { valid: bad <= 0, requiredClassItemType };
 }
-
 function prepareConstantStatBonus(config: BuildConfiguration) {
   const constantBonus = [0, 0, 0, 0, 0, 0];
   // Apply configurated mods to the stat value
@@ -174,28 +165,20 @@ function* generateArmorCombinations(
   gauntlets: IPermutatorArmor[],
   chests: IPermutatorArmor[],
   legs: IPermutatorArmor[],
-  constHasOneExoticLength: boolean,
   requiresAtLeastOneExotic: boolean
 ) {
   for (let helmet of helmets) {
     for (let gauntlet of gauntlets) {
-      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
+      if (helmet.isExotic && gauntlet.isExotic) continue;
       for (let chest of chests) {
-        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
-          continue;
+        if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
         for (let leg of legs) {
-          if (
-            constHasOneExoticLength &&
-            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
-            leg.isExotic
-          )
-            continue;
+          if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
           if (
             requiresAtLeastOneExotic &&
             !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
           )
             continue;
-
           yield [helmet, gauntlet, chest, leg];
         }
       }
@@ -227,6 +210,8 @@ function estimateCombinationsToBeChecked(
 }
 
 addEventListener("message", async ({ data }) => {
+  if (data.type != "builderRequest") return;
+
   const threadSplit = data.threadSplit as { count: number; current: number };
   const config = data.config as BuildConfiguration;
   let selectedExotics = data.selectedExotics;
@@ -319,7 +304,6 @@ addEventListener("message", async ({ data }) => {
   const hasArtificeClassItemExotic = availableClassItemPerkTypesExotic.has(
     ArmorPerkOrSlot.SlotArtifice
   );
-  const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
   const exoticClassItem: IPermutatorArmor | null =
     classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
   const exoticClassItemIsEnforced =
@@ -362,8 +346,7 @@ addEventListener("message", async ({ data }) => {
     gauntlets,
     chests,
     legs,
-    constHasOneExoticLength,
-    requiresAtLeastOneExotic
+    constHasOneExoticLength
   )) {
     checkedCalculations++;
     /**

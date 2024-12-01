@@ -43,7 +43,7 @@ export interface FixableSelection<T> {
 }
 
 export class BuildConfiguration {
-  characterClass: DestinyClass = DestinyClass.Titan;
+  characterClass: DestinyClass = DestinyClass.Unknown;
 
   // Add constant +1 strength
   addConstent1Resilience = false;
@@ -140,8 +140,8 @@ export class BuildConfiguration {
       onlyShowResultsWithNoWastedStats: false,
       showWastedStatsColumn: false,
       showPotentialTierColumn: false,
-      characterClass: DestinyClass.Titan,
-      selectedModElement: ModifierType.Stasis,
+      characterClass: DestinyClass.Unknown,
+      selectedModElement: ModifierType.Prismatic,
       selectedExotics: [],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },

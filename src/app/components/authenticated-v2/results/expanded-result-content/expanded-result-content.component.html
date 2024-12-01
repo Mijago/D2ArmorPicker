@@ -669,13 +669,13 @@
         </td>
       </tr>
       <ng-container *ngVar="element?.exotic as exotic">
-        <tr *ngIf="exotic[0]">
+        <tr *ngIf="exotic">
           <td>Exotic:</td>
-          <td colspan="10">{{ exotic[0].name }}</td>
+          <td colspan="10">{{ exotic.name }}</td>
           <td colspan="1">
             <div class="item-icon-container">
-              <img class="item-icon" src="https://bungie.net/{{ exotic[0].icon }}" />
-              <img class="item-icon-overlay" src="https://bungie.net/{{ exotic[0].watermark }}" />
+              <img class="item-icon" src="https://bungie.net/{{ exotic.icon }}" />
+              <img class="item-icon-overlay" src="https://bungie.net/{{ exotic.watermark }}" />
             </div>
           </td>
         </tr>

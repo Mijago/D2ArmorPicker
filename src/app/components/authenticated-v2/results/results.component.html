@@ -382,17 +382,18 @@
         <ng-container matColumnDef="exotic">
           <th *matHeaderCellDef mat-header-cell> Exotic</th>
           <td *matCellDef="let element" mat-cell>
-            <ng-container *ngFor="let exo of element.exotic">
-              <!-- TODO name , icon-->
-              <img
-                #tooltip="matTooltip"
-                class="itemIcon"
-                matTooltip="{{ exo.name }}"
-                src="https://bungie.net/{{ exo.icon }}" />
-              <img class="itemIconWatermark" src="https://bungie.net/{{ exo.watermark }}" />
-            </ng-container>
             <img
-              *ngIf="element.exotic.length === 0"
+              *ngIf="element.exotic !== undefined"
+              #tooltip="matTooltip"
+              class="itemIcon"
+              matTooltip="{{ element.exotic.name }}"
+              src="https://bungie.net/{{ element.exotic.icon }}" />
+            <img
+              *ngIf="element.exotic !== undefined"
+              class="itemIconWatermark"
+              src="https://bungie.net/{{ element.exotic.watermark }}" />
+            <img
+              *ngIf="element.exotic === undefined"
               class="itemIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
           </td>
