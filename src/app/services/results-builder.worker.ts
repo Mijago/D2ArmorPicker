@@ -53,7 +53,6 @@ function checkSlots(
   let requirements = constantModslotRequirement.slice();
   if (
     !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || helmet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
@@ -61,7 +60,6 @@ function checkSlots(
     return { valid: false };
   if (
     !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || gauntlet.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
@@ -69,7 +67,6 @@ function checkSlots(
     return { valid: false };
   if (
     !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || chest.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
@@ -77,7 +74,6 @@ function checkSlots(
     return { valid: false };
   if (
     !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
-    (exoticId <= 0 || leg.hash != exoticId) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.None &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -174,22 +170,15 @@ function* generateArmorCombinations(
   gauntlets: IPermutatorArmor[],
   chests: IPermutatorArmor[],
   legs: IPermutatorArmor[],
-  constHasOneExoticLength: boolean,
   requiresAtLeastOneExotic: boolean
 ) {
   for (let helmet of helmets) {
     for (let gauntlet of gauntlets) {
-      if (constHasOneExoticLength && helmet.isExotic && gauntlet.isExotic) continue;
+      if (helmet.isExotic && gauntlet.isExotic) continue;
       for (let chest of chests) {
-        if (constHasOneExoticLength && (helmet.isExotic || gauntlet.isExotic) && chest.isExotic)
-          continue;
+        if ((helmet.isExotic || gauntlet.isExotic) && chest.isExotic) continue;
         for (let leg of legs) {
-          if (
-            constHasOneExoticLength &&
-            (helmet.isExotic || gauntlet.isExotic || chest.isExotic) &&
-            leg.isExotic
-          )
-            continue;
+          if ((helmet.isExotic || gauntlet.isExotic || chest.isExotic) && leg.isExotic) continue;
           if (
             requiresAtLeastOneExotic &&
             !(helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic)
@@ -227,9 +216,10 @@ function estimateCombinationsToBeChecked(
 }
 
 addEventListener("message", async ({ data }) => {
+  if (data.type != "builderRequest") return;
+
   const threadSplit = data.threadSplit as { count: number; current: number };
   const config = data.config as BuildConfiguration;
-  let selectedExotics = data.selectedExotics;
   let items = data.items as IPermutatorArmor[];
 
   if (threadSplit == undefined || config == undefined || items == undefined) {
@@ -237,9 +227,7 @@ addEventListener("message", async ({ data }) => {
   }
 
   const startTime = Date.now();
-  console.debug("START RESULTS BUILDER 2");
-  console.time(`total #${threadSplit.current}`);
-
+  console.time(`Total run thread#${threadSplit.current}`);
   // toggle feature flags
   config.onlyShowResultsWithNoWastedStats =
     environment.featureFlags.enableZeroWaste && config.onlyShowResultsWithNoWastedStats;
@@ -250,7 +238,6 @@ addEventListener("message", async ({ data }) => {
     config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value = 5;
     config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
   }
-  console.log("Using config", data.config);
 
   let helmets = items
     .filter((i) => i.slot == ArmorSlot.ArmorSlotHelmet)
@@ -308,17 +295,6 @@ addEventListener("message", async ({ data }) => {
   if (amountExoticClassItems > 0 && config.assumeEveryExoticIsArtifice)
     availableClassItemPerkTypesExotic.add(ArmorPerkOrSlot.SlotArtifice);
 
-  console.debug(
-    "items",
-    JSON.stringify({
-      helmets: helmets.length,
-      gauntlets: gauntlets.length,
-      chests: chests.length,
-      legs: legs.length,
-      availableClassItemTypes: availableClassItemPerkTypes,
-    })
-  );
-
   // runtime variables
   const runtime = {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
@@ -328,7 +304,6 @@ addEventListener("message", async ({ data }) => {
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
-  const constHasOneExoticLength = selectedExotics.length <= 1;
   const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
   const hasArtificeClassItemExotic = availableClassItemPerkTypesExotic.has(
     ArmorPerkOrSlot.SlotArtifice
@@ -338,7 +313,6 @@ addEventListener("message", async ({ data }) => {
     classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
   const exoticClassItemIsEnforced =
     !!exoticClassItem && config.selectedExotics.indexOf(exoticClassItem.hash) > -1;
-  console.log("hasArtificeClassItem", hasArtificeClassItem);
 
   let results: IPermutatorArmorSet[] = [];
   let resultsLength = 0;
@@ -351,13 +325,21 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.log("estimatedCalculations", estimatedCalculations);
+  console.info(`Estimated calculations for Thread#${threadSplit.current}`, estimatedCalculations);
+  console.debug(
+    `Thread#${threadSplit.current} items`,
+    JSON.stringify({
+      helmets: helmets.length,
+      gauntlets: gauntlets.length,
+      chests: chests.length,
+      legs: legs.length,
+      availableClassItemTypes: availableClassItemPerkTypes,
+    })
+  );
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
-
-  console.time(`tm #${threadSplit.current}`);
 
   const hasMasterworkedClassItemExotic =
     !!exoticClassItem && (exoticClassItem.masterworked || config.assumeExoticsMasterworked);
@@ -369,7 +351,6 @@ addEventListener("message", async ({ data }) => {
     gauntlets,
     chests,
     legs,
-    constHasOneExoticLength,
     requiresAtLeastOneExotic
   )) {
     checkedCalculations++;
@@ -451,8 +432,7 @@ addEventListener("message", async ({ data }) => {
       resultsLength = 0;
     }
   }
-  console.timeEnd(`tm #${threadSplit.current}`);
-  console.timeEnd(`total #${threadSplit.current}`);
+  console.timeEnd(`Total run thread#${threadSplit.current}`);
 
   // @ts-ignore
   postMessage({

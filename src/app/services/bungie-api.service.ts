@@ -241,7 +241,7 @@ export class BungieApiService {
     this.status.clearAuthError();
     this.status.clearApiError();
 
-    console.info("BungieApiService", "getProfile");
+    console.info("BungieApiService", "Requesting Profile");
     let profile = await getProfile((d) => this.http.$http(d), {
       components: [
         DestinyComponentType.CharacterEquipment,
@@ -573,19 +573,13 @@ export class BungieApiService {
         destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutBearerToken(d));
         const version = destinyManifest.Response.version;
         if (manifestCache.version == version) {
-          console.debug(
-            "bungieApiService - updateManifest",
-            "Abort updateManifest due to fitting ManifestVersion"
-          );
+          console.info("bungieApiService - updateManifest", "Manifest is last version");
           return;
         }
       }
 
       if (Date.now() - manifestCache.updatedAt < 1000 * 3600 * 24) {
-        console.debug(
-          "bungieApiService - updateManifest",
-          "Abort updateManifest due to fitting Date"
-        );
+        console.info("bungieApiService - updateManifest", "Manifest is less than a day old");
         return;
       }
     }
@@ -606,8 +600,8 @@ export class BungieApiService {
       language: "en",
     });
 
-    console.log(
-      "manifestTables.DestinyInventoryItemDefinition",
+    console.debug(
+      "DestinyInventoryItemDefinition from manifest",
       manifestTables.DestinyInventoryItemDefinition
     );
 

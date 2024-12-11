@@ -14,6 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+.tSubclassFragments {
+  --mat-table-header-container-height: 32px !important;
+  --mat-table-row-item-container-height: 32px !important;
+  min-width: revert;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 5px;
+}
 
 .mat-slide-toggle.mat-disabled {
   opacity: 1;

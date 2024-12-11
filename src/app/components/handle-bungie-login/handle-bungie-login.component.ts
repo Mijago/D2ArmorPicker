@@ -36,9 +36,9 @@ export class HandleBungieLoginComponent implements OnInit {
       let code = params["code"];
       if (window.location.search.indexOf("?code=") > -1) code = window.location.search.substr(6);
 
-      console.info({ code });
-
       if (!code) return;
+
+      console.info({ code });
 
       this.loginService.authCode = code;
 

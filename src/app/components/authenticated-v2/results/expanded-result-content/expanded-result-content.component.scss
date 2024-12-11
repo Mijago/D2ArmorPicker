@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+@use "@angular/material" as mat;
 
 $icon-with: 22px;
 .element-icon {
@@ -44,7 +45,9 @@ $icon-with: 22px;
   contain: layout paint style;
   box-sizing: border-box;
   width: var(--item-size);
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   margin-top: -4px;
 }
 
@@ -145,6 +148,7 @@ table tr:not(:last-child) td {
 }
 
 .specificStatTable {
+  @include mat.table-density(-1);
   border-collapse: separate;
   border-spacing: 0 0;
 }

@@ -26,6 +26,7 @@ import { EnumDictionary } from "../data/types/EnumDictionary";
 import { ArmorStat } from "../data/enum/armor-stat";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { ModInformation } from "../data/ModInformation";
+import { isEqual as _isEqual } from "lodash";
 
 export interface StoredConfiguration {
   version: string;
@@ -47,6 +48,7 @@ const lzDecompOptions = {
 })
 export class ConfigurationService {
   private __configuration: BuildConfiguration;
+  private __LastConfiguration: BuildConfiguration;
 
   get readonlyConfigurationSnapshot() {
     return Object.assign(this.__configuration, {});
@@ -60,6 +62,7 @@ export class ConfigurationService {
 
   constructor() {
     this.__configuration = this.loadCurrentConfiguration();
+    this.__LastConfiguration = this.loadCurrentConfiguration();
 
     this._configuration = new BehaviorSubject(this.__configuration);
     this.configuration = this._configuration.asObservable();
@@ -70,6 +73,8 @@ export class ConfigurationService {
 
   modifyConfiguration(cb: (configuration: BuildConfiguration) => void) {
     cb(this.__configuration);
+    if (_isEqual(this.__configuration, this.__LastConfiguration)) return;
+    this.__LastConfiguration = structuredClone(this.__configuration);
     this.saveCurrentConfiguration(this.__configuration);
   }
 
@@ -179,7 +184,7 @@ export class ConfigurationService {
   }
 
   saveCurrentConfiguration(configuration: BuildConfiguration) {
-    console.debug("write configuration", configuration);
+    console.debug("Writing configuration", { configuration: configuration });
     // deep copy it
     this.__configuration = Object.assign(
       BuildConfiguration.buildEmptyConfiguration(),

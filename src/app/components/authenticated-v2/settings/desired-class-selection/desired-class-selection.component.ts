@@ -92,11 +92,13 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
       "3159615086": number;
       "3467984096": number;
     } = JSON.parse(localStorage.getItem("stored-materials") || "{}");
-    if (!("3853748946" in k)) k["3853748946"] = 0;
-    if (!("4257549984" in k)) k["4257549984"] = 0;
-    if (!("4257549985" in k)) k["4257549985"] = 0;
-    if (!("3159615086" in k)) k["3159615086"] = 0;
-    if (!("3467984096" in k)) k["3467984096"] = 0;
-    this.storedMaterials = k;
+
+    this.storedMaterials = {
+      "3853748946": k["3853748946"] ?? 0,
+      "4257549985": k["4257549985"] ?? 0,
+      "4257549984": k["4257549984"] ?? 0,
+      "3159615086": k["3159615086"] ?? 0,
+      "3467984096": k["3467984096"] ?? 0,
+    };
   }
 }

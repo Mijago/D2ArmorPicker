@@ -44,7 +44,7 @@
   }
 }
 
-::ng-deep .mat-option-text {
+.mat-option-text {
   color: #ffffff;
 }
 
@@ -85,7 +85,7 @@
 .class-text {
   position: absolute;
   left: 35px;
-  top: 8px;
+  top: 4px;
   font-size: x-large;
   text-shadow: 0 0 6px #000000;
 }
@@ -104,10 +104,4 @@
   top: 9px;
   text-shadow: 0 0 6px #000000;
   font-size: small;
-}
-a {
-  color: #99afe3;
-}
-a:visited {
-  color: #7294dc;
 }

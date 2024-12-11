@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { EnumDictionary } from "../types/EnumDictionary";
+
 export enum ModifierType {
   CombatStyleMod,
   Stasis,
@@ -26,3 +28,12 @@ export enum ModifierType {
 }
 
 export type Subclass = Exclude<ModifierType, ModifierType.CombatStyleMod>;
+
+export const SubclassNames: EnumDictionary<Subclass, string> = {
+  [ModifierType.Arc]: "Arc",
+  [ModifierType.Solar]: "Solar",
+  [ModifierType.Void]: "Void",
+  [ModifierType.Stasis]: "Stasis",
+  [ModifierType.Strand]: "Strand",
+  [ModifierType.Prismatic]: "Prismatic",
+};
