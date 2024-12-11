@@ -15,6 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.result-table {
+  --mat-table-header-container-height: 38px !important;
+  --mat-table-row-item-container-height: 32px !important;
+}
+.result-element-row > .cdk-cell {
+  padding-block: 5px;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0px;
+}
+
 #card-results {
   display: inline-block;
   vertical-align: top;
@@ -34,18 +47,23 @@
   top: 11px;
 }
 
-.itemIcon {
+.itemDiv {
+  display: flex;
+  margin: auto;
   width: 32px;
   height: 32px;
-  margin-right: 3px;
+}
+.itemIcon {
+  width: inherit;
+  height: inherit;
+  position: absolute;
 }
 
 .itemIconWatermark {
-  width: 32px;
-  height: 32px;
-  margin-right: 3px;
-  margin-left: -35px;
+  width: inherit;
+  height: inherit;
   pointer-events: none;
+  position: relative;
 }
 
 .source-column {
@@ -64,15 +82,15 @@
   display: block;
 }
 
-tr.example-element-row td {
+tr.result-element-row td {
   border-bottom-width: 0;
 }
 
-tr.example-detail-row {
+tr.result-detail-row {
   height: 0 !important;
 }
 
-.example-element-detail {
+.result-element-detail {
   overflow: hidden;
   display: flex;
 }
@@ -100,7 +118,7 @@ tr.example-detail-row {
   padding: 5px;
 }
 
-.result-table tr.example-element-row {
+.result-table tr.result-element-row {
   cursor: pointer;
 }
 
@@ -125,7 +143,7 @@ tr.example-detail-row {
 }
 
 .cdk-column-exotic {
-  min-width: 45px;
+  min-width: 65px;
 }
 
 .cdk-column-waste {

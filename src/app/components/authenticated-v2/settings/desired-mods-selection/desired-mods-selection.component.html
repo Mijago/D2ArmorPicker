@@ -46,7 +46,7 @@
     <span *ngIf="d.data.length === 0"
       >There are no fragments configured yet. Please be patient.</span
     >
-    <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
+    <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0" class="tSubclassFragments">
       <!-- Position Column -->
       <ng-container matColumnDef="name">
         <th *matHeaderCellDef mat-header-cell>Name</th>

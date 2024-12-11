@@ -380,22 +380,24 @@
 
         <!-- Name Column -->
         <ng-container matColumnDef="exotic">
-          <th *matHeaderCellDef mat-header-cell> Exotic</th>
+          <th *matHeaderCellDef mat-header-cell style="text-align: center">Exotic</th>
           <td *matCellDef="let element" mat-cell>
-            <img
-              *ngIf="element.exotic !== undefined"
-              #tooltip="matTooltip"
-              class="itemIcon"
-              matTooltip="{{ element.exotic.name }}"
-              src="https://bungie.net/{{ element.exotic.icon }}" />
-            <img
-              *ngIf="element.exotic !== undefined"
-              class="itemIconWatermark"
-              src="https://bungie.net/{{ element.exotic.watermark }}" />
-            <img
-              *ngIf="element.exotic === undefined"
-              class="itemIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
+            <div class="itemDiv">
+              <img
+                *ngIf="element.exotic !== undefined"
+                #tooltip="matTooltip"
+                class="itemIcon"
+                matTooltip="{{ element.exotic.name }}"
+                src="https://bungie.net/{{ element.exotic.icon }}" />
+              <img
+                *ngIf="element.exotic !== undefined"
+                class="itemIconWatermark"
+                src="https://bungie.net/{{ element.exotic.watermark }}" />
+              <img
+                *ngIf="element.exotic === undefined"
+                class="itemIcon"
+                src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
+            </div>
           </td>
         </ng-container>
 
@@ -488,7 +490,7 @@
           <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
             <div
               [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
-              class="example-element-detail">
+              class="result-element-detail">
               <app-expanded-result-content [element]="element"></app-expanded-result-content>
             </div>
           </td>
@@ -499,18 +501,18 @@
           (click)="expandedElement = expandedElement === element ? null : element"
           *matRowDef="let element; columns: shownColumns"
           [class.example-expanded-row]="expandedElement === element"
-          class="example-element-row"
+          class="result-element-row"
           mat-row>
         </tr>
         <tr
           *matRowDef="let row; columns: ['expandedDetail']"
-          class="example-detail-row"
+          class="result-detail-row"
           mat-row></tr>
       </table>
       <mat-paginator
-        [pageSizeOptions]="[10, 20, 50]"
+        [pageSizeOptions]="[25, 50, 75, 100]"
         aria-label="Select page of periodic elements"
-        pageSize="20"
+        pageSize="25"
         showFirstLastButtons>
       </mat-paginator>
     </div>

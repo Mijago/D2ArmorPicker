@@ -15,8 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 5px;
+}
+
 .modTable {
   width: 100%;
+  --mat-table-header-container-height: 32px !important;
+  --mat-table-row-item-container-height: 32px !important;
+  min-width: revert;
 }
 
 .mat-header-row,
