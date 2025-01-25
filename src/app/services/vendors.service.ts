@@ -164,11 +164,12 @@ export class VendorsService {
       return false;
     }
 
-    console.log("VENDOR C", {
-      nextVendorRefresh,
-      finite: isFinite(nextVendorRefresh.getTime()),
-      ok: nextVendorRefresh > new Date(),
-      now: new Date(),
+    console.debug("Vendor Cache", {
+      information: {
+        nextVendorRefresh,
+        now: new Date(),
+        shouldRefresh: nextVendorRefresh > new Date(),
+      },
     });
     return nextVendorRefresh > new Date();
   }
@@ -200,10 +201,13 @@ export class VendorsService {
     // This should contain a list of hashes for only the armor items which we are interested in
     const manifestItems = (await this.db.manifestArmor.toArray())
       .filter((a) => a.itemType == DestinyItemType.Armor)
-      .reduce((acc, item) => {
-        acc[item.hash] = item;
-        return acc;
-      }, {} as Record<number, IManifestArmor>);
+      .reduce(
+        (acc, item) => {
+          acc[item.hash] = item;
+          return acc;
+        },
+        {} as Record<number, IManifestArmor>
+      );
 
     try {
       const vendorArmorItems = await Promise.all(

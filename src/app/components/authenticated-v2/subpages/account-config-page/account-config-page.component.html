@@ -16,29 +16,29 @@
   -->
 
 <div id="account-config-container">
-  <a
-    class="returnbutton"
-    color="primary"
-    fxShow="false"
-    fxShow.lt-md="true"
-    mat-raised-button
-    routerLink="/">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
-  <mat-card>
-    <mat-card-title> Account Configuration </mat-card-title>
-    <mat-card-subtitle>
-      The configuration on this page will not be reset when you reset your build settings.
-    </mat-card-subtitle>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title> Account Configuration </mat-card-title>
+      <mat-card-subtitle>
+        The configuration on this page will not be reset when you reset your build settings.
+      </mat-card-subtitle>
+    </mat-card-header>
+
     <mat-card-content>
       This will come in a future update. Right now, I just wanted to push the "Debugging" section
       out.
     </mat-card-content>
   </mat-card>
 
-  <mat-card>
-    <mat-card-title> Debugging </mat-card-title>
-    <mat-card-subtitle> Some options for debugging purposes. </mat-card-subtitle>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title> Debugging </mat-card-title>
+      <mat-card-subtitle> Some options for debugging purposes. </mat-card-subtitle>
+    </mat-card-header>
+
     <mat-card-content>
       If the team asks you to send some specific data, you can find it here:<br />
       <a
@@ -70,13 +70,7 @@
     </mat-card-content>
   </mat-card>
 
-  <a
-    class="returnbutton"
-    color="primary"
-    fxShow="false"
-    fxShow.lt-md="true"
-    mat-raised-button
-    routerLink="/">
+  <a class="returnbutton hide-gt-sm" color="primary" mat-raised-button routerLink="/">
     Return to D2ArmorPicker
   </a>
 </div>

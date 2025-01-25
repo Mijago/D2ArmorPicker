@@ -67,11 +67,3 @@ mat-card {
 .changelog-table td {
   border-top: #6e6e6e solid 1px;
 }
-
-a {
-  color: #99afe3;
-}
-
-a:visited {
-  color: #7294dc;
-}

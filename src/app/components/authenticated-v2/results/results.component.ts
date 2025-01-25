@@ -34,13 +34,11 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 export interface ResultDefinition {
   exotic:
     | undefined
-    | [
-        {
-          icon: string;
-          name: string;
-          hash: string;
-        }
-      ];
+    | {
+        icon: string;
+        name: string;
+        hash: string;
+      };
   artifice: number[];
   classItem: {
     perk: ArmorPerkOrSlot;
@@ -237,6 +235,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   async updateData() {
+    console.info("Table total results:", this._results.length);
     console.time("Update Table Data");
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;

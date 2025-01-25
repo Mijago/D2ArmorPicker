@@ -15,11 +15,13 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<mat-card>
+<mat-card appearance="outlined">
   <mat-card-header>
     <div class="example-header-image" mat-card-avatar></div>
-    <mat-card-title>Destiny 2 Armor Picker</mat-card-title>
-    <mat-card-subtitle>A simple armor min-max tool by Mijago.</mat-card-subtitle>
+    <mat-card-header>
+      <mat-card-title>Destiny 2 Armor Picker</mat-card-title>
+      <mat-card-subtitle>A simple armor min-max tool by Mijago.</mat-card-subtitle>
+    </mat-card-header>
   </mat-card-header>
   <mat-card-content>
     <p>
@@ -46,9 +48,11 @@
   </mat-card-actions>
 </mat-card>
 
-<mat-card>
-  <mat-card-title> Examples </mat-card-title>
-  <mat-card-subtitle>Some examples to show what D2ArmorPicker can do.</mat-card-subtitle>
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <mat-card-title> Examples </mat-card-title>
+    <mat-card-subtitle>Some examples to show what D2ArmorPicker can do.</mat-card-subtitle>
+  </mat-card-header>
   <mat-card-content>
     <mat-accordion>
       <mat-expansion-panel class="mat-elevation-z11">
@@ -105,7 +109,11 @@
           <br />
           Take Cluster 1, for example. I copy the DIM-Query, enter it into DIM and see the following
           results:
-          <div class="armor-image-container" fxLayoutGap="10px" fxLayout="row">
+          <div
+            class="armor-image-container"
+            [style.display]="'flex'"
+            [style.flex-direction]="'row'"
+            [style.gap]="'10px'">
             <img src="assets/info/cluster-example/img.png" />
             <img src="assets/info/cluster-example/img_1.png" />
             <img src="assets/info/cluster-example/img_2.png" />

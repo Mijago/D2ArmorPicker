@@ -16,7 +16,7 @@
  */
 
 import { ArmorSlot } from "../enum/armor-slot";
-import { IManifestArmor } from "./IManifestArmor";
+import { IDisplayManifestArmor, IManifestArmor } from "./IManifestArmor";
 
 export interface ITimestampedEntry {
   created_at: number;
@@ -45,10 +45,17 @@ export interface IDestinyArmor {
   source: InventoryArmorSource;
 }
 
-export interface IInventoryArmor extends IManifestArmor, IDestinyArmor, ITimestampedEntry {
+export interface IDisplayInventoryArmor extends IDisplayManifestArmor, IDestinyArmor {
   itemInstanceId: string;
-  mayBeBugged: boolean; // if there was an error in the parsing
   energyLevel: number;
+}
+
+export interface IInventoryArmor
+  extends IDisplayInventoryArmor,
+    IManifestArmor,
+    IDestinyArmor,
+    ITimestampedEntry {
+  mayBeBugged: boolean; // if there was an error in the parsing
 
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];

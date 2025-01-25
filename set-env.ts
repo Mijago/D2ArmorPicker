@@ -21,34 +21,31 @@ const production = process.env["PRODUCTION"] === "1";
 const beta_branch = process.env["BETA"] === "1";
 const canary_branch = process.env["CANARY"] === "1";
 
-const version = "2.6.6";
-
-console.log("production: " + production);
-console.log("beta_branch: " + beta_branch);
-console.log("canary_branch: " + canary_branch);
-console.log("version: " + version);
+const version = "2.7.0";
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
   ? "./src/environments/environment.prod.ts"
   : beta_branch || canary_branch
-  ? "./src/environments/environment.prod.ts"
-  : "./src/environments/environment.ts";
+    ? "./src/environments/environment.prod.ts"
+    : "./src/environments/environment.ts";
 // Load node modules
 
 require("dotenv").config({
   path: production
     ? ".env"
     : beta_branch
-    ? ".env_beta"
-    : canary_branch
-    ? ".env_canary"
-    : ".env_dev",
+      ? ".env_beta"
+      : canary_branch
+        ? ".env_canary"
+        : ".env_dev",
 });
 
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
 
 var version_tag = production ? "" : beta_branch ? "-beta-" + revision : "-dev-" + revision;
+
+console.log(version + version_tag);
 
 const data = {
   version: version + version_tag,
@@ -61,6 +58,7 @@ const data = {
   client_secret: process.env["D2AP_BUNGIE_CLIENT_SECRET"],
   nodeEnv: process.env["NODE_ENV"],
   offlineMode: false,
+  highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
   featureFlags: {
     enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
     enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",

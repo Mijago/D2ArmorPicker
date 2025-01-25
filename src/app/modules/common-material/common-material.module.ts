@@ -42,7 +42,6 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatSidenavModule } from "@angular/material/sidenav";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { FlexLayoutModule } from "@angular/flex-layout";
 
 @NgModule({
   declarations: [],
@@ -74,10 +73,8 @@ import { FlexLayoutModule } from "@angular/flex-layout";
     MatSidenavModule,
     ReactiveFormsModule,
     FormsModule,
-    FlexLayoutModule,
   ],
   exports: [
-    FlexLayoutModule,
     ReactiveFormsModule,
     FormsModule,
     MatButtonModule,

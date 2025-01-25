@@ -114,7 +114,7 @@ td.mat-footer-cell:last-of-type {
   padding-right: 3px;
 }
 
-:host ::ng-deep .mat-form-field-wrapper {
+:host .mat-form-field-wrapper {
   margin: 0 !important;
   padding: 0;
 }

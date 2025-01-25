@@ -51,7 +51,10 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   config_reduce_waste = false;
   config_allowExactStats = false;
 
-  constructor(public config: ConfigurationService, private inventory: InventoryService) {
+  constructor(
+    public config: ConfigurationService,
+    private inventory: InventoryService
+  ) {
     this.stats = Object.keys(ArmorStat)
       .filter((value) => !isNaN(Number(value)))
       .map((value) => {
@@ -78,7 +81,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
       const tiers = d.maximumPossibleTiers || [10, 10, 10, 10, 10, 10];
-      console.log("d.maximumPossibleTiers", tiers);
+      console.debug("Maximum Possible Tiers", { tiers: tiers });
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }

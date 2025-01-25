@@ -24,17 +24,19 @@ import {
 import { ArmorSlot } from "../enum/armor-slot";
 import { ArmorPerkOrSlot } from "../enum/armor-stat";
 
-export interface IManifestArmor {
+export interface IDisplayManifestArmor {
   hash: number;
   name: string;
   icon: string;
   description: string;
-  watermarkIcon: string;
   slot: ArmorSlot;
   clazz: DestinyClass;
-  perk: ArmorPerkOrSlot;
   isExotic: 1 | 0;
   rarity: TierType;
+}
+export interface IManifestArmor extends IDisplayManifestArmor {
+  watermarkIcon: string;
+  perk: ArmorPerkOrSlot;
   exoticPerkHash: number;
   armor2: boolean;
   isSunset: boolean;

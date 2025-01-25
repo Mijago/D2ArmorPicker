@@ -17,6 +17,8 @@
 
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
+import { isEqual as _isEqual } from "lodash";
+import { getDifferences } from "../data/commonFunctions";
 
 export interface Status {
   calculatingPermutations: boolean;
@@ -46,6 +48,8 @@ export class StatusProviderService {
     authError: false, // in case the login tokens are invalid and can not be refreshed
   };
 
+  private __last_Status: Status = structuredClone(this.__status);
+
   private _status: BehaviorSubject<Status>;
   public readonly status: Observable<Status>;
 
@@ -60,7 +64,9 @@ export class StatusProviderService {
 
   modifyStatus(cb: (status: Status) => void) {
     cb(this.__status);
-    console.log("modifyStatus", this.__status);
+    if (!_isEqual(this.__last_Status, this.__status))
+      console.debug("Status changed", getDifferences(this.__last_Status, this.__status));
+    this.__last_Status = structuredClone(this.__status);
     this._status.next(this.__status);
   }
 

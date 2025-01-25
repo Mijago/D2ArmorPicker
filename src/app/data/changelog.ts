@@ -29,6 +29,32 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.7.0",
+    date: "December 09, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated dependencies. Thanks nzanaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added error tacking so that we can better identify and fix issues. Thanks nzanaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixes for the exotic class items and duplicate entries. Thanks nzanaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Many - AND I REALLY MEAN MANY - internal code optimizations, both structural and logically. Thanks nzanaza (this guardian deserves a medal)!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.6.6",
     date: "November 9, 2024",
     entries: [
