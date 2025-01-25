@@ -34,6 +34,11 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Some UI reworks. Please give us feedback whether you like it or not, so we can improve it further! Thanks nzanaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Updated dependencies. Thanks nzanaza!",
         issues: [],
       },
