@@ -40,7 +40,6 @@
 .mat-column-intellect,
 .mat-column-strength,
 .mat-column-cost {
-  min-width: 40px;
   text-align: center;
 }
 
@@ -143,4 +142,10 @@ td.mat-footer-cell:last-of-type {
       left: -10px;
     }
   }
+}
+
+// overwrite the default th padding
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0 4px 0 4px;
 }
