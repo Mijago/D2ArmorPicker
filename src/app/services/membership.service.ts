@@ -1,5 +1,10 @@
 import { Injectable } from "@angular/core";
-import { DestinyComponentType, getProfile, DestinyClass } from "bungie-api-ts/destiny2";
+import {
+  DestinyComponentType,
+  getProfile,
+  DestinyClass,
+  BungieMembershipType,
+} from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
@@ -13,6 +18,7 @@ import { H } from "highlight.run";
 export class MembershipService {
   constructor(
     private http: HttpClientService,
+    private authService: AuthService,
     private status: StatusProviderService,
     private auth: AuthService
   ) {
@@ -42,11 +48,14 @@ export class MembershipService {
     }
 
     console.info("BungieApiService", "getMembershipDataForCurrentUser");
-    let response = await getMembershipDataForCurrentUser((d) => this.http.$http(d));
+    let response = await getMembershipDataForCurrentUser((d) => this.http.$http(d, true));
     let memberships = response?.Response.destinyMemberships;
     console.info("Memberships:", memberships);
     memberships = memberships.filter(
-      (m) => m.crossSaveOverride == 0 || m.crossSaveOverride == m.membershipType
+      (m) =>
+        (m.crossSaveOverride == 0 &&
+          m.membershipType != BungieMembershipType.TigerStadia) /*stadia is dead, ignore it*/ ||
+        m.crossSaveOverride == m.membershipType
     );
     console.info("Filtered Memberships:", memberships);
 
@@ -56,12 +65,14 @@ export class MembershipService {
       result = memberships?.[0];
     } else {
       // This guardian has multiple accounts linked.
-      // Fetch the last login time for each account, and use the one that was most recently used.
-      let lastLoggedInProfileIndex: any = 0;
+      // Fetch the last login time for each account, and use the one that was most recently used, default to primaryMembershipId
+      let lastLoggedInProfileIndex: any = memberships.findIndex(
+        (x) => x.membershipId == response?.Response.primaryMembershipId
+      );
       let lastPlayed = 0;
       for (let id in memberships) {
         const membership = memberships?.[id];
-        const profile = await getProfile((d) => this.http.$http(d), {
+        const profile = await getProfile((d) => this.http.$http(d, false), {
           components: [DestinyComponentType.Profiles],
           membershipType: membership.membershipType,
           destinyMembershipId: membership.membershipId,
@@ -74,12 +85,19 @@ export class MembershipService {
           }
         }
       }
+      if (lastLoggedInProfileIndex < 0) {
+        console.error("PrimaryMembershipId was not found");
+        lastLoggedInProfileIndex = 0;
+        this.status.setAuthError();
+        this.authService.logout();
+      }
+      result = memberships?.[lastLoggedInProfileIndex];
       console.info(
         "getMembershipDataForCurrentUser",
         "Selected membership data for the last logged in membership."
       );
-      result = memberships?.[lastLoggedInProfileIndex];
     }
+
     localStorage.setItem("auth-membershipInfo", JSON.stringify(result));
     localStorage.setItem("auth-membershipInfo-date", JSON.stringify(Date.now()));
     H.identify(`I${result.membershipId}T${result.membershipType}`, {
@@ -102,7 +120,7 @@ export class MembershipService {
     this.status.clearAuthError();
     this.status.clearApiError();
 
-    const profile = await getProfile((d) => this.http.$http(d), {
+    const profile = await getProfile((d) => this.http.$http(d, true), {
       components: [DestinyComponentType.Characters],
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,

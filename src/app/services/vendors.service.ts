@@ -55,7 +55,7 @@ export class VendorsService {
     items: IInventoryArmor[];
     nextRefreshDate: number;
   }> {
-    const vendorsResponse = await getVendors((d) => this.http.$http(d), {
+    const vendorsResponse = await getVendors((d) => this.http.$http(d, false), {
       components: [DestinyComponentType.Vendors, DestinyComponentType.VendorSales],
       characterId,
       membershipType: destinyMembership.membershipType,
@@ -92,7 +92,7 @@ export class VendorsService {
     const nextRefreshDate = Math.min(...vendors.map((v) => v.refreshDate));
     const VendorPromises = vendors.map((vendor) => {
       let vendorHash = vendor.vendorHash;
-      return getVendor((d) => this.http.$http(d), {
+      return getVendor((d) => this.http.$http(d, false), {
         components: [DestinyComponentType.ItemStats],
         characterId,
         membershipType: destinyMembership.membershipType,

@@ -17,10 +17,10 @@ export class HttpClientService {
   ) {}
 
   async $httpWithoutBearerToken(config: HttpClientConfig) {
-    return this.$http(config, true, false, 2);
+    return this.$http(config, false, true, false, 2);
   }
   async $httpWithoutApiKey(config: HttpClientConfig) {
-    return this.$http(config, false, false, 2);
+    return this.$http(config, false, false, false, 2);
   }
 
   async $httpPost(config: HttpClientConfig) {
@@ -39,7 +39,13 @@ export class HttpClientService {
       });
   }
 
-  async $http(config: HttpClientConfig, apiKey = true, bearerToken = true, retryCount = 2) {
+  async $http(
+    config: HttpClientConfig,
+    logoutOnFailure: boolean,
+    apiKey = true,
+    bearerToken = true,
+    retryCount = 2
+  ) {
     let options = {
       params: config.params,
       headers: {} as any,
@@ -70,8 +76,10 @@ export class HttpClientService {
         // if error 500, log out
         else if (err.status == 500) {
           console.info("Auth Error, probably expired token");
-          this.status.setAuthError();
-          this.authService.logout();
+          if (logoutOnFailure) {
+            this.status.setAuthError();
+            this.authService.logout();
+          }
         }
         if (err.ErrorStatus != "Internal Server Error") {
           console.info("API-Error");

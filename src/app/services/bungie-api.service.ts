@@ -120,7 +120,7 @@ export class BungieApiService {
     this.status.clearAuthError();
     this.status.clearApiError();
 
-    let r1 = await getItem((d) => this.http.$http(d), {
+    let r1 = await getItem((d) => this.http.$http(d, false), {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
       itemInstanceId: itemInstanceId,
@@ -133,7 +133,7 @@ export class BungieApiService {
     if (r1.Response.characterId != targetCharacter) {
       if (r1.Response.item.data?.location != 2) {
         await this.moveItemToVault(r1.Response.item.data?.itemInstanceId || "");
-        r1 = await getItem((d) => this.http.$http(d), {
+        r1 = await getItem((d) => this.http.$http(d, false), {
           membershipType: destinyMembership.membershipType,
           destinyMembershipId: destinyMembership.membershipId,
           itemInstanceId: itemInstanceId,
@@ -176,7 +176,7 @@ export class BungieApiService {
     this.status.clearAuthError();
     this.status.clearApiError();
 
-    const r1 = await getItem((d) => this.http.$http(d), {
+    const r1 = await getItem((d) => this.http.$http(d, false), {
       membershipType: destinyMembership.membershipType,
       destinyMembershipId: destinyMembership.membershipId,
       itemInstanceId: itemInstanceId,
@@ -242,7 +242,7 @@ export class BungieApiService {
     this.status.clearApiError();
 
     console.info("BungieApiService", "Requesting Profile");
-    let profile = await getProfile((d) => this.http.$http(d), {
+    let profile = await getProfile((d) => this.http.$http(d, true), {
       components: [
         DestinyComponentType.CharacterEquipment,
         DestinyComponentType.CharacterInventories,
