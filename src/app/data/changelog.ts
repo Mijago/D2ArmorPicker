@@ -34,27 +34,27 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Some UI reworks. Please give us feedback whether you like it or not, so we can improve it further! Thanks nzanaza!",
+        text: "Some UI reworks. Please give us feedback whether you like it or not, so we can improve it further! Thanks nznaza!",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Updated dependencies. Thanks nzanaza!",
+        text: "Updated dependencies. Thanks nznaza!",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Added error tacking so that we can better identify and fix issues. Thanks nzanaza!",
+        text: "Added error tacking so that we can better identify and fix issues. Thanks nznaza!",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Fixes for the exotic class items and duplicate entries. Thanks nzanaza!",
+        text: "Fixes for the exotic class items and duplicate entries. Thanks nznaza!",
         issues: [],
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Many - AND I REALLY MEAN MANY - internal code optimizations, both structural and logically. Thanks nzanaza (this guardian deserves a medal)!",
+        text: "Many - AND I REALLY MEAN MANY - internal code optimizations, both structural and logically. Thanks nznaza (this guardian deserves a medal)!",
         issues: [],
       },
     ],
