@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.7.1",
+    date: "January 29, 2025",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Some users could not log in properly due to crossplay issues. Thanks nznaza for fixing it!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.7.0",
     date: "December 09, 2024",
     entries: [
