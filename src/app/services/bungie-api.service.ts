@@ -605,19 +605,15 @@ export class BungieApiService {
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
-        "DestinyCollectibleDefinition",
       ],
       language: "en",
     });
 
-    console.debug(
-      "DestinyInventoryItemDefinition from manifest",
-      manifestTables.DestinyInventoryItemDefinition
-    );
-    console.debug(
-      "DestinySocketTypeDefinition from manifest",
-      manifestTables.DestinySocketTypeDefinition
-    );
+    const enManifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
+      destinyManifest: destinyManifest.Response,
+      tableNames: ["DestinyCollectibleDefinition", "DestinyPresentationNodeDefinition"],
+      language: "en",
+    });
 
     await this.updateExoticCollectibles(manifestTables);
     await this.updateVendorNames(manifestTables);
@@ -703,13 +699,15 @@ export class BungieApiService {
         if (clasz == DestinyClass.Unknown && isArmor2) {
           if (v.collectibleHash != undefined) {
             let presentationParentNode =
-              manifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
+              enManifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
             if (presentationParentNode !== undefined) {
               if (presentationParentNode.length == 1) {
-                // Juust in case an item has more than 1 parent node, manifest this release is really borked
-                if (presentationParentNode[0] == 1573256543) clasz = DestinyClass.Warlock;
-                if (presentationParentNode[0] == 2598675734) clasz = DestinyClass.Titan;
-                if (presentationParentNode[0] == 2765771634) clasz = DestinyClass.Hunter;
+                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Warlock") != -1)
+                  clasz = DestinyClass.Warlock;
+                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Titan") != -1)
+                  clasz = DestinyClass.Titan;
+                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Hunter") != -1)
+                  clasz = DestinyClass.Hunter;
               }
             }
           }
