@@ -30,6 +30,7 @@ import {
   DestinyManifestSlice,
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
+  DestinyClass,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
@@ -300,12 +301,12 @@ export class BungieApiService {
 
     // Do not search directly in the DB, as it is VERY slow.
     let manifestArmor = await this.db.manifestArmor.toArray();
-    const cx = manifestArmor.filter((d) => idSet.has(d.hash));
+    const validManifestArmor = manifestArmor.filter((d) => idSet.has(d.hash));
     const modsData = manifestArmor.filter((d) => d.itemType == 19);
-    let res = Object.fromEntries(cx.map((_) => [_.hash, _]));
-    let mods = Object.fromEntries(modsData.map((_) => [_.hash, _]));
+    const validManifestArmorMap = Object.fromEntries(validManifestArmor.map((_) => [_.hash, _]));
+    const modsMap = Object.fromEntries(modsData.map((_) => [_.hash, _]));
 
-    let r = allItems
+    let filteredItems = allItems
       //.filter(d => ids.indexOf(d.itemHash) > -1)
       .filter((d) => !!d.itemInstanceId)
       .filter((d) => d.bucketHash !== 3284755031) // Filter out subclasses
@@ -324,46 +325,51 @@ export class BungieApiService {
         let instanceData = profile.Response.itemComponents.instances.data || {};
         let instance = instanceData[d.itemInstanceId || ""] || {};
 
-        if (!res[d.itemHash]) {
+        if (!validManifestArmorMap[d.itemHash]) {
           console.warn("Missing manifest item for item hash", d.itemHash);
           return null;
         }
 
-        let r = createArmorItem(
-          res[d.itemHash],
+        let armorItem = createArmorItem(
+          validManifestArmorMap[d.itemHash],
           d.itemInstanceId || "",
           InventoryArmorSource.Inventory
         );
-        r.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
-        r.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
+        armorItem.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
+        armorItem.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
         const sockets = profile.Response.itemComponents.sockets.data || {};
         const socketsList =
           sockets[d.itemInstanceId!]?.sockets.map((socket) => socket.plugHash) ?? [];
-        collectInvestmentStats(r, res[d.itemHash]?.investmentStats ?? [], socketsList, mods);
+        collectInvestmentStats(
+          armorItem,
+          validManifestArmorMap[d.itemHash]?.investmentStats ?? [],
+          socketsList,
+          modsMap
+        );
 
         // Take a look if it really has the artifice perk
-        if (r.perk == ArmorPerkOrSlot.SlotArtifice) {
+        if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
           let statData = profile.Response.itemComponents.perks.data || {};
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
-          if (!hasPerk) r.perk = ArmorPerkOrSlot.None;
-        } else if (r.isExotic) {
+          if (!hasPerk) armorItem.perk = ArmorPerkOrSlot.None;
+        } else if (armorItem.isExotic) {
           // 720825311 is "UNLOCKED exotic artifice slot"
           // 1656746282 is "LOCKED exotic artifice slot"
           const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
           if (hasPerk) {
-            r.perk = ArmorPerkOrSlot.SlotArtifice;
+            armorItem.perk = ArmorPerkOrSlot.SlotArtifice;
           }
         }
 
-        return r as IInventoryArmor;
+        return armorItem as IInventoryArmor;
       })
       .filter(Boolean) as IInventoryArmor[];
 
     // Now add the collection rolls for exotics
     const collectionRollItems = Array.from(unlockedExoticArmorItemHashes)
       .map((exoticItemHash) => {
-        const manifestArmorItem = res[exoticItemHash];
+        const manifestArmorItem = validManifestArmorMap[exoticItemHash];
         if (!manifestArmorItem) {
           console.error("Couldn't find manifest item for exotic", exoticItemHash);
           return null;
@@ -379,23 +385,25 @@ export class BungieApiService {
           collectionItem,
           manifestArmorItem.investmentStats,
           manifestArmorItem.socketEntries.map((s) => s.singleInitialItemHash),
-          mods
+          modsMap
         );
 
         return collectionItem;
       })
       .filter(Boolean) as IInventoryArmor[];
 
-    r = r.concat(collectionRollItems);
-    r = r.filter((k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null);
+    filteredItems = filteredItems.concat(collectionRollItems);
+    filteredItems = filteredItems.filter(
+      (k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null
+    );
 
-    await this.updateDatabaseItems(r);
+    await this.updateDatabaseItems(filteredItems);
 
     localStorage.setItem("LastArmorUpdate", Date.now().toString());
     localStorage.setItem("last-armor-db-name", this.db.inventoryArmor.db.name);
 
     this.status.clearApiError();
-    return r;
+    return filteredItems;
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
@@ -545,7 +553,7 @@ export class BungieApiService {
     )
       .filter(([k, v]) => {
         const item = manifestTables.DestinyInventoryItemDefinition[v.itemHash];
-        return item?.inventory?.tierTypeName == "Exotic" && item?.itemType == DestinyItemType.Armor;
+        return item?.inventory?.tierType == 6 && item?.itemType == DestinyItemType.Armor;
       })
       .map(([k, v]) => {
         return {
@@ -596,14 +604,16 @@ export class BungieApiService {
         "DestinyInventoryItemDefinition",
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
+        "DestinySocketTypeDefinition",
       ],
       language: "en",
     });
 
-    console.debug(
-      "DestinyInventoryItemDefinition from manifest",
-      manifestTables.DestinyInventoryItemDefinition
-    );
+    const enManifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
+      destinyManifest: destinyManifest.Response,
+      tableNames: ["DestinyCollectibleDefinition", "DestinyPresentationNodeDefinition"],
+      language: "en",
+    });
 
     await this.updateExoticCollectibles(manifestTables);
     await this.updateVendorNames(manifestTables);
@@ -623,11 +633,31 @@ export class BungieApiService {
       })
       .map(([k, v]) => {
         let slot = ArmorSlot.ArmorSlotNone;
-        if ((v.itemCategoryHashes?.indexOf(45) || -1) > -1) slot = ArmorSlot.ArmorSlotHelmet;
-        if ((v.itemCategoryHashes?.indexOf(46) || -1) > -1) slot = ArmorSlot.ArmorSlotGauntlet;
-        if ((v.itemCategoryHashes?.indexOf(47) || -1) > -1) slot = ArmorSlot.ArmorSlotChest;
-        if ((v.itemCategoryHashes?.indexOf(48) || -1) > -1) slot = ArmorSlot.ArmorSlotLegs;
-        if ((v.itemCategoryHashes?.indexOf(49) || -1) > -1) slot = ArmorSlot.ArmorSlotClass;
+        if (
+          v.inventory?.bucketTypeHash == 3448274439 ||
+          (v.itemCategoryHashes?.indexOf(45) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotHelmet;
+        if (
+          v.inventory?.bucketTypeHash == 3551918588 ||
+          (v.itemCategoryHashes?.indexOf(46) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotGauntlet;
+        if (
+          v.inventory?.bucketTypeHash == 14239492 ||
+          (v.itemCategoryHashes?.indexOf(47) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotChest;
+        if (
+          v.inventory?.bucketTypeHash == 20886954 ||
+          (v.itemCategoryHashes?.indexOf(48) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotLegs;
+        if (
+          v.inventory?.bucketTypeHash == 1585787867 ||
+          (v.itemCategoryHashes?.indexOf(49) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotClass;
 
         const isArmor2 =
           (
@@ -643,7 +673,7 @@ export class BungieApiService {
             }) || []
           ).length > 0;
 
-        const isExotic = v.inventory?.tierTypeName == "Exotic" ? 1 : 0;
+        const isExotic = v.inventory?.tierType == 6 ? 1 : 0;
         let exoticPerkHash = null;
         if (isExotic) {
           const perks =
@@ -665,13 +695,79 @@ export class BungieApiService {
           v.quality?.versions.filter((k) => sunsetPowerCaps.includes(k.powerCapHash)).length ==
           v.quality?.versions.length;
 
+        var clasz = v.classType;
+        if (clasz == DestinyClass.Unknown && isArmor2) {
+          if (v.collectibleHash != undefined) {
+            let presentationParentNode =
+              enManifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
+            if (presentationParentNode !== undefined) {
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Warlock"
+                ) != -1
+              )
+                clasz = DestinyClass.Warlock;
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Titan"
+                ) != -1
+              )
+                clasz = DestinyClass.Titan;
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Hunter"
+                ) != -1
+              )
+                clasz = DestinyClass.Hunter;
+            }
+          }
+
+          if (clasz == DestinyClass.Unknown && isArmor2) {
+            v.sockets?.socketEntries.forEach((a) => {
+              let socketDef = manifestTables.DestinySocketTypeDefinition[a.socketTypeHash];
+              if (socketDef !== undefined) {
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("warlock")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Warlock;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("titan")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Titan;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("hunter")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Hunter;
+                  return;
+                }
+              }
+            });
+          }
+        }
+
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
           watermarkIcon: (v.quality?.displayVersionWatermarkIcons || [null])[0],
           name: v.displayProperties.name,
           description: v.displayProperties.description,
-          clazz: v.classType,
+          clazz: clasz,
           armor2: isArmor2,
           slot: slot,
           isExotic: isExotic,

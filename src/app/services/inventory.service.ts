@@ -616,14 +616,10 @@ export class InventoryService {
 
   async getExoticsForClass(clazz: DestinyClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
     let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray();
-    inventory = inventory.filter(
-      (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
-    );
+    inventory = inventory.filter((d) => d.clazz == clazz && d.armor2 && (!slot || d.slot == slot));
 
     let exotics = await this.db.manifestArmor.where("isExotic").equals(1).toArray();
-    exotics = exotics.filter(
-      (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
-    );
+    exotics = exotics.filter((d) => d.clazz == clazz && d.armor2 && (!slot || d.slot == slot));
 
     return exotics.map((ex) => {
       const instances = inventory.filter((i) => i.hash == ex.hash);
