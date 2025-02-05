@@ -30,6 +30,7 @@ import {
   DestinyManifestSlice,
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
+  DestinyClass,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
@@ -603,6 +604,7 @@ export class BungieApiService {
         "DestinyInventoryItemDefinition",
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
+        "DestinySocketTypeDefinition",
       ],
       language: "en",
     });
@@ -610,6 +612,10 @@ export class BungieApiService {
     console.debug(
       "DestinyInventoryItemDefinition from manifest",
       manifestTables.DestinyInventoryItemDefinition
+    );
+    console.debug(
+      "DestinySocketTypeDefinition from manifest",
+      manifestTables.DestinySocketTypeDefinition
     );
 
     await this.updateExoticCollectibles(manifestTables);
@@ -691,6 +697,28 @@ export class BungieApiService {
         var isSunset =
           v.quality?.versions.filter((k) => sunsetPowerCaps.includes(k.powerCapHash)).length ==
           v.quality?.versions.length;
+        var clasz = v.classType;
+        if (clasz == DestinyClass.Unknown && isArmor2) {
+          v.sockets?.socketEntries.forEach((a, index) => {
+            let b = manifestTables.DestinySocketTypeDefinition[a.socketTypeHash];
+            if (b !== undefined) {
+              if (
+                b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("warlock")) != -1
+              ) {
+                clasz = DestinyClass.Warlock;
+                return;
+              }
+              if (b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("titan")) != -1) {
+                clasz = DestinyClass.Titan;
+                return;
+              }
+              if (b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("hunter")) != -1) {
+                clasz = DestinyClass.Hunter;
+                return;
+              }
+            }
+          });
+        }
 
         return {
           hash: v.hash,
@@ -698,7 +726,7 @@ export class BungieApiService {
           watermarkIcon: (v.quality?.displayVersionWatermarkIcons || [null])[0],
           name: v.displayProperties.name,
           description: v.displayProperties.description,
-          clazz: v.classType,
+          clazz: clasz,
           armor2: isArmor2,
           slot: slot,
           isExotic: isExotic,
