@@ -29,6 +29,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.7.2",
+    date: "February 5, 2025",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Hotfix for the invalid data the BungieAPI is returning after the most recent Update. Thanks nznaza for fixing it!",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.7.1",
     date: "January 29, 2025",
     entries: [
