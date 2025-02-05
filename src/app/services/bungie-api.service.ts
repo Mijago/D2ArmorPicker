@@ -701,14 +701,30 @@ export class BungieApiService {
             let presentationParentNode =
               enManifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
             if (presentationParentNode !== undefined) {
-              if (presentationParentNode.length == 1) {
-                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Warlock") != -1)
-                  clasz = DestinyClass.Warlock;
-                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Titan") != -1)
-                  clasz = DestinyClass.Titan;
-                if (presentationParentNode.findIndex((x) => enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name == "Hunter") != -1)
-                  clasz = DestinyClass.Hunter;
-              }
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Warlock"
+                ) != -1
+              )
+                clasz = DestinyClass.Warlock;
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Titan"
+                ) != -1
+              )
+                clasz = DestinyClass.Titan;
+              if (
+                presentationParentNode.findIndex(
+                  (x) =>
+                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    "Hunter"
+                ) != -1
+              )
+                clasz = DestinyClass.Hunter;
             }
           }
 
