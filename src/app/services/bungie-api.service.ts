@@ -605,6 +605,7 @@ export class BungieApiService {
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
+        "DestinyCollectibleDefinition",
       ],
       language: "en",
     });
@@ -697,27 +698,53 @@ export class BungieApiService {
         var isSunset =
           v.quality?.versions.filter((k) => sunsetPowerCaps.includes(k.powerCapHash)).length ==
           v.quality?.versions.length;
+
         var clasz = v.classType;
         if (clasz == DestinyClass.Unknown && isArmor2) {
-          v.sockets?.socketEntries.forEach((a, index) => {
-            let b = manifestTables.DestinySocketTypeDefinition[a.socketTypeHash];
-            if (b !== undefined) {
-              if (
-                b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("warlock")) != -1
-              ) {
-                clasz = DestinyClass.Warlock;
-                return;
-              }
-              if (b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("titan")) != -1) {
-                clasz = DestinyClass.Titan;
-                return;
-              }
-              if (b.plugWhitelist.findIndex((x) => x.categoryIdentifier.includes("hunter")) != -1) {
-                clasz = DestinyClass.Hunter;
-                return;
+          if (v.collectibleHash != undefined) {
+            let presentationParentNode =
+              manifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
+            if (presentationParentNode !== undefined) {
+              if (presentationParentNode.length == 1) {
+                // Juust in case an item has more than 1 parent node, manifest this release is really borked
+                if (presentationParentNode[0] == 1573256543) clasz = DestinyClass.Warlock;
+                if (presentationParentNode[0] == 2598675734) clasz = DestinyClass.Titan;
+                if (presentationParentNode[0] == 2765771634) clasz = DestinyClass.Hunter;
               }
             }
-          });
+          }
+
+          if (clasz == DestinyClass.Unknown && isArmor2) {
+            v.sockets?.socketEntries.forEach((a) => {
+              let socketDef = manifestTables.DestinySocketTypeDefinition[a.socketTypeHash];
+              if (socketDef !== undefined) {
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("warlock")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Warlock;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("titan")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Titan;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("hunter")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Hunter;
+                  return;
+                }
+              }
+            });
+          }
         }
 
         return {
