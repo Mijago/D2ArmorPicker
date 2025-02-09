@@ -30,7 +30,7 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.7.3",
-    date: "February 5, 2025",
+    date: "February 9, 2025",
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
