@@ -23,7 +23,10 @@ import { BuildConfiguration } from "../data/buildConfiguration";
 import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
+import {
+  ResultDefinition,
+  ResultItem,
+} from "../components/authenticated-v2/results/results.component";
 
 const plugs = [
   [1, 1, 10],
@@ -142,7 +145,7 @@ function buildTestItem(
     id: 0,
     investmentStats: [],
     itemInstanceId: "",
-    isExotic: isExotic ? 1 : 0,
+    isExotic: isExotic,
     isSunset: false,
     itemType: 0,
     itemSubType: 0,
@@ -484,10 +487,10 @@ describe("Results Worker", () => {
     let presult = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
@@ -722,15 +725,13 @@ function CreateResultDefinition(
   return {
     exotic:
       exotic == null
-        ? []
-        : [
-            {
-              icon: exotic?.icon,
-              watermark: exotic?.watermarkIcon,
-              name: exotic?.name,
-              hash: exotic?.hash,
-            },
-          ],
+        ? undefined
+        : {
+            icon: exotic?.icon,
+            watermark: exotic?.watermarkIcon,
+            name: exotic?.name,
+            hash: exotic?.hash,
+          },
     artifice: armorSet.usedArtifice,
     modCount: armorSet.usedMods.length,
     modCost: armorSet.usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
@@ -739,35 +740,31 @@ function CreateResultDefinition(
     statsNoMods: armorSet.statsWithoutMods,
     tiers: getSkillTier(armorSet.statsWithMods),
     waste: getWaste(armorSet.statsWithMods),
-    items: items.reduce(
-      (p: any[], instance) => {
-        p[instance.slot - 1].push({
-          energyLevel: instance.energyLevel,
-          hash: instance.hash,
-          itemInstanceId: instance.itemInstanceId,
-          name: instance.name,
-          exotic: !!instance.isExotic,
-          masterworked: instance.masterworked,
-          mayBeBugged: instance.mayBeBugged,
-          slot: instance.slot,
-          perk: instance.perk,
-          transferState: 0, // TRANSFER_NONE
-          stats: [
-            instance.mobility,
-            instance.resilience,
-            instance.recovery,
-            instance.discipline,
-            instance.intellect,
-            instance.strength,
-          ],
-          source: instance.source,
-        });
-        return p;
-      },
-      [[], [], [], []]
+    items: items.map(
+      (instance): ResultItem => ({
+        energyLevel: instance.energyLevel,
+        hash: instance.hash,
+        itemInstanceId: instance.itemInstanceId,
+        name: instance.name,
+        exotic: !!instance.isExotic,
+        masterworked: instance.masterworked,
+        mayBeBugged: instance.mayBeBugged,
+        slot: instance.slot,
+        perk: instance.perk,
+        transferState: 0, // TRANSFER_NONE
+        stats: [
+          instance.mobility,
+          instance.resilience,
+          instance.recovery,
+          instance.discipline,
+          instance.intellect,
+          instance.strength,
+        ],
+        source: instance.source,
+        statsNoMods: [],
+      })
     ),
-    classItem: armorSet.classItemPerk,
     usesCollectionRoll: items.some((v) => v.source === InventoryArmorSource.Collections),
     usesVendorRoll: items.some((v) => v.source === InventoryArmorSource.Vendor),
-  } as unknown as ResultDefinition;
+  } as ResultDefinition;
 }

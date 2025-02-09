@@ -673,7 +673,7 @@ export class BungieApiService {
             }) || []
           ).length > 0;
 
-        const isExotic = v.inventory?.tierType == 6 ? 1 : 0;
+        const isExotic = v.inventory?.tierType == 6;
         let exoticPerkHash = null;
         if (isExotic) {
           const perks =

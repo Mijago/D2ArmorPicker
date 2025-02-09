@@ -95,7 +95,7 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
             description: "This armor has been deleted",
             clazz: DestinyClass.Unknown,
             slot: ArmorSlot.ArmorSlotNone,
-            isExotic: 0 as 0,
+            isExotic: false,
             rarity: TierType.Unknown,
             masterworked: false,
             source: InventoryArmorSource.Inventory,

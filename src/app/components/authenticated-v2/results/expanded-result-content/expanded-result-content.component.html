@@ -37,8 +37,8 @@
       </tr>
     </thead>
     <!-- Items -->
-    <ng-container *ngFor="let items of element?.items">
-      <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 === 0">
+    <ng-container *ngFor="let i of element?.items">
+      <tr>
         <td>
           <u
             #tooltip="matTooltip"
@@ -455,38 +455,37 @@
   </div>
 </ng-container>
 
-<div class="buttonContainer">
-  <ng-container *ngVar="buildItemIdString(element) as text">
+<div style="display: flex; align-items: center; flex-direction: column">
+  <div class="buttonContainer">
     <button
-      (click)="openSnackBar('Copied the DIM search query to your clipboard.')"
-      [cdkCopyToClipboard]="text"
+      (click)="CopyDIMQuery()"
       color="primary"
       mat-raised-button
       matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
       Copy DIM query to clipboard
     </button>
-  </ng-container>
-  <button
-    (click)="goToDIM()"
-    color="primary"
-    mat-raised-button
-    matTooltip="Use this button to open this build as a DIM Loadout.">
-    Open Loadout in DIM
-  </button>
-  <br />
-  <small>The following two buttons may not work for some at the moment:</small><br />
-  <button
-    (click)="moveItems()"
-    mat-stroked-button
-    matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
-    Move items to inventory (beta)
-  </button>
-  <button
-    (click)="moveItems(true)"
-    mat-stroked-button
-    matTooltip="Click this button to equip the Items. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
-    Equip Items (beta)
-  </button>
+    <button
+      (click)="goToDIM()"
+      color="primary"
+      mat-raised-button
+      matTooltip="Use this button to open this build as a DIM Loadout.">
+      Open Loadout in DIM
+    </button>
+    <br />
+    <small>The following two buttons may not work for some at the moment:</small><br />
+    <button
+      (click)="moveItems()"
+      mat-stroked-button
+      matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
+      Move items to inventory (beta)
+    </button>
+    <button
+      (click)="moveItems(true)"
+      mat-stroked-button
+      matTooltip="Click this button to equip the Items. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
+      Equip Items (beta)
+    </button>
+  </div>
 </div>
 
 <mat-accordion>

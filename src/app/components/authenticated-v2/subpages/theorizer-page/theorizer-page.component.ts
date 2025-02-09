@@ -445,7 +445,7 @@ export class TheorizerPageComponent implements OnInit {
         items[e.slot][4] += item.intellect;
         items[e.slot][5] += item.strength;
 
-        itemExotic[e.slot] = item.isExotic == 1;
+        itemExotic[e.slot] = item.isExotic;
         itemArtifice[e.slot] = item.perk == ArmorPerkOrSlot.SlotArtifice;
         artificeCount += itemArtifice[e.slot] ? 1 : 0;
       }

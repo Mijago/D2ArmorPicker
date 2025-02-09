@@ -93,6 +93,8 @@ tr.result-detail-row {
 .result-element-detail {
   overflow: hidden;
   display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .report-problem-icon {

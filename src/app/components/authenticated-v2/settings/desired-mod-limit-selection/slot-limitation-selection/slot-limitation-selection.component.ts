@@ -63,7 +63,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   fixedExoticInThisSlot: boolean = false;
   isPossible: boolean = true;
-  configSelectedClass: DestinyClass = DestinyClass.Titan;
+  configSelectedClass: DestinyClass = DestinyClass.Unknown;
   configAssumeLegendaryIsArtifice: boolean = false;
   configSelectedExoticSum: number = 0;
   configSelectedExotic: number[] = [];
@@ -124,7 +124,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
                 .equals(this.configSelectedClass)
                 .and((f) => f.perk == this.armorPerk)
                 .and((f) => f.hash == exoticHash)
-                .and((f) => f.isExotic == 1)
+                .and((f) => f.isExotic)
                 .count();
               results += exotics;
               this.isPossible = results > 0;
@@ -135,7 +135,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
           results += await this.db.inventoryArmor
             .where("clazz")
             .equals(this.configSelectedClass)
-            .and((f) => this.configSelectedExoticSum == 0 || f.isExotic == 0)
+            .and((f) => this.configSelectedExoticSum == 0 || !f.isExotic)
             .and((f) => f.slot == this.slot)
             .and((f) => f.perk == this.armorPerk)
             .count();
@@ -170,7 +170,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
       const newExoticSum = c.selectedExotics.reduce((acc, x) => acc + x, 0);
 
       var mustRunPossibilityCheck =
-        this.configSelectedClass != (c.characterClass as unknown as DestinyClass) ||
+        this.configSelectedClass != c.characterClass ||
         this.configAssumeLegendaryIsArtifice != c.assumeEveryLegendaryIsArtifice ||
         this.configAssumeExoticIsArtifice != c.assumeEveryExoticIsArtifice ||
         this.configAssumeClassItemIsArtifice != c.assumeClassItemIsArtifice ||
@@ -183,7 +183,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
       this.configAssumeLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this.configAssumeExoticIsArtifice = c.assumeEveryExoticIsArtifice;
       this.configAssumeClassItemIsArtifice = c.assumeClassItemIsArtifice;
-      this.configSelectedClass = c.characterClass as unknown as DestinyClass;
+      this.configSelectedClass = c.characterClass;
       this.selection = c.maximumModSlots[this.slot].value;
       this.armorPerk = c.armorPerks[this.slot].value;
       this.armorPerkLock = c.armorPerks[this.slot].fixed;

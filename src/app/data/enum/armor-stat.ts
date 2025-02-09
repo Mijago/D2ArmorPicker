@@ -218,10 +218,9 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotEidosApprentice]: 273417606,
 };
 
-export const ArmorPerkOrSlotDIMText: EnumDictionary<
-  Exclude<ArmorPerkOrSlot, ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT>,
-  string
-> = {
+export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.None]: "",
+  [ArmorPerkOrSlot.COUNT]: "",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",

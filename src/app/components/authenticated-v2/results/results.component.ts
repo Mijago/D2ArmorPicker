@@ -41,12 +41,14 @@ export interface ResultDefinition {
       };
   artifice: number[];
   classItem: {
+    canBeExotic: boolean;
+    isExotic: boolean;
     perk: ArmorPerkOrSlot;
   };
   mods: number[];
   stats: number[];
   statsNoMods: number[];
-  items: ResultItem[][];
+  items: ResultItem[];
   tiers: number;
   waste: number;
   modCost: number;
@@ -65,7 +67,6 @@ export enum ResultItemMoveState {
 }
 
 export interface ResultItem {
-  energy: number;
   energyLevel: number;
   hash: number;
   itemInstanceId: string;
@@ -244,9 +245,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return (
-      (element?.items.filter((d) => d.filter((x) => x.mayBeBugged).length > 0).length || 0) > 0
-    );
+    return element.items.filter((x) => x.mayBeBugged).length > 0;
   }
 
   private ngUnsubscribe = new Subject();
@@ -262,11 +261,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
       config: this.config.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
-        p.items = p.items
-          .filter((i) => !!i[0])
-          .map((i) => {
-            return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
-          });
+        p.items = p.items.map((i) => {
+          return { hash: i.hash, instance: i.itemInstanceId } as any;
+        });
         delete p.exotic;
         return p;
       }),
