@@ -29,6 +29,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG_DATA = [
   {
+    version: "2.7.3",
+    date: "February 5, 2025",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed query when opening DIM to be more precise. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed class item was not showing Armor Perk. (nznaza) Thanks Mojo",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.7.2",
     date: "February 5, 2025",
     entries: [

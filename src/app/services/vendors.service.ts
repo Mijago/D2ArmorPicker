@@ -156,9 +156,6 @@ export class VendorsService {
               `v-${parentVendor}-${saleItem.itemHash}`,
               InventoryArmorSource.Vendor
             );
-            console.log(r.itemInstanceId);
-            console.log(parentVendor);
-            console.log(vendorHash);
             applyInvestmentStats(r, statsOverride);
             vendorArmorItems.push(r);
           }
