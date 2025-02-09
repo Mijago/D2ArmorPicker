@@ -5,7 +5,7 @@ import { IDestinyArmor } from "./IInventoryArmor";
 export interface IPermutatorArmor extends IDestinyArmor {
   clazz: DestinyClass;
   perk: ArmorPerkOrSlot;
-  isExotic: boolean;
+  isExotic: 0 | 1;
   rarity: TierType;
   isSunset: boolean;
 }

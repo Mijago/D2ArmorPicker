@@ -385,7 +385,7 @@ export class TheorizerPageComponent implements OnInit {
     // contains if items are generated or not, and if they are not, then the metadata
     const itemMeta: (IInventoryArmor | null)[] = [null, null, null, null, null];
     const itemIntrinsics: (any | null)[] = [null, null, null, null, null];
-    const itemExotic: (boolean | null)[] = [null, null, null, null, null];
+    const itemExotic: (0 | 1 | null)[] = [null, null, null, null, null];
     const itemArtifice: boolean[] = [false, false, false, false, false];
     let artificeCount = 0;
 
@@ -418,7 +418,7 @@ export class TheorizerPageComponent implements OnInit {
 
       // check if exotic_${slot} is 1
       if (result!.result!.vars[`exotic_${slot}`] == 1) {
-        itemExotic[parseInt(slot)] = true;
+        itemExotic[parseInt(slot)] = 1;
       }
     }
     const itemsToGrab = [];
@@ -503,7 +503,7 @@ export class TheorizerPageComponent implements OnInit {
 
     for (let slot = 0; slot < 4 && artificeCount < requiredArtificeArmor; slot++) {
       if (itemArtifice[slot]) continue;
-      if (itemExotic[slot] == false) continue;
+      if (itemExotic[slot] == 0) continue;
       if (itemMeta[slot] != null) continue;
       itemArtifice[slot] = true;
       artificeCount++;

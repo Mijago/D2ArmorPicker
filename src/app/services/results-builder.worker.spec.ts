@@ -145,7 +145,7 @@ function buildTestItem(
     id: 0,
     investmentStats: [],
     itemInstanceId: "",
-    isExotic: isExotic,
+    isExotic: isExotic ? 1 : 0,
     isSunset: false,
     itemType: 0,
     itemSubType: 0,
@@ -232,10 +232,10 @@ describe("Results Worker", () => {
     let presult = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 1, 1], // availableModCost
       false, // doNotOutput
@@ -303,10 +303,10 @@ describe("Results Worker", () => {
     let presult = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
@@ -373,10 +373,10 @@ describe("Results Worker", () => {
     let presult = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
@@ -436,10 +436,10 @@ describe("Results Worker", () => {
     let result = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
@@ -527,10 +527,10 @@ describe("Results Worker", () => {
       let result = handlePermutation(
         runtime,
         config,
-        mockItems[0] as unknown as IPermutatorArmor,
-        mockItems[1] as unknown as IPermutatorArmor,
-        mockItems[2] as unknown as IPermutatorArmor,
-        mockItems[3] as unknown as IPermutatorArmor,
+        mockItems[0] as IPermutatorArmor,
+        mockItems[1] as IPermutatorArmor,
+        mockItems[2] as IPermutatorArmor,
+        mockItems[3] as IPermutatorArmor,
         constantBonus1,
         availableModCost,
         false,
@@ -550,10 +550,10 @@ describe("Results Worker", () => {
         let presult = handlePermutation(
           runtime,
           config,
-          mockItems[0] as unknown as IPermutatorArmor,
-          mockItems[1] as unknown as IPermutatorArmor,
-          mockItems[2] as unknown as IPermutatorArmor,
-          mockItems[3] as unknown as IPermutatorArmor,
+          mockItems[0] as IPermutatorArmor,
+          mockItems[1] as IPermutatorArmor,
+          mockItems[2] as IPermutatorArmor,
+          mockItems[3] as IPermutatorArmor,
           constantBonus1,
           availableModCost,
           false,
@@ -669,10 +669,10 @@ describe("Results Worker", () => {
     let presult = handlePermutation(
       runtime,
       config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput

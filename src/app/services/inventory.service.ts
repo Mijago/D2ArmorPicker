@@ -379,7 +379,7 @@ export class InventoryService {
           slot: armor.slot,
           clazz: armor.clazz,
           perk: armor.perk,
-          isExotic: !!armor.isExotic,
+          isExotic: armor.isExotic,
           rarity: armor.rarity,
           isSunset: armor.isSunset,
           masterworked: armor.masterworked,

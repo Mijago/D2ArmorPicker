@@ -124,7 +124,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
                 .equals(this.configSelectedClass)
                 .and((f) => f.perk == this.armorPerk)
                 .and((f) => f.hash == exoticHash)
-                .and((f) => f.isExotic)
+                .and((f) => f.isExotic == 1)
                 .count();
               results += exotics;
               this.isPossible = results > 0;

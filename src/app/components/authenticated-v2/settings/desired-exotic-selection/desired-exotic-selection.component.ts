@@ -48,10 +48,13 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   ignoreSunsetArmor = false;
   ignoreExistingExoticArtificeSlots = false;
   allowBlueArmorPieces = false;
-  currentClass: DestinyClass = DestinyClass.Titan;
+  currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
 
-  constructor(public inventory: InventoryService, public config: ConfigurationService) {}
+  constructor(
+    public inventory: InventoryService,
+    public config: ConfigurationService
+  ) {}
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (c) => {
