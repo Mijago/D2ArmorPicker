@@ -154,28 +154,34 @@ function prepareConstantModslotRequirement(config: BuildConfiguration) {
     constantPerkRequirement.set(key, 0);
   }
 
-  constantPerkRequirement.set(
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
-    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
-  );
-  constantPerkRequirement.set(
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value,
-    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
-  );
-  constantPerkRequirement.set(
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
-    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
-  );
-  constantPerkRequirement.set(
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value,
-    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
-  );
+  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.Any)
+    constantPerkRequirement.set(
+      config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
+      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
+    );
+  if (config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.Any)
+    constantPerkRequirement.set(
+      config.armorPerks[ArmorSlot.ArmorSlotChest].value,
+      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotChest].value) ?? 0) + 1
+    );
+  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.Any)
+    constantPerkRequirement.set(
+      config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
+      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value) ?? 0) + 1
+    );
+
+  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any)
+    constantPerkRequirement.set(
+      config.armorPerks[ArmorSlot.ArmorSlotClass].value,
+      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotClass].value) ?? 0) + 1
+    );
 
   return constantPerkRequirement;
 }
 
 function prepareConstantAvailableModslots(config: BuildConfiguration) {
   var availableModCost: number[] = [];
+
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value);
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value);
   availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
