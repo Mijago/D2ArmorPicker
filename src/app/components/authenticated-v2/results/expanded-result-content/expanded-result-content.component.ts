@@ -103,7 +103,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
     if (
       this.element.classItem.perk != ArmorPerkOrSlot.Any &&
-      this.element.classItem.perk != ArmorPerkOrSlot.COUNT &&
+      this.element.classItem.perk != ArmorPerkOrSlot.None &&
       this.element.classItem.perk != undefined
     ) {
       classItemFilters.push(ArmorPerkOrSlotDIMText[this.element.classItem.perk]);

@@ -130,7 +130,6 @@ export enum ArmorPerkOrSlot {
   PerkEchoesOfGlory = 20,
   SlotSalvationsEdge,
   SlotEidosApprentice,
-  COUNT,
 }
 
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
@@ -156,7 +155,6 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.SlotEidosApprentice]: "Eido's Apprentice Perk",
-  [ArmorPerkOrSlot.COUNT]: "",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -194,7 +192,6 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/c67322c917e16f3b8a4cb962e3f11166.png",
   [ArmorPerkOrSlot.SlotEidosApprentice]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
-  [ArmorPerkOrSlot.COUNT]: "",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -202,10 +199,7 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkSocketHashes: EnumDictionary<
   Exclude<
     ArmorPerkOrSlot,
-    | ArmorPerkOrSlot.GuardianGamesClassItem
-    | ArmorPerkOrSlot.Any
-    | ArmorPerkOrSlot.None
-    | ArmorPerkOrSlot.COUNT
+    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.Any | ArmorPerkOrSlot.None
   >,
   number
 > = {
@@ -228,7 +222,6 @@ export const ArmorPerkSocketHashes: EnumDictionary<
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.Any]: "",
   [ArmorPerkOrSlot.None]: "",
-  [ArmorPerkOrSlot.COUNT]: "",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",

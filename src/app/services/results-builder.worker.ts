@@ -43,7 +43,7 @@ import {
 
 function checkSlots(
   config: BuildConfiguration,
-  constantModslotRequirement: number[],
+  constantModslotRequirement: Map<ArmorPerkOrSlot, number>,
   availableClassItemTypes: Set<ArmorPerkOrSlot>,
   helmet: IPermutatorArmor,
   gauntlet: IPermutatorArmor,
@@ -51,7 +51,7 @@ function checkSlots(
   leg: IPermutatorArmor
 ) {
   var exoticId = config.selectedExotics[0] || 0;
-  let requirements = constantModslotRequirement.slice();
+  let requirements = new Map(constantModslotRequirement);
   if (
     !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
@@ -88,30 +88,42 @@ function checkSlots(
   )
     return { valid: false };
 
-  requirements[helmet.perk]--;
-  requirements[gauntlet.perk]--;
-  requirements[chest.perk]--;
-  requirements[leg.perk]--;
+  requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
+  requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
+  requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
+  requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
 
   // ignore exotic selection
   if (exoticId > 0) {
-    if (helmet.hash == exoticId) requirements[config.armorPerks[helmet.slot].value]--;
-    else if (gauntlet.hash == exoticId) requirements[config.armorPerks[gauntlet.slot].value]--;
-    else if (chest.hash == exoticId) requirements[config.armorPerks[chest.slot].value]--;
-    else if (leg.hash == exoticId) requirements[config.armorPerks[leg.slot].value]--;
+    if (helmet.hash == exoticId)
+      requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
+    else if (gauntlet.hash == exoticId)
+      requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
+    else if (chest.hash == exoticId)
+      requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
+    else if (leg.hash == exoticId)
+      requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
   }
 
   let SlotRequirements = 0;
-  for (let n = 1; n < ArmorPerkOrSlot.COUNT; n++) SlotRequirements += Math.max(0, requirements[n]);
+  for (let [key] of requirements) {
+    if (key == ArmorPerkOrSlot.Any) continue;
+    SlotRequirements += Math.max(0, requirements.get(key) ?? 0);
+  }
 
-  var requiredClassItemType = ArmorPerkOrSlot.Any;
-
-  if (
-    availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value) ||
-    (requiredClassItemType == ArmorPerkOrSlot.Any &&
-      config.armorPerks[ArmorSlot.ArmorSlotClass].fixed)
+  let requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
+  if (requiredClassItemType == ArmorPerkOrSlot.Any) {
+    for (let [key] of requirements) {
+      if (availableClassItemTypes.has(key)) {
+        requiredClassItemType = key;
+        SlotRequirements--;
+        break;
+      }
+    }
+  } else if (
+    availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value) &&
+    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
   ) {
-    requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
     SlotRequirements--;
   }
 
@@ -136,14 +148,29 @@ function prepareConstantStatBonus(config: BuildConfiguration) {
 }
 
 function prepareConstantModslotRequirement(config: BuildConfiguration) {
-  let constantPerkRequirement = [];
-  for (let n = 0; n < ArmorPerkOrSlot.COUNT; n++) constantPerkRequirement.push(0);
+  let constantPerkRequirement = new Map<ArmorPerkOrSlot, number>();
 
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotHelmet].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotChest].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotLegs].value]++;
-  constantPerkRequirement[config.armorPerks[ArmorSlot.ArmorSlotClass].value]++;
+  for (let [key] of constantPerkRequirement) {
+    constantPerkRequirement.set(key, 0);
+  }
+
+  constantPerkRequirement.set(
+    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
+    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
+  );
+  constantPerkRequirement.set(
+    config.armorPerks[ArmorSlot.ArmorSlotChest].value,
+    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
+  );
+  constantPerkRequirement.set(
+    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
+    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
+  );
+  constantPerkRequirement.set(
+    config.armorPerks[ArmorSlot.ArmorSlotClass].value,
+    (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
+  );
+
   return constantPerkRequirement;
 }
 
