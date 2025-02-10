@@ -351,9 +351,7 @@ export class InventoryService {
         // armor perks
         .filter((item) => {
           return (
-            (item.isExotic &&
-              config.armorPerks[item.slot].value == ArmorPerkOrSlot.SlotArtifice &&
-              item.perk == config.armorPerks[item.slot].value) ||
+            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
             config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
             !config.armorPerks[item.slot].fixed ||
             (config.armorPerks[item.slot].fixed && config.armorPerks[item.slot].value == item.perk)

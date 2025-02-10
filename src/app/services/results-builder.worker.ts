@@ -112,19 +112,22 @@ function checkSlots(
   }
 
   let requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
-  if (requiredClassItemType == ArmorPerkOrSlot.Any) {
-    for (let [key] of requirements) {
-      if (availableClassItemTypes.has(key)) {
-        requiredClassItemType = key;
-        SlotRequirements--;
-        break;
-      }
-    }
-  } else if (
-    availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value) &&
+  if (
+    requiredClassItemType == ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
   ) {
     SlotRequirements--;
+  } else {
+    if (SlotRequirements > 1) {
+      for (let [key, value] of requirements) {
+        if (value <= 0) continue;
+        if (availableClassItemTypes.has(key)) {
+          requiredClassItemType = key;
+          SlotRequirements--;
+          break;
+        }
+      }
+    }
   }
 
   // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
