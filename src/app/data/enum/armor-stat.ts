@@ -111,7 +111,8 @@ export enum SpecialArmorStat {
 }
 
 export enum ArmorPerkOrSlot {
-  None,
+  None = -1,
+  Any,
   SlotCrotasEnd = 2,
   SlotRootOfNightmares,
   SlotKingsFall,
@@ -139,6 +140,7 @@ export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOr
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
+  [ArmorPerkOrSlot.Any]: "Any",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
@@ -158,7 +160,9 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.Any]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.None]:
+    "https://www.bungie.net//common/destiny2_content/icons/56761c8361e33a367c6fa94f397d8692.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
   [ArmorPerkOrSlot.SlotCrotasEnd]:
     "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
@@ -198,7 +202,10 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkSocketHashes: EnumDictionary<
   Exclude<
     ArmorPerkOrSlot,
-    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT
+    | ArmorPerkOrSlot.GuardianGamesClassItem
+    | ArmorPerkOrSlot.Any
+    | ArmorPerkOrSlot.None
+    | ArmorPerkOrSlot.COUNT
   >,
   number
 > = {
@@ -219,6 +226,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
 };
 
 export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.Any]: "",
   [ArmorPerkOrSlot.None]: "",
   [ArmorPerkOrSlot.COUNT]: "",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",

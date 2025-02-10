@@ -3,6 +3,7 @@ import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export interface IPermutatorArmorSet {
   armor: number[];
+  useExoticClassItem: boolean;
   usedArtifice: StatModifier[];
   usedMods: StatModifier[];
   classItemPerk: ArmorPerkOrSlot;
@@ -22,9 +23,10 @@ export function createArmorSet(
 ): IPermutatorArmorSet {
   return {
     armor: [helmet.id, gauntlet.id, chest.id, leg.id],
+    useExoticClassItem: false,
     usedArtifice,
     usedMods,
-    classItemPerk: ArmorPerkOrSlot.None,
+    classItemPerk: ArmorPerkOrSlot.Any,
     statsWithMods,
     statsWithoutMods,
   };
@@ -33,6 +35,7 @@ export function createArmorSet(
 export function isIPermutatorArmorSet(obj: any): obj is IPermutatorArmorSet {
   return (
     Object.prototype.hasOwnProperty.call(obj, "armor") &&
+    Object.prototype.hasOwnProperty.call(obj, "useExoticClassItem") &&
     Object.prototype.hasOwnProperty.call(obj, "usedArtifice") &&
     Object.prototype.hasOwnProperty.call(obj, "usedMods") &&
     Object.prototype.hasOwnProperty.call(obj, "statsWithMods") &&

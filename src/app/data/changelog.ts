@@ -34,6 +34,21 @@ export const CHANGELOG_DATA = [
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Added None as an armor perk option. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: 'Removed "Ignore artifice slot in exotics, as None armor perk filter" as None perk covers the same function. (nznaza)',
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed exotic class item showing with incorrect armor perk. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Changed query when opening DIM to be more precise. (nznaza)",
         issues: [],
       },

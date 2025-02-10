@@ -123,7 +123,7 @@ function buildTestItem(
   slot: ArmorSlot,
   isExotic: boolean,
   stats: number[],
-  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.None
+  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.Any
 ): IInventoryArmor {
   return {
     name: "item_" + slot,

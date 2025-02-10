@@ -46,7 +46,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeCollectionRolls = false;
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
-  ignoreExistingExoticArtificeSlots = false;
   allowBlueArmorPieces = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
@@ -67,7 +66,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExotics = c.selectedExotics;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
-      this.ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
     });
 
     this.inventory.manifest
@@ -123,12 +121,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   setIgnoreSunsetArmor(ignore: boolean) {
     this.config.modifyConfiguration((c) => {
       c.ignoreSunsetArmor = ignore;
-    });
-  }
-
-  setIgnoreExistingExoticArtificeSlots(allow: boolean) {
-    this.config.modifyConfiguration((c) => {
-      c.ignoreExistingExoticArtificeSlots = allow;
     });
   }
 

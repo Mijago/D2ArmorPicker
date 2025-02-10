@@ -101,20 +101,18 @@ export class BuildConfiguration {
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = [];
   // mainly for the exotic class item
-  ignoreExistingExoticArtificeSlots = false;
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
-    [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.None },
+    [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.Any },
   };
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
-      ignoreExistingExoticArtificeSlots: false,
       allowExactStats: false,
       enabledMods: [],
       disabledItems: [],
@@ -152,12 +150,12 @@ export class BuildConfiguration {
         [ArmorSlot.ArmorSlotNone]: { fixed: false, value: 5 },
       },
       armorPerks: {
-        [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.None },
+        [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.Any },
       },
       minimumStatTiers: getDefaultStatDict(0),
     };

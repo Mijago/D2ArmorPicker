@@ -46,7 +46,7 @@ import { ModUrl } from "../../../results/table-mod-display/table-mod-display.com
   templateUrl: "./slot-limitation-selection.component.html",
   styleUrls: ["./slot-limitation-selection.component.scss"],
 })
-export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, AfterViewInit {
+export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   readonly featureDisabled = !environment.featureFlags.enableModslotLimitation;
   readonly ModUrls = ModUrl;
   readonly StatModifier = StatModifier;
@@ -69,7 +69,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   configSelectedExotic: number[] = [];
   configAssumeClassItemIsArtifice: boolean = false;
   configAssumeExoticIsArtifice: boolean = false;
-  armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
+  armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.Any;
   armorPerkLock: boolean = false;
   maximumModSlots: number = 5;
 
@@ -78,7 +78,10 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   disabled: boolean = false;
 
   readonly availableArmorPerks = [
+    ArmorPerkOrSlot.Any,
     ArmorPerkOrSlot.None,
+    ArmorPerkOrSlot.SlotArtifice,
+    ArmorPerkOrSlot.GuardianGamesClassItem,
     ArmorPerkOrSlot.SlotEidosApprentice,
     ArmorPerkOrSlot.SlotSalvationsEdge,
     ArmorPerkOrSlot.SlotCrotasEnd,
@@ -89,7 +92,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     ArmorPerkOrSlot.SlotDeepStoneCrypt,
     ArmorPerkOrSlot.SlotGardenOfSalvation,
     ArmorPerkOrSlot.SlotLastWish,
-    ArmorPerkOrSlot.SlotArtifice,
     ArmorPerkOrSlot.PerkEchoesOfGlory,
     ArmorPerkOrSlot.PerkIronBanner,
     ArmorPerkOrSlot.SlotNightmare,
@@ -109,7 +111,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     ) {
       this.isPossible = true;
     } else {
-      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.None;
+      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.Any;
 
       let results = 0;
       if (mustCheckArmorPerk) {
@@ -199,15 +201,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
       if (mustRunPossibilityCheck) await this.runPossibilityCheck();
     });
-  }
-
-  ngAfterViewInit(): void {
-    if (
-      environment.featureFlags.enableGuardianGamesFeatures &&
-      this.slot === ArmorSlot.ArmorSlotClass
-    ) {
-      this.availableArmorPerks.splice(1, 0, ArmorPerkOrSlot.GuardianGamesClassItem);
-    }
   }
 
   toggleArmorPerkLock() {

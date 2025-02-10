@@ -37,7 +37,7 @@
       </tr>
     </thead>
     <!-- Items -->
-    <ng-container *ngFor="let i of element?.items">
+    <ng-container *ngFor="let i of ArmorItems">
       <tr>
         <td>
           <u
@@ -161,7 +161,7 @@
       </tr>
     </ng-container>
     <!-- Class Item -->
-    <tr *ngIf="showGenericClassItemRow && config_assumeClassItemMasterworked">
+    <tr *ngIf="!exoticClassItemRow && config_assumeClassItemMasterworked">
       <td #tooltip="matTooltip" class="item-name-mw" matTooltip="Class item should be masterworked."
         >Any Class Item</td
       >
@@ -188,7 +188,7 @@
         </button>
       </td>
     </tr>
-    <tr *ngIf="showGenericClassItemRow && !config_assumeClassItemMasterworked">
+    <tr *ngIf="!exoticClassItemRow && !config_assumeClassItemMasterworked">
       <td>Any Class Item</td>
       <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>
@@ -204,6 +204,49 @@
         </button>
       </td>
     </tr>
+
+    <!-- Exotic Class Item -->
+    <tr *ngIf="exoticClassItemRow">
+      <td
+        #tooltip="matTooltip"
+        class="item-name-mw"
+        matTooltip="Class item should be masterworked."
+        >{{ element?.exotic?.name }}</td
+      >
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="icon-column">
+        <!-- Item Icon -->
+        <div [itemTooltip]="ExoticArmorItem!" class="item-icon-container">
+          <app-item-icon
+            [itemHash]="ExoticArmorItem!.hash"
+            [masterworked]="ExoticArmorItem!.masterworked"
+            [source]="ExoticArmorItem!.source"
+            class="item-icon">
+          </app-item-icon>
+        </div>
+      </td>
+      <td class="icon-column">
+        <div style="position: relative; width: 25px">
+          <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
+        </div>
+      </td>
+      <td>
+        <button
+          (click)="disableAllItems()"
+          style="padding: 0; top: 0; left: 0"
+          class="item-info-menu-btn report-problem-icon"
+          mat-icon-button
+          matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
+    </tr>
+
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total highlight-row">
       <td>Total (armor)</td>

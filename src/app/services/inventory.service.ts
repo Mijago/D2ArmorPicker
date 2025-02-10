@@ -351,10 +351,12 @@ export class InventoryService {
         // armor perks
         .filter((item) => {
           return (
-            item.isExotic ||
+            (item.isExotic &&
+              config.armorPerks[item.slot].value == ArmorPerkOrSlot.SlotArtifice &&
+              item.perk == config.armorPerks[item.slot].value) ||
+            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
             !config.armorPerks[item.slot].fixed ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.None ||
-            config.armorPerks[item.slot].value == item.perk
+            (config.armorPerks[item.slot].fixed && config.armorPerks[item.slot].value == item.perk)
           );
         });
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))

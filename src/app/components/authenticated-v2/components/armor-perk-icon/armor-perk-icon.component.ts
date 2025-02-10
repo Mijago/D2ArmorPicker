@@ -39,7 +39,7 @@ export class ArmorPerkIconComponent {
   ];
 
   @Input()
-  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
+  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.Any;
 
   constructor() {}
 
