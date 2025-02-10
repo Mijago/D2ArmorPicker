@@ -15,15 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from "@angular/core";
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "../../../../../data/constants";
 import { ArmorSlot } from "../../../../../data/enum/armor-slot";
 import { ConfigurationService } from "../../../../../services/configuration.service";
