@@ -30,8 +30,13 @@ export interface ChangelogEntry {
 export const CHANGELOG_DATA = [
   {
     version: "2.7.3",
-    date: "February 9, 2025",
+    date: "February 10, 2025",
     entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added Overflowing Corruption as an armor perk option. (nznaza)",
+        issues: [],
+      },
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Added None as an armor perk option. (nznaza)",
