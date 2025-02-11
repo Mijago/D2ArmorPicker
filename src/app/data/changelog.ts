@@ -24,13 +24,19 @@ export enum ChangelogEntryType {
 export interface ChangelogEntry {
   type: ChangelogEntryType;
   text: string;
-  issues: string[] | undefined;
+  issues?: string[] | undefined;
 }
 
-export const CHANGELOG_DATA = [
+export const CHANGELOG_DATA: {
+  version: string;
+  date: string;
+  clearManifest?: boolean;
+  entries: ChangelogEntry[];
+}[] = [
   {
     version: "2.7.3",
     date: "February 10, 2025",
+    clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,

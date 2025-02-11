@@ -20,13 +20,23 @@ import { AuthService } from "./auth.service";
 import { Database } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { environment } from "../../environments/environment";
+import { ChangelogService } from "./changelog.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class DatabaseService extends Database {
-  constructor(private auth: AuthService) {
+  constructor(
+    private auth: AuthService,
+    private changelog: ChangelogService
+  ) {
     super();
+
+    if (this.changelog.wipeManifest) {
+      console.log("Wiping manifest due to changelog request");
+      this.auth.clearManifestInfo();
+    }
+
     this.version(this.verno).upgrade(async (tx) => {
       this.auth.clearManifestInfo();
     });
