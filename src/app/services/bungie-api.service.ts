@@ -45,6 +45,7 @@ import { ArmorSlot } from "../data/enum/armor-slot";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
+  MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
 } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
@@ -507,6 +508,16 @@ export class BungieApiService {
       );
       if (slotType) {
         return parseInt(slotType[0]) as ArmorPerkOrSlot;
+      }
+    }
+
+    for (const socket of scks) {
+      let socketTypeHash = socket.socketTypeHash;
+      if (!socketTypeHash) continue;
+      let perk = MapAlternativeSocketTypeToArmorPerkOrSlot[socketTypeHash] || ArmorPerkOrSlot.None;
+      // find the key of ArmorPerkSocketHashes that matches the socketHash
+      if (perk != ArmorPerkOrSlot.None) {
+        return perk;
       }
     }
 

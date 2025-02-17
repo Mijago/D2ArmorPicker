@@ -221,6 +221,14 @@ export const ArmorPerkSocketHashes: EnumDictionary<
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
 export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
   [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
+};
+
+export const MapAlternativeSocketTypeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1719555937]: ArmorPerkOrSlot.SlotArtifice,
+  [2770223926]: ArmorPerkOrSlot.SlotArtifice,
+  [2831858578]: ArmorPerkOrSlot.SlotArtifice,
+  [3136585661]: ArmorPerkOrSlot.SlotArtifice,
+  [3642670483]: ArmorPerkOrSlot.SlotArtifice,
   [4096670123]: ArmorPerkOrSlot.SlotArtifice,
 };
 
