@@ -51,6 +51,7 @@ import {
 } from "@destinyitemmanager/dim-api-types";
 import { MembershipService } from "src/app/services/membership.service";
 import { ArmorSlot } from "src/app/data/enum/armor-slot";
+import { DestinyClassNames } from "src/app/data/enum/DestinyClassNames";
 
 @Component({
   selector: "app-expanded-result-content",
@@ -58,7 +59,7 @@ import { ArmorSlot } from "src/app/data/enum/armor-slot";
   styleUrls: ["./expanded-result-content.component.scss"],
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
-  public showGenericClassItemRow = false;
+  public exoticClassItemRow = false;
   public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
@@ -76,6 +77,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   @Input()
   element: ResultDefinition | null = null;
+  ArmorItems: ResultItem[] | null = null;
+  ExoticArmorItem: ResultItem | null = null;
 
   constructor(
     private config: ConfigurationService,
@@ -84,35 +87,30 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private membership: MembershipService
   ) {}
 
-  public buildItemIdString(element: ResultDefinition | null) {
-    if (!element) return "";
-    let result = element.items
-      .flat()
+  public async CopyDIMQuery() {
+    if (!this.element) return;
+    let result = this.element.items
       .filter((d) => d.slot != ArmorSlot.ArmorSlotClass)
       .map((d) => `id:'${d.itemInstanceId}'`)
-      .join(" or ");
+      .join(" OR ");
 
-    let classItemFilters = ["is:classitem"];
     // Exotic class item
-    let classItems = element.items
-      .flat()
-      .filter((d) => d.slot == ArmorSlot.ArmorSlotClass)
-      .map((d) => `exactname:'${d.name}'`)
-      .join(" or ");
+    let classItemFilters = this.element.classItem.canBeExotic
+      ? this.element.classItem.isExotic
+        ? [`${this.element.exotic?.name}`]
+        : ["is:classitem", `is:${DestinyClassNames[this.config_characterClass]}`]
+      : ["is:classitem", `is:${DestinyClassNames[this.config_characterClass]}`, `-is:exotic`];
 
-    if (classItems.length > 0) {
-      classItemFilters = [classItems];
-    }
     if (
-      element.classItem.perk != ArmorPerkOrSlot.None &&
-      element.classItem.perk != ArmorPerkOrSlot.COUNT
+      this.element.classItem.perk != ArmorPerkOrSlot.Any &&
+      this.element.classItem.perk != ArmorPerkOrSlot.None &&
+      this.element.classItem.perk != undefined
     ) {
-      classItemFilters.push(ArmorPerkOrSlotDIMText[element.classItem.perk || 0]);
+      classItemFilters.push(ArmorPerkOrSlotDIMText[this.element.classItem.perk]);
     }
-
-    if (classItemFilters.length > 1) result += ` or (${classItemFilters.join(" ")})`;
-
-    return result;
+    if (classItemFilters.length > 0) result += ` OR (${classItemFilters.join(" AND ")})`;
+    await navigator.clipboard.writeText(result);
+    this.openSnackBar("Copied the DIM search query to your clipboard.");
   }
 
   openSnackBar(message: string) {
@@ -124,8 +122,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // set this.showGenericClassItemRow to true if the number of non-empty elements in this.element.items is <= 4
-    this.showGenericClassItemRow =
-      (this.element?.items.filter((i) => i.length > 0).length || 0) <= 4;
+    this.ArmorItems = this.element?.items.filter((x) => x.slot != ArmorSlot.ArmorSlotClass) || null;
+    this.ExoticArmorItem = this.element?.items.filter((x) => x.exotic)[0] || null;
+
+    this.exoticClassItemRow = this.element?.classItem.isExotic ?? false;
 
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.config_characterClass = c.characterClass;
@@ -303,12 +303,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       name: `${SubclassNames[c.selectedModElement as Subclass]}: (${this.element?.exotic?.name}) D2ArmorPicker Loadout`,
       classType: c.characterClass as number,
       parameters: data,
-      equipped: (this.element?.items || [])
-        .filter((i) => i.length > 0)
-        .map(([i]) => ({
-          id: i.itemInstanceId,
-          hash: i.hash,
-        })),
+      equipped: (this.element?.items || []).map((d) => ({
+        id: d.itemInstanceId,
+        hash: d.hash,
+      })),
       unequipped: [],
       clearSpace: false,
     };
@@ -383,8 +381,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       (
         this.element?.items.filter(
           (i) =>
-            (!i[0].masterworked && !i[0].exotic && this.config_assumeLegendariesMasterworked) ||
-            (i[0].exotic && this.config_assumeExoticsMasterworked)
+            (!i.masterworked && !i.exotic && this.config_assumeLegendariesMasterworked) ||
+            (i.exotic && this.config_assumeExoticsMasterworked)
         ) || []
       ).length * 2
     );

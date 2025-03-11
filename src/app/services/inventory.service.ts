@@ -28,7 +28,10 @@ import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
-import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
+import {
+  ResultDefinition,
+  ResultItem,
+} from "../components/authenticated-v2/results/results.component";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -348,10 +351,10 @@ export class InventoryService {
         // armor perks
         .filter((item) => {
           return (
-            item.isExotic ||
+            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
+            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
             !config.armorPerks[item.slot].fixed ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.None ||
-            config.armorPerks[item.slot].value == item.perk
+            (config.armorPerks[item.slot].fixed && config.armorPerks[item.slot].value == item.perk)
           );
         });
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
@@ -376,7 +379,7 @@ export class InventoryService {
           slot: armor.slot,
           clazz: armor.clazz,
           perk: armor.perk,
-          isExotic: !!armor.isExotic,
+          isExotic: armor.isExotic,
           rarity: armor.rarity,
           isSunset: armor.isSunset,
           masterworked: armor.masterworked,
@@ -471,39 +474,42 @@ export class InventoryService {
                 statsNoMods: armorSet.statsWithoutMods,
                 tiers: getSkillTier(armorSet.statsWithMods),
                 waste: getWaste(armorSet.statsWithMods),
-                items: items.reduce(
-                  (p: any, instance) => {
-                    p[instance.slot - 1].push({
-                      energyLevel: instance.energyLevel,
-                      hash: instance.hash,
-                      itemInstanceId: instance.itemInstanceId,
-                      name: instance.name,
-                      exotic: !!instance.isExotic,
-                      masterworked: instance.masterworked,
-                      mayBeBugged: instance.mayBeBugged,
-                      slot: instance.slot,
-                      perk: instance.perk,
-                      transferState: 0, // TRANSFER_NONE
-                      stats: [
-                        instance.mobility,
-                        instance.resilience,
-                        instance.recovery,
-                        instance.discipline,
-                        instance.intellect,
-                        instance.strength,
-                      ],
-                      source: instance.source,
-                    });
-                    return p;
-                  },
-                  [[], [], [], [], []]
+                items: items.map(
+                  (instance): ResultItem => ({
+                    energyLevel: instance.energyLevel,
+                    hash: instance.hash,
+                    itemInstanceId: instance.itemInstanceId,
+                    name: instance.name,
+                    exotic: !!instance.isExotic,
+                    masterworked: instance.masterworked,
+                    mayBeBugged: instance.mayBeBugged,
+                    slot: instance.slot,
+                    perk: instance.perk,
+                    transferState: 0, // TRANSFER_NONE
+                    stats: [
+                      instance.mobility,
+                      instance.resilience,
+                      instance.recovery,
+                      instance.discipline,
+                      instance.intellect,
+                      instance.strength,
+                    ],
+                    source: instance.source,
+                    statsNoMods: [],
+                  })
                 ),
-                classItem: armorSet.classItemPerk,
+                classItem: {
+                  canBeExotic:
+                    (exotic == null || exotic?.slot == ArmorSlot.ArmorSlotClass) &&
+                    config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1,
+                  isExotic: exotic?.slot == ArmorSlot.ArmorSlotClass,
+                  perk: armorSet.classItemPerk,
+                },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-              } as unknown as ResultDefinition;
+              } as ResultDefinition;
               this.endResults.push(v);
             }
 

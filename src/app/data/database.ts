@@ -20,6 +20,7 @@ import { IManifestArmor } from "./types/IManifestArmor";
 import { IInventoryArmor } from "./types/IInventoryArmor";
 import { IManifestCollectible } from "./types/IManifestCollectible";
 import { IVendorInfo } from "./types/IVendorInfo";
+import { IVendorItemSubscreen } from "./types/IVendorItemSubscreen";
 
 export class Database extends Dexie {
   manifestArmor!: Dexie.Table<IManifestArmor, number>;
@@ -29,6 +30,7 @@ export class Database extends Dexie {
   manifestCollectibles!: Dexie.Table<IManifestCollectible>;
   // Maps the vendor id to the vendor name
   vendorNames!: Dexie.Table<IVendorInfo, number>;
+  vendorItemSubscreen!: Dexie.Table<IVendorItemSubscreen, number>;
 
   constructor() {
     super("d2armorpicker-v2");
@@ -38,6 +40,7 @@ export class Database extends Dexie {
         "id++, itemInstanceId, isExotic, hash, name, masterworked, clazz, slot, source",
       manifestCollectibles: "id++, hash",
       vendorNames: "id++, vendorId",
+      vendorItemSubscreen: "itemHash",
     });
   }
 }

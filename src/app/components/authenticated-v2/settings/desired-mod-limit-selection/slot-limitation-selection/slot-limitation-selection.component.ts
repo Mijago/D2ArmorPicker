@@ -15,15 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from "@angular/core";
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "../../../../../data/constants";
 import { ArmorSlot } from "../../../../../data/enum/armor-slot";
 import { ConfigurationService } from "../../../../../services/configuration.service";
@@ -46,7 +38,7 @@ import { ModUrl } from "../../../results/table-mod-display/table-mod-display.com
   templateUrl: "./slot-limitation-selection.component.html",
   styleUrls: ["./slot-limitation-selection.component.scss"],
 })
-export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, AfterViewInit {
+export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   readonly featureDisabled = !environment.featureFlags.enableModslotLimitation;
   readonly ModUrls = ModUrl;
   readonly StatModifier = StatModifier;
@@ -63,13 +55,13 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
   fixedExoticInThisSlot: boolean = false;
   isPossible: boolean = true;
-  configSelectedClass: DestinyClass = DestinyClass.Titan;
+  configSelectedClass: DestinyClass = DestinyClass.Unknown;
   configAssumeLegendaryIsArtifice: boolean = false;
   configSelectedExoticSum: number = 0;
   configSelectedExotic: number[] = [];
   configAssumeClassItemIsArtifice: boolean = false;
   configAssumeExoticIsArtifice: boolean = false;
-  armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.None;
+  armorPerk: ArmorPerkOrSlot = ArmorPerkOrSlot.Any;
   armorPerkLock: boolean = false;
   maximumModSlots: number = 5;
 
@@ -78,7 +70,11 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
   disabled: boolean = false;
 
   readonly availableArmorPerks = [
+    ArmorPerkOrSlot.Any,
     ArmorPerkOrSlot.None,
+    ArmorPerkOrSlot.SlotArtifice,
+    ArmorPerkOrSlot.GuardianGamesClassItem,
+    ArmorPerkOrSlot.PerkOverflowingCorruption,
     ArmorPerkOrSlot.SlotEidosApprentice,
     ArmorPerkOrSlot.SlotSalvationsEdge,
     ArmorPerkOrSlot.SlotCrotasEnd,
@@ -89,7 +85,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     ArmorPerkOrSlot.SlotDeepStoneCrypt,
     ArmorPerkOrSlot.SlotGardenOfSalvation,
     ArmorPerkOrSlot.SlotLastWish,
-    ArmorPerkOrSlot.SlotArtifice,
     ArmorPerkOrSlot.PerkEchoesOfGlory,
     ArmorPerkOrSlot.PerkIronBanner,
     ArmorPerkOrSlot.SlotNightmare,
@@ -109,7 +104,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
     ) {
       this.isPossible = true;
     } else {
-      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.None;
+      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.Any;
 
       let results = 0;
       if (mustCheckArmorPerk) {
@@ -135,7 +130,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
           results += await this.db.inventoryArmor
             .where("clazz")
             .equals(this.configSelectedClass)
-            .and((f) => this.configSelectedExoticSum == 0 || f.isExotic == 0)
+            .and((f) => this.configSelectedExoticSum == 0 || !f.isExotic)
             .and((f) => f.slot == this.slot)
             .and((f) => f.perk == this.armorPerk)
             .count();
@@ -170,7 +165,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
       const newExoticSum = c.selectedExotics.reduce((acc, x) => acc + x, 0);
 
       var mustRunPossibilityCheck =
-        this.configSelectedClass != (c.characterClass as unknown as DestinyClass) ||
+        this.configSelectedClass != c.characterClass ||
         this.configAssumeLegendaryIsArtifice != c.assumeEveryLegendaryIsArtifice ||
         this.configAssumeExoticIsArtifice != c.assumeEveryExoticIsArtifice ||
         this.configAssumeClassItemIsArtifice != c.assumeClassItemIsArtifice ||
@@ -183,7 +178,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
       this.configAssumeLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this.configAssumeExoticIsArtifice = c.assumeEveryExoticIsArtifice;
       this.configAssumeClassItemIsArtifice = c.assumeClassItemIsArtifice;
-      this.configSelectedClass = c.characterClass as unknown as DestinyClass;
+      this.configSelectedClass = c.characterClass;
       this.selection = c.maximumModSlots[this.slot].value;
       this.armorPerk = c.armorPerks[this.slot].value;
       this.armorPerkLock = c.armorPerks[this.slot].fixed;
@@ -199,15 +194,6 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy, Afte
 
       if (mustRunPossibilityCheck) await this.runPossibilityCheck();
     });
-  }
-
-  ngAfterViewInit(): void {
-    if (
-      environment.featureFlags.enableGuardianGamesFeatures &&
-      this.slot === ArmorSlot.ArmorSlotClass
-    ) {
-      this.availableArmorPerks.splice(1, 0, ArmorPerkOrSlot.GuardianGamesClassItem);
-    }
   }
 
   toggleArmorPerkLock() {

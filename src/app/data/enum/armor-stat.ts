@@ -111,7 +111,8 @@ export enum SpecialArmorStat {
 }
 
 export enum ArmorPerkOrSlot {
-  None,
+  None = -1,
+  Any,
   SlotCrotasEnd = 2,
   SlotRootOfNightmares,
   SlotKingsFall,
@@ -125,20 +126,15 @@ export enum ArmorPerkOrSlot {
   SlotNightmare,
   // A special case just for guardian games class items.
   GuardianGamesClassItem = 18,
-
   PerkEchoesOfGlory = 20,
   SlotSalvationsEdge,
   SlotEidosApprentice,
-  COUNT,
+  PerkOverflowingCorruption,
 }
-
-// In the case that a perk has multiple possible hashes, we can use this to determine a mapping
-export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
-  [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
-};
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
+  [ArmorPerkOrSlot.Any]: "Any",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
@@ -154,11 +150,13 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.SlotEidosApprentice]: "Eido's Apprentice Perk",
-  [ArmorPerkOrSlot.COUNT]: "",
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: "Overflowing Corruption Perk",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.Any]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.None]:
+    "https://www.bungie.net//common/destiny2_content/icons/56761c8361e33a367c6fa94f397d8692.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
   [ArmorPerkOrSlot.SlotCrotasEnd]:
     "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
@@ -190,7 +188,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/c67322c917e16f3b8a4cb962e3f11166.png",
   [ArmorPerkOrSlot.SlotEidosApprentice]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
-  [ArmorPerkOrSlot.COUNT]: "",
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]:
+    "https://www.bungie.net/common/destiny2_content/icons/7a714dc1f8b669d8d5901c1543eb244b.png",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -198,7 +197,7 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkSocketHashes: EnumDictionary<
   Exclude<
     ArmorPerkOrSlot,
-    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT
+    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.Any | ArmorPerkOrSlot.None
   >,
   number
 > = {
@@ -216,12 +215,26 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotSalvationsEdge]: 4059283783,
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
   [ArmorPerkOrSlot.SlotEidosApprentice]: 273417606,
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: 1128948126,
 };
 
-export const ArmorPerkOrSlotDIMText: EnumDictionary<
-  Exclude<ArmorPerkOrSlot, ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT>,
-  string
-> = {
+// In the case that a perk has multiple possible hashes, we can use this to determine a mapping
+export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
+};
+
+export const MapAlternativeSocketTypeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1719555937]: ArmorPerkOrSlot.SlotArtifice,
+  [2770223926]: ArmorPerkOrSlot.SlotArtifice,
+  [2831858578]: ArmorPerkOrSlot.SlotArtifice,
+  [3136585661]: ArmorPerkOrSlot.SlotArtifice,
+  [3642670483]: ArmorPerkOrSlot.SlotArtifice,
+  [4096670123]: ArmorPerkOrSlot.SlotArtifice,
+};
+
+export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.Any]: "",
+  [ArmorPerkOrSlot.None]: "",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
@@ -237,6 +250,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
   [ArmorPerkOrSlot.SlotEidosApprentice]: 'perkname:"eido\'s apprentice"',
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: 'perkname:"overflowing corruption"',
 };
 
 export const SubclassHashes: EnumDictionary<

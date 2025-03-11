@@ -24,10 +24,52 @@ export enum ChangelogEntryType {
 export interface ChangelogEntry {
   type: ChangelogEntryType;
   text: string;
-  issues: string[] | undefined;
+  issues?: string[] | undefined;
 }
 
-export const CHANGELOG_DATA = [
+export const CHANGELOG_DATA: {
+  version: string;
+  date: string;
+  clearManifest?: boolean;
+  entries: ChangelogEntry[];
+}[] = [
+  {
+    version: "2.7.3",
+    date: "February 10, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added Overflowing Corruption as an armor perk option. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added None as an armor perk option. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: 'Removed "Ignore artifice slot in exotics, as None armor perk filter" as None perk covers the same function. (nznaza)',
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed exotic class item showing with incorrect armor perk. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed query when opening DIM to be more precise. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed class item was not showing Armor Perk. (nznaza) Thanks Mojo",
+        issues: [],
+      },
+    ],
+  },
   {
     version: "2.7.2",
     date: "February 5, 2025",

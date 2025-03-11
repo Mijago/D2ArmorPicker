@@ -21,7 +21,7 @@ const production = process.env["PRODUCTION"] === "1";
 const beta_branch = process.env["BETA"] === "1";
 const canary_branch = process.env["CANARY"] === "1";
 
-const version = "2.7.1";
+const version = "2.7.3";
 
 // Configure Angular `environment.ts` file path
 const targetPath = production
@@ -31,21 +31,21 @@ const targetPath = production
     : "./src/environments/environment.ts";
 // Load node modules
 
-require("dotenv").config({
-  path: production
-    ? ".env"
-    : beta_branch
-      ? ".env_beta"
-      : canary_branch
-        ? ".env_canary"
-        : ".env_dev",
-});
+const dotenvfile = production
+  ? ".env"
+  : beta_branch
+    ? ".env_beta"
+    : canary_branch
+      ? ".env_canary"
+      : ".env_dev";
+
+require("dotenv").config({ path: dotenvfile });
 
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
 
 var version_tag = production ? "" : beta_branch ? "-beta-" + revision : "-dev-" + revision;
 
-console.log(version + version_tag);
+console.log(`Reading ${dotenvfile} version ${version + version_tag}`);
 
 const data = {
   version: version + version_tag,

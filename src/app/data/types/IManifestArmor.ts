@@ -31,7 +31,7 @@ export interface IDisplayManifestArmor {
   description: string;
   slot: ArmorSlot;
   clazz: DestinyClass;
-  isExotic: 1 | 0;
+  isExotic: 0 | 1;
   rarity: TierType;
 }
 export interface IManifestArmor extends IDisplayManifestArmor {

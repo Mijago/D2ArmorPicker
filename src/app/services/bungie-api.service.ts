@@ -45,6 +45,7 @@ import { ArmorSlot } from "../data/enum/armor-slot";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
+  MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
 } from "../data/enum/armor-stat";
 import { ConfigurationService } from "./configuration.service";
@@ -53,6 +54,7 @@ import { MembershipService } from "./membership.service";
 import { HttpClientService } from "./http-client.service";
 import { IVendorInfo } from "../data/types/IVendorInfo";
 import { StatusProviderService } from "./status-provider.service";
+import { IVendorItemSubscreen } from "../data/types/IVendorItemSubscreen";
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -505,7 +507,17 @@ export class BungieApiService {
         (kvpair) => kvpair[1] == socketHash
       );
       if (slotType) {
-        return parseInt(slotType[0]) as unknown as ArmorPerkOrSlot;
+        return parseInt(slotType[0]) as ArmorPerkOrSlot;
+      }
+    }
+
+    for (const socket of scks) {
+      let socketTypeHash = socket.socketTypeHash;
+      if (!socketTypeHash) continue;
+      let perk = MapAlternativeSocketTypeToArmorPerkOrSlot[socketTypeHash] || ArmorPerkOrSlot.None;
+      // find the key of ArmorPerkSocketHashes that matches the socketHash
+      if (perk != ArmorPerkOrSlot.None) {
+        return perk;
       }
     }
 
@@ -519,11 +531,33 @@ export class BungieApiService {
 
     // get values
     const vendorInfo: IVendorInfo[] = Object.values(vendors).map((v) => {
-      return { vendorId: v.hash, vendorName: v.displayProperties.name } as IVendorInfo;
+      return {
+        vendorId: v.hash,
+        vendorName: v.displayProperties.name,
+        vendorDescription: v.displayProperties.description,
+        vendorIdentifier: v.vendorIdentifier,
+      } as IVendorInfo;
     });
 
     await this.db.vendorNames.clear();
     await this.db.vendorNames.bulkAdd(vendorInfo);
+  }
+
+  private async updateVendorItemSubScreens(
+    manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
+  ) {
+    const items = Object.values(manifestTables.DestinyInventoryItemDefinition);
+
+    let vendorItemSubscreen = items
+      .filter((x) => x.preview?.previewVendorHash != undefined && x.preview?.previewVendorHash != 0)
+      .map((x) => {
+        return {
+          itemHash: x.hash,
+          vendorHash: x.preview!.previewVendorHash,
+        } as IVendorItemSubscreen;
+      });
+    await this.db.vendorItemSubscreen.clear();
+    await this.db.vendorItemSubscreen.bulkPut(vendorItemSubscreen);
   }
 
   private async updateAbilities(
@@ -618,6 +652,7 @@ export class BungieApiService {
     await this.updateExoticCollectibles(manifestTables);
     await this.updateVendorNames(manifestTables);
     await this.updateAbilities(manifestTables);
+    await this.updateVendorItemSubScreens(manifestTables);
 
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
@@ -673,7 +708,7 @@ export class BungieApiService {
             }) || []
           ).length > 0;
 
-        const isExotic = v.inventory?.tierType == 6 ? 1 : 0;
+        const isExotic = v.inventory?.tierType == 6;
         let exoticPerkHash = null;
         if (isExotic) {
           const perks =
@@ -770,7 +805,7 @@ export class BungieApiService {
           clazz: clasz,
           armor2: isArmor2,
           slot: slot,
-          isExotic: isExotic,
+          isExotic: isExotic ? 1 : 0,
           isSunset: isSunset,
           rarity: v.inventory?.tierType,
           exoticPerkHash: exoticPerkHash,

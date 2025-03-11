@@ -38,6 +38,13 @@ export class ChangelogService {
     return this.changelogData[0].version !== this.lastViewedChangelog;
   }
 
+  get wipeManifest() {
+    return (
+      this.changelogData[0].version !== this.lastViewedChangelog &&
+      (this.changelogData[0].clearManifest ?? false)
+    );
+  }
+
   get changelogData() {
     return CHANGELOG_DATA;
   }

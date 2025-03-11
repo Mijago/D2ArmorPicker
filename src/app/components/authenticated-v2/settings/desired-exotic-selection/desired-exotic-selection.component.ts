@@ -46,12 +46,14 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeCollectionRolls = false;
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
-  ignoreExistingExoticArtificeSlots = false;
   allowBlueArmorPieces = false;
-  currentClass: DestinyClass = DestinyClass.Titan;
+  currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
 
-  constructor(public inventory: InventoryService, public config: ConfigurationService) {}
+  constructor(
+    public inventory: InventoryService,
+    public config: ConfigurationService
+  ) {}
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (c) => {
@@ -64,7 +66,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExotics = c.selectedExotics;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
-      this.ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
     });
 
     this.inventory.manifest
@@ -120,12 +121,6 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   setIgnoreSunsetArmor(ignore: boolean) {
     this.config.modifyConfiguration((c) => {
       c.ignoreSunsetArmor = ignore;
-    });
-  }
-
-  setIgnoreExistingExoticArtificeSlots(allow: boolean) {
-    this.config.modifyConfiguration((c) => {
-      c.ignoreExistingExoticArtificeSlots = allow;
     });
   }
 

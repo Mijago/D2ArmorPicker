@@ -41,12 +41,14 @@ export interface ResultDefinition {
       };
   artifice: number[];
   classItem: {
+    canBeExotic: boolean;
+    isExotic: boolean;
     perk: ArmorPerkOrSlot;
   };
   mods: number[];
   stats: number[];
   statsNoMods: number[];
-  items: ResultItem[][];
+  items: ResultItem[];
   tiers: number;
   waste: number;
   modCost: number;
@@ -65,7 +67,6 @@ export enum ResultItemMoveState {
 }
 
 export interface ResultItem {
-  energy: number;
   energyLevel: number;
   hash: number;
   itemInstanceId: string;
@@ -113,7 +114,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _config_onlyShowResultsWithNoWastedStats: Boolean = false;
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_assumeEveryExoticIsArtifice: Boolean = false;
-  _config_ignoreExistingExoticArtificeSlots: Boolean = false;
   _config_modslotLimitation: FixableSelection<number>[] = [];
   _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
 
@@ -163,10 +163,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
       this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
       this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
-      this._config_ignoreExistingExoticArtificeSlots = c.ignoreExistingExoticArtificeSlots;
       this._config_selectedExotics = c.selectedExotics;
       this._config_armorPerkLimitation = Object.entries(c.armorPerks)
-        .filter((v) => v[1].value != ArmorPerkOrSlot.None)
+        .filter((v) => v[1].value != ArmorPerkOrSlot.Any)
         .map((k) => k[1]);
       this._config_modslotLimitation = Object.entries(c.maximumModSlots)
         .filter((v) => v[1].value < 5)
@@ -244,9 +243,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return (
-      (element?.items.filter((d) => d.filter((x) => x.mayBeBugged).length > 0).length || 0) > 0
-    );
+    return element.items.filter((x) => x.mayBeBugged).length > 0;
   }
 
   private ngUnsubscribe = new Subject();
@@ -262,11 +259,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
       config: this.config.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
-        p.items = p.items
-          .filter((i) => !!i[0])
-          .map((i) => {
-            return { hash: i[0].hash, instance: i[0].itemInstanceId } as any;
-          });
+        p.items = p.items.map((i) => {
+          return { hash: i.hash, instance: i.itemInstanceId } as any;
+        });
         delete p.exotic;
         return p;
       }),

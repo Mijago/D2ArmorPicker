@@ -37,8 +37,8 @@
       </tr>
     </thead>
     <!-- Items -->
-    <ng-container *ngFor="let items of element?.items">
-      <tr *ngFor="let i of items" [class.highlight-row]="items[0].slot % 2 === 0">
+    <ng-container *ngFor="let i of ArmorItems">
+      <tr>
         <td>
           <u
             #tooltip="matTooltip"
@@ -161,7 +161,7 @@
       </tr>
     </ng-container>
     <!-- Class Item -->
-    <tr *ngIf="showGenericClassItemRow && config_assumeClassItemMasterworked">
+    <tr *ngIf="!exoticClassItemRow && config_assumeClassItemMasterworked">
       <td #tooltip="matTooltip" class="item-name-mw" matTooltip="Class item should be masterworked."
         >Any Class Item</td
       >
@@ -188,7 +188,7 @@
         </button>
       </td>
     </tr>
-    <tr *ngIf="showGenericClassItemRow && !config_assumeClassItemMasterworked">
+    <tr *ngIf="!exoticClassItemRow && !config_assumeClassItemMasterworked">
       <td>Any Class Item</td>
       <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
       <td></td>
@@ -204,6 +204,49 @@
         </button>
       </td>
     </tr>
+
+    <!-- Exotic Class Item -->
+    <tr *ngIf="exoticClassItemRow">
+      <td
+        #tooltip="matTooltip"
+        class="item-name-mw"
+        matTooltip="Class item should be masterworked."
+        >{{ element?.exotic?.name }}</td
+      >
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="text-mw">{{ 2 }}</td>
+      <td class="icon-column">
+        <!-- Item Icon -->
+        <div [itemTooltip]="ExoticArmorItem!" class="item-icon-container">
+          <app-item-icon
+            [itemHash]="ExoticArmorItem!.hash"
+            [masterworked]="ExoticArmorItem!.masterworked"
+            [source]="ExoticArmorItem!.source"
+            class="item-icon">
+          </app-item-icon>
+        </div>
+      </td>
+      <td class="icon-column">
+        <div style="position: relative; width: 25px">
+          <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
+        </div>
+      </td>
+      <td>
+        <button
+          (click)="disableAllItems()"
+          style="padding: 0; top: 0; left: 0"
+          class="item-info-menu-btn report-problem-icon"
+          mat-icon-button
+          matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
+          <mat-icon>block</mat-icon>
+        </button>
+      </td>
+    </tr>
+
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total highlight-row">
       <td>Total (armor)</td>
@@ -455,38 +498,37 @@
   </div>
 </ng-container>
 
-<div class="buttonContainer">
-  <ng-container *ngVar="buildItemIdString(element) as text">
+<div style="display: flex; align-items: center; flex-direction: column">
+  <div class="buttonContainer">
     <button
-      (click)="openSnackBar('Copied the DIM search query to your clipboard.')"
-      [cdkCopyToClipboard]="text"
+      (click)="CopyDIMQuery()"
       color="primary"
       mat-raised-button
       matTooltip="Use this button to copy a DIM search query to your clip board. It allows you to search the given items in DIM.">
       Copy DIM query to clipboard
     </button>
-  </ng-container>
-  <button
-    (click)="goToDIM()"
-    color="primary"
-    mat-raised-button
-    matTooltip="Use this button to open this build as a DIM Loadout.">
-    Open Loadout in DIM
-  </button>
-  <br />
-  <small>The following two buttons may not work for some at the moment:</small><br />
-  <button
-    (click)="moveItems()"
-    mat-stroked-button
-    matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
-    Move items to inventory (beta)
-  </button>
-  <button
-    (click)="moveItems(true)"
-    mat-stroked-button
-    matTooltip="Click this button to equip the Items. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
-    Equip Items (beta)
-  </button>
+    <button
+      (click)="goToDIM()"
+      color="primary"
+      mat-raised-button
+      matTooltip="Use this button to open this build as a DIM Loadout.">
+      Open Loadout in DIM
+    </button>
+    <br />
+    <small>The following two buttons may not work for some at the moment:</small><br />
+    <button
+      (click)="moveItems()"
+      mat-stroked-button
+      matTooltip="Click this button to move Items to your inventory. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
+      Move items to inventory (beta)
+    </button>
+    <button
+      (click)="moveItems(true)"
+      mat-stroked-button
+      matTooltip="Click this button to equip the Items. Make sure that you have enough space in your inventory. This tool will not move any items out of your inventory.">
+      Equip Items (beta)
+    </button>
+  </div>
 </div>
 
 <mat-accordion>

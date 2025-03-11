@@ -18,17 +18,15 @@ import {
 import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
 import { AuthService } from "./auth.service";
+import { intersection as _intersection } from "lodash";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
 interface VendorWithParent {
-  vendorHash: string;
-  parentHash: string;
+  vendorHash: number;
+  parentHash: number;
 }
 
-const VendorsWithParent: VendorWithParent[] = [
-  { vendorHash: "3751514131", parentHash: "2190858386" }, // Strange Gear Offers, Tower Xûr
-];
 @Injectable({
   providedIn: "root",
 })
@@ -65,16 +63,29 @@ export class VendorsService {
 
     const allVendors = Object.entries(vendorsResponse.Response.vendors.data!);
     const allVendorsMap = new Map(allVendors);
+    let vendorsWithParent: VendorWithParent[] = (
+      await Promise.all(
+        Object.entries(vendorsResponse.Response.sales.data!).map(async ([_vendorHash, sales]) => {
+          let items = Object.values(sales.saleItems).map((x) => x.itemHash);
+          let subscreenItem = (await this.db.vendorItemSubscreen.bulkGet(items)).filter(
+            (x) => x != undefined
+          );
+          let vendors = subscreenItem.map((item) => {
+            return { vendorHash: item!.vendorHash, parentHash: parseInt(_vendorHash) };
+          });
+          return vendors;
+        })
+      )
+    ).flat();
 
     const enabledVendors = allVendors
       .filter(([_vendorHash, vendor]) => vendor.enabled)
       .filter(([vendorHash, vendor]) => {
-        const parent = VendorsWithParent.find((v) => v.vendorHash == vendorHash)?.parentHash;
+        const parent = vendorsWithParent.find(
+          (v) => v.vendorHash.toString() == vendorHash
+        )?.parentHash;
         if (parent == undefined) return true;
-        console.debug(
-          `${vendorHash} has parent ${parent} with value ${allVendorsMap.get(parent)?.enabled}`
-        );
-        return allVendorsMap.get(parent)?.enabled ?? false;
+        return allVendorsMap.get(parent.toString())?.enabled ?? false;
       });
     const vendors = enabledVendors
       .filter(
@@ -126,9 +137,23 @@ export class VendorsService {
               {} as Record<number, number>
             );
 
+            let parentVendor = vendorsWithParent
+              .find((v) => v.vendorHash.toString() == vendorHash)
+              ?.parentHash?.toString();
+            let lastVendor = parentVendor;
+            if (parentVendor != undefined) {
+              while (parentVendor != undefined) {
+                lastVendor = parentVendor;
+                parentVendor = vendorsWithParent
+                  .find((v) => v.vendorHash.toString() == parentVendor)
+                  ?.parentHash?.toString();
+              }
+              parentVendor = lastVendor;
+            } else parentVendor = vendorHash;
+
             const r = createArmorItem(
               manifestItem,
-              `v${vendorHash}-${saleItem.itemHash}`,
+              `v-${parentVendor}-${saleItem.itemHash}`,
               InventoryArmorSource.Vendor
             );
             applyInvestmentStats(r, statsOverride);
