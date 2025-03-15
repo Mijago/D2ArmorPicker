@@ -48,6 +48,11 @@ export const CHANGELOG_DATA: {
         text: "Fixed order of exotics in armor selection to be alphabetical. (nznaza)",
         issues: [],
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Filter out vendor items that are reported by the API but can not be bought. (ciaran)",
+        issues: [],
+      },
     ],
   },
   {
