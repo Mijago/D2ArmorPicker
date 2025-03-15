@@ -34,6 +34,23 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.7.4",
+    date: "March 15, 2025",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed parent vendor logic. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed order of exotics in armor selection to be alphabetical. (nznaza)",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.7.3",
     date: "February 10, 2025",
     clearManifest: true,
