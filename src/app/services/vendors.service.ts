@@ -79,7 +79,7 @@ export class VendorsService {
       )
     ).flat();
     const enabledVendors = allVendors
-      .filter(([_vendorHash, vendor]) => vendor.enabled)
+      .filter(([_vendorHash, vendor]) => vendor.enabled && vendor.canPurchase)
       .filter(([vendorHash, vendor]) => {
         const parent = vendorsWithParent.find(
           (v) => v.vendorHash.toString() == vendorHash
