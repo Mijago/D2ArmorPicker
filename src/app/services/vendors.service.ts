@@ -63,6 +63,7 @@ export class VendorsService {
 
     const allVendors = Object.entries(vendorsResponse.Response.vendors.data!);
     const allVendorsMap = new Map(allVendors);
+
     let vendorsWithParent: VendorWithParent[] = (
       await Promise.all(
         Object.entries(vendorsResponse.Response.sales.data!).map(async ([_vendorHash, sales]) => {
@@ -77,7 +78,6 @@ export class VendorsService {
         })
       )
     ).flat();
-
     const enabledVendors = allVendors
       .filter(([_vendorHash, vendor]) => vendor.enabled)
       .filter(([vendorHash, vendor]) => {
@@ -137,20 +137,17 @@ export class VendorsService {
               {} as Record<number, number>
             );
 
+            let lastVendor = vendorHash;
             let parentVendor = vendorsWithParent
-              .find((v) => v.vendorHash.toString() == vendorHash)
+              .find((v) => v.vendorHash.toString() == lastVendor)
               ?.parentHash?.toString();
-            let lastVendor = parentVendor;
-            if (parentVendor != undefined) {
-              while (parentVendor != undefined) {
-                lastVendor = parentVendor;
-                parentVendor = vendorsWithParent
-                  .find((v) => v.vendorHash.toString() == parentVendor)
-                  ?.parentHash?.toString();
-              }
-              parentVendor = lastVendor;
-            } else parentVendor = vendorHash;
-
+            while (parentVendor != undefined && lastVendor != parentVendor) {
+              lastVendor = parentVendor;
+              parentVendor = vendorsWithParent
+                .find((v) => v.vendorHash.toString() == lastVendor)
+                ?.parentHash?.toString();
+            }
+            parentVendor = lastVendor;
             const r = createArmorItem(
               manifestItem,
               `v-${parentVendor}-${saleItem.itemHash}`,

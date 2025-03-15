@@ -627,17 +627,19 @@ export class InventoryService {
     let exotics = await this.db.manifestArmor.where("isExotic").equals(1).toArray();
     exotics = exotics.filter((d) => d.clazz == clazz && d.armor2 && (!slot || d.slot == slot));
 
-    return exotics.map((ex) => {
-      const instances = inventory.filter((i) => i.hash == ex.hash);
-      return {
-        item: ex,
-        inCollection:
-          instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
-        inInventory:
-          instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
-        inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
-      };
-    });
+    return exotics
+      .map((ex) => {
+        const instances = inventory.filter((i) => i.hash == ex.hash);
+        return {
+          item: ex,
+          inCollection:
+            instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
+          inInventory:
+            instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
+          inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
+        };
+      })
+      .sort((x, y) => x.item.name.localeCompare(y.item.name));
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
