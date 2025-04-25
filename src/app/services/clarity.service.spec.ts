@@ -16,7 +16,7 @@
  */
 
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { HttpErrorResponse } from "@angular/common/http";
 import { TestBed } from "@angular/core/testing";
 
 import {
@@ -26,19 +26,18 @@ import {
   SUPPORTED_SCHEMA_VERSION,
   UpdateData,
 } from "./clarity.service";
+import { MatDialogModule } from "@angular/material/dialog";
 
 describe("ClarityService", () => {
   let service: ClarityService;
-  let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
   let currentDataVersion: number = 0;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, MatDialogModule],
     });
 
-    httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
 
     localStorage.removeItem("clarity-character-stats");

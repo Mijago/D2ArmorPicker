@@ -231,7 +231,7 @@ describe("Results Worker", () => {
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -239,7 +239,8 @@ describe("Results Worker", () => {
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 1, 1], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem,
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -310,7 +311,8 @@ describe("Results Worker", () => {
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -380,7 +382,8 @@ describe("Results Worker", () => {
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -443,7 +446,8 @@ describe("Results Worker", () => {
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     );
     expect(result).toBeDefined();
     expect(result).not.toBeNull();
@@ -494,7 +498,8 @@ describe("Results Worker", () => {
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -524,7 +529,7 @@ describe("Results Worker", () => {
         Math.floor(Math.random() * 6),
       ];
       availableModCost = [5, 5, 5, 5, 5];
-      let result = handlePermutation(
+      handlePermutation(
         runtime,
         config,
         mockItems[0] as IPermutatorArmor,
@@ -534,7 +539,8 @@ describe("Results Worker", () => {
         constantBonus1,
         availableModCost,
         false,
-        true
+        true, // hasArtificeClassItem
+        true // and masterwoked class item
       );
 
       // grab the runtime.maximumPossibleTiers and iterate over them to see if it correctly fills them
@@ -557,7 +563,8 @@ describe("Results Worker", () => {
           constantBonus1,
           availableModCost,
           false,
-          true
+          true, // hasArtificeClassItem
+          true // and masterwoked class item
         ) as IPermutatorArmorSet;
         let result = CreateResultDefinition(presult, mockItems);
         expect(result).toBeDefined();
@@ -676,7 +683,8 @@ describe("Results Worker", () => {
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -722,6 +730,11 @@ function CreateResultDefinition(
   items: IInventoryArmor[]
 ): ResultDefinition {
   let exotic = items.find((x) => x.isExotic);
+
+  if (armorSet == null) {
+    console.error("ArmorSet is null", items);
+  }
+
   return {
     exotic:
       exotic == null
