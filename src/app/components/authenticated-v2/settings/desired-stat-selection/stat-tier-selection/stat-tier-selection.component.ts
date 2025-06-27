@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from "@angular/core";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -23,7 +23,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
   templateUrl: "./stat-tier-selection.component.html",
   styleUrls: ["./stat-tier-selection.component.scss"],
 })
-export class StatTierSelectionComponent implements OnChanges {
+export class StatTierSelectionComponent implements OnInit, OnChanges {
   readonly TierRange = new Array(11);
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
@@ -34,9 +34,16 @@ export class StatTierSelectionComponent implements OnChanges {
   @Output() lockedChange = new EventEmitter<boolean>();
 
   selectedValue: number = 0;
+  public hoveredValue: number | null = null;
+  public statValues: number[] = [];
 
   constructor() {}
   //#endregion
+  ngOnInit(): void {
+    // Generate values from 0 to 200
+    this.statValues = Array.from({ length: 201 }, (_, i) => i);
+  }
+
   ngOnChanges() {
     this.selectedValue = this.selectedTier * 10;
   }

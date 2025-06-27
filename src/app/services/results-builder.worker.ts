@@ -682,22 +682,36 @@ export function handlePermutation(
   //#################################################################################
   // Tier Availability Testing
   //#################################################################################
-  /*
+  //*
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
     }
 
+    if (stats[stat] >= 200) continue; // Already at max value, no need to test
+
     const oldDistance = distances[stat];
-    for (
-      let tier = 20;
-      tier >= config.minimumStatTiers[stat as ArmorStat].value &&
-      tier > runtime.maximumPossibleTiers[stat] / 10;
-      tier--
-    ) {
-      if (stats[stat] >= tier * 10) break;
+    const minTier = config.minimumStatTiers[stat as ArmorStat].value * 10;
+
+    // Binary search to find maximum possible value
+    let low = Math.max(runtime.maximumPossibleTiers[stat], minTier);
+    let high = 200;
+
+    while (low < high) {
+      // Try middle value, rounded to nearest 10 for tier optimization
+      const mid = Math.min(200, Math.ceil((low + high) / 2));
+
+      if (stats[stat] >= mid) {
+        // We can already reach this value naturally
+        low = mid + 1;
+        continue;
+      }
+
+      // Calculate distance needed to reach this value
       const v = 10 - (stats[stat] % 10);
-      distances[stat] = Math.max(v < 10 ? v : 0, tier * 10 - stats[stat]);
+      distances[stat] = Math.max(v < 10 ? v : 0, mid - stats[stat]);
+
+      // Check if this value is achievable with mods
       const mods = get_mods_precalc(
         config,
         distances,
@@ -706,12 +720,35 @@ export function handlePermutation(
         availableModCost,
         ModOptimizationStrategy.None
       );
-      //const mods = null;
+
       if (mods != null) {
-        runtime.maximumPossibleTiers[stat] = tier * 10;
-        break;
+        // This value is achievable, try higher
+        low = mid + 1;
+        runtime.maximumPossibleTiers[stat] = mid;
+      } else {
+        // This value is not achievable, try lower
+        high = mid - 1;
       }
     }
+
+    // Verify the final value
+    if (low > runtime.maximumPossibleTiers[stat] && low <= 200) {
+      const v = 10 - (stats[stat] % 10);
+      distances[stat] = Math.max(v < 10 ? v : 0, low - stats[stat]);
+      const mods = get_mods_precalc(
+        config,
+        distances,
+        [0, 0, 0, 0, 0, 0],
+        availableArtificeCount,
+        availableModCost,
+        ModOptimizationStrategy.None
+      );
+      if (mods != null) {
+        console.debug(`Tier ${stat} can be reached with ${low} using mods`, mods);
+        runtime.maximumPossibleTiers[stat] = low;
+      }
+    }
+
     distances[stat] = oldDistance;
   }
   //console.debug("b "+runtime.maximumPossibleTiers,n)

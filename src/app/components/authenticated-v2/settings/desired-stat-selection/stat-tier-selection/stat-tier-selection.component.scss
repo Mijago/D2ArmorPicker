@@ -27,6 +27,79 @@
   width: 100%;
 }
 
+.custom-stat-slider {
+  position: relative;
+
+  .stat-line {
+    width: 1px;
+    min-width: 1px;
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      left: -1px;
+      right: -1px;
+      opacity: 0;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.8);
+      transform: scaleY(1.1);
+    }
+
+    &.zero-line {
+      background-color: red;
+
+      &:hover {
+        background-color: darkred;
+      }
+    }
+
+    &.fifth-line {
+      background-color: rgba(255, 255, 255, 0.5);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    &.tenth-line {
+      background-color: rgba(255, 255, 255, 0.7);
+
+      &:hover {
+        background-color: #ffffff;
+      }
+    }
+
+    &.selected {
+      background-color: #4caf50;
+      width: 2px;
+      min-width: 2px;
+      z-index: 1;
+
+      &:hover {
+        background-color: #2e7d32;
+      }
+    }
+
+    &.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: none;
+      }
+    }
+  }
+}
+
 .lock-locked {
   color: #f44336;
 }

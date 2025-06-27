@@ -526,7 +526,7 @@ export class InventoryService {
                   },
                   [0, 0, 0, 0, 0, 0]
                 )
-                .map((k) => Math.floor(Math.min(100, k) / 10)),
+                .map((k) => Math.min(200, k) / 10),
               statCombo3x100:
                 Array.from(this.resultStatCombo3x100 as Set<number>).map((d: number) => {
                   let r: ArmorStat[] = [];

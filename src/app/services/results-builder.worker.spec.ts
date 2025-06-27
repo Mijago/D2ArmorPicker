@@ -548,9 +548,8 @@ describe("Results Worker", () => {
       const order = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
 
       for (let statId of order) {
-        config.minimumStatTiers[statId as ArmorStat].value = Math.floor(
-          runtime.maximumPossibleTiers[statId] / 10
-        );
+        config.minimumStatTiers[statId as ArmorStat].value =
+          runtime.maximumPossibleTiers[statId] / 10;
 
         runtime = buildRuntime();
         let presult = handlePermutation(

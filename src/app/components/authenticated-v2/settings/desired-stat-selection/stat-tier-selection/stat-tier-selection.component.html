@@ -16,19 +16,25 @@
   -->
 
 <div style="display: flex; align-items: center; gap: 12px">
-  <mat-slider
-    class="slider-entry"
-    style="width: 200px"
-    min="0"
-    max="200"
-    step="1"
-    showTickMarks="true"
-    aria-label="Stat Tier Slider">
-    <input matSliderThumb (valueChange)="setValueMob($event)" [(ngModel)]="selectedValue" />
-  </mat-slider>
-  <div class="stat-tier-value">
-    {{ selectedValue }}
+  <div class="custom-stat-slider" style="width: 200px; height: 30px">
+    <div style="display: flex; align-items: flex-end; height: 100%; width: 100%; gap: 0">
+      <ng-container *ngFor="let value of statValues">
+        <div
+          class="stat-line"
+          [class.zero-line]="value === 0"
+          [class.fifth-line]="value > 0 && value % 5 === 0"
+          [class.tenth-line]="value > 0 && value % 10 === 0"
+          [class.selected]="value === selectedValue"
+          [class.disabled]="value > maximumAvailableTier * 10"
+          [style.height]="value % 10 === 0 ? '16px' : value % 5 === 0 ? '12px' : '8px'"
+          (click)="value <= maximumAvailableTier * 10 && setValueMob(value)"
+          (mouseenter)="value <= maximumAvailableTier * 10 && (hoveredValue = value)"
+          (mouseleave)="hoveredValue = null">
+        </div>
+      </ng-container>
+    </div>
   </div>
+  <div class="stat-tier-value"> {{ selectedValue }} / {{ maximumAvailableTier * 10 }} </div>
   <button
     mat-icon-button
     (click)="toggleLockState()"
