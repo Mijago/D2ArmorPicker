@@ -189,22 +189,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: false,
             help: "You usually do not want to use this.",
           },
-          {
-            name: "Replace the tier selection with text fields for exact stat values.",
-            cp: (v: boolean) =>
-              this.config.modifyConfiguration((c) => {
-                c.allowExactStats = v;
-                if (!v) {
-                  for (let cf of Object.values(c.minimumStatTiers)) {
-                    cf.value = Math.floor(cf.value);
-                  }
-                }
-              }),
-            value: c.allowExactStats,
-            disabled: false,
-            impactsResultCount: true,
-            help: "This is a beta feature. Usability and quality may vary a lot.",
-          },
         ],
       };
       this.fieldKeys = Object.keys(this.fields2);
