@@ -18,6 +18,18 @@
 .stat-tier-value {
   min-width: 40px;
   text-align: right;
+  position: relative;
+
+  .hover-value-indicator {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    font-size: 0.8em;
+    color: #4caf50;
+    white-space: nowrap;
+    transition: opacity 0.05s linear;
+    font-weight: bold;
+  }
 }
 
 .select-button {
@@ -41,16 +53,17 @@
     &::before {
       content: "";
       position: absolute;
-      top: -4px;
-      bottom: -4px;
-      left: -1px;
-      right: -1px;
+      top: -8px;
+      bottom: -8px;
+      left: -8px;
+      right: -8px;
       opacity: 0;
+      pointer-events: auto;
     }
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.8);
-      transform: scaleY(1.1);
+      box-shadow: 0 0 6px 2px rgba(76, 175, 80, 0.25);
     }
 
     &.zero-line {
@@ -94,7 +107,6 @@
 
       &:hover {
         background-color: rgba(255, 255, 255, 0.3);
-        transform: none;
       }
     }
   }
@@ -102,4 +114,13 @@
 
 .lock-locked {
   color: #f44336;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

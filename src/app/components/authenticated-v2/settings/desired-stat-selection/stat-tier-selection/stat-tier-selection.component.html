@@ -16,7 +16,7 @@
   -->
 
 <div style="display: flex; align-items: center; gap: 12px">
-  <div class="custom-stat-slider" style="width: 200px; height: 30px">
+  <div class="custom-stat-slider" style="width: 350px; height: 30px">
     <div style="display: flex; align-items: flex-end; height: 100%; width: 100%; gap: 0">
       <ng-container *ngFor="let value of statValues">
         <div
@@ -27,14 +27,50 @@
           [class.selected]="value === selectedValue"
           [class.disabled]="value > maximumAvailableTier * 10"
           [style.height]="value % 10 === 0 ? '16px' : value % 5 === 0 ? '12px' : '8px'"
+          [matTooltip]="'Value: ' + value + (value % 10 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
+          [matTooltipDisabled]="value > maximumAvailableTier * 10"
+          matTooltipPosition="above"
+          [matTooltipShowDelay]="0"
           (click)="value <= maximumAvailableTier * 10 && setValueMob(value)"
-          (mouseenter)="value <= maximumAvailableTier * 10 && (hoveredValue = value)"
-          (mouseleave)="hoveredValue = null">
+          (mouseenter)="handleHover(value)"
+          (mouseleave)="clearHover()">
         </div>
       </ng-container>
     </div>
   </div>
-  <div class="stat-tier-value"> {{ selectedValue }} / {{ maximumAvailableTier * 10 }} </div>
+  <div class="stat-tier-value">
+    <span
+      *ngIf="!editingValue"
+      (click)="editingValue = true"
+      style="cursor: pointer; min-width: 32px; display: inline-block">
+      {{ selectedValue }}
+    </span>
+    <input
+      *ngIf="editingValue"
+      #valueInput
+      type="number"
+      [min]="0"
+      [max]="maximumAvailableTier * 10"
+      [value]="selectedValue"
+      (blur)="commitValueEdit(valueInput.value)"
+      (keydown.enter)="commitValueEdit(valueInput.value)"
+      (keydown.escape)="cancelValueEdit()"
+      style="
+        width: 40px;
+        text-align: center;
+        border: none;
+        border-bottom: 1px solid #888;
+        outline: none;
+        background: transparent;
+        font: inherit;
+      " />
+    / {{ maximumAvailableTier * 10 }}
+    <div
+      *ngIf="hoveredValue !== null && hoveredValue <= maximumAvailableTier * 10"
+      class="hover-value-indicator">
+      Hovering: {{ hoveredValue }}
+    </div>
+  </div>
   <button
     mat-icon-button
     (click)="toggleLockState()"

@@ -15,7 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+} from "@angular/core";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -23,7 +33,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
   templateUrl: "./stat-tier-selection.component.html",
   styleUrls: ["./stat-tier-selection.component.scss"],
 })
-export class StatTierSelectionComponent implements OnInit, OnChanges {
+export class StatTierSelectionComponent implements OnInit, OnChanges, AfterViewChecked {
   readonly TierRange = new Array(11);
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
@@ -33,9 +43,12 @@ export class StatTierSelectionComponent implements OnInit, OnChanges {
   @Output() selectedTierChange = new EventEmitter<number>();
   @Output() lockedChange = new EventEmitter<boolean>();
 
+  @ViewChild("valueInput") valueInput!: ElementRef<HTMLInputElement>;
+
   selectedValue: number = 0;
   public hoveredValue: number | null = null;
   public statValues: number[] = [];
+  public editingValue: boolean = false;
 
   constructor() {}
   //#endregion
@@ -46,6 +59,13 @@ export class StatTierSelectionComponent implements OnInit, OnChanges {
 
   ngOnChanges() {
     this.selectedValue = this.selectedTier * 10;
+  }
+
+  ngAfterViewChecked() {
+    if (this.editingValue && this.valueInput) {
+      this.valueInput.nativeElement.focus();
+      this.valueInput.nativeElement.select();
+    }
   }
 
   setValue(newValue: number) {
@@ -74,5 +94,41 @@ export class StatTierSelectionComponent implements OnInit, OnChanges {
   toggleLockState() {
     this.locked = !this.locked;
     this.lockedChange.emit(this.locked);
+  }
+
+  /**
+   * Optimized hover handling for immediate response
+   */
+  handleHover(value: number): void {
+    if (value <= this.maximumAvailableTier * 10) {
+      // Use requestAnimationFrame for smoother UI updates
+      requestAnimationFrame(() => {
+        this.hoveredValue = value;
+      });
+    }
+  }
+
+  /**
+   * Clear hover state immediately
+   */
+  clearHover(): void {
+    this.hoveredValue = null;
+  }
+
+  commitValueEdit(value: string | number) {
+    let num = Number(value);
+    if (isNaN(num)) {
+      num = this.selectedValue;
+    }
+    num = Math.round(num);
+    num = Math.max(0, Math.min(num, this.maximumAvailableTier * 10));
+    this.selectedValue = num;
+    this.selectedTier = num / 10;
+    this.selectedTierChange.emit(this.selectedTier);
+    this.editingValue = false;
+  }
+
+  cancelValueEdit() {
+    this.editingValue = false;
   }
 }
