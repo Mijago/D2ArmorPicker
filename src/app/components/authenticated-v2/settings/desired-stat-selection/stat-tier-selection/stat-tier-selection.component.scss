@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.stat-tier-value {
+  min-width: 40px;
+  text-align: right;
+}
+
 .select-button {
   min-width: 38px;
 }
-
-:host .mat-button-toggle-label-content {
-  padding: 0 !important;
-  width: 100%;
-}
-
 .stat-button-content {
   width: 100%;
 }

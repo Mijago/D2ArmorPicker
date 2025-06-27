@@ -15,46 +15,25 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<ng-container *ngIf="!allowExactStats">
-  <mat-button-toggle-group appearance="standard" name="fontStyle">
-    <mat-button-toggle
-      (click)="setValue(i)"
-      *ngFor="let tier of TierRange; let i = index"
-      [checked]="selectedTier === i"
-      [class.isFromMod]="isAddedByConfigMods(i)"
-      [class.mat-button-toggle-checked]="selectedTier >= i"
-      [class.not-checked]="selectedTier < i"
-      [disabled]="maximumAvailableTier < i"
-      class="select-button"
-      value="{{ i }}">
-      <div
-        class="stat-button-content"
-        statCooldownTooltip
-        [tooltipTier]="i"
-        [tooltipDifferenceTier]="selectedTier"
-        [tooltipStat]="stat">
-        {{ i * 10 }}
-      </div>
-    </mat-button-toggle>
-  </mat-button-toggle-group>
-</ng-container>
-
-<ng-container *ngIf="allowExactStats">
-  <mat-form-field>
-    <input
-      matInput
-      type="number"
-      min="0"
-      [max]="maximumAvailableTier * 10"
-      [value]="selectedTier * 10"
-      (input)="setValueMob($event)" />
-  </mat-form-field>
-</ng-container>
-
-<button
-  mat-icon-button
-  (click)="toggleLockState()"
-  matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
-  <mat-icon *ngIf="!locked">lock_open</mat-icon>
-  <mat-icon *ngIf="locked" class="lock-locked">lock</mat-icon>
-</button>
+<div style="display: flex; align-items: center; gap: 12px">
+  <mat-slider
+    class="slider-entry"
+    style="width: 200px"
+    min="0"
+    max="200"
+    step="1"
+    showTickMarks="true"
+    aria-label="Stat Tier Slider">
+    <input matSliderThumb (valueChange)="setValueMob($event)" [(ngModel)]="selectedValue" />
+  </mat-slider>
+  <div class="stat-tier-value">
+    {{ selectedValue }}
+  </div>
+  <button
+    mat-icon-button
+    (click)="toggleLockState()"
+    matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
+    <mat-icon *ngIf="!locked">lock_open</mat-icon>
+    <mat-icon *ngIf="locked" class="lock-locked">lock</mat-icon>
+  </button>
+</div>

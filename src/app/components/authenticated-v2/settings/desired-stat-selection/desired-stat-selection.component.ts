@@ -42,7 +42,7 @@ function calcScore(d: number[]) {
 export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
-  maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
+  maximumPossibleTiers: number[] = [20, 20, 20, 20, 20, 20];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
   _statCombo3x100: ArmorStat[][] = [];
@@ -80,7 +80,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
-      const tiers = d.maximumPossibleTiers || [10, 10, 10, 10, 10, 10];
+      const tiers = d.maximumPossibleTiers || [20, 20, 20, 20, 20, 20];
       console.debug("Maximum Possible Tiers", { tiers: tiers });
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;

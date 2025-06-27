@@ -566,7 +566,7 @@ export function handlePermutation(
       if (
         distances[stat] == 0 &&
         !config.minimumStatTiers[stat].fixed &&
-        stats[stat] < 100 &&
+        stats[stat] < 200 &&
         stats[stat] % 10 > 0
       ) {
         optionalDistances[stat] = 10 - (stats[stat] % 10);
@@ -599,7 +599,7 @@ export function handlePermutation(
   // This code could be in its own function, but even calling an empty method
   // with the required parameters increases the runtime by A LOT (25% on my end)
   //################################################################################
-  //*/
+  /*
   const distancesTo100 = [
     Math.max(0, 100 - stats[0]),
     Math.max(0, 100 - stats[1]),
@@ -685,7 +685,7 @@ export function handlePermutation(
   //#################################################################################
   // Tier Availability Testing
   //#################################################################################
-  //*
+  /*
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
@@ -693,7 +693,7 @@ export function handlePermutation(
 
     const oldDistance = distances[stat];
     for (
-      let tier = 10;
+      let tier = 20;
       tier >= config.minimumStatTiers[stat as ArmorStat].value &&
       tier > runtime.maximumPossibleTiers[stat] / 10;
       tier--
@@ -725,7 +725,6 @@ export function handlePermutation(
   //#################################################################################
 
   //#endregion
-
   if (doNotOutput) return [];
 
   const usedArtifice = result.filter((d) => 0 == d % 3);
@@ -944,34 +943,22 @@ function get_mods_precalc(
 
 export function getSkillTier(stats: number[]) {
   return (
-    Math.floor(Math.min(100, stats[ArmorStat.Mobility]) / 10) +
-    Math.floor(Math.min(100, stats[ArmorStat.Resilience]) / 10) +
-    Math.floor(Math.min(100, stats[ArmorStat.Recovery]) / 10) +
-    Math.floor(Math.min(100, stats[ArmorStat.Discipline]) / 10) +
-    Math.floor(Math.min(100, stats[ArmorStat.Intellect]) / 10) +
-    Math.floor(Math.min(100, stats[ArmorStat.Strength]) / 10)
+    Math.floor(Math.min(200, stats[ArmorStat.Mobility]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.Resilience]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.Recovery]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.Discipline]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.Intellect]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.Strength]) / 10)
   );
 }
 
 export function getWaste(stats: number[]) {
   return (
-    (stats[ArmorStat.Mobility] > 100
-      ? stats[ArmorStat.Mobility] - 100
-      : stats[ArmorStat.Mobility] % 10) +
-    (stats[ArmorStat.Resilience] > 100
-      ? stats[ArmorStat.Resilience] - 100
-      : stats[ArmorStat.Resilience] % 10) +
-    (stats[ArmorStat.Recovery] > 100
-      ? stats[ArmorStat.Recovery] - 100
-      : stats[ArmorStat.Recovery] % 10) +
-    (stats[ArmorStat.Discipline] > 100
-      ? stats[ArmorStat.Discipline] - 100
-      : stats[ArmorStat.Discipline] % 10) +
-    (stats[ArmorStat.Intellect] > 100
-      ? stats[ArmorStat.Intellect] - 100
-      : stats[ArmorStat.Intellect] % 10) +
-    (stats[ArmorStat.Strength] > 100
-      ? stats[ArmorStat.Strength] - 100
-      : stats[ArmorStat.Strength] % 10)
+    Math.max(0, stats[ArmorStat.Mobility] - 200) +
+    Math.max(0, stats[ArmorStat.Resilience] - 200) +
+    Math.max(0, stats[ArmorStat.Recovery] - 200) +
+    Math.max(0, stats[ArmorStat.Discipline] - 200) +
+    Math.max(0, stats[ArmorStat.Intellect] - 200) +
+    Math.max(0, stats[ArmorStat.Strength] - 200)
   );
 }

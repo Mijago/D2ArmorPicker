@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { Component, EventEmitter, Input, OnChanges, Output } from "@angular/core";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -23,29 +23,36 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
   templateUrl: "./stat-tier-selection.component.html",
   styleUrls: ["./stat-tier-selection.component.scss"],
 })
-export class StatTierSelectionComponent {
+export class StatTierSelectionComponent implements OnChanges {
   readonly TierRange = new Array(11);
   @Input() allowExactStats: boolean = false;
   @Input() stat: ArmorStat = ArmorStat.Mobility;
   @Input() statsByMods: number = 0;
-  @Input() maximumAvailableTier: number = 10;
+  @Input() maximumAvailableTier: number = 20;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
   @Output() selectedTierChange = new EventEmitter<number>();
   @Output() lockedChange = new EventEmitter<boolean>();
 
+  selectedValue: number = 0;
+
   constructor() {}
+  //#endregion
+  ngOnChanges() {
+    this.selectedValue = this.selectedTier * 10;
+  }
 
   setValue(newValue: number) {
     if (newValue <= this.maximumAvailableTier) {
+      console.log("Setting value to: " + newValue);
       this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
     }
   }
 
   setValueMob(inputEvent: any) {
-    let newValue = parseInt(inputEvent.target.value);
-    newValue = Math.min(Math.max(newValue, 0), 100);
+    let newValue = parseInt(inputEvent);
+    newValue = Math.min(Math.max(newValue, 0), 200);
     this.setValue(newValue / 10);
   }
 
