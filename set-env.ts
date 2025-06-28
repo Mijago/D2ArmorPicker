@@ -19,8 +19,7 @@ const writeFile = require("fs").writeFile;
 
 const production = process.env["PRODUCTION"] === "1";
 const beta_branch = process.env["BETA"] === "1";
-//const canary_branch = process.env["CANARY"] === "1";
-const canary_branch = true;
+const canary_branch = process.env["CANARY"] === "1";
 
 const version = "2.9.1";
 
