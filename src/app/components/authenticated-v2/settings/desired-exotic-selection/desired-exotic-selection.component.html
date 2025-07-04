@@ -18,14 +18,14 @@
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
-    src="https://www.bungie.net/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg"
+    src="assets/icons/exotic_helmet.jpg"
     matTooltip="Force to use ANY exotic (that is NOT a class item)"
     #tooltip="matTooltip"
     (click)="selectExotic(-2, $event)" />
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-1) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
-    src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+    src="assets/icons/empty_modslot.png"
     matTooltip="Force to use NO exotic at all"
     #tooltip="matTooltip"
     (click)="selectExotic(-1, $event)" />
