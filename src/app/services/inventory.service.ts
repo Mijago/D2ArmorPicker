@@ -371,7 +371,6 @@ export class InventoryService {
         // already has a real copy of the same item.
         return purchasedItemInstance === undefined;
       });
-
       this.permutatorArmorItems = this.inventoryArmorItems.map((armor) => {
         return {
           id: armor.id,

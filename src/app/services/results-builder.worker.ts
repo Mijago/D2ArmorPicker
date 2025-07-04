@@ -306,6 +306,26 @@ addEventListener("message", async ({ data }) => {
   }
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
+  classItems = classItems.filter(
+    (item, index, self) =>
+      index ===
+      self.findIndex(
+        (i) =>
+          i.mobility === item.mobility &&
+          i.resilience === item.resilience &&
+          i.recovery === item.recovery &&
+          i.discipline === item.discipline &&
+          i.intellect === item.intellect &&
+          i.strength === item.strength &&
+          i.isExotic === item.isExotic &&
+          i.perk === item.perk
+      )
+  );
+  console.log(
+    `Thread#${threadSplit.current} class items2`,
+    classItems.length,
+    JSON.stringify(classItems)
+  );
   let amountExoticClassItems = classItems.filter((d) => d.isExotic).length;
   let amountLegendaryClassItems = classItems.length - amountExoticClassItems;
 
@@ -402,6 +422,14 @@ addEventListener("message", async ({ data }) => {
       ? hasMasterworkedClassItemExotic
       : hasMasterworkedClassItemLegendary || (!hasOneExotic && hasMasterworkedClassItemExotic);
 
+    // if slotCheckResult.requiredClassItemType is not Any, then create a tmp filtered list of class items
+    let classItems3: IPermutatorArmor[] = [];
+    if (slotCheckResult.requiredClassItemType != ArmorPerkOrSlot.Any) {
+      classItems3 = classItems.filter((d) => d.perk == slotCheckResult.requiredClassItemType);
+    } else {
+      classItems3 = [...classItems];
+    }
+
     const result = handlePermutation(
       runtime,
       config,
@@ -409,6 +437,7 @@ addEventListener("message", async ({ data }) => {
       gauntlet,
       chest,
       leg,
+      classItems3,
       constantBonus,
       constantAvailableModslots,
       doNotOutput,
@@ -487,6 +516,7 @@ export function handlePermutation(
   gauntlet: IPermutatorArmor,
   chest: IPermutatorArmor,
   leg: IPermutatorArmor,
+  classItems: IPermutatorArmor[],
   constantBonus: number[],
   availableModCost: number[],
   doNotOutput = false,
@@ -569,120 +599,152 @@ export function handlePermutation(
         optionalDistances[stat] = 10 - (stats[stat] % 10);
       }
     }
-  const totalOptionalDistances = optionalDistances.reduce((a, b) => a + b, 0);
-  // if the sum of distances is > (10*5)+(3*artificeCount), we can abort here
-  //const distanceSum = distances.reduce((a, b) => a + b, 0);
-  const distanceSum =
-    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-  if (distanceSum > 10 * 5 + 3 * availableArtificeCount) return null;
 
-  let result: StatModifier[] | null;
-  if (distanceSum == 0 && totalOptionalDistances == 0) result = [];
-  else
-    result = get_mods_precalc(
-      config,
-      distances,
-      optionalDistances,
-      availableArtificeCount,
-      availableModCost,
-      config.modOptimizationStrategy
-    );
-
-  if (result == null) return null;
-
-  //#region 3x100 and 4x100 optimization
-  //#################################################################################
-  // 3x100 and 4x100 optimization
-  // This code could be in its own function, but even calling an empty method
-  // with the required parameters increases the runtime by A LOT (25% on my end)
-  //################################################################################
-  /*
-  const distancesTo100 = [
-    Math.max(0, 100 - stats[0]),
-    Math.max(0, 100 - stats[1]),
-    Math.max(0, 100 - stats[2]),
-    Math.max(0, 100 - stats[3]),
-    Math.max(0, 100 - stats[4]),
-    Math.max(0, 100 - stats[5]),
-  ];
-
-  // find every combo of three stats which sum is less than 65; no duplicates
-  let combos3x100 = [];
-  let combos4x100 = [];
-  for (let i = 0; i < 4; i++) {
-    for (let j = i + 1; j < 5; j++) {
-      for (let k = j + 1; k < 6; k++) {
-        let dx = distances.slice();
-        dx[i] = distancesTo100[i];
-        dx[j] = distancesTo100[j];
-        dx[k] = distancesTo100[k];
-        let distanceSum = dx[0] + dx[1] + dx[2] + dx[3] + dx[4] + dx[5];
-        if (distanceSum <= 65) {
-          combos3x100.push([i, j, k]);
-
-          for (let l = k + 1; l < 6; l++) {
-            let dy = dx.slice();
-            dy[l] = distancesTo100[l];
-            let distanceSum = dy[0] + dy[1] + dy[2] + dy[3] + dy[4] + dy[5];
-            if (distanceSum <= 65) {
-              combos4x100.push([i, j, k, l]);
-            }
-          }
-        }
-      }
-    }
-  }
-  if (combos3x100.length > 0) {
-    // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos3x100) {
-      const newDistances = distances.slice();
-      for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
-      }
-      const mods = get_mods_precalc(
-        config,
-        newDistances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        availableModCost,
-        ModOptimizationStrategy.None
-      );
-      if (mods != null) {
-        runtime.statCombo3x100.add((1 << combo[0]) + (1 << combo[1]) + (1 << combo[2]));
-      }
-    }
-    // now validate the combos using get_mods_precalc with optimize=false
-    for (let combo of combos4x100) {
-      const newDistances = distances.slice();
-      for (let i of combo) {
-        newDistances[i] = distancesTo100[i];
-      }
-      const mods = get_mods_precalc(
-        config,
-        newDistances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        availableModCost,
-        ModOptimizationStrategy.None
-      );
-      if (mods != null) {
-        runtime.statCombo4x100.add(
-          (1 << combo[0]) + (1 << combo[1]) + (1 << combo[2]) + (1 << combo[3])
+  // Greedy class item selection with early termination
+  // Sort class items by their stat contribution to current gaps
+  const sortedClassItems = [...classItems].sort((a, b) => {
+    let scoreA = 0,
+      scoreB = 0;
+    for (let i = 0; i < 6; i++) {
+      if (distances[i] > 0) {
+        scoreA += Math.min(
+          distances[i],
+          a.mobility * (i === 0 ? 1 : 0) +
+            a.resilience * (i === 1 ? 1 : 0) +
+            a.recovery * (i === 2 ? 1 : 0) +
+            a.discipline * (i === 3 ? 1 : 0) +
+            a.intellect * (i === 4 ? 1 : 0) +
+            a.strength * (i === 5 ? 1 : 0)
+        );
+        scoreB += Math.min(
+          distances[i],
+          b.mobility * (i === 0 ? 1 : 0) +
+            b.resilience * (i === 1 ? 1 : 0) +
+            b.recovery * (i === 2 ? 1 : 0) +
+            b.discipline * (i === 3 ? 1 : 0) +
+            b.intellect * (i === 4 ? 1 : 0) +
+            b.strength * (i === 5 ? 1 : 0)
         );
       }
     }
-  }
-  //*/
-  //#################################################################################
-  // END OF 3x100 and 4x100 optimization
-  //#################################################################################
-  //#endregion
+    return scoreB - scoreA; // Higher contribution first
+  });
 
-  //#region Tier Availability Testing
-  //#################################################################################
-  // Tier Availability Testing
-  //#################################################################################
-  //*
+  // Try each class item with early termination
+  for (const classItem of sortedClassItems) {
+    const adjustedStats = [...stats];
+    adjustedStats[0] += classItem.mobility;
+    adjustedStats[1] += classItem.resilience;
+    adjustedStats[2] += classItem.recovery;
+    adjustedStats[3] += classItem.discipline;
+    adjustedStats[4] += classItem.intellect;
+    adjustedStats[5] += classItem.strength;
+
+    const adjustedStatsWithoutMods = [
+      statsWithoutMods[0] + classItem.mobility,
+      statsWithoutMods[1] + classItem.resilience,
+      statsWithoutMods[2] + classItem.recovery,
+      statsWithoutMods[3] + classItem.discipline,
+      statsWithoutMods[4] + classItem.intellect,
+      statsWithoutMods[5] + classItem.strength,
+    ];
+
+    // Recalculate distances with class item included
+    const newDistances = [
+      Math.max(0, config.minimumStatTiers[0].value * 10 - adjustedStats[0]),
+      Math.max(0, config.minimumStatTiers[1].value * 10 - adjustedStats[1]),
+      Math.max(0, config.minimumStatTiers[2].value * 10 - adjustedStats[2]),
+      Math.max(0, config.minimumStatTiers[3].value * 10 - adjustedStats[3]),
+      Math.max(0, config.minimumStatTiers[4].value * 10 - adjustedStats[4]),
+      Math.max(0, config.minimumStatTiers[5].value * 10 - adjustedStats[5]),
+    ];
+
+    if (config.onlyShowResultsWithNoWastedStats) {
+      for (let stat: ArmorStat = 0; stat < 6; stat++) {
+        const v = 10 - (adjustedStats[stat] % 10);
+        newDistances[stat] = Math.max(newDistances[stat], v < 10 ? v : 0);
+      }
+    }
+
+    // Recalculate optional distances
+    const newOptionalDistances = [0, 0, 0, 0, 0, 0];
+    if (config.tryLimitWastedStats)
+      for (let stat: ArmorStat = 0; stat < 6; stat++) {
+        if (
+          newDistances[stat] == 0 &&
+          !config.minimumStatTiers[stat].fixed &&
+          adjustedStats[stat] < 200 &&
+          adjustedStats[stat] % 10 > 0
+        ) {
+          newOptionalDistances[stat] = 10 - (adjustedStats[stat] % 10);
+        }
+      }
+
+    const newDistanceSum =
+      newDistances[0] +
+      newDistances[1] +
+      newDistances[2] +
+      newDistances[3] +
+      newDistances[4] +
+      newDistances[5];
+    const newTotalOptionalDistances = newOptionalDistances.reduce((a, b) => a + b, 0);
+
+    if (newDistanceSum > 10 * 5 + 3 * availableArtificeCount) continue;
+
+    // Perform Tier Availability Testing with this class item
+    performTierAvailabilityTesting(
+      runtime,
+      config,
+      adjustedStats,
+      newDistances,
+      availableArtificeCount,
+      availableModCost
+    );
+
+    let result: StatModifier[] | null;
+    if (newDistanceSum == 0 && newTotalOptionalDistances == 0) result = [];
+    else
+      result = get_mods_precalc(
+        config,
+        newDistances,
+        newOptionalDistances,
+        availableArtificeCount,
+        availableModCost,
+        config.modOptimizationStrategy
+      );
+
+    if (result !== null) {
+      // Found a working combination - return immediately with this class item
+      return tryCreateArmorSetWithClassItem(
+        runtime,
+        config,
+        helmet,
+        gauntlet,
+        chest,
+        leg,
+        classItem,
+        result,
+        adjustedStats,
+        adjustedStatsWithoutMods,
+        newDistances,
+        availableArtificeCount,
+        availableModCost,
+        doNotOutput
+      );
+    }
+  }
+
+  return null;
+}
+
+function performTierAvailabilityTesting(
+  runtime: any,
+  config: BuildConfiguration,
+  stats: number[],
+  distances: number[],
+  availableArtificeCount: number,
+  availableModCost: number[]
+): void {
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
       runtime.maximumPossibleTiers[stat] = stats[stat];
@@ -690,7 +752,6 @@ export function handlePermutation(
 
     if (stats[stat] >= 200) continue; // Already at max value, no need to test
 
-    const oldDistance = distances[stat];
     const minTier = config.minimumStatTiers[stat as ArmorStat].value * 10;
 
     // Binary search to find maximum possible value
@@ -709,12 +770,13 @@ export function handlePermutation(
 
       // Calculate distance needed to reach this value
       const v = 10 - (stats[stat] % 10);
-      distances[stat] = Math.max(v < 10 ? v : 0, mid - stats[stat]);
+      const testDistances = [...distances];
+      testDistances[stat] = Math.max(v < 10 ? v : 0, mid - stats[stat]);
 
       // Check if this value is achievable with mods
       const mods = get_mods_precalc(
         config,
-        distances,
+        testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
         availableModCost,
@@ -734,51 +796,63 @@ export function handlePermutation(
     // Verify the final value
     if (low > runtime.maximumPossibleTiers[stat] && low <= 200) {
       const v = 10 - (stats[stat] % 10);
-      distances[stat] = Math.max(v < 10 ? v : 0, low - stats[stat]);
+      const testDistances = [...distances];
+      testDistances[stat] = Math.max(v < 10 ? v : 0, low - stats[stat]);
       const mods = get_mods_precalc(
         config,
-        distances,
+        testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
         availableModCost,
         ModOptimizationStrategy.None
       );
       if (mods != null) {
-        console.debug(`Tier ${stat} can be reached with ${low} using mods`, mods);
         runtime.maximumPossibleTiers[stat] = low;
       }
     }
-
-    distances[stat] = oldDistance;
   }
-  //console.debug("b "+runtime.maximumPossibleTiers,n)
-  //console.warn(n)
-  //*/
-  //#################################################################################
-  // END OF Tier Availability Testing
-  //#################################################################################
+}
 
-  //#endregion
+function tryCreateArmorSetWithClassItem(
+  runtime: any,
+  config: BuildConfiguration,
+  helmet: IPermutatorArmor,
+  gauntlet: IPermutatorArmor,
+  chest: IPermutatorArmor,
+  leg: IPermutatorArmor,
+  classItem: IPermutatorArmor,
+  result: StatModifier[],
+  adjustedStats: number[],
+  statsWithoutMods: number[],
+  newDistances: number[],
+  availableArtificeCount: number,
+  availableModCost: number[],
+  doNotOutput: boolean
+): IPermutatorArmorSet | never[] {
   if (doNotOutput) return [];
 
-  const usedArtifice = result.filter((d) => 0 == d % 3);
-  const usedMods = result.filter((d) => 0 != d % 3);
+  const usedArtifice = result.filter((d: StatModifier) => 0 == d % 3);
+  const usedMods = result.filter((d: StatModifier) => 0 != d % 3);
 
+  // Apply mods to stats for final calculation
+  const finalStats = [...adjustedStats];
   for (let statModifier of result) {
     const stat = Math.floor((statModifier - 1) / 3);
-    stats[stat] += STAT_MOD_VALUES[statModifier][1];
+    finalStats[stat] += STAT_MOD_VALUES[statModifier][1];
   }
-  const waste1 = getWaste(stats);
-  if (config.onlyShowResultsWithNoWastedStats && waste1 > 0) return null;
+
+  const waste1 = getWaste(finalStats);
+  if (config.onlyShowResultsWithNoWastedStats && waste1 > 0) return [];
 
   return createArmorSet(
     helmet,
     gauntlet,
     chest,
     leg,
+    classItem,
     usedArtifice,
     usedMods,
-    stats,
+    finalStats,
     statsWithoutMods
   );
 }

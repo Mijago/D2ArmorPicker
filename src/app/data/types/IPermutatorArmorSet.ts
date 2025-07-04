@@ -16,13 +16,14 @@ export function createArmorSet(
   gauntlet: IPermutatorArmor,
   chest: IPermutatorArmor,
   leg: IPermutatorArmor,
+  classItem: IPermutatorArmor,
   usedArtifice: StatModifier[],
   usedMods: StatModifier[],
   statsWithMods: number[],
   statsWithoutMods: number[]
 ): IPermutatorArmorSet {
   return {
-    armor: [helmet.id, gauntlet.id, chest.id, leg.id],
+    armor: [helmet.id, gauntlet.id, chest.id, leg.id, classItem.id],
     useExoticClassItem: false,
     usedArtifice,
     usedMods,

@@ -122,7 +122,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // set this.showGenericClassItemRow to true if the number of non-empty elements in this.element.items is <= 4
-    this.ArmorItems = this.element?.items.filter((x) => x.slot != ArmorSlot.ArmorSlotClass) || null;
+    this.ArmorItems = this.element?.items || null; //.filter((x) => x.slot != ArmorSlot.ArmorSlotClass) || null;
     this.ExoticArmorItem = this.element?.items.filter((x) => x.exotic)[0] || null;
 
     this.exoticClassItemRow = this.element?.classItem.isExotic ?? false;

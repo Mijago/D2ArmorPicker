@@ -77,6 +77,7 @@ function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
+  // TODO: add t his for class items
   if (r.slot != ArmorSlot.ArmorSlotClass) {
     const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
     r.statPlugHashes = plugs;
@@ -88,6 +89,13 @@ function collectInvestmentStats(
       }
     }
   }
+
+  /*
+  if (r.slot == ArmorSlot.ArmorSlotClass) {
+    if (r.name == "Mimetic Savior Mark")
+      investmentStats[2996146975] += 10; // DEBUG
+  }
+  //*/
 
   applyInvestmentStats(r, investmentStats);
 }
