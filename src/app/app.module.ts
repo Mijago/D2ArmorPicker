@@ -122,14 +122,6 @@ const routes: Routes = [
         component: ArmorInvestigationPageComponent,
       },
       {
-        path: "theory",
-        // load TheorizerPageModule
-        loadChildren: () =>
-          import(
-            "./components/authenticated-v2/subpages/theorizer-page/theorizer-page.module"
-          ).then((m) => m.TheorizerPageModule),
-      },
-      {
         path: "account",
         component: AccountConfigPageComponent,
       },

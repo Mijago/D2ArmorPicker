@@ -35,7 +35,6 @@
     "angular-oauth2-oidc": "^12.1.0",
     "bungie-api-ts": "^5.1.0",
     "dexie": "^4.0.7",
-    "glpk.js": "^4.0.2",
     "highlight.run": "^9.7.1",
     "lodash": "^4.17.21",
     "lzutf8": "^0.6.3",
