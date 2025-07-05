@@ -175,28 +175,10 @@
                 <tr
                   *ngIf="idx1 > 0"
                   [matTooltip]="
-                    [
-                      '',
-                      'Mobility',
-                      'Resilience',
-                      'Recovery',
-                      'Discipline',
-                      'Intellect',
-                      'Strength',
-                    ][idx1]
+                    ['', 'Weapon', 'Health', 'Class', 'Grenade', 'Super', 'Melee'][idx1]
                   ">
                   <td>
-                    {{
-                      [
-                        "",
-                        "Mobility",
-                        "Resilience",
-                        "Recovery",
-                        "Discipline",
-                        "Intellect",
-                        "Strength",
-                      ][idx1]
-                    }}
+                    {{ ["", "Weapon", "Health", "Class", "Grenade", "Super", "Melee"][idx1] }}
                   </td>
                   <td width="100%">
                     <div class="stat-range">

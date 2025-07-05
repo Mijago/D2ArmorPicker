@@ -27,7 +27,7 @@ export class StatIconComponent {
   ArmorStatNames = ArmorStatNames;
   ArmorStatIconUrls = ArmorStatIconUrls;
   @Input()
-  stat: ArmorStat = ArmorStat.Mobility;
+  stat: ArmorStat = ArmorStat.StatWeapon;
 
   constructor() {}
 }

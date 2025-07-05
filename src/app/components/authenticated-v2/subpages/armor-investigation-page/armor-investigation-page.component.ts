@@ -47,12 +47,12 @@ type LocalArmorInfo = {
   styleUrls: ["./armor-investigation-page.component.css"],
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
-  minMobility: number | null = 0;
-  minResilience: number | null = 0;
-  minRecovery: number | null = 0;
-  minDiscipline: number | null = 0;
-  minIntellect: number | null = 0;
-  minStrength: number | null = 0;
+  minWeapon: number | null = 0;
+  minHealth: number | null = 0;
+  minClass: number | null = 0;
+  minGrenade: number | null = 0;
+  minSuper: number | null = 0;
+  minMelee: number | null = 0;
   anyPlugWithN: number | null = 0;
   anyPlugBelowN: number | null = 17;
   allPlugsWithN: number | null = 0;
@@ -66,7 +66,10 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   plugData: { [p: string]: IManifestArmor } = {};
 
-  constructor(public inventory: InventoryService, private db: DatabaseService) {}
+  constructor(
+    public inventory: InventoryService,
+    private db: DatabaseService
+  ) {}
 
   ngOnInit(): void {
     this.inventory.inventory
@@ -258,12 +261,12 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     this.armorHash = "";
     this.armorId = "";
 
-    this.minMobility = 0;
-    this.minResilience = 0;
-    this.minRecovery = 0;
-    this.minDiscipline = 0;
-    this.minIntellect = 0;
-    this.minStrength = 0;
+    this.minWeapon = 0;
+    this.minHealth = 0;
+    this.minClass = 0;
+    this.minGrenade = 0;
+    this.minSuper = 0;
+    this.minMelee = 0;
 
     this.anyPlugWithN = 0;
     this.anyPlugBelowN = 17;
@@ -279,12 +282,12 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
         (i) => (i.itemInstanceId || 0).toString().indexOf(this.armorId!) > -1
       );
 
-    armorItems = armorItems.filter((i) => i.totalStats[0] >= (this.minMobility || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[1] >= (this.minResilience || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[2] >= (this.minRecovery || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[3] >= (this.minDiscipline || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[4] >= (this.minIntellect || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[5] >= (this.minStrength || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[0] >= (this.minWeapon || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[1] >= (this.minHealth || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[2] >= (this.minClass || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[3] >= (this.minGrenade || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[4] >= (this.minSuper || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[5] >= (this.minMelee || 0));
     if ((this.anyPlugWithN ?? 0) > 0)
       armorItems = armorItems.filter(
         (i) =>

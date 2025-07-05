@@ -35,7 +35,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
 })
 export class StatTierSelectionComponent implements OnInit, OnChanges, AfterViewChecked {
   readonly TierRange = new Array(11);
-  @Input() stat: ArmorStat = ArmorStat.Mobility;
+  @Input() stat: ArmorStat = ArmorStat.StatWeapon;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 20;
   @Input() selectedTier: number = 0;

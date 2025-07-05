@@ -21,88 +21,88 @@ import { ModifierType, Subclass } from "./modifierType";
 
 export enum StatModifier {
   NONE,
-  MINOR_MOBILITY,
-  MAJOR_MOBILITY,
-  ARTIFICE_MOBILITY,
-  MINOR_RESILIENCE,
-  MAJOR_RESILIENCE,
-  ARTIFICE_RESILIENCE,
-  MINOR_RECOVERY,
-  MAJOR_RECOVERY,
-  ARTIFICE_RECOVERY,
-  MINOR_DISCIPLINE,
-  MAJOR_DISCIPLINE,
-  ARTIFICE_DISCIPLINE,
-  MINOR_INTELLECT,
-  MAJOR_INTELLECT,
-  ARTIFICE_INTELLECT,
-  MINOR_STRENGTH,
-  MAJOR_STRENGTH,
-  ARTIFICE_STRENGTH,
+  MINOR_WEAPON,
+  MAJOR_WEAPON,
+  ARTIFICE_WEAPON,
+  MINOR_HEALTH,
+  MAJOR_HEALTH,
+  ARTIFICE_HEALTH,
+  MINOR_CLASS,
+  MAJOR_CLASS,
+  ARTIFICE_CLASS,
+  MINOR_GRENADE,
+  MAJOR_GRENADE,
+  ARTIFICE_GRENADE,
+  MINOR_SUPER,
+  MAJOR_SUPER,
+  ARTIFICE_SUPER,
+  MINOR_MELEE,
+  MAJOR_MELEE,
+  ARTIFICE_MELEE,
 }
 
 export enum ArmorStat {
-  Mobility,
-  Resilience,
-  Recovery,
-  Discipline,
-  Intellect,
-  Strength,
+  StatWeapon,
+  StatHealth,
+  StatClass,
+  StatGrenade,
+  StatSuper,
+  StatMelee,
 }
 
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {
-  [StatModifier.NONE]: [ArmorStat.Strength, 0, 0, 0],
-  [StatModifier.MINOR_MOBILITY]: [ArmorStat.Mobility, 5, 1, 1703647492],
-  [StatModifier.MAJOR_MOBILITY]: [ArmorStat.Mobility, 10, 3, 4183296050],
-  [StatModifier.ARTIFICE_MOBILITY]: [ArmorStat.Mobility, 3, 0, 2322202118],
-  [StatModifier.MINOR_RESILIENCE]: [ArmorStat.Resilience, 5, 2, 2532323436],
-  [StatModifier.MAJOR_RESILIENCE]: [ArmorStat.Resilience, 10, 4, 1180408010],
-  [StatModifier.ARTIFICE_RESILIENCE]: [ArmorStat.Resilience, 3, 0, 199176566],
-  [StatModifier.MINOR_RECOVERY]: [ArmorStat.Recovery, 5, 2, 1237786518],
-  [StatModifier.MAJOR_RECOVERY]: [ArmorStat.Recovery, 10, 4, 4204488676],
-  [StatModifier.ARTIFICE_RECOVERY]: [ArmorStat.Recovery, 3, 0, 539459624],
-  [StatModifier.MINOR_DISCIPLINE]: [ArmorStat.Discipline, 5, 1, 4021790309],
-  [StatModifier.MAJOR_DISCIPLINE]: [ArmorStat.Discipline, 10, 3, 1435557120],
-  [StatModifier.ARTIFICE_DISCIPLINE]: [ArmorStat.Discipline, 3, 0, 617569843],
-  [StatModifier.MINOR_INTELLECT]: [ArmorStat.Intellect, 5, 2, 350061697],
-  [StatModifier.MAJOR_INTELLECT]: [ArmorStat.Intellect, 10, 4, 2724608735],
-  [StatModifier.ARTIFICE_INTELLECT]: [ArmorStat.Intellect, 3, 0, 3160845295],
-  [StatModifier.MINOR_STRENGTH]: [ArmorStat.Strength, 5, 1, 2639422088],
-  [StatModifier.MAJOR_STRENGTH]: [ArmorStat.Strength, 10, 3, 4287799666],
-  [StatModifier.ARTIFICE_STRENGTH]: [ArmorStat.Strength, 3, 0, 2507624050],
+  [StatModifier.NONE]: [ArmorStat.StatMelee, 0, 0, 0],
+  [StatModifier.MINOR_WEAPON]: [ArmorStat.StatWeapon, 5, 1, 1703647492],
+  [StatModifier.MAJOR_WEAPON]: [ArmorStat.StatWeapon, 10, 3, 4183296050],
+  [StatModifier.ARTIFICE_WEAPON]: [ArmorStat.StatWeapon, 3, 0, 2322202118],
+  [StatModifier.MINOR_HEALTH]: [ArmorStat.StatHealth, 5, 2, 2532323436],
+  [StatModifier.MAJOR_HEALTH]: [ArmorStat.StatHealth, 10, 4, 1180408010],
+  [StatModifier.ARTIFICE_HEALTH]: [ArmorStat.StatHealth, 3, 0, 199176566],
+  [StatModifier.MINOR_CLASS]: [ArmorStat.StatClass, 5, 2, 1237786518],
+  [StatModifier.MAJOR_CLASS]: [ArmorStat.StatClass, 10, 4, 4204488676],
+  [StatModifier.ARTIFICE_CLASS]: [ArmorStat.StatClass, 3, 0, 539459624],
+  [StatModifier.MINOR_GRENADE]: [ArmorStat.StatGrenade, 5, 1, 4021790309],
+  [StatModifier.MAJOR_GRENADE]: [ArmorStat.StatGrenade, 10, 3, 1435557120],
+  [StatModifier.ARTIFICE_GRENADE]: [ArmorStat.StatGrenade, 3, 0, 617569843],
+  [StatModifier.MINOR_SUPER]: [ArmorStat.StatSuper, 5, 2, 350061697],
+  [StatModifier.MAJOR_SUPER]: [ArmorStat.StatSuper, 10, 4, 2724608735],
+  [StatModifier.ARTIFICE_SUPER]: [ArmorStat.StatSuper, 3, 0, 3160845295],
+  [StatModifier.MINOR_MELEE]: [ArmorStat.StatMelee, 5, 1, 2639422088],
+  [StatModifier.MAJOR_MELEE]: [ArmorStat.StatMelee, 10, 3, 4287799666],
+  [StatModifier.ARTIFICE_MELEE]: [ArmorStat.StatMelee, 3, 0, 2507624050],
 };
 
 export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
-  [ArmorStat.Mobility]: "Mobility",
-  [ArmorStat.Resilience]: "Resilience",
-  [ArmorStat.Recovery]: "Recovery",
-  [ArmorStat.Discipline]: "Discipline",
-  [ArmorStat.Intellect]: "Intellect",
-  [ArmorStat.Strength]: "Strength",
+  [ArmorStat.StatWeapon]: "Weapon",
+  [ArmorStat.StatHealth]: "Health",
+  [ArmorStat.StatClass]: "Class",
+  [ArmorStat.StatGrenade]: "Grenade",
+  [ArmorStat.StatSuper]: "Super",
+  [ArmorStat.StatMelee]: "Melee",
 };
 
 export const ArmorStatHashes: EnumDictionary<ArmorStat, number> = {
-  [ArmorStat.Mobility]: 2996146975,
-  [ArmorStat.Resilience]: 392767087,
-  [ArmorStat.Recovery]: 1943323491,
-  [ArmorStat.Discipline]: 1735777505,
-  [ArmorStat.Intellect]: 144602215,
-  [ArmorStat.Strength]: 4244567218,
+  [ArmorStat.StatWeapon]: 2996146975,
+  [ArmorStat.StatHealth]: 392767087,
+  [ArmorStat.StatClass]: 1943323491,
+  [ArmorStat.StatGrenade]: 1735777505,
+  [ArmorStat.StatSuper]: 144602215,
+  [ArmorStat.StatMelee]: 4244567218,
 };
 
 export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
-  [ArmorStat.Mobility]:
+  [ArmorStat.StatWeapon]:
     "https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png",
-  [ArmorStat.Resilience]:
+  [ArmorStat.StatHealth]:
     "https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png",
-  [ArmorStat.Recovery]:
+  [ArmorStat.StatClass]:
     "https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png",
-  [ArmorStat.Discipline]:
+  [ArmorStat.StatGrenade]:
     "https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png",
-  [ArmorStat.Intellect]:
+  [ArmorStat.StatSuper]:
     "https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png",
-  [ArmorStat.Strength]:
+  [ArmorStat.StatMelee]:
     "https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png",
 };
 

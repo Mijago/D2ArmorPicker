@@ -538,7 +538,7 @@ export function handlePermutation(
   }
   const stats = getStatSum(items);
   stats[0] += totalStatBonus;
-  stats[1] += totalStatBonus + (!items[2].isExotic && config.addConstent1Resilience ? 1 : 0);
+  stats[1] += totalStatBonus + (!items[2].isExotic && config.addConstent1Health ? 1 : 0);
   stats[2] += totalStatBonus;
   stats[3] += totalStatBonus;
   stats[4] += totalStatBonus;
@@ -1047,22 +1047,22 @@ function get_mods_precalc(
 
 export function getSkillTier(stats: number[]) {
   return (
-    Math.floor(Math.min(200, stats[ArmorStat.Mobility]) / 10) +
-    Math.floor(Math.min(200, stats[ArmorStat.Resilience]) / 10) +
-    Math.floor(Math.min(200, stats[ArmorStat.Recovery]) / 10) +
-    Math.floor(Math.min(200, stats[ArmorStat.Discipline]) / 10) +
-    Math.floor(Math.min(200, stats[ArmorStat.Intellect]) / 10) +
-    Math.floor(Math.min(200, stats[ArmorStat.Strength]) / 10)
+    Math.floor(Math.min(200, stats[ArmorStat.StatWeapon]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.StatHealth]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.StatClass]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.StatGrenade]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.StatSuper]) / 10) +
+    Math.floor(Math.min(200, stats[ArmorStat.StatMelee]) / 10)
   );
 }
 
 export function getWaste(stats: number[]) {
   return (
-    Math.max(0, stats[ArmorStat.Mobility] - 200) +
-    Math.max(0, stats[ArmorStat.Resilience] - 200) +
-    Math.max(0, stats[ArmorStat.Recovery] - 200) +
-    Math.max(0, stats[ArmorStat.Discipline] - 200) +
-    Math.max(0, stats[ArmorStat.Intellect] - 200) +
-    Math.max(0, stats[ArmorStat.Strength] - 200)
+    Math.max(0, stats[ArmorStat.StatWeapon] - 200) +
+    Math.max(0, stats[ArmorStat.StatHealth] - 200) +
+    Math.max(0, stats[ArmorStat.StatClass] - 200) +
+    Math.max(0, stats[ArmorStat.StatGrenade] - 200) +
+    Math.max(0, stats[ArmorStat.StatSuper] - 200) +
+    Math.max(0, stats[ArmorStat.StatMelee] - 200)
   );
 }

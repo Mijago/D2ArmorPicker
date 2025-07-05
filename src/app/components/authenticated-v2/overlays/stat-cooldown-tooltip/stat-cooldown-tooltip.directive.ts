@@ -41,7 +41,7 @@ export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
   @Input() showToolTip: boolean = true;
 
   @Input() tooltipTier: number = 0;
-  @Input() tooltipStat: ArmorStat = ArmorStat.Mobility;
+  @Input() tooltipStat: ArmorStat = ArmorStat.StatWeapon;
   @Input() tooltipDifferenceTier: number = 0; // the tier we use to show a difference for
 
   //If this is specified then specified template will be rendered in the tooltip

@@ -138,7 +138,7 @@
             #tooltip="matTooltip"
             *ngIf="_config_modslotLimitation.length > 0"
             disableRipple
-            matTooltip="This setting limits available stat mod types, like major Intellect or Recovery."
+            matTooltip="This setting limits available stat mod types, like major Super or Class."
             >Stat Mod Limitation
           </mat-chip-option>
           <mat-chip-option
@@ -243,108 +243,108 @@
         <!--- Note that these columns can be defined in any order.
          The actual rendered columns are set as a property on the row definition" -->
         <!-- Name Column -->
-        <ng-container matColumnDef="mobility">
+        <ng-container matColumnDef="weapon">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Mobility"
-            matTooltip="The mobility of this armor combination."
-            >Mobility
+            mat-sort-header="Weapon"
+            matTooltip="The weapon Stat of this armor combination."
+            >Weapon
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Mobility] }}
+            >{{ element.stats[ArmorStat.StatWeapon] }}
             <img
-              alt="Mobility"
+              alt="Weapon"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
           </td>
         </ng-container>
 
         <!-- Name Column -->
-        <ng-container matColumnDef="resilience">
+        <ng-container matColumnDef="health">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Resilience"
-            matTooltip="The resilience of this armor combination.">
-            Resilience
+            mat-sort-header="Health"
+            matTooltip="The  stat of this armor combination.">
+            Health
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Resilience] }}
+            >{{ element.stats[ArmorStat.StatHealth] }}
             <img
-              alt="Resilience"
+              alt="Health"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
           </td>
         </ng-container>
 
         <!-- Name Column -->
-        <ng-container matColumnDef="recovery">
+        <ng-container matColumnDef="class">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Recovery"
-            matTooltip="The recovery of this armor combination.">
-            Recovery
+            mat-sort-header="Class"
+            matTooltip="The class stat of this armor combination.">
+            Class
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Recovery] }}
+            >{{ element.stats[ArmorStat.StatClass] }}
             <img
-              alt="Recovery"
+              alt="Class"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
           </td>
         </ng-container>
 
         <!-- Name Column -->
-        <ng-container matColumnDef="discipline">
+        <ng-container matColumnDef="grenade">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Discipline"
-            matTooltip="The discipline of this armor combination.">
-            Discipline
+            mat-sort-header="Grenade"
+            matTooltip="The grenade stat of this armor combination.">
+            Grenade
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Discipline] }}
+            >{{ element.stats[ArmorStat.StatGrenade] }}
             <img
-              alt="Discipline"
+              alt="Grenade"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
           </td>
         </ng-container>
 
         <!-- Name Column -->
-        <ng-container matColumnDef="intellect">
+        <ng-container matColumnDef="super">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Intellect"
-            matTooltip="The intellect of this armor combination.">
-            Intellect
+            mat-sort-header="Super"
+            matTooltip="The super stat of this armor combination.">
+            Super
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Intellect] }}
+            >{{ element.stats[ArmorStat.StatSuper] }}
             <img
-              alt="Intellect"
+              alt="Super"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
           </td>
         </ng-container>
 
         <!-- Name Column -->
-        <ng-container matColumnDef="strength">
+        <ng-container matColumnDef="melee">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Strength"
-            matTooltip="The strength of this armor combination."
-            >Strength
+            mat-sort-header="Melee"
+            matTooltip="The melee stat of this armor combination."
+            >Melee
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.Strength] }}
+            >{{ element.stats[ArmorStat.StatMelee] }}
             <img
-              alt="Strength"
+              alt="Melee"
               class="statIcon"
               src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
           </td>

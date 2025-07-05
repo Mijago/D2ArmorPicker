@@ -62,56 +62,56 @@
         </td>
       </tr>
       <tr>
-        <td> Mobility: </td>
-        <td> {{ minMobility }}</td>
+        <td> Weapon: </td>
+        <td> {{ minWeapon }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minMobility"
+            ><input matSliderThumb [(value)]="minWeapon"
           /></mat-slider>
         </td>
 
-        <td> Resilience: </td>
-        <td> {{ minResilience }}</td>
+        <td> Health: </td>
+        <td> {{ minHealth }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minResilience"
+            ><input matSliderThumb [(value)]="minHealth"
           /></mat-slider>
         </td>
 
-        <td> Recovery: </td>
-        <td> {{ minRecovery }}</td>
+        <td> Class: </td>
+        <td> {{ minClass }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minRecovery"
+            ><input matSliderThumb [(value)]="minClass"
           /></mat-slider>
         </td>
       </tr>
       <tr>
-        <td> Discipline: </td>
-        <td> {{ minDiscipline }}</td>
+        <td> Grenade: </td>
+        <td> {{ minGrenade }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minDiscipline"
+            ><input matSliderThumb [(value)]="minGrenade"
           /></mat-slider>
         </td>
-        <td> Intellect: </td>
-        <td> {{ minIntellect }}</td>
+        <td> Super: </td>
+        <td> {{ minSuper }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minIntellect"
+            ><input matSliderThumb [(value)]="minSuper"
           /></mat-slider>
         </td>
-        <td> Strength: </td>
-        <td>{{ minStrength }}</td>
+        <td> Melee: </td>
+        <td>{{ minMelee }}</td>
         <td>
           <!-- TODO: The 'tickInterval' property no longer exists -->
           <mat-slider max="32" min="0" step="1" thumbLabel
-            ><input matSliderThumb [(value)]="minStrength"
+            ><input matSliderThumb [(value)]="minMelee"
           /></mat-slider>
         </td>
       </tr>
@@ -217,18 +217,9 @@
                 ];
                 let idx1 = index
               ">
-              <tr
-                [matTooltip]="
-                  ['Mobility', 'Resilience', 'Recovery', 'Discipline', 'Intellect', 'Strength'][
-                    idx1
-                  ]
-                ">
+              <tr [matTooltip]="['Weapon', 'Health', 'Class', 'Grenade', 'Super', 'Melee'][idx1]">
                 <td>
-                  {{
-                    ["Mobility", "Resilience", "Recovery", "Discipline", "Intellect", "Strength"][
-                      idx1
-                    ]
-                  }}
+                  {{ ["Weapon", "Health", "Class", "Grenade", "Super", "Melee"][idx1] }}
                 </td>
                 <td>{{ armor.totalStats[idx1] | number: "1.0-0" }}</td>
                 <td width="100%">

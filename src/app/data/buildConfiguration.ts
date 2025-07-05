@@ -28,12 +28,12 @@ export function getDefaultStatDict(
   value: number
 ): EnumDictionary<ArmorStat, FixableSelection<number>> {
   return {
-    [ArmorStat.Mobility]: { fixed: false, value: value },
-    [ArmorStat.Resilience]: { fixed: false, value: value },
-    [ArmorStat.Recovery]: { fixed: false, value: value },
-    [ArmorStat.Discipline]: { fixed: false, value: value },
-    [ArmorStat.Intellect]: { fixed: false, value: value },
-    [ArmorStat.Strength]: { fixed: false, value: value },
+    [ArmorStat.StatWeapon]: { fixed: false, value: value },
+    [ArmorStat.StatHealth]: { fixed: false, value: value },
+    [ArmorStat.StatClass]: { fixed: false, value: value },
+    [ArmorStat.StatGrenade]: { fixed: false, value: value },
+    [ArmorStat.StatSuper]: { fixed: false, value: value },
+    [ArmorStat.StatMelee]: { fixed: false, value: value },
   };
 }
 
@@ -46,7 +46,7 @@ export class BuildConfiguration {
   characterClass: DestinyClass = DestinyClass.Unknown;
 
   // Add constant +1 strength
-  addConstent1Resilience = false;
+  addConstent1Health = false;
 
   assumeClassItemIsArtifice = false;
   assumeEveryLegendaryIsArtifice = false;
@@ -57,12 +57,12 @@ export class BuildConfiguration {
 
   // TODO: convert minimumStatTier -> minimumStatTiers for old configs
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = {
-    [ArmorStat.Mobility]: { fixed: false, value: 0 },
-    [ArmorStat.Resilience]: { fixed: false, value: 0 },
-    [ArmorStat.Recovery]: { fixed: false, value: 0 },
-    [ArmorStat.Discipline]: { fixed: false, value: 0 },
-    [ArmorStat.Intellect]: { fixed: false, value: 0 },
-    [ArmorStat.Strength]: { fixed: false, value: 0 },
+    [ArmorStat.StatWeapon]: { fixed: false, value: 0 },
+    [ArmorStat.StatHealth]: { fixed: false, value: 0 },
+    [ArmorStat.StatClass]: { fixed: false, value: 0 },
+    [ArmorStat.StatGrenade]: { fixed: false, value: 0 },
+    [ArmorStat.StatSuper]: { fixed: false, value: 0 },
+    [ArmorStat.StatMelee]: { fixed: false, value: 0 },
   };
   maximumStatMods: number = 5; // TODO: remove
 
@@ -112,7 +112,7 @@ export class BuildConfiguration {
     return {
       enabledMods: [],
       disabledItems: [],
-      addConstent1Resilience: false,
+      addConstent1Health: false,
       assumeEveryLegendaryIsArtifice: false,
       assumeEveryExoticIsArtifice: false,
       assumeClassItemIsArtifice: false,

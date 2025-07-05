@@ -123,12 +123,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
   expandedElement: ResultDefinition | null = null;
   shownColumns = [
     "exotic",
-    "mobility",
-    "resilience",
-    "recovery",
-    "discipline",
-    "intellect",
-    "strength",
+    "weapon",
+    "health",
+    "class",
+    "grenade",
+    "super",
+    "melee",
     "tiers",
     "mods",
     "dropdown",
@@ -173,12 +173,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
       let columns = [
         "exotic",
-        "mobility",
-        "resilience",
-        "recovery",
-        "discipline",
-        "intellect",
-        "strength",
+        "weapon",
+        "health",
+        "class",
+        "grenade",
+        "super",
+        "melee",
         c.showPotentialTierColumn ? "potential_tiers" : "tiers",
         "mods",
       ];
@@ -204,18 +204,18 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
       switch (sortHeaderId) {
-        case "Mobility":
-          return data.stats[ArmorStat.Mobility];
-        case "Resilience":
-          return data.stats[ArmorStat.Resilience];
-        case "Recovery":
-          return data.stats[ArmorStat.Recovery];
-        case "Discipline":
-          return data.stats[ArmorStat.Discipline];
-        case "Intellect":
-          return data.stats[ArmorStat.Intellect];
-        case "Strength":
-          return data.stats[ArmorStat.Strength];
+        case "Weapon":
+          return data.stats[ArmorStat.StatWeapon];
+        case "Health":
+          return data.stats[ArmorStat.StatHealth];
+        case "Class":
+          return data.stats[ArmorStat.StatClass];
+        case "Grenade":
+          return data.stats[ArmorStat.StatGrenade];
+        case "Super":
+          return data.stats[ArmorStat.StatSuper];
+        case "Melee":
+          return data.stats[ArmorStat.StatMelee];
         case "Tiers":
           return data.tiers;
         case "Max Tiers":

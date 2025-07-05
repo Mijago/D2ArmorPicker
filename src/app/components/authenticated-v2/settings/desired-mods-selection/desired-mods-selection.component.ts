@@ -42,15 +42,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
-  displayedColumns = [
-    "name",
-    "mobility",
-    "resilience",
-    "recovery",
-    "discipline",
-    "intellect",
-    "strength",
-  ];
+  displayedColumns = ["name", "weapon", "health", "class", "grenade", "super", "melee"];
   private selectedClass: DestinyClass = DestinyClass.Unknown;
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
@@ -122,9 +114,11 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       .filter((v) => {
         if (v.stat == type) return true;
         if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat) {
-          if (this.selectedClass == DestinyClass.Titan && type == ArmorStat.Resilience) return true;
-          if (this.selectedClass == DestinyClass.Hunter && type == ArmorStat.Mobility) return true;
-          if (this.selectedClass == DestinyClass.Warlock && type == ArmorStat.Recovery) return true;
+          if (this.selectedClass == DestinyClass.Titan && type == ArmorStat.StatHealth) return true;
+          if (this.selectedClass == DestinyClass.Hunter && type == ArmorStat.StatWeapon)
+            return true;
+          if (this.selectedClass == DestinyClass.Warlock && type == ArmorStat.StatClass)
+            return true;
         }
         return false;
       })
