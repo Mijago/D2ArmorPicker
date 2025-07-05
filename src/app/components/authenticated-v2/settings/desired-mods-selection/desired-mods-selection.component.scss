@@ -43,12 +43,12 @@
   height: 30px;
 }
 
-.mat-column-mobility,
-.mat-column-resilience,
-.mat-column-recovery,
-.mat-column-discipline,
-.mat-column-intellect,
-.mat-column-strength,
+.mat-column-weapon,
+.mat-column-health,
+.mat-column-class,
+.mat-column-grenade,
+.mat-column-super,
+.mat-column-melee,
 .mat-column-cost {
   text-align: center;
 }
@@ -57,9 +57,9 @@
   background-color: #494949;
 }
 
-.mat-column-mobility,
-.mat-column-recovery,
-.mat-column-intellect {
+.mat-column-weapon,
+.mat-column-class,
+.mat-column-super {
   background-color: #464646;
 }
 
@@ -121,9 +121,9 @@ td.mat-footer-cell:last-of-type {
 }
 
 .selected,
-.selected .mat-column-mobility,
-.selected .mat-column-recovery,
-.selected .mat-column-intellect {
+.selected .mat-column-weapon,
+.selected .mat-column-class,
+.selected .mat-column-super {
   background-color: rgba(137, 178, 255, 0.11);
 }
 

@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ArmorStat } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
@@ -57,7 +57,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     this.stats = Object.keys(ArmorStat)
       .filter((value) => !isNaN(Number(value)))
       .map((value) => {
-        return { name: (ArmorStat as any)[value], value: +value };
+        return { name: (ArmorStatNames as any)[+value], value: +value };
       });
   }
 
