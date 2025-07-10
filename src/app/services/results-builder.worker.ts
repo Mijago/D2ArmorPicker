@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// region Imports
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IDestinyArmor } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
@@ -40,7 +41,9 @@ import {
   createArmorSet,
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
+// endregion Imports
 
+// region Validation and Preparation Functions
 function checkSlots(
   config: BuildConfiguration,
   constantModslotRequirement: Map<ArmorPerkOrSlot, number>,
@@ -242,7 +245,9 @@ function estimateCombinationsToBeChecked(
   totalCalculations += legendaryHelmets * legendaryGauntlets * legendaryChests * legendaryLegs;
   return totalCalculations;
 }
+// endregion Validation and Preparation Functions
 
+// region Main Worker Event Handler
 addEventListener("message", async ({ data }) => {
   if (data.type != "builderRequest") return;
 
@@ -495,7 +500,9 @@ addEventListener("message", async ({ data }) => {
     },
   });
 });
+// endregion Main Worker Event Handler
 
+// region Core Calculation Functions
 export function getStatSum(
   items: IDestinyArmor[]
 ): [number, number, number, number, number, number] {
@@ -737,6 +744,7 @@ export function handlePermutation(
   return null;
 }
 
+// region Tier Availability Testing
 function performTierAvailabilityTesting(
   runtime: any,
   config: BuildConfiguration,
@@ -857,6 +865,7 @@ function tryCreateArmorSetWithClassItem(
   );
 }
 
+// region Mod Calculation Functions
 function get_mods_precalc(
   config: BuildConfiguration,
   distances: number[],
@@ -1066,3 +1075,4 @@ export function getWaste(stats: number[]) {
     Math.max(0, stats[ArmorStat.StatMelee] - 200)
   );
 }
+// endregion Core Calculation Functions
