@@ -51,7 +51,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public statValues: number[] = [];
   public editingValue: boolean = false;
 
-  public currentAnimatedMaxTier: number = 0;
+  public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
 
   constructor() {}
@@ -59,7 +59,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   ngOnInit(): void {
     // Generate values from 0 to 200
     this.statValues = Array.from({ length: 201 }, (_, i) => i);
-    this.currentAnimatedMaxTier = this.maximumAvailableTier;
+    this.currentAnimatedMaxValue = this.maximumAvailableTier * 10;
   }
 
   ngOnChanges() {
@@ -151,28 +151,28 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     // Clear any existing animation timeouts
     this.clearAnimationTimeouts();
 
-    const targetMaxTier = this.maximumAvailableTier;
-    const startTier = this.currentAnimatedMaxTier;
+    const targetMaxValue = this.maximumAvailableTier * 10;
+    const startValue = this.currentAnimatedMaxValue;
 
-    if (startTier === targetMaxTier) {
+    if (startValue === targetMaxValue) {
       return; // No change needed
     }
 
-    // Skip animation if going from 0 to initial value (e.g., 0->20)
-    if (startTier === 0) {
-      this.currentAnimatedMaxTier = targetMaxTier;
+    // Skip animation if going from 0 to initial value (e.g., 0->200)
+    if (startValue === 0) {
+      this.currentAnimatedMaxValue = targetMaxValue;
       return;
     }
 
-    const direction = targetMaxTier > startTier ? 1 : -1;
-    const steps = Math.abs(targetMaxTier - startTier);
+    const direction = targetMaxValue > startValue ? 1 : -1;
+    const steps = Math.abs(targetMaxValue - startValue);
 
     // Animation delay between each step (in milliseconds)
     const stepDelay = 15; // Fast animation
 
     for (let i = 1; i <= steps; i++) {
       const timeout = window.setTimeout(() => {
-        this.currentAnimatedMaxTier = startTier + direction * i;
+        this.currentAnimatedMaxValue = startValue + direction * i;
 
         // Force change detection to update the UI
         // This will trigger the CSS class updates through the template bindings
@@ -194,9 +194,8 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
    * Check if a stat value is currently animating (for smooth transitions)
    */
   isStatValueAnimating(value: number): boolean {
-    const tierValue = value / 10;
-    const currentMax = this.currentAnimatedMaxTier;
-    const targetMax = this.maximumAvailableTier;
+    const currentMax = this.currentAnimatedMaxValue;
+    const targetMax = this.maximumAvailableTier * 10;
 
     if (currentMax === targetMax) {
       return false;
@@ -206,6 +205,6 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     const minRange = Math.min(currentMax, targetMax);
     const maxRange = Math.max(currentMax, targetMax);
 
-    return tierValue > minRange && tierValue <= maxRange;
+    return value > minRange && value <= maxRange;
   }
 }
