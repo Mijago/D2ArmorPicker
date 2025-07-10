@@ -698,16 +698,6 @@ export function handlePermutation(
 
     if (newDistanceSum > 10 * 5 + 3 * availableArtificeCount) continue;
 
-    // Perform Tier Availability Testing with this class item
-    performTierAvailabilityTesting(
-      runtime,
-      config,
-      adjustedStats,
-      newDistances,
-      availableArtificeCount,
-      availableModCost
-    );
-
     let result: StatModifier[] | null;
     if (newDistanceSum == 0 && newTotalOptionalDistances == 0) result = [];
     else
@@ -721,6 +711,16 @@ export function handlePermutation(
       );
 
     if (result !== null) {
+      // Perform Tier Availability Testing with this class item
+      performTierAvailabilityTesting(
+        runtime,
+        config,
+        adjustedStats,
+        newDistances,
+        availableArtificeCount,
+        availableModCost
+      );
+
       // Found a working combination - return immediately with this class item
       return tryCreateArmorSetWithClassItem(
         runtime,
