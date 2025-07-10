@@ -156,6 +156,12 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
       return; // No change needed
     }
 
+    // Skip animation if going from 0 to initial value (e.g., 0->20)
+    if (startTier === 0) {
+      this.currentAnimatedMaxTier = targetMaxTier;
+      return;
+    }
+
     const direction = targetMaxTier > startTier ? 1 : -1;
     const steps = Math.abs(targetMaxTier - startTier);
 
