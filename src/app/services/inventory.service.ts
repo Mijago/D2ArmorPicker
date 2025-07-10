@@ -86,6 +86,9 @@ export class InventoryService {
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
 
+  private _reachableTiers: BehaviorSubject<number[]>;
+  public readonly reachableTiers: Observable<number[]>;
+
   private _calculationProgress: Subject<number> = new Subject<number>();
   public readonly calculationProgress: Observable<number> =
     this._calculationProgress.asObservable();
@@ -121,6 +124,9 @@ export class InventoryService {
       results: this.allArmorResults,
     } as info);
     this.armorResults = this._armorResults.asObservable();
+
+    this._reachableTiers = new BehaviorSubject([0, 0, 0, 0, 0, 0]);
+    this.reachableTiers = this._reachableTiers.asObservable();
 
     this.workers = [];
     let dataAlreadyFetched = false;
@@ -399,6 +405,9 @@ export class InventoryService {
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
       const threadCalculationDoneArr = [...Array(nthreads).keys()].map(() => 0);
+      const threadCalculationReachableTiers: number[][] = [...Array(nthreads).keys()].map(() =>
+        Array(6).fill(0)
+      );
       let oldProgressValue = 0;
 
       // Improve per thread performance by shuffling the inventory
@@ -417,8 +426,17 @@ export class InventoryService {
           let data = ev.data;
           threadCalculationDoneArr[n] = data.checkedCalculations;
           threadCalculationAmountArr[n] = data.estimatedCalculations;
+          threadCalculationReachableTiers[n] =
+            data.reachableTiers || data.runtime.maximumPossibleTiers;
           const sumTotal = threadCalculationAmountArr.reduce((a, b) => a + b, 0);
           const sumDone = threadCalculationDoneArr.reduce((a, b) => a + b, 0);
+          const minReachableTiers = threadCalculationReachableTiers
+            .reduce((minArr, currArr) => {
+              // Using MAX would be more accurate, but using min is more visually appealing as it leads to larger jumps
+              return minArr.map((val, idx) => Math.max(val, currArr[idx]));
+            })
+            .map((k) => Math.min(200, k) / 10);
+          this._reachableTiers.next(minReachableTiers);
 
           if (
             threadCalculationDoneArr[0] > 0 &&

@@ -474,7 +474,11 @@ addEventListener("message", async ({ data }) => {
 
     if (totalResults % 5000 == 0 && lastProgressReportTime + progressBarDelay < Date.now()) {
       lastProgressReportTime = Date.now();
-      postMessage({ checkedCalculations, estimatedCalculations });
+      postMessage({
+        checkedCalculations,
+        estimatedCalculations,
+        reachableTiers: runtime.maximumPossibleTiers,
+      });
     }
 
     if (resultsLength >= 5000) {

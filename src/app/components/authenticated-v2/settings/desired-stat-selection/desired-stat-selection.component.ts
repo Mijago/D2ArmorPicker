@@ -76,10 +76,17 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_reduce_waste = c.tryLimitWastedStats;
     });
 
+    this.inventory.reachableTiers.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
+      // Do not update if we get 0 results
+      const tiers = d || [20, 20, 20, 20, 20, 20];
+      if (tiers.filter((d) => d == 0).length < 6) {
+        this.maximumPossibleTiers = tiers;
+      }
+    });
+
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
       const tiers = d.maximumPossibleTiers || [20, 20, 20, 20, 20, 20];
-      console.debug("Maximum Possible Tiers", { tiers: tiers });
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }
