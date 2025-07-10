@@ -21,6 +21,7 @@ import {
   Input,
   OnChanges,
   OnInit,
+  OnDestroy,
   Output,
   ViewChild,
   ElementRef,
@@ -33,7 +34,7 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
   templateUrl: "./stat-tier-selection.component.html",
   styleUrls: ["./stat-tier-selection.component.scss"],
 })
-export class StatTierSelectionComponent implements OnInit, OnChanges, AfterViewChecked {
+export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy, AfterViewChecked {
   readonly TierRange = new Array(11);
   @Input() stat: ArmorStat = ArmorStat.StatWeapon;
   @Input() statsByMods: number = 0;
@@ -50,15 +51,24 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, AfterViewC
   public statValues: number[] = [];
   public editingValue: boolean = false;
 
+  public currentAnimatedMaxTier: number = 0;
+  private animationTimeouts: Set<number> = new Set();
+
   constructor() {}
-  //#endregion
+
   ngOnInit(): void {
     // Generate values from 0 to 200
     this.statValues = Array.from({ length: 201 }, (_, i) => i);
+    this.currentAnimatedMaxTier = this.maximumAvailableTier;
   }
 
   ngOnChanges() {
     this.selectedValue = this.selectedTier * 10;
+    this.animateMaxTierChange();
+  }
+
+  ngOnDestroy(): void {
+    this.clearAnimationTimeouts();
   }
 
   ngAfterViewChecked() {
@@ -130,5 +140,64 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, AfterViewC
 
   cancelValueEdit() {
     this.editingValue = false;
+  }
+
+  /**
+   * Animate the maximum tier change with cascading effect
+   */
+  private animateMaxTierChange(): void {
+    // Clear any existing animation timeouts
+    this.clearAnimationTimeouts();
+
+    const targetMaxTier = this.maximumAvailableTier;
+    const startTier = this.currentAnimatedMaxTier;
+
+    if (startTier === targetMaxTier) {
+      return; // No change needed
+    }
+
+    const direction = targetMaxTier > startTier ? 1 : -1;
+    const steps = Math.abs(targetMaxTier - startTier);
+
+    // Animation delay between each step (in milliseconds)
+    const stepDelay = 15; // Fast animation
+
+    for (let i = 1; i <= steps; i++) {
+      const timeout = window.setTimeout(() => {
+        this.currentAnimatedMaxTier = startTier + direction * i;
+
+        // Force change detection to update the UI
+        // This will trigger the CSS class updates through the template bindings
+      }, stepDelay * i);
+
+      this.animationTimeouts.add(timeout);
+    }
+  }
+
+  /**
+   * Clear all pending animation timeouts
+   */
+  private clearAnimationTimeouts(): void {
+    this.animationTimeouts.forEach((timeout) => window.clearTimeout(timeout));
+    this.animationTimeouts.clear();
+  }
+
+  /**
+   * Check if a stat value is currently animating (for smooth transitions)
+   */
+  isStatValueAnimating(value: number): boolean {
+    const tierValue = value / 10;
+    const currentMax = this.currentAnimatedMaxTier;
+    const targetMax = this.maximumAvailableTier;
+
+    if (currentMax === targetMax) {
+      return false;
+    }
+
+    // Value is in the range being animated
+    const minRange = Math.min(currentMax, targetMax);
+    const maxRange = Math.max(currentMax, targetMax);
+
+    return tierValue > minRange && tierValue <= maxRange;
   }
 }
