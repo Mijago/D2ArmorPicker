@@ -42,32 +42,28 @@
     </div>
   </div>
   <div class="stat-tier-value">
-    <span
-      *ngIf="!editingValue"
-      (click)="editingValue = true"
-      style="cursor: pointer; min-width: 32px; display: inline-block">
-      {{ selectedValue }}
-    </span>
-    <input
-      *ngIf="editingValue"
-      #valueInput
-      type="number"
-      [min]="0"
-      [max]="maximumAvailableTier * 10"
-      [value]="selectedValue"
-      (blur)="commitValueEdit(valueInput.value)"
-      (keydown.enter)="commitValueEdit(valueInput.value)"
-      (keydown.escape)="cancelValueEdit()"
-      style="
-        width: 40px;
-        text-align: center;
-        border: none;
-        border-bottom: 1px solid #888;
-        outline: none;
-        background: transparent;
-        font: inherit;
-      " />
-    / {{ maximumAvailableTier * 10 }}
+    <div class="value-section">
+      <span
+        *ngIf="!editingValue"
+        (click)="editingValue = true"
+        class="clickable-value"
+        style="cursor: pointer; display: inline-block">
+        {{ selectedValue }}
+      </span>
+      <input
+        *ngIf="editingValue"
+        #valueInput
+        type="number"
+        class="value-input"
+        [min]="0"
+        [max]="maximumAvailableTier * 10"
+        [value]="selectedValue"
+        (blur)="commitValueEdit(valueInput.value)"
+        (keydown.enter)="commitValueEdit(valueInput.value)"
+        (keydown.escape)="cancelValueEdit()" />
+    </div>
+    <div class="separator-section">/</div>
+    <div class="max-value-section">{{ maximumAvailableTier * 10 }}</div>
     <div
       *ngIf="hoveredValue !== null && hoveredValue <= maximumAvailableTier * 10"
       class="hover-value-indicator">

@@ -16,9 +16,32 @@
  */
 
 .stat-tier-value {
-  min-width: 40px;
+  min-width: 90px;
   text-align: right;
   position: relative;
+  display: flex;
+  align-items: center;
+
+  .value-section {
+    width: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .separator-section {
+    width: 10px;
+    text-align: center;
+  }
+
+  .max-value-section {
+    width: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .hover-value-indicator {
     position: absolute;
@@ -29,6 +52,29 @@
     white-space: nowrap;
     transition: opacity 0.05s linear;
     font-weight: bold;
+  }
+
+  .value-input {
+    width: 45px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #888;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: white;
+  }
+
+  .clickable-value {
+    transition: all 0.2s ease;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
+    padding: 2px 4px;
+    border-radius: 2px;
+
+    &:hover {
+      color: #2196f3;
+      border-bottom: 1px solid #2196f3;
+    }
   }
 }
 
