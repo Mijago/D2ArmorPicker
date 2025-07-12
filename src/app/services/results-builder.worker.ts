@@ -457,10 +457,6 @@ addEventListener("message", async ({ data }) => {
         result.classItemPerk =
           slotCheckResult.requiredClassItemType ||
           (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.Any);
-        // add the exotic class item if we have one and we do not have an exotic armor piece in this selection
-        if (!hasOneExotic && exoticClassItem && exoticClassItemIsEnforced) {
-          result.armor.push(exoticClassItem.id);
-        }
 
         results.push(result);
         resultsLength++;
