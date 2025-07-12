@@ -58,6 +58,11 @@ export const CHANGELOG_DATA: {
         issues: [],
       },
       {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the 'Move items to inventory' button. It still will only work when you have space in the inventory.",
+        issues: [],
+      },
+      {
         type: ChangelogEntryType.REMOVE,
         text: "Removed 3x100 and 4x100 buttons. We do not need these anymore. Maybe I add another feature like this later when a use case arises.",
         issues: [],
