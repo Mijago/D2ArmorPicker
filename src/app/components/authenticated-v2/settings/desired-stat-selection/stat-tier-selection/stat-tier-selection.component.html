@@ -17,20 +17,23 @@
 
 <div style="display: flex; align-items: center; gap: 12px">
   <div class="custom-stat-slider" style="width: 350px; height: 30px">
-    <div style="display: flex; align-items: flex-end; height: 100%; width: 100%; gap: 0">
+    <div style="display: flex; align-items: center; height: 100%; width: 100%; gap: 0">
       <ng-container *ngFor="let value of statValues">
         <div
           class="stat-line"
           [class.zero-line]="value === 0"
-          [class.fifth-line]="value > 0 && value % 5 === 0"
-          [class.tenth-line]="value > 0 && value % 10 === 0"
+          [class.milestone-line]="value === 50 || value === 100 || value === 150 || value === 200"
           [class.selected]="value === selectedValue"
           [class.lower-than-selected]="value < selectedValue"
           [class.lower-than-hovered]="hoveredValue !== null && value < hoveredValue"
           [class.higher-than-hovered]="hoveredValue !== null && value >= hoveredValue"
           [class.disabled]="value > currentAnimatedMaxValue"
-          [style.height]="value % 10 === 0 ? '16px' : value % 5 === 0 ? '12px' : '8px'"
-          [matTooltip]="'Value: ' + value + (value % 10 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
+          [style.height]="
+            value === 0 || value === 50 || value === 100 || value === 150 || value === 200
+              ? '16px'
+              : '8px'
+          "
+          [matTooltip]="'Value: ' + value + (value % 50 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
           [matTooltipDisabled]="value > currentAnimatedMaxValue"
           matTooltipPosition="above"
           [matTooltipShowDelay]="0"
@@ -39,6 +42,41 @@
           (mouseleave)="clearHover()">
         </div>
       </ng-container>
+    </div>
+    <div *ngIf="isSixthStat()" class="milestone-labels">
+      <div
+        class="milestone-label"
+        style="left: 0%"
+        *ngIf="selectedValue < -12 || selectedValue > 12"
+        >0</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 25%"
+        *ngIf="selectedValue < 38 || selectedValue > 62"
+        >50</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 50%"
+        *ngIf="selectedValue < 88 || selectedValue > 112"
+        >100</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 75%"
+        *ngIf="selectedValue < 138 || selectedValue > 162"
+        >150</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 100%"
+        *ngIf="selectedValue < 188 || selectedValue > 212"
+        >200</div
+      >
+    </div>
+    <div class="selected-value-label" [style.left.%]="getSelectedValuePosition()">
+      {{ selectedValue }}
     </div>
   </div>
   <div class="stat-tier-value">
@@ -64,11 +102,13 @@
     </div>
     <div class="separator-section">/</div>
     <div class="max-value-section">{{ maximumAvailableTier * 10 }}</div>
+    <!--
     <div
       *ngIf="hoveredValue !== null && hoveredValue <= maximumAvailableTier * 10"
       class="hover-value-indicator">
       Hovering: {{ hoveredValue }}
     </div>
+    -->
   </div>
   <button
     mat-icon-button

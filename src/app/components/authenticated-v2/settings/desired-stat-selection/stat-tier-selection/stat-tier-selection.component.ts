@@ -145,6 +145,21 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   }
 
   /**
+   * Check if this is the sixth stat (weapon stat)
+   */
+  isSixthStat(): boolean {
+    return this.stat === ArmorStat.StatMelee;
+  }
+
+  /**
+   * Get the position percentage for the selected value label
+   */
+  getSelectedValuePosition(): number {
+    // Calculate percentage position based on selectedValue (0-200 range)
+    return (this.selectedValue / 200) * 100;
+  }
+
+  /**
    * Animate the maximum tier change with cascading effect
    */
   private animateMaxTierChange(): void {

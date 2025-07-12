@@ -88,6 +88,34 @@
 .custom-stat-slider {
   position: relative;
 
+  .milestone-labels {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    height: 20px;
+    pointer-events: none;
+    margin-top: -2px;
+  }
+
+  .milestone-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0px;
+  }
+
+  .selected-value-label {
+    position: absolute;
+    top: 100%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #2196f3;
+    margin-top: -2px;
+    font-weight: bold;
+    pointer-events: none;
+  }
+
   .stat-line {
     width: 1px;
     min-width: 1px;
@@ -95,6 +123,7 @@
     background-color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
     position: relative;
+    align-self: center; /* Center the bar vertically */
 
     &::before {
       content: "";
@@ -131,15 +160,7 @@
       }
     }
 
-    &.fifth-line {
-      background-color: rgba(255, 255, 255, 0.5);
-
-      &:hover {
-        background-color: rgba(255, 255, 255, 0.9);
-      }
-    }
-
-    &.tenth-line {
+    &.milestone-line {
       background-color: rgba(255, 255, 255, 0.7);
 
       &:hover {
