@@ -168,7 +168,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     const steps = Math.abs(targetMaxValue - startValue);
 
     // Animation delay between each step (in milliseconds)
-    const stepDelay = 15; // Fast animation
+    const stepDelay = 5; // Fast animation
 
     for (let i = 1; i <= steps; i++) {
       const timeout = window.setTimeout(() => {
