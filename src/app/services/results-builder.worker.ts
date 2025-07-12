@@ -311,6 +311,25 @@ addEventListener("message", async ({ data }) => {
   }
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
+
+  // If the config says that we need a fixed class item, filter the class items accordingly
+  if (
+    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
+    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any
+  )
+    classItems = classItems.filter(
+      (d) => d.perk == config.armorPerks[ArmorSlot.ArmorSlotClass].value
+    );
+
+  // true if any armorPerks is not "any"
+  const doesNotRequireArmorPerks = ![
+    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
+    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
+    config.armorPerks[ArmorSlot.ArmorSlotChest].value,
+    config.armorPerks[ArmorSlot.ArmorSlotLegs].value,
+    config.armorPerks[ArmorSlot.ArmorSlotClass].value,
+  ].every((v) => v === ArmorPerkOrSlot.Any);
+
   classItems = classItems.filter(
     (item, index, self) =>
       index ===
@@ -323,14 +342,10 @@ addEventListener("message", async ({ data }) => {
           i.intellect === item.intellect &&
           i.strength === item.strength &&
           i.isExotic === item.isExotic &&
-          i.perk === item.perk
+          (doesNotRequireArmorPerks || i.perk === item.perk)
       )
   );
-  console.log(
-    `Thread#${threadSplit.current} class items2`,
-    classItems.length,
-    JSON.stringify(classItems)
-  );
+
   let amountExoticClassItems = classItems.filter((d) => d.isExotic).length;
   let amountLegendaryClassItems = classItems.length - amountExoticClassItems;
 
@@ -427,14 +442,6 @@ addEventListener("message", async ({ data }) => {
       ? hasMasterworkedClassItemExotic
       : hasMasterworkedClassItemLegendary || (!hasOneExotic && hasMasterworkedClassItemExotic);
 
-    // if slotCheckResult.requiredClassItemType is not Any, then create a tmp filtered list of class items
-    let classItems3: IPermutatorArmor[] = [];
-    if (slotCheckResult.requiredClassItemType != ArmorPerkOrSlot.Any) {
-      classItems3 = classItems.filter((d) => d.perk == slotCheckResult.requiredClassItemType);
-    } else {
-      classItems3 = [...classItems];
-    }
-
     const result = handlePermutation(
       runtime,
       config,
@@ -442,7 +449,7 @@ addEventListener("message", async ({ data }) => {
       gauntlet,
       chest,
       leg,
-      classItems3,
+      classItems,
       constantBonus,
       constantAvailableModslots,
       doNotOutput,
@@ -721,6 +728,8 @@ export function handlePermutation(
         availableModCost
       );
 
+      // This may lead to issues later.
+      // The performTierAvailabilityTesting must be executed for each class item.
       // Found a working combination - return immediately with this class item
       return tryCreateArmorSetWithClassItem(
         runtime,
