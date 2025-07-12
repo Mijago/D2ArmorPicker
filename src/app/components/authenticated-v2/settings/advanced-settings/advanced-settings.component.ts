@@ -21,14 +21,28 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { environment } from "../../../../../environments/environment";
 
-interface AdvancedSettingField {
+interface AdvancedSettingFieldBase {
   name: string;
-  value: boolean;
-  cp: (v: boolean) => void;
   help: string | undefined;
   disabled: boolean;
   impactsResultCount: boolean;
+  onToggle: (v: boolean) => void;
 }
+
+interface BooleanSettingField extends AdvancedSettingFieldBase {
+  type: "boolean";
+  value: boolean;
+}
+
+interface DropdownSettingField extends AdvancedSettingFieldBase {
+  type: "dropdown";
+  value: any;
+  onSelect: (v: any) => void;
+  options: { value: any; label: string }[];
+  isEnabled: boolean;
+}
+
+type AdvancedSettingField = BooleanSettingField | DropdownSettingField;
 
 @Component({
   selector: "app-advanced-settings",
@@ -47,7 +61,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         Events: [
           {
             name: "Enforce the usage of a Festival of the Lost Mask.",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.useFotlArmor = v)),
+            type: "boolean",
+            onToggle: (v: boolean) => this.config.modifyConfiguration((c) => (c.useFotlArmor = v)),
             value: c.useFotlArmor,
             disabled: false,
             impactsResultCount: true,
@@ -57,7 +72,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         Masterwork: [
           {
             name: "Assume all legendary items are masterworked",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeLegendariesMasterworked = v)),
             value: c.assumeLegendariesMasterworked,
             disabled: false,
@@ -66,7 +82,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Assume all legendary class items are masterworked",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeClassItemMasterworked = v)),
             value: c.assumeClassItemMasterworked,
             disabled: false,
@@ -75,7 +92,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Assume all exotic items are masterworked",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeExoticsMasterworked = v)),
             value: c.assumeExoticsMasterworked,
             disabled: false,
@@ -84,7 +102,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Only use already masterworked exotic items",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.onlyUseMasterworkedExotics = v)),
             value: c.onlyUseMasterworkedExotics,
             disabled: false,
@@ -93,7 +112,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Only use already masterworked legendary items",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.onlyUseMasterworkedLegendaries = v)),
             value: c.onlyUseMasterworkedLegendaries,
             disabled: false,
@@ -104,7 +124,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         "Artifice Slots": [
           {
             name: "Assume every legendary class item is an artifice armor.",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeClassItemIsArtifice = v)),
             value: c.assumeClassItemIsArtifice || c.assumeEveryLegendaryIsArtifice,
             disabled: c.assumeEveryLegendaryIsArtifice,
@@ -113,7 +134,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Assume every legendary is an artifice armor.",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryLegendaryIsArtifice = v)),
             value: c.assumeEveryLegendaryIsArtifice,
             disabled: false,
@@ -122,7 +144,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Assume every exotic has an artifice slot.",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryExoticIsArtifice = v)),
             value: c.assumeEveryExoticIsArtifice,
             disabled: false,
@@ -133,7 +156,9 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         "Performance Optimization": [
           {
             name: "Use security features to prevent app crashes (resets on reload).",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.limitParsedResults = v)),
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.limitParsedResults = v)),
             value: c.limitParsedResults,
             disabled: false,
             impactsResultCount: true,
@@ -143,7 +168,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         "Extra Columns": [
           {
             name: "Show maximum reachable tiers in the Tiers-Column instead of real Tiers.",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.showPotentialTierColumn = v)),
             value: c.showPotentialTierColumn,
             disabled: false,
@@ -152,7 +178,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Show the wasted stats in an extra column.",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.showWastedStatsColumn = v)),
             value: c.showWastedStatsColumn,
             disabled: false,
@@ -163,7 +190,9 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         "Wasted Stats": [
           {
             name: "Try to optimize wasted stats (slower)",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.tryLimitWastedStats = v)),
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.tryLimitWastedStats = v)),
             value: c.tryLimitWastedStats,
             disabled: false,
             impactsResultCount: false,
@@ -171,7 +200,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           },
           {
             name: "Only show builds with no wasted stats",
-            cp: (v: boolean) =>
+            type: "boolean",
+            onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.onlyShowResultsWithNoWastedStats = v)),
             value: environment.featureFlags.enableZeroWaste && c.onlyShowResultsWithNoWastedStats,
             disabled: !environment.featureFlags.enableZeroWaste,
@@ -182,12 +212,38 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         "Data-Science": [
           {
             name: "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
-            cp: (v: boolean) => this.config.modifyConfiguration((c) => (c.addConstent1Health = v)),
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.addConstent1Health = v)),
             value: c.addConstent1Health,
             disabled: false,
             impactsResultCount: false,
             help: "You usually do not want to use this.",
           },
+          /*
+          {
+            name: "Assume the player has all Tier X class items.",
+            type: 'dropdown',
+            onSelect: (v: number) => {
+              this.config.modifyConfiguration((config) => (config.assumePlayerHasAllMaxClassItemsForTier = v));
+            },
+            value: 'option1',
+            disabled: false,
+            impactsResultCount: true,
+            help: "The tool will assume that the player has all class items of a certain tier. This is useful for testing purposes.",
+            isEnabled: c.assumePlayerHasAllMaxClassItemsForTierEnabled,
+            onToggle: (v: boolean) => {
+              this.config.modifyConfiguration((config) => (config.assumePlayerHasAllMaxClassItemsForTierEnabled = v));
+            },
+            options: [
+              { value: 1, label: 'Tier 1' },
+              { value: 2, label: 'Tier 2' },
+              { value: 3, label: 'Tier 3' },
+              { value: 4, label: 'Tier 4' },
+              { value: 5, label: 'Tier 5' },
+            ]
+          },
+          //*/
         ],
       };
       this.fieldKeys = Object.keys(this.fields2);

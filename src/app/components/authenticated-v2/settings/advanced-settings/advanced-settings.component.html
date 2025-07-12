@@ -18,32 +18,78 @@
 <div *ngFor="let category of fieldKeys">
   <span class="category-header">{{ category }}</span>
   <div *ngFor="let f of fields2[category]" class="adv-settings">
-    <mat-slide-toggle
-      color="primary"
-      [disabled]="f.disabled"
-      [checked]="f.value"
-      (change)="f.cp($event.checked)">
-      {{ f.name }}
-    </mat-slide-toggle>
-    <mat-icon
-      inline
-      aria-hidden="false"
-      aria-label="Help"
-      *ngIf="f.help"
-      matTooltip="{{ f.help }}"
-      #tooltip="matTooltip">
-      help
-    </mat-icon>
-    <mat-icon
-      inline
-      aria-hidden="false"
-      aria-label="Help"
-      *ngIf="f.impactsResultCount"
-      class="report-problem-icon"
-      matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
-      #tooltip="matTooltip">
-      report_problem
-    </mat-icon>
+    <!-- Boolean toggle setting -->
+    <div *ngIf="f.type === 'boolean'">
+      <mat-slide-toggle
+        color="primary"
+        [disabled]="f.disabled"
+        [checked]="f.value"
+        (change)="f.onToggle($event.checked)">
+        {{ f.name }}
+      </mat-slide-toggle>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.help"
+        matTooltip="{{ f.help }}"
+        #tooltip="matTooltip">
+        help
+      </mat-icon>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.impactsResultCount"
+        class="report-problem-icon"
+        matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
+        #tooltip="matTooltip">
+        report_problem
+      </mat-icon>
+    </div>
+
+    <!-- Dropdown setting -->
+    <div *ngIf="f.type === 'dropdown'" class="dropdown-setting">
+      <!-- Toggleable dropdown -->
+      <div class="dropdown-header">
+        <mat-slide-toggle
+          color="primary"
+          [disabled]="f.disabled"
+          [checked]="f.isEnabled"
+          (change)="f.onToggle && f.onToggle($event.checked)">
+          <span class="dropdown-label">{{ f.name }}</span>
+        </mat-slide-toggle>
+        <mat-select
+          [value]="f.value"
+          [disabled]="f.disabled || !f.isEnabled"
+          (selectionChange)="f.onSelect($event.value)"
+          class="dropdown-inline"
+          placeholder="Select option">
+          <mat-option *ngFor="let option of f.options" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-icon
+          inline
+          aria-hidden="false"
+          aria-label="Help"
+          *ngIf="f.help"
+          matTooltip="{{ f.help }}"
+          #tooltip="matTooltip">
+          help
+        </mat-icon>
+        <mat-icon
+          inline
+          aria-hidden="false"
+          aria-label="Help"
+          *ngIf="f.impactsResultCount"
+          class="report-problem-icon"
+          matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
+          #tooltip="matTooltip">
+          report_problem
+        </mat-icon>
+      </div>
+    </div>
   </div>
   <div class="category-spacer"></div>
 </div>
