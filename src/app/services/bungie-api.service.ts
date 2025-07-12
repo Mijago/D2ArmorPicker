@@ -154,7 +154,7 @@ export class BungieApiService {
 
       const payload = {
         characterId: targetCharacter,
-        membershipType: 3,
+        membershipType: destinyMembership.membershipType,
         itemId: r1?.Response.item.data?.itemInstanceId || "",
         itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
         stackSize: 1,
@@ -166,7 +166,7 @@ export class BungieApiService {
     if (equip) {
       let equipPayload = {
         characterId: targetCharacter,
-        membershipType: 3,
+        membershipType: destinyMembership.membershipType,
         stackSize: 1,
         itemId: r1?.Response.item.data?.itemInstanceId || "",
         itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
