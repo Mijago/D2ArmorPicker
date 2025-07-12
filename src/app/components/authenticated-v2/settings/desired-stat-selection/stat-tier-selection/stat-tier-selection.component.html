@@ -43,37 +43,41 @@
         </div>
       </ng-container>
     </div>
-    <div *ngIf="isSixthStat()" class="milestone-labels">
-      <div
-        class="milestone-label"
+    <div class="milestone-labels">
+      <button
+        class="milestone-button zero-button"
         style="left: 0%"
         *ngIf="selectedValue < -12 || selectedValue > 12"
-        >0</div
+        (click)="setValueMob(0)"
+        mat-flat-button
+        >0</button
       >
       <div
         class="milestone-label"
         style="left: 25%"
-        *ngIf="selectedValue < 38 || selectedValue > 62"
+        *ngIf="isSixthStat() && (selectedValue < 38 || selectedValue > 62)"
         >50</div
       >
       <div
         class="milestone-label"
         style="left: 50%"
-        *ngIf="selectedValue < 88 || selectedValue > 112"
+        *ngIf="isSixthStat() && (selectedValue < 88 || selectedValue > 112)"
         >100</div
       >
       <div
         class="milestone-label"
         style="left: 75%"
-        *ngIf="selectedValue < 138 || selectedValue > 162"
+        *ngIf="isSixthStat() && (selectedValue < 138 || selectedValue > 162)"
         >150</div
       >
-      <div
-        class="milestone-label"
+      <button
+        class="milestone-button max-button"
         style="left: 100%"
         *ngIf="selectedValue < 188 || selectedValue > 212"
-        >200</div
-      >
+        (click)="setValueMob(maximumAvailableTier * 10)"
+        mat-flat-button>
+        <span class="max-text">MAX</span>
+      </button>
     </div>
     <div class="selected-value-label" [style.left.%]="getSelectedValuePosition()">
       {{ selectedValue }}

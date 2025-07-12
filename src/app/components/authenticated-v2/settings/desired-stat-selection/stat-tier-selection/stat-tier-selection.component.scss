@@ -105,6 +105,33 @@
     margin-top: 0px;
   }
 
+  .milestone-button {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.65em;
+    min-width: unset !important;
+    height: 18px !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    pointer-events: auto;
+    margin-top: 1px;
+
+    &.zero-button {
+      width: 24px;
+    }
+
+    &.max-button {
+      width: 16px;
+
+      .max-text {
+        transform: rotate(90deg);
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 0.8em;
+      }
+    }
+  }
+
   .selected-value-label {
     position: absolute;
     top: 100%;
