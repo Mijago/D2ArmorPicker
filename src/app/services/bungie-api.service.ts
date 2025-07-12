@@ -196,7 +196,7 @@ export class BungieApiService {
 
     const payload = {
       characterId: r1?.Response.characterId || "",
-      membershipType: 3,
+      membershipType: destinyMembership.membershipType,
       itemId: r1?.Response.item.data?.itemInstanceId || "",
       itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
       stackSize: 1,
