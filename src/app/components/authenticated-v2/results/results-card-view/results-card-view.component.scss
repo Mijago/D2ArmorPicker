@@ -1,0 +1,580 @@
+/*
+ * Copyright (c) 2023 D2ArmorPicker by Mijago.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.card-view-container {
+  width: 100%;
+  height: 100%;
+}
+
+.filters-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .results-count {
+    margin: 0;
+    font-size: 14px;
+    color: #999;
+    flex-shrink: 0;
+  }
+
+  .sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
+
+    .sort-label {
+      font-size: 14px;
+      color: #ccc;
+      margin-right: 8px;
+      white-space: nowrap;
+
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+
+    .sort-button {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      transition: all 0.2s ease;
+      min-width: 60px; // Increased to accommodate text + arrow
+      height: 40px;
+      justify-content: center;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      &.active {
+        background: rgba(33, 150, 243, 0.2);
+        border-color: rgba(33, 150, 243, 0.5);
+        color: #2196f3;
+      }
+
+      .sort-text {
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+
+        @media (max-width: 480px) {
+          display: none;
+        }
+      }
+
+      .sort-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .sort-stat-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.results-count {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #999;
+}
+
+.cards-container {
+  height: 70vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+.result-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 100%; // Ensure full width usage
+  min-width: 800px; // Minimum width to prevent jumping
+  max-width: 1200px; // Maximum width for very wide screens
+
+  @media (max-width: 1200px) {
+    min-width: 700px;
+    max-width: 1000px;
+  }
+
+  @media (max-width: 968px) {
+    min-width: 600px;
+    max-width: 800px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 500px;
+    max-width: 600px;
+  }
+
+  @media (max-width: 480px) {
+    min-width: 320px;
+    max-width: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.expanded {
+    .card-compact {
+      display: none;
+    }
+    .card-expanded {
+      display: block;
+    }
+  }
+
+  &:not(.expanded) {
+    .card-compact {
+      display: block;
+    }
+    .card-expanded {
+      display: none;
+    }
+  }
+}
+
+// Compact View Styles
+.card-compact {
+  padding: 12px 16px;
+}
+
+.card-header {
+  display: grid;
+  grid-template-columns: 200px 240px 1fr 80px; // Fixed column widths
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 180px 220px 1fr 80px;
+  }
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+.exotic-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  justify-self: start;
+  max-width: 200px; // Limit width to prevent overflow
+
+  @media (max-width: 968px) {
+    justify-self: center;
+    max-width: 180px;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 150px;
+  }
+
+  .exotic-icon {
+    flex-shrink: 0;
+  }
+
+  .exotic-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+  }
+
+  .exotic-name {
+    font-weight: 500;
+    color: #ffa726;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    min-width: 0; // Allow shrinking
+    flex: 1;
+  }
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  min-width: 240px;
+  justify-self: center;
+
+  @media (max-width: 968px) {
+    grid-template-columns: repeat(3, 1fr);
+    min-width: 180px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 1fr);
+    min-width: 120px;
+  }
+}
+
+.stat-item-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  min-width: 35px;
+
+  .stat-icon-compact {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .stat-value-compact {
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 1;
+  }
+}
+
+.mods-section {
+  justify-self: center;
+
+  @media (max-width: 968px) {
+    order: 3;
+  }
+}
+
+.tiers-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-self: end;
+  min-width: 60px;
+
+  @media (max-width: 968px) {
+    justify-self: center;
+    order: 4;
+  }
+
+  .total-stats {
+    font-size: 20px;
+    font-weight: bold;
+    color: #4caf50;
+    line-height: 1;
+  }
+
+  .tiers-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+}
+
+.sources-row {
+  margin-top: 8px;
+
+  mat-chip-listbox {
+    mat-chip-option {
+      mat-icon {
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+// Expanded View Styles
+.card-expanded {
+  padding: 24px;
+}
+
+.expanded-content {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.left-summary {
+  .exotic-section-expanded {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .exotic-img-large {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .exotic-info {
+      min-width: 0;
+      flex: 1;
+
+      h3 {
+        margin: 0 0 4px 0;
+        color: #ffa726;
+        font-size: 16px;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .total-stats-large {
+        font-size: 14px;
+        font-weight: bold;
+        color: #4caf50;
+      }
+    }
+  }
+
+  .mods-section-expanded {
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #ccc;
+    }
+  }
+
+  .stats-summary {
+    h4 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: #ccc;
+    }
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-item-large {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+
+  .stat-icon-large {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .stat-info {
+    .stat-value-large {
+      display: block;
+      font-weight: bold;
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .stat-tier-large {
+      font-size: 11px;
+      color: #999;
+      line-height: 1;
+    }
+  }
+}
+
+.right-details {
+  h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    color: #ccc;
+  }
+}
+
+.armor-table {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  td {
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    &.item-name {
+      text-align: left;
+      min-width: 120px;
+      max-width: 160px; // Limit width to ensure truncation
+      width: 140px; // Fixed width for consistency
+    }
+  }
+
+  .armor-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0; // Allow shrinking
+
+  .small-item-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1px solid #444;
+  }
+
+  .item-name-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; // Allow shrinking
+    flex: 1;
+  }
+}
+
+.card-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  button {
+    flex: 1;
+    min-width: 140px;
+
+    @media (max-width: 480px) {
+      min-width: auto;
+    }
+  }
+}
+
+// Loading and empty states
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  color: #999;
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  color: #999;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Utility classes
+.hidden {
+  display: none !important;
+}

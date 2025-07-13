@@ -157,3 +157,56 @@ tr.result-detail-row {
 .mdc-data-table__header-cell {
   padding: 0 4px 0 4px;
 }
+
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hint-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  mat-button-toggle-group {
+    flex-shrink: 0;
+  }
+}
+
+// Card view specific styles
+.card-view-mode {
+  .paginator-container,
+  .download-button,
+  mat-paginator {
+    display: none !important;
+  }
+
+  .cards-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+
+    // Hide scrollbar while maintaining scroll functionality
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome/Safari
+    }
+  }
+
+  .result-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

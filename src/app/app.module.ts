@@ -75,6 +75,7 @@ import {
 
 import { environment } from "../environments/environment";
 import { H } from "highlight.run";
+import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
 
 if (!!environment.highlight_project_id) {
   H.init(environment.highlight_project_id, {
@@ -179,6 +180,7 @@ const routes: Routes = [
     ModDescriptionTooltipComponent,
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
+    ResultsCardViewComponent,
   ],
   imports: [
     CommonModule,

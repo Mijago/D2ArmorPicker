@@ -1,0 +1,304 @@
+<!--
+  ~ Copyright (c) 2023 D2ArmorPicker by Mijago.
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as published
+  ~ by the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<div class="card-view-container">
+  <!-- Filters and Sort Controls -->
+  <div class="filters-container" *ngIf="filteredResults.length > 0">
+    <div class="results-count">
+      Showing {{ displayedResults.length }} of {{ filteredResults.length }} results
+    </div>
+
+    <div class="sort-controls">
+      <span class="sort-label">Sort by:</span>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'total'"
+        (click)="toggleSort('total')"
+        matTooltip="Sort by Total Stats">
+        <span class="sort-text">Total</span>
+        <mat-icon class="sort-icon">{{ getSortIcon("total") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'mods'"
+        (click)="toggleSort('mods')"
+        matTooltip="Sort by Mod Cost">
+        <span class="sort-text">Mods</span>
+        <mat-icon class="sort-icon">{{ getSortIcon("mods") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'weapon'"
+        (click)="toggleSort('weapon')"
+        matTooltip="Sort by Weapon">
+        <img [src]="getStatIcon(0)" alt="Weapon" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("weapon") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'health'"
+        (click)="toggleSort('health')"
+        matTooltip="Sort by Health">
+        <img [src]="getStatIcon(1)" alt="Health" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("health") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'class'"
+        (click)="toggleSort('class')"
+        matTooltip="Sort by Class">
+        <img [src]="getStatIcon(2)" alt="Class" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("class") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'grenade'"
+        (click)="toggleSort('grenade')"
+        matTooltip="Sort by Grenade">
+        <img [src]="getStatIcon(3)" alt="Grenade" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("grenade") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'super'"
+        (click)="toggleSort('super')"
+        matTooltip="Sort by Super">
+        <img [src]="getStatIcon(4)" alt="Super" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("super") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'melee'"
+        (click)="toggleSort('melee')"
+        matTooltip="Sort by Melee">
+        <img [src]="getStatIcon(5)" alt="Melee" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("melee") }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Count for when no results -->
+  <div class="results-count" *ngIf="filteredResults.length === 0 && !isLoading">
+    No results found
+  </div>
+
+  <!-- Cards Container -->
+  <div class="cards-container" (scroll)="onScroll($event)">
+    <div class="card-grid">
+      <mat-card
+        *ngFor="let result of displayedResults; let i = index; trackBy: trackByFn"
+        class="result-card"
+        [class.expanded]="expandedCard === i"
+        (click)="toggleCard(i)"
+        appearance="outlined">
+        <!-- Compact View -->
+        <div class="card-compact" [class.hidden]="expandedCard === i">
+          <!-- First Row: Exotic, Stats, Mods, Total -->
+          <div class="card-header">
+            <div class="exotic-section">
+              <div class="exotic-icon">
+                <img
+                  *ngIf="result.exotic"
+                  [src]="'https://bungie.net/' + result.exotic.icon"
+                  [alt]="result.exotic.name"
+                  class="exotic-img" />
+                <img
+                  *ngIf="!result.exotic"
+                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+                  alt="No Exotic"
+                  class="exotic-img" />
+              </div>
+              <span
+                class="exotic-name"
+                [matTooltip]="result.exotic?.name || 'No Exotic'"
+                [matTooltipDisabled]="!shouldShowTooltip(result.exotic?.name || 'No Exotic')">
+                {{ result.exotic?.name || "No Exotic" }}
+              </span>
+            </div>
+
+            <div class="stats-section">
+              <div class="stat-item-compact" *ngFor="let stat of statOrder; let statIndex = index">
+                <img
+                  [src]="getStatIcon(statIndex)"
+                  [alt]="getStatName(statIndex)"
+                  class="stat-icon-compact" />
+                <span class="stat-value-compact">{{ result.stats[statIndex] }}</span>
+              </div>
+            </div>
+
+            <div class="mods-section">
+              <app-table-mod-display
+                [mods]="result.mods"
+                [artifice]="result.artifice"
+                class="mods-display">
+              </app-table-mod-display>
+            </div>
+
+            <div class="tiers-section">
+              <span class="total-stats">{{ getTotalStats(result) }}</span>
+              <span class="tiers-label">Total</span>
+            </div>
+          </div>
+
+          <!-- Sources Row -->
+          <div class="sources-row" *ngIf="result.usesCollectionRoll || result.usesVendorRoll">
+            <mat-chip-listbox>
+              <mat-chip-option *ngIf="result.usesCollectionRoll" disabled>
+                <mat-icon>collections_bookmark</mat-icon>
+                Collection
+              </mat-chip-option>
+              <mat-chip-option *ngIf="result.usesVendorRoll" disabled>
+                <mat-icon>store</mat-icon>
+                Vendor
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+        </div>
+
+        <!-- Expanded View -->
+        <div class="card-expanded" [class.hidden]="expandedCard !== i">
+          <div class="expanded-content">
+            <!-- Left Side: Summary -->
+            <div class="left-summary">
+              <div class="exotic-section-expanded">
+                <img
+                  *ngIf="result.exotic"
+                  [src]="'https://bungie.net/' + result.exotic.icon"
+                  [alt]="result.exotic.name"
+                  class="exotic-img-large" />
+                <div class="exotic-info">
+                  <h3>{{ result.exotic?.name || "No Exotic" }}</h3>
+                  <div class="total-stats-large">{{ getTotalStats(result) }} Total</div>
+                </div>
+              </div>
+
+              <div class="mods-section-expanded">
+                <h4>Required Mods</h4>
+                <app-table-mod-display [mods]="result.mods" [artifice]="result.artifice">
+                </app-table-mod-display>
+              </div>
+
+              <div class="stats-summary">
+                <h4>Final Stats</h4>
+                <div class="stats-grid">
+                  <div
+                    class="stat-item-large"
+                    *ngFor="let stat of statOrder; let statIndex = index">
+                    <img
+                      [src]="getStatIcon(statIndex)"
+                      [alt]="getStatName(statIndex)"
+                      class="stat-icon-large" />
+                    <div class="stat-info">
+                      <span class="stat-value-large">{{ result.stats[statIndex] }}</span>
+                      <span class="stat-tier-large"
+                        >Tier {{ Math.floor(result.stats[statIndex] / 10) }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Detailed Breakdown -->
+            <div class="right-details">
+              <h4>Armor Breakdown</h4>
+              <div class="armor-table">
+                <table class="breakdown-table">
+                  <thead>
+                    <tr>
+                      <th>Piece</th>
+                      <th>Weapon</th>
+                      <th>Health</th>
+                      <th>Class</th>
+                      <th>Grenade</th>
+                      <th>Super</th>
+                      <th>Melee</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of result.items" class="armor-row">
+                      <td class="item-name">
+                        <div class="item-info">
+                          <div
+                            class="small-item-icon"
+                            [style.background-color]="getItemColor(item)"></div>
+                          <span
+                            class="item-name-text"
+                            [matTooltip]="item.name"
+                            [matTooltipDisabled]="!shouldShowTooltip(item.name)">
+                            {{ getShortItemName(item.name) }}
+                          </span>
+                        </div>
+                      </td>
+                      <td>{{ getItemStatWithMasterwork(item, 0) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 1) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 2) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 3) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 4) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 5) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-actions">
+                <button mat-stroked-button (click)="copyDIMQuery(result); $event.stopPropagation()">
+                  <mat-icon>content_copy</mat-icon>
+                  Copy DIM Query
+                </button>
+                <button mat-stroked-button (click)="openInDIM(result); $event.stopPropagation()">
+                  <mat-icon>open_in_new</mat-icon>
+                  Open in DIM
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading-indicator" *ngIf="isLoading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Loading more results...</span>
+    </div>
+  </div>
+
+  <!-- No results message -->
+  <div class="no-results" *ngIf="filteredResults.length === 0 && !isLoading">
+    <mat-icon>search_off</mat-icon>
+    <h3>No results found</h3>
+    <p>Try adjusting your filters or search criteria.</p>
+  </div>
+</div>

@@ -227,12 +227,40 @@
         </mat-chip-listbox>
       </mat-form-field>
 
-      <div class="hint-text">
-        <mat-icon aria-hidden="false" inline>info</mat-icon>
-        Note that you can change the sort column and order of the table by clicking on the headers.
+      <div class="view-controls">
+        <div class="hint-text">
+          <mat-icon aria-hidden="false" inline>info</mat-icon>
+          <span *ngIf="viewMode === 'table'"
+            >Note that you can change the sort column and order of the table by clicking on the
+            headers.</span
+          >
+          <span *ngIf="viewMode === 'cards'"
+            >Use the filters and sort options above to customize your view.</span
+          >
+        </div>
+
+        <mat-button-toggle-group
+          [value]="viewMode"
+          (change)="onViewModeChange($event)"
+          aria-label="View Mode">
+          <mat-button-toggle value="cards">
+            <mat-icon>view_module</mat-icon>
+            Cards
+          </mat-button-toggle>
+          <mat-button-toggle value="table">
+            <mat-icon>table_view</mat-icon>
+            Table
+          </mat-button-toggle>
+        </mat-button-toggle-group>
       </div>
 
+      <!-- Card View -->
+      <app-results-card-view *ngIf="viewMode === 'cards'" [results]="_results" [config]="config">
+      </app-results-card-view>
+
+      <!-- Table View -->
       <table
+        *ngIf="viewMode === 'table'"
         [dataSource]="tableDataSource"
         class="result-table"
         mat-table

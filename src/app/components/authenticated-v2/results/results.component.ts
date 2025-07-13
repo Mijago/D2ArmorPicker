@@ -99,7 +99,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
 
-  private _results: ResultDefinition[] = [];
+  _results: ResultDefinition[] = [];
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
   _config_assumeClassItemMasterworked: Boolean = false;
@@ -140,15 +140,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
   itemCount: number = 0;
   totalResults: number = 0;
   parsedResults: number = 0;
+  viewMode: "table" | "cards" = "cards";
+  config: any; // Configuration for child components
 
   constructor(
     private inventory: InventoryService,
-    private config: ConfigurationService,
+    private configService: ConfigurationService,
     private status: StatusProviderService
-  ) {}
+  ) {
+    // Load saved view mode from localStorage
+    const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
+    if (savedViewMode) {
+      this.viewMode = savedViewMode;
+    }
+
+    // Set config reference
+    this.config = this.configService;
+  }
 
   ngOnInit(): void {
-    this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
+    this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c: any) => {
       this.selectedClass = c.characterClass;
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
@@ -165,11 +176,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
       this._config_selectedExotics = c.selectedExotics;
       this._config_armorPerkLimitation = Object.entries(c.armorPerks)
-        .filter((v) => v[1].value != ArmorPerkOrSlot.Any)
-        .map((k) => k[1]);
+        .filter((v: any) => v[1].value != ArmorPerkOrSlot.Any)
+        .map((k: any) => k[1]);
       this._config_modslotLimitation = Object.entries(c.maximumModSlots)
-        .filter((v) => v[1].value < 5)
-        .map((k) => k[1]);
+        .filter((v: any) => v[1].value < 5)
+        .map((k: any) => k[1]);
 
       let columns = [
         "exotic",
@@ -284,5 +295,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
     link.setAttribute("download", "d2ap_results.json");
     document.body.appendChild(link);
     link.click();
+  }
+
+  onViewModeChange(event: any) {
+    this.viewMode = event.value;
+    localStorage.setItem("d2ap-view-mode", this.viewMode);
   }
 }
