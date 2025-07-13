@@ -323,6 +323,18 @@ addEventListener("message", async ({ data }) => {
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
 
+  if (config.assumeEveryLegendaryIsArtifice || config.assumeEveryExoticIsArtifice) {
+    classItems = classItems.map((item) => {
+      if (
+        (config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+        (config.assumeEveryExoticIsArtifice && item.isExotic)
+      ) {
+        return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
+      }
+      return item;
+    });
+  }
+
   // If the config says that we need a fixed class item, filter the class items accordingly
   if (
     config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
@@ -357,17 +369,13 @@ addEventListener("message", async ({ data }) => {
       )
   );
 
-  let amountExoticClassItems = classItems.filter((d) => d.isExotic).length;
-  let amountLegendaryClassItems = classItems.length - amountExoticClassItems;
+  const exoticClassItems = classItems.filter((d) => d.isExotic);
+  const legendaryClassItems = classItems.filter((d) => !d.isExotic);
+  const exoticClassItemIsEnforced = exoticClassItems.some(
+    (item) => config.selectedExotics.indexOf(item.hash) > -1
+  );
 
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
-
-  if (
-    (amountLegendaryClassItems > 0 &&
-      (config.assumeEveryLegendaryIsArtifice || config.assumeClassItemIsArtifice)) ||
-    (amountExoticClassItems > 0 && config.assumeEveryExoticIsArtifice)
-  )
-    availableClassItemPerkTypes.add(ArmorPerkOrSlot.SlotArtifice);
 
   // runtime variables
   const runtime = {
@@ -378,13 +386,8 @@ addEventListener("message", async ({ data }) => {
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
-  const hasArtificeClassItem = availableClassItemPerkTypes.has(ArmorPerkOrSlot.SlotArtifice);
 
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
-  const exoticClassItem: IPermutatorArmor | null =
-    classItems.sort((a, b) => (a.masterworked ? -1 : 1)).find((d) => d.isExotic) || null;
-  const exoticClassItemIsEnforced =
-    !!exoticClassItem && config.selectedExotics.indexOf(exoticClassItem.hash) > -1;
 
   let results: IPermutatorArmorSet[] = [];
   let resultsLength = 0;
@@ -414,17 +417,13 @@ addEventListener("message", async ({ data }) => {
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
 
-  const hasMasterworkedClassItemExotic =
-    !!exoticClassItem && (exoticClassItem.masterworked || config.assumeExoticsMasterworked);
-  const hasMasterworkedClassItemLegendary =
-    config.assumeClassItemMasterworked || config.assumeLegendariesMasterworked;
-
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
     helmets,
     gauntlets,
     chests,
     legs,
-    requiresAtLeastOneExotic
+    // if exotic class items are enforced, we can not use any other exotic armor piece
+    requiresAtLeastOneExotic && !exoticClassItemIsEnforced
   )) {
     checkedCalculations++;
     /**
@@ -443,15 +442,18 @@ addEventListener("message", async ({ data }) => {
     );
     if (!slotCheckResult.valid) continue;
 
-    const canUseArtificeClassItem =
-      slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.Any ||
-      slotCheckResult.requiredClassItemType == ArmorPerkOrSlot.SlotArtifice;
-
     const hasOneExotic = helmet.isExotic || gauntlet.isExotic || chest.isExotic || leg.isExotic;
-    const tmpHasArtificeClassItem = hasArtificeClassItem;
-    const hasMasterworkedClassItem = exoticClassItemIsEnforced
-      ? hasMasterworkedClassItemExotic
-      : hasMasterworkedClassItemLegendary || (!hasOneExotic && hasMasterworkedClassItemExotic);
+    // TODO This check should be in the generator
+    if (hasOneExotic && exoticClassItemIsEnforced) continue;
+
+    let classItemsToUse: IPermutatorArmor[] = classItems;
+    if (hasOneExotic) {
+      // if we have an exotic armor piece, we can not use the exotic class item
+      classItemsToUse = legendaryClassItems;
+    } else if (config.selectedExotics[0] == FORCE_USE_ANY_EXOTIC || exoticClassItemIsEnforced) {
+      // if we have no exotic armor piece, we can use the exotic class item
+      classItemsToUse = exoticClassItems;
+    }
 
     const result = handlePermutation(
       runtime,
@@ -460,22 +462,16 @@ addEventListener("message", async ({ data }) => {
       gauntlet,
       chest,
       leg,
-      classItems,
+      classItemsToUse,
       constantBonus,
       constantAvailableModslots,
-      doNotOutput,
-      tmpHasArtificeClassItem && canUseArtificeClassItem,
-      hasMasterworkedClassItem
+      doNotOutput
     );
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
     if (result != null) {
       totalResults++;
       if (isIPermutatorArmorSet(result)) {
-        result.classItemPerk =
-          slotCheckResult.requiredClassItemType ||
-          (hasArtificeClassItem ? ArmorPerkOrSlot.SlotArtifice : ArmorPerkOrSlot.Any);
-
         results.push(result);
         resultsLength++;
         listedResults++;
@@ -544,13 +540,10 @@ export function handlePermutation(
   classItems: IPermutatorArmor[],
   constantBonus: number[],
   availableModCost: number[],
-  doNotOutput = false,
-  hasArtificeClassItem = false,
-  hasMasterworkedClassItem = false
+  doNotOutput = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
   var totalStatBonus = 0;
-  if (hasMasterworkedClassItem) totalStatBonus += 2;
 
   for (let i = 0; i < items.length; i++) {
     let item = items[i]; // add masterworked value, if necessary
@@ -592,8 +585,6 @@ export function handlePermutation(
       (config.assumeEveryExoticIsArtifice && d.isExotic)
   ).length;
 
-  if (hasArtificeClassItem) availableArtificeCount += 1;
-
   // get distance
   const distances = [
     Math.max(0, config.minimumStatTiers[0].value * 10 - stats[0]),
@@ -630,6 +621,11 @@ export function handlePermutation(
   const sortedClassItems = [...classItems].sort((a, b) => {
     let scoreA = 0,
       scoreB = 0;
+
+    // add 100 to artifice
+    if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 100;
+    if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 100;
+
     for (let i = 0; i < 6; i++) {
       if (distances[i] > 0) {
         scoreA += Math.min(
@@ -658,20 +654,32 @@ export function handlePermutation(
   // Try each class item with early termination
   for (const classItem of sortedClassItems) {
     const adjustedStats = [...stats];
-    adjustedStats[0] += classItem.mobility;
-    adjustedStats[1] += classItem.resilience;
-    adjustedStats[2] += classItem.recovery;
-    adjustedStats[3] += classItem.discipline;
-    adjustedStats[4] += classItem.intellect;
-    adjustedStats[5] += classItem.strength;
+    let bonus = 0;
+    // if masterworked (or assumed masterworked) class item, add 2 to each stat
+    if (
+      classItem.masterworked ||
+      config.assumeClassItemMasterworked ||
+      (classItem.isExotic && config.assumeExoticsMasterworked) ||
+      (!classItem.isExotic && config.assumeLegendariesMasterworked)
+    )
+      bonus += 2;
+    const tmpArtificeCount =
+      availableArtificeCount + (classItem.perk == ArmorPerkOrSlot.SlotArtifice ? 1 : 0);
+
+    adjustedStats[0] += classItem.mobility + bonus;
+    adjustedStats[1] += classItem.resilience + bonus;
+    adjustedStats[2] += classItem.recovery + bonus;
+    adjustedStats[3] += classItem.discipline + bonus;
+    adjustedStats[4] += classItem.intellect + bonus;
+    adjustedStats[5] += classItem.strength + bonus;
 
     const adjustedStatsWithoutMods = [
-      statsWithoutMods[0] + classItem.mobility,
-      statsWithoutMods[1] + classItem.resilience,
-      statsWithoutMods[2] + classItem.recovery,
-      statsWithoutMods[3] + classItem.discipline,
-      statsWithoutMods[4] + classItem.intellect,
-      statsWithoutMods[5] + classItem.strength,
+      statsWithoutMods[0] + classItem.mobility + bonus,
+      statsWithoutMods[1] + classItem.resilience + bonus,
+      statsWithoutMods[2] + classItem.recovery + bonus,
+      statsWithoutMods[3] + classItem.discipline + bonus,
+      statsWithoutMods[4] + classItem.intellect + bonus,
+      statsWithoutMods[5] + classItem.strength + bonus,
     ];
 
     // Recalculate distances with class item included
@@ -714,7 +722,7 @@ export function handlePermutation(
       newDistances[5];
     const newTotalOptionalDistances = newOptionalDistances.reduce((a, b) => a + b, 0);
 
-    if (newDistanceSum > 10 * 5 + 3 * availableArtificeCount) continue;
+    if (newDistanceSum > 10 * 5 + 3 * tmpArtificeCount) continue;
 
     let result: StatModifier[] | null;
     if (newDistanceSum == 0 && newTotalOptionalDistances == 0) result = [];
@@ -723,7 +731,7 @@ export function handlePermutation(
         config,
         newDistances,
         newOptionalDistances,
-        availableArtificeCount,
+        tmpArtificeCount,
         availableModCost,
         config.modOptimizationStrategy
       );
@@ -735,7 +743,7 @@ export function handlePermutation(
         config,
         adjustedStats,
         newDistances,
-        availableArtificeCount,
+        tmpArtificeCount,
         availableModCost
       );
 
@@ -754,7 +762,7 @@ export function handlePermutation(
         adjustedStats,
         adjustedStatsWithoutMods,
         newDistances,
-        availableArtificeCount,
+        tmpArtificeCount,
         availableModCost,
         doNotOutput
       );

@@ -520,7 +520,6 @@ export class InventoryService {
                     (exotic == null || exotic?.slot == ArmorSlot.ArmorSlotClass) &&
                     config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1,
                   isExotic: exotic?.slot == ArmorSlot.ArmorSlotClass,
-                  perk: armorSet.classItemPerk,
                 },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
