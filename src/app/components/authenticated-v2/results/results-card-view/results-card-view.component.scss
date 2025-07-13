@@ -496,6 +496,38 @@
   .armor-row:hover {
     background: rgba(255, 255, 255, 0.05);
   }
+
+  // Styling for different row types
+  .total-row {
+    background: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+  }
+
+  .config-row {
+    background: rgba(33, 150, 243, 0.1);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+  }
+
+  .minor-mods-row,
+  .major-mods-row,
+  .artifice-mods-row {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+  }
+
+  .final-total-row {
+    background: rgba(156, 39, 176, 0.1);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+    font-weight: bold;
+  }
+
+  .positive {
+    color: #4caf50;
+  }
+
+  .negative {
+    color: #f44336;
+  }
 }
 
 .item-info {

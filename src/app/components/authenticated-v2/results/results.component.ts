@@ -140,8 +140,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   itemCount: number = 0;
   totalResults: number = 0;
   parsedResults: number = 0;
-  viewMode: "table" | "cards" = "cards";
-  config: any; // Configuration for child components
+  viewMode: "table" | "cards" = "table";
 
   constructor(
     private inventory: InventoryService,
@@ -153,9 +152,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
     if (savedViewMode) {
       this.viewMode = savedViewMode;
     }
-
-    // Set config reference
-    this.config = this.configService;
   }
 
   ngOnInit(): void {
@@ -274,8 +270,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   saveBuilds() {
     let jsonData = {
-      configCompressed: this.config.getCurrentConfigBase64Compressed(),
-      config: this.config.readonlyConfigurationSnapshot,
+      configCompressed: this.configService.getCurrentConfigBase64Compressed(),
+      config: this.configService.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
         p.items = p.items.map((i) => {

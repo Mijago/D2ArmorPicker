@@ -220,9 +220,6 @@
                       class="stat-icon-large" />
                     <div class="stat-info">
                       <span class="stat-value-large">{{ result.stats[statIndex] }}</span>
-                      <span class="stat-tier-large"
-                        >Tier {{ Math.floor(result.stats[statIndex] / 10) }}</span
-                      >
                     </div>
                   </div>
                 </div>
@@ -266,6 +263,204 @@
                       <td>{{ getItemStatWithMasterwork(item, 3) }}</td>
                       <td>{{ getItemStatWithMasterwork(item, 4) }}</td>
                       <td>{{ getItemStatWithMasterwork(item, 5) }}</td>
+                    </tr>
+
+                    <!-- Total armor stats row -->
+                    <tr class="total-row" *ngIf="result.statsNoMods">
+                      <td class="total-label"><strong>Total (armor)</strong></td>
+                      <td
+                        ><strong>{{ result.statsNoMods[0] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[1] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[2] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[3] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[4] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[5] }}</strong></td
+                      >
+                    </tr>
+
+                    <!-- Configuration bonus row -->
+                    <tr class="config-row" *ngIf="hasConfigBonus()">
+                      <td class="config-label">Configuration</td>
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(0) !== 0"
+                          [class]="getConfigValue(0) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(0) > 0 ? "+" : "" }}{{ getConfigValue(0) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(1) !== 0"
+                          [class]="getConfigValue(1) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(1) > 0 ? "+" : "" }}{{ getConfigValue(1) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(2) !== 0"
+                          [class]="getConfigValue(2) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(2) > 0 ? "+" : "" }}{{ getConfigValue(2) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(3) !== 0"
+                          [class]="getConfigValue(3) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(3) > 0 ? "+" : "" }}{{ getConfigValue(3) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(4) !== 0"
+                          [class]="getConfigValue(4) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(4) > 0 ? "+" : "" }}{{ getConfigValue(4) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(5) !== 0"
+                          [class]="getConfigValue(5) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(5) > 0 ? "+" : "" }}{{ getConfigValue(5) }}</span
+                        ></td
+                      >
+                    </tr>
+
+                    <!-- Minor mods row -->
+                    <tr class="minor-mods-row" *ngIf="hasMinorMods(result)">
+                      <td class="mods-label">Minor Mods</td>
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 0) > 0" class="positive"
+                          >{{ getMinorModCount(result, 0) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 1) > 0" class="positive"
+                          >{{ getMinorModCount(result, 1) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 2) > 0" class="positive"
+                          >{{ getMinorModCount(result, 2) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 3) > 0" class="positive"
+                          >{{ getMinorModCount(result, 3) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 4) > 0" class="positive"
+                          >{{ getMinorModCount(result, 4) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 5) > 0" class="positive"
+                          >{{ getMinorModCount(result, 5) }}×5</span
+                        ></td
+                      >
+                    </tr>
+
+                    <!-- Major mods row -->
+                    <tr class="major-mods-row" *ngIf="hasMajorMods(result)">
+                      <td class="mods-label">Major Mods</td>
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 0) > 0" class="positive"
+                          >{{ getMajorModCount(result, 0) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 1) > 0" class="positive"
+                          >{{ getMajorModCount(result, 1) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 2) > 0" class="positive"
+                          >{{ getMajorModCount(result, 2) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 3) > 0" class="positive"
+                          >{{ getMajorModCount(result, 3) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 4) > 0" class="positive"
+                          >{{ getMajorModCount(result, 4) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 5) > 0" class="positive"
+                          >{{ getMajorModCount(result, 5) }}×10</span
+                        ></td
+                      >
+                    </tr>
+
+                    <!-- Artifice mods row -->
+                    <tr class="artifice-mods-row" *ngIf="hasArtificeMods(result)">
+                      <td class="mods-label">Artifice Mods</td>
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 0) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 0) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 1) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 1) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 2) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 2) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 3) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 3) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 4) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 4) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 5) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 5) }}×3</span
+                        ></td
+                      >
+                    </tr>
+
+                    <!-- Final total row -->
+                    <tr class="final-total-row">
+                      <td class="total-label"><strong>Total</strong></td>
+                      <td
+                        ><strong>{{ result.stats[0] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[1] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[2] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[3] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[4] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[5] }}</strong></td
+                      >
                     </tr>
                   </tbody>
                 </table>

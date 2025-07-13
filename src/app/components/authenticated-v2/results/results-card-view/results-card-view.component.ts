@@ -20,7 +20,13 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subject } from "rxjs";
 import { ResultDefinition, ResultItem } from "../results.component";
 import { ConfigurationService } from "../../../../services/configuration.service";
-import { ArmorStat, ArmorStatNames, ArmorStatIconUrls } from "../../../../data/enum/armor-stat";
+import {
+  ArmorStat,
+  ArmorStatNames,
+  ArmorStatIconUrls,
+  StatModifier,
+} from "../../../../data/enum/armor-stat";
+import { ModInformation } from "src/app/data/ModInformation";
 
 @Component({
   selector: "app-results-card-view",
@@ -29,7 +35,6 @@ import { ArmorStat, ArmorStatNames, ArmorStatIconUrls } from "../../../../data/e
 })
 export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   @Input() results: ResultDefinition[] = [];
-  @Input() config: any;
 
   filteredResults: ResultDefinition[] = [];
   displayedResults: ResultDefinition[] = [];
@@ -269,5 +274,108 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   openInDIM(result: ResultDefinition) {
     // This would need to be implemented similar to the expanded result content
     this.snackBar.open("DIM integration coming soon", "", { duration: 2000 });
+  }
+
+  // Configuration values (fragments, subclass bonuses, etc.)
+  hasConfigBonus(): boolean {
+    // Check if any stat has a non-zero configuration value
+    for (let i = 0; i < 6; i++) {
+      if (this.getConfigValue(i) !== 0) return true;
+    }
+    return false;
+  }
+
+  getConfigValue(statIndex: number): number {
+    let configValue = 0;
+    const config = this.configService.readonlyConfigurationSnapshot;
+
+    // Check for enabled mods and add their stat bonuses if present
+    if (config.enabledMods && Array.isArray(config.enabledMods)) {
+      for (const modifierId of config.enabledMods) {
+        const modInfo = ModInformation[modifierId];
+        if (!modInfo || !modInfo.bonus || !Array.isArray(modInfo.bonus)) continue;
+        const bonus = modInfo.bonus.find((b) => b.stat === statIndex);
+        if (bonus) {
+          configValue += bonus.value;
+        }
+      }
+    }
+
+    // You can add other config-based bonuses here if needed
+
+    return configValue;
+  }
+
+  // Minor mods methods
+  hasMinorMods(result: ResultDefinition): boolean {
+    if (!result.mods) return false;
+    const minorMods = [
+      StatModifier.MINOR_WEAPON,
+      StatModifier.MINOR_HEALTH,
+      StatModifier.MINOR_CLASS,
+      StatModifier.MINOR_GRENADE,
+      StatModifier.MINOR_SUPER,
+      StatModifier.MINOR_MELEE,
+    ];
+    return result.mods.some((mod) => minorMods.includes(mod));
+  }
+
+  getMinorModCount(result: ResultDefinition, statIndex: number): number {
+    if (!result.mods) return 0;
+    const minorModForStat = [
+      StatModifier.MINOR_WEAPON,
+      StatModifier.MINOR_HEALTH,
+      StatModifier.MINOR_CLASS,
+      StatModifier.MINOR_GRENADE,
+      StatModifier.MINOR_SUPER,
+      StatModifier.MINOR_MELEE,
+    ][statIndex];
+    return result.mods.filter((mod) => mod === minorModForStat).length;
+  }
+
+  // Major mods methods
+  hasMajorMods(result: ResultDefinition): boolean {
+    if (!result.mods) return false;
+    const majorMods = [
+      StatModifier.MAJOR_WEAPON,
+      StatModifier.MAJOR_HEALTH,
+      StatModifier.MAJOR_CLASS,
+      StatModifier.MAJOR_GRENADE,
+      StatModifier.MAJOR_SUPER,
+      StatModifier.MAJOR_MELEE,
+    ];
+    return result.mods.some((mod) => majorMods.includes(mod));
+  }
+
+  getMajorModCount(result: ResultDefinition, statIndex: number): number {
+    if (!result.mods) return 0;
+    const majorModForStat = [
+      StatModifier.MAJOR_WEAPON,
+      StatModifier.MAJOR_HEALTH,
+      StatModifier.MAJOR_CLASS,
+      StatModifier.MAJOR_GRENADE,
+      StatModifier.MAJOR_SUPER,
+      StatModifier.MAJOR_MELEE,
+    ][statIndex];
+    return result.mods.filter((mod) => mod === majorModForStat).length;
+  }
+
+  // Artifice mods methods
+  hasArtificeMods(result: ResultDefinition): boolean {
+    if (!result.artifice) return false;
+    return result.artifice.length > 0;
+  }
+
+  getArtificeModCount(result: ResultDefinition, statIndex: number): number {
+    if (!result.artifice) return 0;
+    const artificeModForStat = [
+      StatModifier.ARTIFICE_WEAPON,
+      StatModifier.ARTIFICE_HEALTH,
+      StatModifier.ARTIFICE_CLASS,
+      StatModifier.ARTIFICE_GRENADE,
+      StatModifier.ARTIFICE_SUPER,
+      StatModifier.ARTIFICE_MELEE,
+    ][statIndex];
+    return result.artifice.filter((mod) => mod === artificeModForStat).length;
   }
 }
