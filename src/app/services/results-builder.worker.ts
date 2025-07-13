@@ -120,6 +120,17 @@ function checkSlots(
     config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
   ) {
     SlotRequirements--;
+  } else if (
+    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
+    requiredClassItemType != ArmorPerkOrSlot.Any
+  ) {
+    // Class item is fixed to a specific perk - check if we need to reduce slot requirements
+    if (
+      requirements.has(requiredClassItemType) &&
+      (requirements.get(requiredClassItemType) ?? 0) > 0
+    ) {
+      SlotRequirements--;
+    }
   } else {
     if (SlotRequirements > 1) {
       for (let [key, value] of requirements) {
