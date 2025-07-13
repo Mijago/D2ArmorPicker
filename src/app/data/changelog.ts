@@ -44,6 +44,11 @@ export const CHANGELOG_DATA: {
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "The table now shows a 'Total' column instead of the 'Tiers' column.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Renamed the stats.",
         issues: [],
       },
@@ -65,6 +70,11 @@ export const CHANGELOG_DATA: {
       {
         type: ChangelogEntryType.REMOVE,
         text: "Removed 3x100 and 4x100 buttons. We do not need these anymore. Maybe I add another feature like this later when a use case arises.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the Wasted Stats column.",
         issues: [],
       },
       {

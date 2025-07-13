@@ -129,7 +129,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
     "grenade",
     "super",
     "melee",
-    "tiers",
+    "total",
     "mods",
     "dropdown",
   ];
@@ -179,10 +179,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
         "grenade",
         "super",
         "melee",
-        c.showPotentialTierColumn ? "potential_tiers" : "tiers",
+        "total",
         "mods",
       ];
-      if (c.showWastedStatsColumn) columns.push("waste");
       if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
@@ -218,10 +217,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
           return data.stats[ArmorStat.StatMelee];
         case "Tiers":
           return data.tiers;
-        case "Max Tiers":
-          return 10 * (data.tiers + (5 - data.modCount));
-        case "Waste":
-          return data.waste;
+        case "Total":
+          return data.stats.reduce((sum, stat) => sum + stat, 0);
         case "Mods":
           return (
             +100 * data.modCount +
@@ -244,6 +241,17 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
     return element.items.filter((x) => x.mayBeBugged).length > 0;
+  }
+
+  getTotalStats(element: ResultDefinition): number {
+    return (
+      element.stats[0] +
+      element.stats[1] +
+      element.stats[2] +
+      element.stats[3] +
+      element.stats[4] +
+      element.stats[5]
+    );
   }
 
   private ngUnsubscribe = new Subject();

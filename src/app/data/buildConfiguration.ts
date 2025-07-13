@@ -91,8 +91,6 @@ export class BuildConfiguration {
   limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
-  showWastedStatsColumn = false;
-  showPotentialTierColumn = false;
 
   selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
@@ -132,8 +130,6 @@ export class BuildConfiguration {
       modOptimizationStrategy: ModOptimizationStrategy.None,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
-      showWastedStatsColumn: false,
-      showPotentialTierColumn: false,
       characterClass: DestinyClass.Unknown,
       selectedModElement: ModifierType.Prismatic,
       selectedExotics: [],

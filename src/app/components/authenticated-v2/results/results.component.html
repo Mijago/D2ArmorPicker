@@ -437,41 +437,18 @@
           </td>
         </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="tiers">
+        <!-- Total Column -->
+        <ng-container matColumnDef="total">
           <th
             *matHeaderCellDef
             mat-header-cell
-            mat-sort-header="Tiers"
-            matTooltip="The amount of Tiers in this build. A tier is each successful 10-step of any stat."
-            >Tiers
-          </th>
-          <td *matCellDef="let element" mat-cell> {{ element.tiers }} </td>
-        </ng-container>
-
-        <!-- Name Column -->
-        <ng-container matColumnDef="potential_tiers">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Max Tiers"
-            matTooltip="The potential reachable stat tiers with all N stat mods used. As of now, this does NOT take mod filters into consideration."
-            >Max Tiers
+            mat-sort-header="Total"
+            matTooltip="The total sum of all stats in this armor combination."
+            >Total
           </th>
           <td *matCellDef="let element" mat-cell>
-            {{ element.tiers + (5 - element.modCount) }}
+            {{ getTotalStats(element) }}
           </td>
-        </ng-container>
-        <!-- Name Column -->
-        <ng-container matColumnDef="waste">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Waste"
-            matTooltip="How many points are wasted. Any stat not ending in 0 adds to this value."
-            >Wasted
-          </th>
-          <td *matCellDef="let element" mat-cell> {{ element.waste }} </td>
         </ng-container>
 
         <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
