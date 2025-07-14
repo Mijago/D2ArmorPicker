@@ -27,6 +27,7 @@ import {
   StatModifier,
 } from "../../../../data/enum/armor-stat";
 import { ModInformation } from "src/app/data/ModInformation";
+import { DimService } from "../../../../services/dim.service";
 
 @Component({
   selector: "app-results-card-view",
@@ -57,7 +58,8 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
 
   constructor(
     private snackBar: MatSnackBar,
-    private configService: ConfigurationService
+    private configService: ConfigurationService,
+    private dimService: DimService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -260,20 +262,16 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   }
 
   async copyDIMQuery(result: ResultDefinition) {
-    try {
-      // This would need to be implemented similar to the expanded result content
-      const query = result.items.map((item) => `id:'${item.itemInstanceId}'`).join(" OR ");
-
-      await navigator.clipboard.writeText(query);
+    const success = await this.dimService.copyDIMQuery(result);
+    if (success) {
       this.snackBar.open("DIM query copied to clipboard", "", { duration: 2000 });
-    } catch (error) {
+    } else {
       this.snackBar.open("Failed to copy to clipboard", "", { duration: 2000 });
     }
   }
 
   openInDIM(result: ResultDefinition) {
-    // This would need to be implemented similar to the expanded result content
-    this.snackBar.open("DIM integration coming soon", "", { duration: 2000 });
+    this.dimService.openInDIM(result);
   }
 
   // Configuration values (fragments, subclass bonuses, etc.)
