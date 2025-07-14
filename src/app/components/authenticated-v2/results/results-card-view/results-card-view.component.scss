@@ -582,6 +582,42 @@
     min-width: 0; // Allow shrinking
     flex: 1;
   }
+
+  .transfer-state-indicators {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+
+    .transfer-spinner {
+      width: 16px !important;
+      height: 16px !important;
+    }
+
+    .transfer-success {
+      color: #4caf50;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 1;
+    }
+
+    .transfer-error,
+    .transfer-bug-warning {
+      color: #f44336;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 1;
+    }
+
+    mat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 }
 
 .card-actions {

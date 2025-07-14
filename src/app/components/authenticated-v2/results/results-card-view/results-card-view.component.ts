@@ -28,6 +28,7 @@ import {
 } from "../../../../data/enum/armor-stat";
 import { ModInformation } from "src/app/data/ModInformation";
 import { DimService } from "../../../../services/dim.service";
+import { BungieApiService } from "../../../../services/bungie-api.service";
 
 @Component({
   selector: "app-results-card-view",
@@ -60,7 +61,8 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   constructor(
     private snackBar: MatSnackBar,
     private configService: ConfigurationService,
-    private dimService: DimService
+    private dimService: DimService,
+    private bungieApiService: BungieApiService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -404,5 +406,27 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
       StatModifier.ARTIFICE_MELEE,
     ][statIndex];
     return result.artifice.filter((mod) => mod === artificeModForStat).length;
+  }
+
+  // Inventory management methods
+  async moveItems(result: ResultDefinition, equip = false) {
+    const moveResult = await this.bungieApiService.moveResultItems(result, equip);
+
+    if (!moveResult.success) {
+      this.snackBar.open("Error: Could not find a character to move the items to.", "", {
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (moveResult.allSuccessful) {
+      this.snackBar.open("Success! Moved all the items.", "", { duration: 2000 });
+    } else {
+      this.snackBar.open(
+        "Some of the items could not be moved. Make sure that there is enough space in the specific slot. This tool will not move items out of your inventory.",
+        "",
+        { duration: 4000 }
+      );
+    }
   }
 }

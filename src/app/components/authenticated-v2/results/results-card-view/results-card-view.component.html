@@ -259,6 +259,42 @@
                             [matTooltipDisabled]="!shouldShowTooltip(item.name)">
                             {{ getShortItemName(item.name) }}
                           </span>
+
+                          <!-- Transfer state indicators -->
+                          <div class="transfer-state-indicators">
+                            <!-- Loading spinner for waiting/transferring states -->
+                            <mat-progress-spinner
+                              *ngIf="item.transferState === 1 || item.transferState === 2"
+                              class="transfer-spinner"
+                              color="primary"
+                              diameter="16"
+                              mode="indeterminate">
+                            </mat-progress-spinner>
+
+                            <!-- Success icon -->
+                            <mat-icon
+                              *ngIf="item.transferState === 3"
+                              class="transfer-success"
+                              matTooltip="Item successfully moved to inventory.">
+                              check_circle_outline
+                            </mat-icon>
+
+                            <!-- Error icon -->
+                            <mat-icon
+                              *ngIf="item.transferState === 4"
+                              class="transfer-error"
+                              matTooltip="This item could not be moved. Make sure that there is enough space on your character.">
+                              error_outline
+                            </mat-icon>
+
+                            <!-- Bug warning icon -->
+                            <mat-icon
+                              *ngIf="item.mayBeBugged"
+                              class="transfer-bug-warning"
+                              matTooltip="The stats of this item may be incorrect. Make sure that you remove every positive or negative stat modifier from this item.">
+                              report_problem
+                            </mat-icon>
+                          </div>
                         </div>
                       </td>
                       <td>{{ getItemStatWithMasterwork(item, 0) }}</td>
@@ -501,6 +537,20 @@
                 <button mat-stroked-button (click)="openInDIM(result); $event.stopPropagation()">
                   <mat-icon>open_in_new</mat-icon>
                   Open in DIM
+                </button>
+                <button
+                  mat-stroked-button
+                  matTooltip="Warning: Does not move items out of your inventory."
+                  (click)="moveItems(result); $event.stopPropagation()">
+                  <mat-icon>move_down</mat-icon>
+                  Move Items
+                </button>
+                <button
+                  mat-stroked-button
+                  matTooltip="Warning: Does not move items out of your inventory."
+                  (click)="moveItems(result, true); $event.stopPropagation()">
+                  <mat-icon>upload</mat-icon>
+                  Equip Items
                 </button>
               </div>
             </div>

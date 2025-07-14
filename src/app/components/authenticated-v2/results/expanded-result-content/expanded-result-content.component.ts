@@ -26,7 +26,7 @@ import {
   SpecialArmorStat,
   StatModifier,
 } from "src/app/data/enum/armor-stat";
-import { ResultDefinition, ResultItem, ResultItemMoveState } from "../results.component";
+import { ResultDefinition, ResultItem } from "../results.component";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierValue } from "../../../../data/modifier";
@@ -38,7 +38,6 @@ import { ModifierType } from "../../../../data/enum/modifierType";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY } from "../../../../data/masterworkCost";
-import { MembershipService } from "src/app/services/membership.service";
 import { DimService } from "../../../../services/dim.service";
 
 @Component({
@@ -72,7 +71,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private config: ConfigurationService,
     private _snackBar: MatSnackBar,
     private bungieApi: BungieApiService,
-    private membership: MembershipService,
     private dimService: DimService
   ) {}
 
@@ -139,56 +137,23 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  get mayAnyItemBeBugged() {
-    return (this.element?.items.flat().filter((d: ResultItem) => d.mayBeBugged).length || 0) > 0;
-  }
-
-  async getCharacterId() {
-    // get character Id
-    let characters = await this.membership.getCharacters();
-    characters = characters.filter((c) => c.clazz == this.config_characterClass);
-    if (characters.length == 0) {
-      this.openSnackBar("Error: Could not find a character to move the items to.");
-      return null;
-    }
-    return characters[0].characterId;
-  }
-
   async moveItems(equip = false) {
-    for (let item of (this.element?.items || []).flat()) {
-      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
+    if (!this.element) return;
+
+    const result = await this.bungieApi.moveResultItems(this.element, equip);
+
+    if (!result.success) {
+      this.openSnackBar("Error: Could not find a character to move the items to.");
+      return;
     }
 
-    let characterId = await this.getCharacterId();
-    if (!characterId) return;
-
-    let allSuccessful = true;
-    let items = (this.element?.items || []).flat().sort((i) => (i.exotic ? 1 : -1));
-    for (let item of items) {
-      item.transferState = ResultItemMoveState.TRANSFERRING;
-      let success = await this.bungieApi.transferItem(item.itemInstanceId, characterId, equip);
-      item.transferState = success
-        ? ResultItemMoveState.TRANSFERRED
-        : ResultItemMoveState.ERROR_DURING_TRANSFER;
-      if (!success) allSuccessful = false;
-    }
-    if (allSuccessful) {
+    if (result.allSuccessful) {
       this.openSnackBar("Success! Moved all the items.");
     } else {
       this.openSnackBar(
         "Some of the items could not be moved. Make sure that there is enough space in the specific slot. This tool will not move items out of your inventory."
       );
     }
-  }
-
-  getItemsThatMustBeMasterworked(): ResultItem[] | undefined {
-    return this.element?.items.flat().filter((item) => {
-      if (item.masterworked) return false;
-      if (item.exotic && !this.config_assumeExoticsMasterworked) return false;
-      if (!item.exotic && !this.config_assumeLegendariesMasterworked) return false;
-
-      return true;
-    });
   }
 
   calculateRequiredMasterworkCost() {

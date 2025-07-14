@@ -55,6 +55,10 @@ import { HttpClientService } from "./http-client.service";
 import { IVendorInfo } from "../data/types/IVendorInfo";
 import { StatusProviderService } from "./status-provider.service";
 import { IVendorItemSubscreen } from "../data/types/IVendorItemSubscreen";
+import {
+  ResultDefinition,
+  ResultItemMoveState,
+} from "../components/authenticated-v2/results/results.component";
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -828,5 +832,169 @@ export class BungieApiService {
     await this.db.writeManifestArmor(entries, manifestVersion);
 
     return manifestTables;
+  }
+
+  async moveItem(
+    itemInstanceId: string,
+    sourceCharacterId: string,
+    targetCharacterId: string
+  ): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const item = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item) return false;
+
+    // If the item is already on the target character, do nothing
+    if (item.Response.characterId === targetCharacterId) return true;
+
+    // If the item is not in the vault, move it to the vault first
+    if (item.Response.item.data?.location !== 2) {
+      await this.moveItemToVault(itemInstanceId);
+    }
+
+    // Now transfer from vault to the target character
+    return this.transferItem(itemInstanceId, targetCharacterId);
+  }
+
+  async swapItems(
+    itemInstanceId1: string,
+    itemInstanceId2: string,
+    characterId: string
+  ): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    // Get both items
+    const item1 = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId1,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+    const item2 = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId2,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item1 || !item2) return false;
+
+    // If both items are on the same character, we can't really swap them in-place
+    // So we'll move item1 to vault and then transfer item2 to the character
+    if (item1.Response.characterId === item2.Response.characterId) {
+      await this.moveItemToVault(itemInstanceId1);
+      // Item2 is already on the target character, so we're done
+      return true;
+    }
+
+    // Otherwise, move item 1 to vault (if not already there) and then transfer item 2 to item 1's previous location
+    await this.moveItemToVault(itemInstanceId1);
+
+    return this.transferItem(itemInstanceId2, item1.Response.characterId || "");
+  }
+
+  async equipItemById(itemInstanceId: string, characterId: string): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const item = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item) return false;
+
+    const payload = {
+      characterId: characterId,
+      membershipType: destinyMembership.membershipType,
+      stackSize: 1,
+      itemId: item.Response.item.data?.itemInstanceId || "",
+      itemReferenceHash: item.Response.item.data?.itemHash || 0,
+    };
+
+    return !!(await equipItem((d) => this.http.$httpPost(d), payload));
+  }
+
+  /**
+   * Gets the character ID for the configured character class
+   */
+  async getCharacterIdForCurrentClass(): Promise<string | null> {
+    const config = this.config.readonlyConfigurationSnapshot;
+    let characters = await this.membership.getCharacters();
+    characters = characters.filter((c: any) => c.clazz == config.characterClass);
+
+    if (characters.length == 0) {
+      return null;
+    }
+
+    return characters[0].characterId;
+  }
+
+  /**
+   * Moves all items from a result to the character's inventory
+   * @param result The result definition containing items to move
+   * @param equip Whether to equip the items after moving them
+   * @returns Promise<{success: boolean, allSuccessful: boolean}>
+   */
+  async moveResultItems(
+    result: ResultDefinition,
+    equip = false
+  ): Promise<{ success: boolean; allSuccessful: boolean }> {
+    // Set all items to waiting state
+    for (let item of (result?.items || []).flat()) {
+      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
+    }
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      // Reset transfer states on error
+      for (let item of (result?.items || []).flat()) {
+        item.transferState = ResultItemMoveState.ERROR_DURING_TRANSFER;
+      }
+      return { success: false, allSuccessful: false };
+    }
+
+    let allSuccessful = true;
+    // Sort items so exotics are moved last (they might need special handling)
+    const items = (result?.items || []).flat().sort((i) => (i.exotic ? 1 : -1));
+
+    for (let item of items) {
+      item.transferState = ResultItemMoveState.TRANSFERRING;
+      const success = await this.transferItem(item.itemInstanceId, characterId, equip);
+      item.transferState = success
+        ? ResultItemMoveState.TRANSFERRED
+        : ResultItemMoveState.ERROR_DURING_TRANSFER;
+
+      if (!success) {
+        allSuccessful = false;
+      }
+    }
+
+    return { success: true, allSuccessful };
   }
 }
