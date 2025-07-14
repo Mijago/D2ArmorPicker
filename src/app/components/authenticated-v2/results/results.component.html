@@ -18,85 +18,49 @@
 <mat-card appearance="outlined" id="card-results">
   <mat-card-header>
     <mat-card-title>Results</mat-card-title>
-    <mat-card-subtitle>
-      <ng-container *ngIf="this.totalResults > 0">
-        Click on a row to expand it and to see the list of the items required for this build.<br />
-      </ng-container>
-      <ng-container *ngIf="this.totalResults === 0">
-        <div class="no-found-sadcat-container">
-          <img src="assets/status/emoji/sadcat.png" class="no-found-sadcat" />&nbsp;
-        </div>
-        <span class="warning-none-found"><b>No combinations found.</b></span>
-        You should loosen your settings a bit.
-      </ng-container>
-    </mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
     <div>
-      <div
-        class="config-summary-box"
-        [style.display]="'flex'"
-        [style.flex-direction]="'row'"
-        [style.align-items]="'start center'"
-        [style.gap]="'5px'">
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="info-box"
-          [style.display]="'flex'">
-          <mat-label>Items Used</mat-label>
-          <input matInput readonly value="{{ this.itemCount | number }}" />
-        </mat-form-field>
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="info-box"
-          [style.display]="'flex'">
-          <mat-label>Combinations generated</mat-label>
-          <input matInput readonly value="{{ this.totalResults | number }}" />
-
-          <mat-icon
-            #tooltip="matTooltip"
-            *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 5e4"
-            class="report-problem-icon"
-            matSuffix
-            matTooltip="Note: To speed up the whole process, only {{
-              this.parsedResults | number
-            }} results are listed in this table.
-                        If you need more entries, disable the limitation in the advanced settings."
-            >report_problem
-          </mat-icon>
-          <mat-icon
-            #tooltip="matTooltip"
-            *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 1e6"
-            class="report-problem-icon"
-            matSuffix
-            matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
-              this.parsedResults | number
-            }} results are listed in this table.
-                                You should narrow down your settings a bit."
-            >report_problem
-          </mat-icon>
-        </mat-form-field>
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="info-box"
-          [style.display]="'flex'">
-          <mat-label>Time required</mat-label>
-          <input matInput readonly value="{{ this.totalTime | number }}ms" />
-        </mat-form-field>
+      <div class="info-stats-container">
+        <div class="info-stat-card">
+          <span class="info-stat-label">Items Used</span>
+          <span class="info-stat-value">{{ this.itemCount | number }}</span>
+        </div>
+        <div class="info-stat-card">
+          <span class="info-stat-label">Combinations generated</span>
+          <div class="info-stat-value-container">
+            <span class="info-stat-value">{{ this.totalResults | number }}</span>
+            <mat-icon
+              #tooltip="matTooltip"
+              *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 5e4"
+              class="report-problem-icon"
+              matTooltip="Note: To speed up the whole process, only {{
+                this.parsedResults | number
+              }} results are listed in this table.
+                          If you need more entries, disable the limitation in the advanced settings."
+              >report_problem
+            </mat-icon>
+            <mat-icon
+              #tooltip="matTooltip"
+              *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 1e6"
+              class="report-problem-icon"
+              matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
+                this.parsedResults | number
+              }} results are listed in this table.
+                                  You should narrow down your settings a bit."
+              >report_problem
+            </mat-icon>
+          </div>
+        </div>
+        <div class="info-stat-card">
+          <span class="info-stat-label">Time required</span>
+          <span class="info-stat-value">{{ this.totalTime | number }}ms</span>
+        </div>
       </div>
 
-      <mat-form-field
-        appearance="outline"
-        subscriptSizing="dynamic"
-        subscriptSizing="dynamic"
-        class="config-summary-box"
-        disabled>
-        <mat-label>Summary of important configuration choices</mat-label>
-        <input matInput readonly value="&nbsp;" class="hidden-input" />
-        <mat-chip-listbox aria-label="Configuration Summary">
+      <div class="config-summary-container">
+        <h4 class="config-summary-title">Summary of important configuration choices</h4>
+        <mat-chip-listbox aria-label="Configuration Summary" class="config-summary-chips">
           <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_selectedExotics.indexOf(-1) > -1"
@@ -225,7 +189,7 @@
             Include Vendor Items
           </mat-chip-option>
         </mat-chip-listbox>
-      </mat-form-field>
+      </div>
 
       <div class="view-controls">
         <mat-button-toggle-group
