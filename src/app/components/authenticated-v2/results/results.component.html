@@ -228,17 +228,6 @@
       </mat-form-field>
 
       <div class="view-controls">
-        <div class="hint-text">
-          <mat-icon aria-hidden="false" inline>info</mat-icon>
-          <span *ngIf="viewMode === 'table'"
-            >Note that you can change the sort column and order of the table by clicking on the
-            headers.</span
-          >
-          <span *ngIf="viewMode === 'cards'"
-            >Use the filters and sort options above to customize your view.</span
-          >
-        </div>
-
         <mat-button-toggle-group
           [value]="viewMode"
           (change)="onViewModeChange($event)"
@@ -504,6 +493,7 @@
           mat-row></tr>
       </table>
       <mat-paginator
+        [style.display]="viewMode === 'table' ? 'block' : 'none'"
         [pageSizeOptions]="[25, 50, 75, 100]"
         aria-label="Select page of periodic elements"
         pageSize="25"
