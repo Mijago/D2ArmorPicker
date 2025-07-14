@@ -126,8 +126,8 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
             bValue = this.getTotalStats(b);
             break;
           case "mods":
-            aValue = this.getModCost(a);
-            bValue = this.getModCost(b);
+            aValue = this.getModSortValue(a);
+            bValue = this.getModSortValue(b);
             break;
           case "weapon":
             aValue = a.stats[ArmorStat.StatWeapon];
@@ -238,6 +238,12 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
     }, 0);
 
     return modCost + artificeCost;
+  }
+
+  getModSortValue(result: ResultDefinition): number {
+    // Use the same sorting logic as results.component.ts:
+    // Primary sort by mod count (weighted by 100), then by mod cost
+    return +100 * result.modCount + result.modCost;
   }
 
   getStatIcon(statIndex: number): string {
