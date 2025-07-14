@@ -546,6 +546,10 @@
     background: rgba(156, 39, 176, 0.1);
     border: 1px solid rgba(156, 39, 176, 0.3);
     font-weight: bold;
+
+    .total-label {
+      text-align: left !important;
+    }
   }
 
   .positive {
