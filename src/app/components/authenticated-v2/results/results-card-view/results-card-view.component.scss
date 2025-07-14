@@ -501,6 +501,33 @@
   .total-row {
     background: rgba(76, 175, 80, 0.1);
     border: 1px solid rgba(76, 175, 80, 0.3);
+
+    .expandable-row {
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background: rgba(76, 175, 80, 0.2);
+      }
+
+      .expandable-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+
+        .expand-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          transition: transform 0.2s ease;
+        }
+      }
+
+      &.expanded .expand-icon {
+        transform: rotate(180deg);
+      }
+    }
   }
 
   .config-row {

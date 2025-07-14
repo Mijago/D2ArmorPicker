@@ -45,6 +45,7 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   sortDirection: "asc" | "desc" = "desc";
 
   expandedCard: number | null = null;
+  expandedBreakdown: number | null = null;
   isLoading = false;
 
   // Infinite scroll settings
@@ -64,6 +65,7 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["results"] && this.results) {
+      this.expandedBreakdown = null; // Reset breakdown expansion on new results
       this.initializeData();
     }
   }
@@ -192,6 +194,27 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
 
   toggleCard(index: number) {
     this.expandedCard = this.expandedCard === index ? null : index;
+    // Reset breakdown expansion when card is collapsed
+    if (this.expandedCard !== index) {
+      this.expandedBreakdown = null;
+    }
+  }
+
+  toggleBreakdown(index: number) {
+    this.expandedBreakdown = this.expandedBreakdown === index ? null : index;
+  }
+
+  isBreakdownExpanded(index: number): boolean {
+    return this.expandedBreakdown === index;
+  }
+
+  hasBreakdownRows(result: ResultDefinition): boolean {
+    return (
+      this.hasConfigBonus() ||
+      this.hasMinorMods(result) ||
+      this.hasMajorMods(result) ||
+      this.hasArtificeMods(result)
+    );
   }
 
   trackByFn(index: number, item: ResultDefinition): any {

@@ -271,7 +271,21 @@
 
                     <!-- Total armor stats row -->
                     <tr class="total-row" *ngIf="result.statsNoMods">
-                      <td class="total-label"><strong>Total (armor)</strong></td>
+                      <td
+                        class="total-label expandable-row"
+                        [class.expanded]="isBreakdownExpanded(i)"
+                        (click)="toggleBreakdown(i); $event.stopPropagation()"
+                        *ngIf="hasBreakdownRows(result)">
+                        <div class="expandable-content">
+                          <strong>Total (armor)</strong>
+                          <mat-icon class="expand-icon">{{
+                            isBreakdownExpanded(i) ? "expand_less" : "expand_more"
+                          }}</mat-icon>
+                        </div>
+                      </td>
+                      <td class="total-label" *ngIf="!hasBreakdownRows(result)">
+                        <strong>Total (armor)</strong>
+                      </td>
                       <td
                         ><strong>{{ result.statsNoMods[0] }}</strong></td
                       >
@@ -293,7 +307,7 @@
                     </tr>
 
                     <!-- Configuration bonus row -->
-                    <tr class="config-row" *ngIf="hasConfigBonus()">
+                    <tr class="config-row" *ngIf="hasConfigBonus() && isBreakdownExpanded(i)">
                       <td class="config-label">Configuration</td>
                       <td
                         ><span
@@ -340,7 +354,9 @@
                     </tr>
 
                     <!-- Minor mods row -->
-                    <tr class="minor-mods-row" *ngIf="hasMinorMods(result)">
+                    <tr
+                      class="minor-mods-row"
+                      *ngIf="hasMinorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Minor Mods</td>
                       <td
                         ><span *ngIf="getMinorModCount(result, 0) > 0" class="positive"
@@ -375,7 +391,9 @@
                     </tr>
 
                     <!-- Major mods row -->
-                    <tr class="major-mods-row" *ngIf="hasMajorMods(result)">
+                    <tr
+                      class="major-mods-row"
+                      *ngIf="hasMajorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Major Mods</td>
                       <td
                         ><span *ngIf="getMajorModCount(result, 0) > 0" class="positive"
@@ -410,7 +428,9 @@
                     </tr>
 
                     <!-- Artifice mods row -->
-                    <tr class="artifice-mods-row" *ngIf="hasArtificeMods(result)">
+                    <tr
+                      class="artifice-mods-row"
+                      *ngIf="hasArtificeMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Artifice Mods</td>
                       <td
                         ><span *ngIf="getArtificeModCount(result, 0) > 0" class="positive"
