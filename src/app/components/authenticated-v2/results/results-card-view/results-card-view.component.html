@@ -246,9 +246,11 @@
                     <tr *ngFor="let item of result.items" class="armor-row">
                       <td class="item-name">
                         <div class="item-info">
-                          <div
-                            class="small-item-icon"
-                            [style.background-color]="getItemColor(item)"></div>
+                          <app-item-icon
+                            [itemHash]="item.hash"
+                            [masterworked]="item.masterworked"
+                            [source]="item.source">
+                          </app-item-icon>
                           <span
                             class="item-name-text"
                             [matTooltip]="item.name"
