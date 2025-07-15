@@ -57,7 +57,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public config_characterClass = DestinyClass.Unknown;
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
-  public config_assumeClassItemMasterworked = false;
   public config_enabledMods: ModOrAbility[] = [];
   public DIMUrl: string = "";
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
@@ -103,7 +102,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       this.config_characterClass = c.characterClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this.config_enabledMods = c.enabledMods;
       this.configValues = c.enabledMods
         .reduce((p, v) => {

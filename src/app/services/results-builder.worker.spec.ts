@@ -642,7 +642,6 @@ describe("Results Worker", () => {
     const config = new BuildConfiguration();
     config.assumeLegendariesMasterworked = true;
     config.assumeExoticsMasterworked = true;
-    config.assumeClassItemMasterworked = true;
     config.minimumStatTiers[ArmorStat.StatWeapon].value = 0;
     config.minimumStatTiers[ArmorStat.StatHealth].value = 9;
     config.minimumStatTiers[ArmorStat.StatClass].value = 6;

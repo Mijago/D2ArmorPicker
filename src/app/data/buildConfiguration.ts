@@ -84,7 +84,6 @@ export class BuildConfiguration {
   includeCollectionRolls = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
-  assumeClassItemMasterworked = true;
   onlyUseMasterworkedExotics = false;
   onlyUseMasterworkedLegendaries = false;
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
@@ -125,7 +124,6 @@ export class BuildConfiguration {
       allowBlueArmorPieces: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
-      assumeClassItemMasterworked: true,
       limitParsedResults: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
       tryLimitWastedStats: false,

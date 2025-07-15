@@ -81,16 +81,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             help: undefined,
           },
           {
-            name: "Assume all legendary class items are masterworked",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.assumeClassItemMasterworked = v)),
-            value: c.assumeClassItemMasterworked,
-            disabled: false,
-            impactsResultCount: false,
-            help: "If this setting is enabled, a plain +2 is added to every stat. This means that your Class Item must be masterworked. Ignored if you select an exotic class item.",
-          },
-          {
             name: "Assume all exotic items are masterworked",
             type: "boolean",
             onToggle: (v: boolean) =>

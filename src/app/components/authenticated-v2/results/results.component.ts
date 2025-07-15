@@ -102,7 +102,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _results: ResultDefinition[] = [];
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
-  _config_assumeClassItemMasterworked: Boolean = false;
 
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
@@ -159,7 +158,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this.selectedClass = c.characterClass;
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
       this._config_maximumStatMods = c.maximumStatMods;
