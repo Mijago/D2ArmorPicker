@@ -22,12 +22,6 @@ mat-card {
   margin-right: auto;
 }
 
-button {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-}
-
 .example-header-image {
   background-image: url("../../../assets/superGreatLogo.png");
   background-size: cover;
@@ -42,4 +36,185 @@ button {
 }
 .armor-image-container > img {
   max-height: 300px;
+}
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+}
+
+.login-card {
+  max-width: 800px;
+  width: 100%;
+  margin: 0;
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.header-image {
+  background-image: url("../../../assets/superGreatLogo.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+}
+
+.carousel-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-slide {
+  min-width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.carousel-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: white;
+  padding: 40px 30px 30px;
+  text-align: center;
+}
+
+.carousel-caption h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.carousel-caption p {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative; /* Ensure indicators are positioned correctly */
+  display: block;
+}
+
+.indicator:hover {
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+.indicator.active {
+  background: white;
+  border-color: white;
+}
+
+.login-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.login-button {
+  padding: 12px 40px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  text-transform: none;
+  position: relative; /* Reset positioning for login button */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 10px;
+  }
+  
+  .login-card {
+    max-width: 100%;
+  }
+  
+  .carousel-container {
+    height: 300px;
+  }
+  
+  .carousel-image {
+    height: 300px;
+  }
+  
+  .carousel-caption h3 {
+    font-size: 1.4rem;
+  }
+  
+  .carousel-caption p {
+    font-size: 1rem;
+  }
+  
+  .carousel-caption {
+    padding: 30px 20px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-container {
+    height: 250px;
+  }
+  
+  .carousel-image {
+    height: 250px;
+  }
+  
+  .carousel-caption h3 {
+    font-size: 1.2rem;
+  }
+  
+  .carousel-caption p {
+    font-size: 0.9rem;
+  }
 }
