@@ -499,7 +499,6 @@ export class InventoryService {
                     name: instance.name,
                     exotic: !!instance.isExotic,
                     masterworked: instance.masterworked,
-                    mayBeBugged: instance.mayBeBugged,
                     slot: instance.slot,
                     perk: instance.perk,
                     transferState: 0, // TRANSFER_NONE

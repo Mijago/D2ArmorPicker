@@ -93,6 +93,8 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
             name: "Missing Armor",
             icon: "/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg",
             description: "This armor has been deleted",
+            masterworkLevel: 0,
+            archetypeStats: [],
             clazz: DestinyClass.Unknown,
             slot: ArmorSlot.ArmorSlotNone,
             isExotic: 0,

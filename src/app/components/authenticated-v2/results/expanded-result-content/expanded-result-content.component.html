@@ -142,17 +142,6 @@
           </mat-icon>
         </td>
         <!-- // Moving to inventory -->
-        <td *ngIf="i.mayBeBugged">
-          <mat-icon
-            #tooltip="matTooltip"
-            aria-hidden="false"
-            aria-label="Error"
-            class="report-problem-icon"
-            inline
-            matTooltip="The stats of this item may be incorrect. Make sure that you remove every positive or negative stat modifier from this item.">
-            report_problem
-          </mat-icon>
-        </td>
       </tr>
     </ng-container>
     <!--Sum line without mods-->

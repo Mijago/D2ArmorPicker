@@ -402,17 +402,6 @@
               matTooltip="Click to hide details for this build.">
               expand_less
             </mat-icon>
-
-            <mat-icon
-              #tooltip="matTooltip"
-              *ngIf="checkIfAnyItemsMayBeInvalid(element)"
-              aria-hidden="false"
-              aria-label="Error"
-              class="report-problem-icon"
-              inline
-              matTooltip="The stats of this build may be incorrect. Make sure that you remove every positive or negative stat modifier from the marked items.">
-              report_problem
-            </mat-icon>
           </td>
         </ng-container>
 

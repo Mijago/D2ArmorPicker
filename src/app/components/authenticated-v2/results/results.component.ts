@@ -73,7 +73,6 @@ export interface ResultItem {
   name: string;
   exotic: boolean;
   masterworked: boolean;
-  mayBeBugged: boolean;
   stats: number[];
   slot: ArmorSlot;
   perk: ArmorPerkOrSlot;
@@ -242,10 +241,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
     console.timeEnd("Update Table Data");
-  }
-
-  checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return element.items.filter((x) => x.mayBeBugged).length > 0;
   }
 
   getTotalStats(element: ResultDefinition): number {
