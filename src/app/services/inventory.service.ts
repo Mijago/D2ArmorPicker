@@ -499,7 +499,6 @@ export class InventoryService {
                     name: instance.name,
                     exotic: !!instance.isExotic,
                     masterworked: instance.masterworked,
-                    mayBeBugged: instance.mayBeBugged,
                     slot: instance.slot,
                     perk: instance.perk,
                     transferState: 0, // TRANSFER_NONE
@@ -690,8 +689,12 @@ export class InventoryService {
 
       this.status.modifyStatus((s) => (s.updatingInventory = false));
       console.error(e);
-      await this.updateManifest(true);
-      return await this.updateInventoryItems(true, errorLoop++);
+
+      await this.status.setApiError();
+
+      //await this.updateManifest(true);
+      //return await this.updateInventoryItems(true, errorLoop++);
+      return false;
     }
   }
 }

@@ -73,7 +73,6 @@ export interface ResultItem {
   name: string;
   exotic: boolean;
   masterworked: boolean;
-  mayBeBugged: boolean;
   stats: number[];
   slot: ArmorSlot;
   perk: ArmorPerkOrSlot;
@@ -102,7 +101,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
   _results: ResultDefinition[] = [];
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
-  _config_assumeClassItemMasterworked: Boolean = false;
 
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
@@ -159,7 +157,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this.selectedClass = c.characterClass;
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
       this._config_maximumStatMods = c.maximumStatMods;
@@ -244,10 +241,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
     console.timeEnd("Update Table Data");
-  }
-
-  checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return element.items.filter((x) => x.mayBeBugged).length > 0;
   }
 
   getTotalStats(element: ResultDefinition): number {

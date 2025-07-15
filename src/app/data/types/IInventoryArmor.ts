@@ -16,6 +16,7 @@
  */
 
 import { ArmorSlot } from "../enum/armor-slot";
+import { ArmorStat } from "../enum/armor-stat";
 import { IDisplayManifestArmor, IManifestArmor } from "./IManifestArmor";
 
 export interface ITimestampedEntry {
@@ -34,6 +35,9 @@ export interface IDestinyArmor {
   hash: number;
   slot: ArmorSlot;
   masterworked: boolean;
+
+  masterworkLevel: number; // 0-5; 5 = full masterwork
+  archetypeStats: Array<ArmorStat>;
 
   mobility: number;
   resilience: number;
@@ -55,8 +59,6 @@ export interface IInventoryArmor
     IManifestArmor,
     IDestinyArmor,
     ITimestampedEntry {
-  mayBeBugged: boolean; // if there was an error in the parsing
-
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
 }
@@ -72,8 +74,9 @@ export function createArmorItem(
     {
       id: -1,
       itemInstanceId,
-      mayBeBugged: false,
       masterworked: false,
+      masterworkLevel: 0,
+      archetypeStats: [],
       energyLevel: 0,
       mobility: 0,
       resilience: 0,

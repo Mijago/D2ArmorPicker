@@ -74,6 +74,11 @@ export const CHANGELOG_DATA: {
       },
       {
         type: ChangelogEntryType.REMOVE,
+        text: "Removed the setting to assume that all legendary class items are masterworked. This is included in the other masterwork assumption settings.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
         text: "Removed the Wasted Stats column.",
         issues: [],
       },

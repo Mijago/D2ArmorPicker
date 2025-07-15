@@ -658,7 +658,6 @@ export function handlePermutation(
     // if masterworked (or assumed masterworked) class item, add 2 to each stat
     if (
       classItem.masterworked ||
-      config.assumeClassItemMasterworked ||
       (classItem.isExotic && config.assumeExoticsMasterworked) ||
       (!classItem.isExotic && config.assumeLegendariesMasterworked)
     )
