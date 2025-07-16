@@ -25,7 +25,10 @@ import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ArmorPerkOrSlot } from "../../../../data/enum/armor-stat";
-import { ExoticClassItemPerkNames } from "../../../../data/exotic-class-item-spirits";
+import {
+  ExoticClassItemPerkNames,
+  ExoticClassItemSpirits,
+} from "../../../../data/exotic-class-item-spirits";
 
 export const listAnimation = trigger("listAnimation", [
   transition("* <=> *", [
@@ -124,7 +127,9 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     // Convert first perk hashes to display format
     this.availableFirstPerks = Array.from(firstPerks)
       .map((perkHash) => ({
-        name: ExoticClassItemPerkNames[perkHash] || `Unknown Perk ${perkHash}`,
+        name:
+          ExoticClassItemPerkNames[perkHash as ExoticClassItemSpirits] ||
+          `Unknown Perk ${perkHash}`,
         value: perkHash as ArmorPerkOrSlot,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
@@ -132,7 +137,9 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     // Convert second perk hashes to display format
     this.availableSecondPerks = Array.from(secondPerks)
       .map((perkHash) => ({
-        name: ExoticClassItemPerkNames[perkHash] || `Unknown Perk ${perkHash}`,
+        name:
+          ExoticClassItemPerkNames[perkHash as ExoticClassItemSpirits] ||
+          `Unknown Perk ${perkHash}`,
         value: perkHash as ArmorPerkOrSlot,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));

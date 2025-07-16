@@ -86,6 +86,10 @@ function collectInvestmentStats(
   }
 
   const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
+  if (r.isExotic && r.slot === ArmorSlot.ArmorSlotClass) {
+    plugs.push(plugHashes[10]); // Exotic class item perk
+    plugs.push(plugHashes[11]); // Exotic class item perk
+  }
   r.statPlugHashes = plugs;
   var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
   for (let entry of plm) {
@@ -94,13 +98,6 @@ function collectInvestmentStats(
         investmentStats[newStats.statTypeHash] += newStats.value;
     }
   }
-
-  /*
-  if (r.slot == ArmorSlot.ArmorSlotClass) {
-    if (r.name == "Temptation's Mark")
-      investmentStats[2996146975] += 10; // DEBUG
-  }
-  //*/
 
   applyInvestmentStats(r, investmentStats);
 
@@ -374,6 +371,8 @@ export class BungieApiService {
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
+        } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          armorItem.armorSystem = ArmorSystem.Armor3;
         } else {
           armorItem.armorSystem = ArmorSystem.Armor2;
           armorItem.masterworkLevel =
