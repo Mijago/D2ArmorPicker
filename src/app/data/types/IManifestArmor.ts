@@ -44,7 +44,7 @@ export interface IDisplayManifestArmor {
 export interface IManifestArmor extends IDisplayManifestArmor {
   watermarkIcon: string;
   perk: ArmorPerkOrSlot;
-  exoticPerkHash: number;
+  exoticPerkHash: number[];
   isSunset: boolean;
   rawData?: string;
   itemType: number;

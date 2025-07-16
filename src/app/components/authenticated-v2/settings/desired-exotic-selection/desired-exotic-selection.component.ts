@@ -24,6 +24,8 @@ import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
+import { ArmorPerkOrSlot } from "../../../../data/enum/armor-stat";
+import { ExoticClassItemPerkNames } from "../../../../data/exotic-class-item-spirits";
 
 export const listAnimation = trigger("listAnimation", [
   transition("* <=> *", [
@@ -43,12 +45,17 @@ export const listAnimation = trigger("listAnimation", [
 })
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   selectedExotics: number[] = [];
+  selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
   includeCollectionRolls = false;
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
+
+  anyPerkValue = ArmorPerkOrSlot.Any;
+  availableFirstPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
+  availableSecondPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
 
   constructor(
     public inventory: InventoryService,
@@ -64,6 +71,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.includeCollectionRolls = c.includeCollectionRolls;
       this.includeVendorRolls = c.includeVendorRolls;
       this.selectedExotics = c.selectedExotics;
+      this.selectedExoticPerks = c.selectedExoticPerks;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
     });
@@ -90,6 +98,60 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
       armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
     ];
+
+    // Update available exotic class item perks
+    this.updateAvailableExoticClassItemPerks();
+  }
+
+  private updateAvailableExoticClassItemPerks() {
+    const classItemExotics = this.exotics[4]; // Class items are at index 4
+    const firstPerks = new Set<number>();
+    const secondPerks = new Set<number>();
+
+    // Collect first and second perks separately from exotic class items
+    classItemExotics.forEach((exotic) => {
+      exotic.instances.forEach((item) => {
+        // Exotic class items have exactly two perks in exoticPerkHash array
+        if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
+          // Add first perk (left dropdown)
+          firstPerks.add(item.exoticPerkHash[0]);
+          // Add second perk (right dropdown)
+          secondPerks.add(item.exoticPerkHash[1]);
+        }
+      });
+    });
+
+    // Convert first perk hashes to display format
+    this.availableFirstPerks = Array.from(firstPerks)
+      .map((perkHash) => ({
+        name: ExoticClassItemPerkNames[perkHash] || `Unknown Perk ${perkHash}`,
+        value: perkHash as ArmorPerkOrSlot,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Convert second perk hashes to display format
+    this.availableSecondPerks = Array.from(secondPerks)
+      .map((perkHash) => ({
+        name: ExoticClassItemPerkNames[perkHash] || `Unknown Perk ${perkHash}`,
+        value: perkHash as ArmorPerkOrSlot,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.debug("Available first perks:", this.availableFirstPerks);
+    console.debug("Available second perks:", this.availableSecondPerks);
+  }
+
+  hasSelectedExoticClassItem(): boolean {
+    const classItemExotics = this.exotics[4] || [];
+    return classItemExotics.some((exotic) =>
+      exotic.items.some((item) => this.selectedExotics.includes(item.hash))
+    );
+  }
+
+  setExoticPerk(index: number, perk: ArmorPerkOrSlot) {
+    this.config.modifyConfiguration((c) => {
+      c.selectedExoticPerks[index] = perk;
+    });
   }
 
   setAllowCollectionRolls(allow: boolean) {

@@ -377,6 +377,30 @@ addEventListener("message", async ({ data }) => {
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
 
+  // Filter exotic class items based on selected exotic perks if they are not "Any"
+  if (config.selectedExoticPerks && config.selectedExoticPerks.length >= 2) {
+    const firstPerkFilter = config.selectedExoticPerks[0];
+    const secondPerkFilter = config.selectedExoticPerks[1];
+
+    if (
+      (firstPerkFilter !== ArmorPerkOrSlot.Any || secondPerkFilter !== ArmorPerkOrSlot.Any) &&
+      exoticClassItemIsEnforced
+    ) {
+      classItems = classItems.filter((item) => {
+        if (!item.isExotic || !item.exoticPerkHash || item.exoticPerkHash.length < 2) {
+          return true; // Keep non-exotic items or items without proper perk data
+        }
+
+        const hasFirstPerk =
+          firstPerkFilter === ArmorPerkOrSlot.Any || item.exoticPerkHash[0] === firstPerkFilter;
+        const hasSecondPerk =
+          secondPerkFilter === ArmorPerkOrSlot.Any || item.exoticPerkHash[1] === secondPerkFilter;
+
+        return hasFirstPerk && hasSecondPerk;
+      });
+    }
+  }
+
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
 
   // runtime variables

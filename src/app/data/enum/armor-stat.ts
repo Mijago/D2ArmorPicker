@@ -282,3 +282,18 @@ export const SubclassHashes: EnumDictionary<
     [ModifierType.Prismatic]: 3893112950,
   },
 };
+
+// Mapping function to convert exotic perk hashes to ArmorPerkOrSlot values
+// This will be needed for proper exotic class item filtering
+export function mapExoticPerkHashToArmorPerk(perkHash: number): ArmorPerkOrSlot {
+  // TODO: Add actual mappings based on the exotic perk hash values
+  // This is a placeholder that needs to be populated with real data
+  const exoticPerkHashMap: Record<number, ArmorPerkOrSlot> = {
+    // Example mappings - these need to be filled with actual game data
+    // 123456789: ArmorPerkOrSlot.PerkOverflowingCorruption,
+    // 987654321: ArmorPerkOrSlot.PerkBane,
+    // Add more mappings as needed
+  };
+
+  return exoticPerkHashMap[perkHash] || ArmorPerkOrSlot.None;
+}

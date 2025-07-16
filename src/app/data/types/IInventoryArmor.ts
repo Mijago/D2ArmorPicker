@@ -62,6 +62,7 @@ export interface IInventoryArmor
     ITimestampedEntry {
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
+  // exoticPerkHash is now inherited as number[] from IManifestArmor
 }
 
 export function createArmorItem(
@@ -103,6 +104,15 @@ export function createArmorItem(
     item.slot = ArmorSlot.ArmorSlotHelmet;
   }
 
+  // exoticPerkHash is now an array from manifestArmor
+  // For most armor pieces (non-class items), only the first perk matters
+  // For exotic class items, all perks in the array are relevant
+  if (manifestItem.exoticPerkHash) {
+    item.exoticPerkHash = Array.isArray(manifestItem.exoticPerkHash)
+      ? manifestItem.exoticPerkHash
+      : [manifestItem.exoticPerkHash];
+  }
+
   return item;
 }
 
@@ -137,4 +147,24 @@ export function isEqualItem(a: IDestinyArmor, b: IDestinyArmor): boolean {
 
 export function totalStats(a: IDestinyArmor): number {
   return a.mobility + a.resilience + a.recovery + a.discipline + a.intellect + a.strength;
+}
+
+// For any code that displays exotic perks, use this pattern:
+// For regular exotics (non-class items): item.exoticPerkHash[0]
+// For exotic class items: item.exoticPerkHash (all perks)
+
+// Example usage in tooltips or display components:
+export function getExoticPerkForDisplay(item: IInventoryArmor): number | null {
+  if (!item.isExotic || !item.exoticPerkHash || item.exoticPerkHash.length === 0) {
+    return null;
+  }
+
+  // For class items, you might want to handle multiple perks differently
+  if (item.slot === ArmorSlot.ArmorSlotClass) {
+    // Handle multiple perks for class items
+    return item.exoticPerkHash[0]; // or return the array
+  }
+
+  // For other exotic armor pieces, use the first (and typically only) perk
+  return item.exoticPerkHash[0];
 }

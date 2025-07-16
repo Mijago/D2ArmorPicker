@@ -63,6 +63,7 @@ export type ClassExoticInfo = {
   inCollection: boolean;
   inVendor: boolean;
   items: IManifestArmor[];
+  instances: IInventoryArmor[];
 };
 
 @Injectable({
@@ -396,6 +397,7 @@ export class InventoryService {
           intellect: armor.intellect,
           strength: armor.strength,
           source: armor.source,
+          exoticPerkHash: armor.exoticPerkHash,
 
           icon: armor.icon,
           watermarkIcon: armor.watermarkIcon,
@@ -669,6 +671,7 @@ export class InventoryService {
         const instances = inventory.filter((i) => i.hash == ex.hash);
         return {
           items: [ex],
+          instances: instances,
           inCollection:
             instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
           inInventory:
@@ -680,6 +683,7 @@ export class InventoryService {
         const existing = acc.find((e) => e.items[0].name === curr.items[0].name);
         if (existing) {
           existing.items.push(curr.items[0]);
+          existing.instances.push(...curr.instances);
           existing.inCollection = existing.inCollection || curr.inCollection;
           existing.inInventory = existing.inInventory || curr.inInventory;
           existing.inVendor = existing.inVendor || curr.inVendor;

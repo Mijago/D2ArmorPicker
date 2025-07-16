@@ -34,13 +34,18 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.1a",
+    version: "2.9.1b",
     date: "June 16, 2025",
     clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.ADD,
         text: "Added a new Card-based view mode. You can switch between the Card view and the old Table view.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Perk filter for exotic class items.",
         issues: [],
       },
       {

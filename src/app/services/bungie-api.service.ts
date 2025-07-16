@@ -62,6 +62,7 @@ import {
   ResultDefinition,
   ResultItemMoveState,
 } from "../components/authenticated-v2/results/results.component";
+import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -377,6 +378,20 @@ export class BungieApiService {
           armorItem.armorSystem = ArmorSystem.Armor2;
           armorItem.masterworkLevel =
             !!instance.energy && instance.energy.energyCapacity == 10 ? 5 : 0;
+        }
+
+        if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          armorItem.exoticPerkHash = [];
+          const sockets =
+            profile.Response.itemComponents.sockets.data?.[d.itemInstanceId!]?.sockets || [];
+          for (const socket of sockets) {
+            if (
+              socket.plugHash &&
+              Object.keys(ExoticClassItemPerkNames).map(Number).includes(socket.plugHash)
+            ) {
+              armorItem.exoticPerkHash.push(socket.plugHash);
+            }
+          }
         }
 
         armorItem.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
@@ -757,13 +772,13 @@ export class BungieApiService {
           ).length > 0;
 
         const isExotic = v.inventory?.tierType == 6;
-        let exoticPerkHash = null;
+        let exoticPerkHash: number[] = [];
         if (isExotic) {
           const perks =
             v.sockets?.socketEntries
               .filter((s) => s.socketTypeHash == 965959289)
               .map((d) => d.singleInitialItemHash) || [];
-          exoticPerkHash = perks[0];
+          exoticPerkHash = perks.filter((p) => p !== undefined && p !== null);
         }
 
         var sunsetPowerCaps = [

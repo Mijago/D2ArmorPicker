@@ -93,6 +93,7 @@ export class BuildConfiguration {
   selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = [];
+  selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
   // mainly for the exotic class item
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
@@ -130,6 +131,7 @@ export class BuildConfiguration {
       characterClass: DestinyClass.Unknown,
       selectedModElement: ModifierType.Prismatic,
       selectedExotics: [],
+      selectedExoticPerks: [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
         [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: 5 },

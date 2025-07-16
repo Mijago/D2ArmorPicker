@@ -63,6 +63,36 @@
   </span>
 </div>
 
+<!-- Exotic Class Item Perk Selection -->
+<div *ngIf="hasSelectedExoticClassItem()" class="exotic-class-item-perks">
+  <h4>Exotic Class Item Perks</h4>
+  <div class="perk-selectors">
+    <mat-form-field appearance="outline">
+      <mat-label>First Perk</mat-label>
+      <mat-select
+        [value]="selectedExoticPerks[0]"
+        (selectionChange)="setExoticPerk(0, $event.value)">
+        <mat-option [value]="anyPerkValue">Any</mat-option>
+        <mat-option *ngFor="let perk of availableFirstPerks" [value]="perk.value">
+          {{ perk.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Second Perk</mat-label>
+      <mat-select
+        [value]="selectedExoticPerks[1]"
+        (selectionChange)="setExoticPerk(1, $event.value)">
+        <mat-option [value]="anyPerkValue">Any</mat-option>
+        <mat-option *ngFor="let perk of availableSecondPerks" [value]="perk.value">
+          {{ perk.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>
+
 <div>
   <button
     *ngIf="exotics.length === 0 || exotics[0].length === 0"

@@ -75,3 +75,27 @@
 }
 
 @import "../../components/item-icon/item-source-overlay.scss";
+
+.exotic-class-item-perks {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: #ffa726;
+  }
+
+  .perk-selectors {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    mat-form-field {
+      min-width: 150px;
+      flex: 1;
+    }
+  }
+}
