@@ -41,6 +41,7 @@ import {
   InventoryArmorSource,
   createArmorItem,
   applyInvestmentStats,
+  getInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import {
@@ -103,7 +104,7 @@ function collectInvestmentStats(
 
   // TODO: THIS IS A QUICK HACK: FIX THIS
   const investmentStatsOverZero = Object.entries(investmentStats).filter(([_, value]) => value > 0);
-  if (investmentStatsOverZero.length != 3) return;
+  if (investmentStatsOverZero.length > 3) return;
   r.archetypeStats = [];
   const stats = [
     ArmorStat.StatWeapon,
@@ -403,6 +404,41 @@ export class BungieApiService {
           socketsList,
           modsMap
         );
+
+        if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          let statData = profile.Response.itemComponents.stats.data || {};
+          let stats = statData[d.itemInstanceId || ""]?.stats || {};
+          for (let n = 0; n < 7; n++) {
+            const sock = sockets[d.itemInstanceId!]?.sockets[n];
+            if (!sock || !sock.plugHash) continue;
+            const mod = modsMap[sock.plugHash];
+            if (!mod) continue;
+            if (mod.investmentStats.length == 0) continue;
+            for (const stat of mod.investmentStats) {
+              if (stat.statTypeHash in stats) {
+                (stats[stat.statTypeHash] as any).value -= stat.value;
+              }
+            }
+          }
+          // Sort the stats by value in descending order and get the third highest value
+          const sortedStats = Object.entries(stats)
+            .map(([hash, statObj]) => ({ hash: parseInt(hash), value: (statObj as any).value }))
+            .sort((a, b) => b.value - a.value);
+
+          if (sortedStats.length >= 3) {
+            const thirdHighestStatHash = sortedStats[2].hash;
+            // Use thirdHighestStatHash as needed
+            armorItem.archetypeStats.push(
+              Object.values(ArmorStatHashes).indexOf(thirdHighestStatHash)
+            );
+
+            const investmentStat = getInvestmentStats(armorItem);
+            // TODO: This must be tiered
+            investmentStat[thirdHighestStatHash] += 13;
+            applyInvestmentStats(armorItem, investmentStat);
+          }
+        }
+
         // MW 0 to 5
         const masterworkPlugHashes = [
           2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,

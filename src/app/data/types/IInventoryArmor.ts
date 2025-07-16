@@ -131,6 +131,17 @@ export function applyInvestmentStats(
   r.strength = investmentStats[4244567218];
 }
 
+export function getInvestmentStats(r: IInventoryArmor): { [id: number]: number } {
+  return {
+    2996146975: r.mobility,
+    392767087: r.resilience,
+    1943323491: r.recovery,
+    1735777505: r.discipline,
+    144602215: r.intellect,
+    4244567218: r.strength,
+  };
+}
+
 // Returns true if the items are effectively equal in stats
 export function isEqualItem(a: IDestinyArmor, b: IDestinyArmor): boolean {
   return (
