@@ -453,7 +453,7 @@ export class BungieApiService {
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
           if (!hasPerk) armorItem.perk = ArmorPerkOrSlot.None;
-        } else if (armorItem.isExotic) {
+        } else if (armorItem.isExotic && armorItem.slot !== ArmorSlot.ArmorSlotClass) {
           // 720825311 is "UNLOCKED exotic artifice slot"
           // 1656746282 is "LOCKED exotic artifice slot"
           const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
