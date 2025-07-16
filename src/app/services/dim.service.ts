@@ -137,11 +137,11 @@ export class DimService {
     for (let stat of this.armorStatIds) {
       data.statConstraints!.push({
         statHash: ArmorStatHashes[stat as ArmorStat],
-        minTier: config.minimumStatTiers[stat as ArmorStat].value,
-        maxTier: config.minimumStatTiers[stat as ArmorStat].fixed
-          ? config.minimumStatTiers[stat as ArmorStat].value
-          : 10,
-      });
+        minStat: config.minimumStatTiers[stat as ArmorStat].value * 10,
+        maxStat: config.minimumStatTiers[stat as ArmorStat].fixed
+          ? config.minimumStatTiers[stat as ArmorStat].value * 10
+          : 200,
+      } as any); // TODO: Remove the `as any` cast when the type is fixed in DIM API types
     }
 
     const exoticItem = result.items.find((item) => item.exotic);
