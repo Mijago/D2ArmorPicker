@@ -21,8 +21,6 @@
 import { Injectable } from "@angular/core";
 import { ConfigurationService } from "./configuration.service";
 import {
-  ArmorPerkOrSlot,
-  ArmorPerkOrSlotDIMText,
   ArmorStat,
   ArmorStatHashes,
   STAT_MOD_VALUES,
@@ -38,8 +36,6 @@ import {
   LoadoutParameters,
 } from "@destinyitemmanager/dim-api-types";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { ArmorSlot } from "../data/enum/armor-slot";
-import { DestinyClassNames } from "../data/enum/DestinyClassNames";
 
 @Injectable({
   providedIn: "root",
@@ -53,31 +49,7 @@ export class DimService {
    * Generate a DIM search query for the given result
    */
   generateDIMQuery(result: ResultDefinition): string {
-    const config = this.configService.readonlyConfigurationSnapshot;
-
-    let query = result.items
-      .filter((d) => d.slot != ArmorSlot.ArmorSlotClass)
-      .map((d) => `id:'${d.itemInstanceId}'`)
-      .join(" OR ");
-
-    // Exotic class item
-    let classItemFilters = result.classItem.canBeExotic
-      ? result.classItem.isExotic
-        ? [`${result.exotic?.name}`]
-        : ["is:classitem", `is:${DestinyClassNames[config.characterClass]}`]
-      : ["is:classitem", `is:${DestinyClassNames[config.characterClass]}`, `-is:exotic`];
-
-    if (
-      result.classItem.perk != ArmorPerkOrSlot.Any &&
-      result.classItem.perk != ArmorPerkOrSlot.None &&
-      result.classItem.perk != undefined
-    ) {
-      classItemFilters.push(ArmorPerkOrSlotDIMText[result.classItem.perk]);
-    }
-
-    if (classItemFilters.length > 0) {
-      query += ` OR (${classItemFilters.join(" AND ")})`;
-    }
+    let query = result.items.map((d) => `id:'${d.itemInstanceId}'`).join(" OR ");
 
     return query;
   }

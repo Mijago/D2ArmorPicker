@@ -40,11 +40,6 @@ export interface ResultDefinition {
         hash: string;
       };
   artifice: number[];
-  classItem: {
-    canBeExotic: boolean;
-    isExotic: boolean;
-    perk: ArmorPerkOrSlot;
-  };
   mods: number[];
   stats: number[];
   statsNoMods: number[];

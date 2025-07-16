@@ -49,7 +49,6 @@ import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public MAXIMUM_MASTERWORK_LEVEL = MAXIMUM_MASTERWORK_LEVEL;
-  public exoticClassItemRow = false;
   public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
@@ -98,8 +97,6 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     // set this.showGenericClassItemRow to true if the number of non-empty elements in this.element.items is <= 4
     this.ArmorItems = this.element?.items || null; //.filter((x) => x.slot != ArmorSlot.ArmorSlotClass) || null;
     this.ExoticArmorItem = this.element?.items.filter((x) => x.exotic)[0] || null;
-
-    this.exoticClassItemRow = this.element?.classItem.isExotic ?? false;
 
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.config_characterClass = c.characterClass;

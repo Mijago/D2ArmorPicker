@@ -528,12 +528,6 @@ export class InventoryService {
                     statsNoMods: [],
                   })
                 ),
-                classItem: {
-                  canBeExotic:
-                    (exotic == null || exotic?.slot == ArmorSlot.ArmorSlotClass) &&
-                    config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1,
-                  isExotic: exotic?.slot == ArmorSlot.ArmorSlotClass,
-                },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
