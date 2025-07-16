@@ -325,6 +325,28 @@ addEventListener("message", async ({ data }) => {
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
 
+  // Filter exotic class items based on selected exotic perks if they are not "Any"
+  if (config.selectedExoticPerks && config.selectedExoticPerks.length >= 2) {
+    const firstPerkFilter = config.selectedExoticPerks[0];
+    const secondPerkFilter = config.selectedExoticPerks[1];
+
+    if (firstPerkFilter !== ArmorPerkOrSlot.Any || secondPerkFilter !== ArmorPerkOrSlot.Any) {
+      classItems = classItems.filter((item) => {
+        if (!item.isExotic || !item.exoticPerkHash || item.exoticPerkHash.length < 2) {
+          return true; // Keep non-exotic items or items without proper perk data
+        }
+
+        const hasFirstPerk =
+          firstPerkFilter === ArmorPerkOrSlot.Any || item.exoticPerkHash.includes(firstPerkFilter);
+        const hasSecondPerk =
+          secondPerkFilter === ArmorPerkOrSlot.Any ||
+          item.exoticPerkHash.includes(secondPerkFilter);
+
+        return hasFirstPerk && hasSecondPerk;
+      });
+    }
+  }
+
   if (config.assumeEveryLegendaryIsArtifice || config.assumeEveryExoticIsArtifice) {
     classItems = classItems.map((item) => {
       if (
@@ -367,39 +389,20 @@ addEventListener("message", async ({ data }) => {
           i.intellect === item.intellect &&
           i.strength === item.strength &&
           i.isExotic === item.isExotic &&
+          (i.isExotic
+            ? i.exoticPerkHash[0] === item.exoticPerkHash[0] &&
+              i.exoticPerkHash[1] === item.exoticPerkHash[1]
+            : true) && // if it's not exotic, we don't care about the exotic perks
           (doesNotRequireArmorPerks || i.perk === item.perk)
       )
   );
+  //*/
 
   const exoticClassItems = classItems.filter((d) => d.isExotic);
   const legendaryClassItems = classItems.filter((d) => !d.isExotic);
   const exoticClassItemIsEnforced = exoticClassItems.some(
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
-
-  // Filter exotic class items based on selected exotic perks if they are not "Any"
-  if (config.selectedExoticPerks && config.selectedExoticPerks.length >= 2) {
-    const firstPerkFilter = config.selectedExoticPerks[0];
-    const secondPerkFilter = config.selectedExoticPerks[1];
-
-    if (
-      (firstPerkFilter !== ArmorPerkOrSlot.Any || secondPerkFilter !== ArmorPerkOrSlot.Any) &&
-      exoticClassItemIsEnforced
-    ) {
-      classItems = classItems.filter((item) => {
-        if (!item.isExotic || !item.exoticPerkHash || item.exoticPerkHash.length < 2) {
-          return true; // Keep non-exotic items or items without proper perk data
-        }
-
-        const hasFirstPerk =
-          firstPerkFilter === ArmorPerkOrSlot.Any || item.exoticPerkHash[0] === firstPerkFilter;
-        const hasSecondPerk =
-          secondPerkFilter === ArmorPerkOrSlot.Any || item.exoticPerkHash[1] === secondPerkFilter;
-
-        return hasFirstPerk && hasSecondPerk;
-      });
-    }
-  }
 
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
 
@@ -701,6 +704,7 @@ export function handlePermutation(
   });
 
   // Try each class item with early termination
+  let finalResult: IPermutatorArmorSet | never[] = [];
   for (const classItem of sortedClassItems) {
     const adjustedStats = [...stats];
     const tmpArtificeCount =
@@ -792,26 +796,28 @@ export function handlePermutation(
       // This may lead to issues later.
       // The performTierAvailabilityTesting must be executed for each class item.
       // Found a working combination - return immediately with this class item
-      return tryCreateArmorSetWithClassItem(
-        runtime,
-        config,
-        helmet,
-        gauntlet,
-        chest,
-        leg,
-        classItem,
-        result,
-        adjustedStats,
-        adjustedStatsWithoutMods,
-        newDistances,
-        tmpArtificeCount,
-        availableModCost,
-        doNotOutput
-      );
+      if (finalResult instanceof Array && finalResult.length == 0) {
+        finalResult = tryCreateArmorSetWithClassItem(
+          runtime,
+          config,
+          helmet,
+          gauntlet,
+          chest,
+          leg,
+          classItem,
+          result,
+          adjustedStats,
+          adjustedStatsWithoutMods,
+          newDistances,
+          tmpArtificeCount,
+          availableModCost,
+          doNotOutput
+        );
+      }
     }
   }
 
-  return null;
+  return finalResult;
 }
 
 // region Tier Availability Testing

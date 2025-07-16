@@ -204,6 +204,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     }
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;
+
+      // Reset exotic perks to Any when no exotic class item is selected
+      if (!this.hasSelectedExoticClassItem()) {
+        c.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+        this.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+      }
     });
   }
 
