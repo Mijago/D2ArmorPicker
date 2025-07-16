@@ -29,6 +29,7 @@ import {
 import { ModInformation } from "src/app/data/ModInformation";
 import { DimService } from "../../../../services/dim.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 
 @Component({
   selector: "app-results-card-view",
@@ -259,18 +260,54 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   getItemStatWithMasterwork(item: ResultItem, statIndex: number): number {
     let baseStat = item.stats[statIndex];
 
-    // Add masterwork bonus if applicable
-    const isMasterworked =
-      item.masterworked ||
-      (item.exotic && this.configService.readonlyConfigurationSnapshot.assumeExoticsMasterworked) ||
-      (!item.exotic &&
-        this.configService.readonlyConfigurationSnapshot.assumeLegendariesMasterworked);
-
-    if (isMasterworked) {
-      baseStat += 2;
-    }
+    // Add masterwork bonus using the same logic as expanded-result-content
+    const masterworkBonus = this.getMasterworkBonus(item);
+    baseStat += masterworkBonus[statIndex];
 
     return baseStat;
+  }
+
+  getMasterworkBonus(item: ResultItem): number[] {
+    const bonus = [0, 0, 0, 0, 0, 0];
+    const config = this.configService.readonlyConfigurationSnapshot;
+
+    if (item.armorSystem == ArmorSystem.Armor2) {
+      // Armor 2.0
+      if (
+        item.masterworkLevel == 10 ||
+        (item.exotic && config.assumeExoticsMasterworked) ||
+        (!item.exotic && config.assumeLegendariesMasterworked)
+      ) {
+        // Armor 2.0 Masterworked items give +2 to all stats
+        for (let i = 0; i < 6; i++) {
+          bonus[i] += 2;
+        }
+      }
+      return bonus;
+    } else if (item.armorSystem == ArmorSystem.Armor3) {
+      // Armor 3.0
+      let multiplier = item.masterworkLevel || 0;
+      if (
+        (item.exotic && config.assumeExoticsMasterworked) ||
+        (!item.exotic && config.assumeLegendariesMasterworked)
+      ) {
+        multiplier = 5;
+      }
+
+      if (multiplier == 0) return bonus;
+
+      // For Armor 3.0, assume the first three stats are the archetype stats and don't get masterwork bonus
+      // The OTHER THREE stats (3, 4, 5) get +1 per multiplier level
+      for (let i = 0; i < 6; i++) {
+        if (item.archetypeStats && item.archetypeStats.indexOf(i) === -1) {
+          bonus[i] += multiplier;
+        }
+      }
+
+      return bonus;
+    }
+
+    return bonus;
   }
 
   getShortItemName(fullName: string): string {
