@@ -34,8 +34,9 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.1",
+    version: "2.9.1a",
     date: "June 16, 2025",
+    clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.ADD,

@@ -562,10 +562,6 @@ function applyMasterworkStats(
       if (item.archetypeStats.includes(i)) continue;
       stats[i] += multiplier;
     }
-  } else {
-    console.warn(
-      `Unknown armor system for item ${item.hash} (${item.armorSystem}, ${item.slot}, instance= ${item.hash})`
-    );
   }
 }
 
