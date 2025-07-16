@@ -144,14 +144,9 @@ export class DimService {
       });
     }
 
-    if (config.selectedExotics.length == 1) {
-      data.exoticArmorHash = config.selectedExotics[0];
-    } else {
-      const exos = result.exotic;
-      if (exos) {
-        const exoticHash = exos.hash;
-        if (!!exoticHash) data.exoticArmorHash = parseInt(exoticHash, 10);
-      }
+    const exoticItem = result.items.find((item) => item.exotic);
+    if (exoticItem) {
+      data.exoticArmorHash = exoticItem.hash;
     }
 
     const loadout: Loadout = {

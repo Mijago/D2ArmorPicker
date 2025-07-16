@@ -53,7 +53,7 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   private readonly PAGE_SIZE = 25;
   private currentPage = 0;
 
-  statOrder = [0, 1, 2, 3, 4, 5]; // Weapon, Health, Class, Grenade, Super, Melee
+  statOrder = [1, 5, 3, 4, 2, 0]; // Health, Melee, Grenade, Super, Class, Weapon
   Math = Math;
 
   private destroy$ = new Subject<void>();
@@ -285,6 +285,36 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
     if (item.masterworked) return "#ffeb3b";
     if (item.exotic) return "#ff9800";
     return "#9e9e9e";
+  }
+
+  getMasterworkDisplay(item: ResultItem): string {
+    // For armor system 3 (Armor 2.0), show masterwork level
+    if (item.armorSystem === 3 && item.masterworkLevel !== undefined) {
+      if (item.masterworkLevel < 5) {
+        return `${item.masterworkLevel}/5`;
+      } else if (item.masterworkLevel === 5) {
+        return "MW"; // Fully masterworked
+      }
+    }
+    // For other systems or when masterworked is true, show MW indicator
+    if (item.masterworked) {
+      return "MW";
+    }
+    return "";
+  }
+
+  getMasterworkTooltip(item: ResultItem): string {
+    if (item.armorSystem === 3 && item.masterworkLevel !== undefined) {
+      if (item.masterworkLevel < 5) {
+        return `Armor 3.0 - Masterwork Level ${item.masterworkLevel}/5`;
+      } else {
+        return "Armor 3.0 - Fully Masterworked";
+      }
+    }
+    if (item.masterworked) {
+      return "Armor 2.0 - Masterworked";
+    }
+    return "";
   }
 
   shouldShowTooltip(text: string): boolean {

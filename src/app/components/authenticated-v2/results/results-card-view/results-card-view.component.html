@@ -48,16 +48,6 @@
       <button
         mat-icon-button
         class="sort-button"
-        [class.active]="activeSortField === 'weapon'"
-        (click)="toggleSort('weapon')"
-        matTooltip="Sort by Weapon">
-        <img [src]="getStatIcon(0)" alt="Weapon" class="sort-stat-icon" />
-        <mat-icon class="sort-icon">{{ getSortIcon("weapon") }}</mat-icon>
-      </button>
-
-      <button
-        mat-icon-button
-        class="sort-button"
         [class.active]="activeSortField === 'health'"
         (click)="toggleSort('health')"
         matTooltip="Sort by Health">
@@ -68,11 +58,11 @@
       <button
         mat-icon-button
         class="sort-button"
-        [class.active]="activeSortField === 'class'"
-        (click)="toggleSort('class')"
-        matTooltip="Sort by Class">
-        <img [src]="getStatIcon(2)" alt="Class" class="sort-stat-icon" />
-        <mat-icon class="sort-icon">{{ getSortIcon("class") }}</mat-icon>
+        [class.active]="activeSortField === 'melee'"
+        (click)="toggleSort('melee')"
+        matTooltip="Sort by Melee">
+        <img [src]="getStatIcon(5)" alt="Melee" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("melee") }}</mat-icon>
       </button>
 
       <button
@@ -98,11 +88,21 @@
       <button
         mat-icon-button
         class="sort-button"
-        [class.active]="activeSortField === 'melee'"
-        (click)="toggleSort('melee')"
-        matTooltip="Sort by Melee">
-        <img [src]="getStatIcon(5)" alt="Melee" class="sort-stat-icon" />
-        <mat-icon class="sort-icon">{{ getSortIcon("melee") }}</mat-icon>
+        [class.active]="activeSortField === 'class'"
+        (click)="toggleSort('class')"
+        matTooltip="Sort by Class">
+        <img [src]="getStatIcon(2)" alt="Class" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("class") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
+        [class.active]="activeSortField === 'weapon'"
+        (click)="toggleSort('weapon')"
+        matTooltip="Sort by Weapon">
+        <img [src]="getStatIcon(0)" alt="Weapon" class="sort-stat-icon" />
+        <mat-icon class="sort-icon">{{ getSortIcon("weapon") }}</mat-icon>
       </button>
     </div>
   </div>
@@ -151,10 +151,10 @@
             <div class="stats-section">
               <div class="stat-item-compact" *ngFor="let stat of statOrder; let statIndex = index">
                 <img
-                  [src]="getStatIcon(statIndex)"
-                  [alt]="getStatName(statIndex)"
+                  [src]="getStatIcon(stat)"
+                  [alt]="getStatName(stat)"
                   class="stat-icon-compact" />
-                <span class="stat-value-compact">{{ result.stats[statIndex] }}</span>
+                <span class="stat-value-compact">{{ result.stats[stat] }}</span>
               </div>
             </div>
 
@@ -236,12 +236,12 @@
                   <thead>
                     <tr>
                       <th>Piece</th>
-                      <th>Weapon</th>
                       <th>Health</th>
-                      <th>Class</th>
+                      <th>Melee</th>
                       <th>Grenade</th>
                       <th>Super</th>
-                      <th>Melee</th>
+                      <th>Class</th>
+                      <th>Weapon</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -259,6 +259,24 @@
                             [matTooltipDisabled]="!shouldShowTooltip(item.name)">
                             {{ getShortItemName(item.name) }}
                           </span>
+
+                          <!-- Masterwork level indicator -->
+                          <span
+                            *ngIf="getMasterworkDisplay(item)"
+                            class="masterwork-level"
+                            [class.armor-v3]="item.armorSystem === 3"
+                            [class.armor-legacy]="item.armorSystem < 3"
+                            [class.fully-masterworked]="
+                              item.armorSystem === 3 && item.masterworkLevel === 5
+                            "
+                            [matTooltip]="getMasterworkTooltip(item)">
+                            {{ getMasterworkDisplay(item) }}
+                          </span>
+
+                          <!-- Socket/Perk indicator -->
+                          <div class="socket-container" *ngIf="item.perk">
+                            <app-armor-perk-icon [perk]="item.perk || 0"></app-armor-perk-icon>
+                          </div>
 
                           <!-- Transfer state indicators -->
                           <div class="transfer-state-indicators">
@@ -289,12 +307,12 @@
                           </div>
                         </div>
                       </td>
-                      <td>{{ getItemStatWithMasterwork(item, 0) }}</td>
                       <td>{{ getItemStatWithMasterwork(item, 1) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 2) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 5) }}</td>
                       <td>{{ getItemStatWithMasterwork(item, 3) }}</td>
                       <td>{{ getItemStatWithMasterwork(item, 4) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 5) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 2) }}</td>
+                      <td>{{ getItemStatWithMasterwork(item, 0) }}</td>
                     </tr>
 
                     <!-- Total armor stats row -->
@@ -315,13 +333,10 @@
                         <strong>Total (armor)</strong>
                       </td>
                       <td
-                        ><strong>{{ result.statsNoMods[0] }}</strong></td
-                      >
-                      <td
                         ><strong>{{ result.statsNoMods[1] }}</strong></td
                       >
                       <td
-                        ><strong>{{ result.statsNoMods[2] }}</strong></td
+                        ><strong>{{ result.statsNoMods[5] }}</strong></td
                       >
                       <td
                         ><strong>{{ result.statsNoMods[3] }}</strong></td
@@ -330,20 +345,16 @@
                         ><strong>{{ result.statsNoMods[4] }}</strong></td
                       >
                       <td
-                        ><strong>{{ result.statsNoMods[5] }}</strong></td
+                        ><strong>{{ result.statsNoMods[2] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.statsNoMods[0] }}</strong></td
                       >
                     </tr>
 
                     <!-- Configuration bonus row -->
                     <tr class="config-row" *ngIf="hasConfigBonus() && isBreakdownExpanded(i)">
                       <td class="config-label">Configuration</td>
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(0) !== 0"
-                          [class]="getConfigValue(0) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(0) > 0 ? "+" : "" }}{{ getConfigValue(0) }}</span
-                        ></td
-                      >
                       <td
                         ><span
                           *ngIf="getConfigValue(1) !== 0"
@@ -353,9 +364,9 @@
                       >
                       <td
                         ><span
-                          *ngIf="getConfigValue(2) !== 0"
-                          [class]="getConfigValue(2) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(2) > 0 ? "+" : "" }}{{ getConfigValue(2) }}</span
+                          *ngIf="getConfigValue(5) !== 0"
+                          [class]="getConfigValue(5) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(5) > 0 ? "+" : "" }}{{ getConfigValue(5) }}</span
                         ></td
                       >
                       <td
@@ -374,9 +385,16 @@
                       >
                       <td
                         ><span
-                          *ngIf="getConfigValue(5) !== 0"
-                          [class]="getConfigValue(5) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(5) > 0 ? "+" : "" }}{{ getConfigValue(5) }}</span
+                          *ngIf="getConfigValue(2) !== 0"
+                          [class]="getConfigValue(2) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(2) > 0 ? "+" : "" }}{{ getConfigValue(2) }}</span
+                        ></td
+                      >
+                      <td
+                        ><span
+                          *ngIf="getConfigValue(0) !== 0"
+                          [class]="getConfigValue(0) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(0) > 0 ? "+" : "" }}{{ getConfigValue(0) }}</span
                         ></td
                       >
                     </tr>
@@ -387,18 +405,13 @@
                       *ngIf="hasMinorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Minor Mods</td>
                       <td
-                        ><span *ngIf="getMinorModCount(result, 0) > 0" class="positive"
-                          >{{ getMinorModCount(result, 0) }}×5</span
-                        ></td
-                      >
-                      <td
                         ><span *ngIf="getMinorModCount(result, 1) > 0" class="positive"
                           >{{ getMinorModCount(result, 1) }}×5</span
                         ></td
                       >
                       <td
-                        ><span *ngIf="getMinorModCount(result, 2) > 0" class="positive"
-                          >{{ getMinorModCount(result, 2) }}×5</span
+                        ><span *ngIf="getMinorModCount(result, 5) > 0" class="positive"
+                          >{{ getMinorModCount(result, 5) }}×5</span
                         ></td
                       >
                       <td
@@ -412,8 +425,13 @@
                         ></td
                       >
                       <td
-                        ><span *ngIf="getMinorModCount(result, 5) > 0" class="positive"
-                          >{{ getMinorModCount(result, 5) }}×5</span
+                        ><span *ngIf="getMinorModCount(result, 2) > 0" class="positive"
+                          >{{ getMinorModCount(result, 2) }}×5</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMinorModCount(result, 0) > 0" class="positive"
+                          >{{ getMinorModCount(result, 0) }}×5</span
                         ></td
                       >
                     </tr>
@@ -424,18 +442,13 @@
                       *ngIf="hasMajorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Major Mods</td>
                       <td
-                        ><span *ngIf="getMajorModCount(result, 0) > 0" class="positive"
-                          >{{ getMajorModCount(result, 0) }}×10</span
-                        ></td
-                      >
-                      <td
                         ><span *ngIf="getMajorModCount(result, 1) > 0" class="positive"
                           >{{ getMajorModCount(result, 1) }}×10</span
                         ></td
                       >
                       <td
-                        ><span *ngIf="getMajorModCount(result, 2) > 0" class="positive"
-                          >{{ getMajorModCount(result, 2) }}×10</span
+                        ><span *ngIf="getMajorModCount(result, 5) > 0" class="positive"
+                          >{{ getMajorModCount(result, 5) }}×10</span
                         ></td
                       >
                       <td
@@ -449,8 +462,13 @@
                         ></td
                       >
                       <td
-                        ><span *ngIf="getMajorModCount(result, 5) > 0" class="positive"
-                          >{{ getMajorModCount(result, 5) }}×10</span
+                        ><span *ngIf="getMajorModCount(result, 2) > 0" class="positive"
+                          >{{ getMajorModCount(result, 2) }}×10</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getMajorModCount(result, 0) > 0" class="positive"
+                          >{{ getMajorModCount(result, 0) }}×10</span
                         ></td
                       >
                     </tr>
@@ -461,18 +479,13 @@
                       *ngIf="hasArtificeMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Artifice Mods</td>
                       <td
-                        ><span *ngIf="getArtificeModCount(result, 0) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 0) }}×3</span
-                        ></td
-                      >
-                      <td
                         ><span *ngIf="getArtificeModCount(result, 1) > 0" class="positive"
                           >{{ getArtificeModCount(result, 1) }}×3</span
                         ></td
                       >
                       <td
-                        ><span *ngIf="getArtificeModCount(result, 2) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 2) }}×3</span
+                        ><span *ngIf="getArtificeModCount(result, 5) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 5) }}×3</span
                         ></td
                       >
                       <td
@@ -486,8 +499,13 @@
                         ></td
                       >
                       <td
-                        ><span *ngIf="getArtificeModCount(result, 5) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 5) }}×3</span
+                        ><span *ngIf="getArtificeModCount(result, 2) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 2) }}×3</span
+                        ></td
+                      >
+                      <td
+                        ><span *ngIf="getArtificeModCount(result, 0) > 0" class="positive"
+                          >{{ getArtificeModCount(result, 0) }}×3</span
                         ></td
                       >
                     </tr>
@@ -498,13 +516,10 @@
                         ><strong>Total (with Mods)</strong></td
                       >
                       <td
-                        ><strong>{{ result.stats[0] }}</strong></td
-                      >
-                      <td
                         ><strong>{{ result.stats[1] }}</strong></td
                       >
                       <td
-                        ><strong>{{ result.stats[2] }}</strong></td
+                        ><strong>{{ result.stats[5] }}</strong></td
                       >
                       <td
                         ><strong>{{ result.stats[3] }}</strong></td
@@ -513,7 +528,10 @@
                         ><strong>{{ result.stats[4] }}</strong></td
                       >
                       <td
-                        ><strong>{{ result.stats[5] }}</strong></td
+                        ><strong>{{ result.stats[2] }}</strong></td
+                      >
+                      <td
+                        ><strong>{{ result.stats[0] }}</strong></td
                       >
                     </tr>
                   </tbody>

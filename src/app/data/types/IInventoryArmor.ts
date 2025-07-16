@@ -17,7 +17,7 @@
 
 import { ArmorSlot } from "../enum/armor-slot";
 import { ArmorStat } from "../enum/armor-stat";
-import { IDisplayManifestArmor, IManifestArmor } from "./IManifestArmor";
+import { ArmorSystem, IDisplayManifestArmor, IManifestArmor } from "./IManifestArmor";
 
 export interface ITimestampedEntry {
   created_at: number;
@@ -34,10 +34,10 @@ export interface IDestinyArmor {
   id: number;
   hash: number;
   slot: ArmorSlot;
-  masterworked: boolean;
 
   masterworkLevel: number; // 0-5; 5 = full masterwork
   archetypeStats: Array<ArmorStat>;
+  tier: number; // 1-5, 0 = exotic
 
   mobility: number;
   resilience: number;
@@ -47,6 +47,7 @@ export interface IDestinyArmor {
   strength: number;
 
   source: InventoryArmorSource;
+  armorSystem: ArmorSystem;
 }
 
 export interface IDisplayInventoryArmor extends IDisplayManifestArmor, IDestinyArmor {
@@ -73,6 +74,7 @@ export function createArmorItem(
   const item: IInventoryArmor = Object.assign(
     {
       id: -1,
+      tier: 1,
       itemInstanceId,
       masterworked: false,
       masterworkLevel: 0,

@@ -70,9 +70,13 @@ export interface ResultItem {
   energyLevel: number;
   hash: number;
   itemInstanceId: string;
+  tier: number; // 0 = exotic, 1-5 = legendary
   name: string;
   exotic: boolean;
   masterworked: boolean;
+  armorSystem: number; // 2 = Armor 2.0, 3 = Armor 3.0
+  masterworkLevel: number; // 0-5, 5 = full masterwork
+  archetypeStats: ArmorStat[]; // [Mobility, Resilience, Recovery, Discipline, Intellect, Strength]
   stats: number[];
   slot: ArmorSlot;
   perk: ArmorPerkOrSlot;
@@ -121,12 +125,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
   expandedElement: ResultDefinition | null = null;
   shownColumns = [
     "exotic",
-    "weapon",
     "health",
-    "class",
+    "melee",
     "grenade",
     "super",
-    "melee",
+    "class",
+    "weapon",
     "total",
     "mods",
     "dropdown",
@@ -177,12 +181,12 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
       let columns = [
         "exotic",
-        "weapon",
         "health",
-        "class",
+        "melee",
         "grenade",
         "super",
-        "melee",
+        "class",
+        "weapon",
         "total",
         "mods",
       ];
@@ -240,6 +244,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
+
+    // Ensure sorting is properly initialized after data update
+    if (this.viewMode === "table") {
+      setTimeout(() => {
+        this.initializeTableSorting();
+      }, 50);
+    }
+
     console.timeEnd("Update Table Data");
   }
 
@@ -289,5 +301,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
   onViewModeChange(event: any) {
     this.viewMode = event.value;
     localStorage.setItem("d2ap-view-mode", this.viewMode);
+
+    // Reinitialize table sorting when switching to table view
+    if (this.viewMode === "table") {
+      // Use a longer timeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        this.initializeTableSorting();
+      }, 100);
+    }
+  }
+
+  private initializeTableSorting() {
+    if (this.sort && this.tableDataSource) {
+      this.tableDataSource.sort = this.sort;
+      // Force sort to re-evaluate the current sort state
+      if (this.sort.active) {
+        this.sort.sortChange.emit({
+          active: this.sort.active,
+          direction: this.sort.direction,
+        });
+      }
+    }
   }
 }

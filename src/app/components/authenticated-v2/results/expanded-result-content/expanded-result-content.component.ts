@@ -37,8 +37,10 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
-import { MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY } from "../../../../data/masterworkCost";
+import { getMasterworkCostList } from "../../../../data/masterworkCost";
 import { DimService } from "../../../../services/dim.service";
+import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 
 @Component({
   selector: "app-expanded-result-content",
@@ -46,6 +48,7 @@ import { DimService } from "../../../../services/dim.service";
   styleUrls: ["./expanded-result-content.component.scss"],
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
+  public MAXIMUM_MASTERWORK_LEVEL = MAXIMUM_MASTERWORK_LEVEL;
   public exoticClassItemRow = false;
   public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
   public ModifierType = ModifierType;
@@ -171,7 +174,11 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           (!i.exotic && this.config_assumeLegendariesMasterworked))
     );
     for (let item of items) {
-      let costList = item.exotic ? MASTERWORK_COST_EXOTIC : MASTERWORK_COST_LEGENDARY;
+      let costList = getMasterworkCostList(item.exotic, item.tier);
+      if (!costList) {
+        console.warn("No cost list found for item", item);
+        continue;
+      }
       for (let n = item.energyLevel; n < 10; n++)
         for (let entryName in costList[n + 1]) {
           cost[entryName] += costList[n + 1][entryName];
@@ -226,6 +233,48 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
         ) || []
       ).length * 2
     );
+  }
+
+  getMasterworkBonus(item: ResultItem) {
+    const bonus = [0, 0, 0, 0, 0, 0];
+
+    if (item.armorSystem == ArmorSystem.Armor2) {
+      // Armor 2.0
+      if (
+        item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL ||
+        (item.exotic && this.config_assumeExoticsMasterworked) ||
+        (!item.exotic && this.config_assumeLegendariesMasterworked)
+      ) {
+        // Armor 2.0 Masterworked items give +2 to all stats
+        for (let i = 0; i < 6; i++) {
+          bonus[i] += 2;
+        }
+      }
+      return bonus;
+    } else if (item.armorSystem == ArmorSystem.Armor3) {
+      // Armor 3.0
+      let multiplier = item.masterworkLevel;
+      if (
+        (item.exotic && this.config_assumeExoticsMasterworked) ||
+        (!item.exotic && this.config_assumeLegendariesMasterworked)
+      ) {
+        multiplier = 5;
+      }
+
+      if (multiplier == 0) return bonus;
+
+      // For Armor 1.0, assume the first three stats are the archetype stats and don't get masterwork bonus
+      // The OTHER THREE stats (3, 4, 5) get +1 per multiplier level
+      for (let i = 0; i < 6; i++) {
+        if (item.archetypeStats.indexOf(i) === -1) {
+          bonus[i] += multiplier;
+        }
+      }
+
+      return bonus;
+    }
+
+    return bonus;
   }
 
   private ngUnsubscribe = new Subject();

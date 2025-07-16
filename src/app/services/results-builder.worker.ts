@@ -17,9 +17,9 @@
 
 // region Imports
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { IDestinyArmor } from "../data/types/IInventoryArmor";
+import { IDestinyArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { FORCE_USE_ANY_EXOTIC } from "../data/constants";
+import { FORCE_USE_ANY_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
@@ -41,6 +41,7 @@ import {
   createArmorSet,
   isIPermutatorArmorSet,
 } from "../data/types/IPermutatorArmorSet";
+import { ArmorSystem } from "../data/types/IManifestArmor";
 // endregion Imports
 
 // region Validation and Preparation Functions
@@ -53,7 +54,6 @@ function checkSlots(
   chest: IPermutatorArmor,
   leg: IPermutatorArmor
 ) {
-  var exoticId = config.selectedExotics[0] || 0;
   let requirements = new Map(constantModslotRequirement);
   if (
     !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
@@ -96,16 +96,18 @@ function checkSlots(
   requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
   requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
 
-  // ignore exotic selection
-  if (exoticId > 0) {
-    if (helmet.hash == exoticId)
-      requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
-    else if (gauntlet.hash == exoticId)
-      requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
-    else if (chest.hash == exoticId)
-      requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
-    else if (leg.hash == exoticId)
-      requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
+  // For each selected exotic, adjust requirements if present in the armor set
+  for (const exoticId of config.selectedExotics) {
+    if (exoticId > 0) {
+      if (helmet.hash === exoticId)
+        requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
+      else if (gauntlet.hash === exoticId)
+        requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
+      else if (chest.hash === exoticId)
+        requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
+      else if (leg.hash === exoticId)
+        requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
+    }
   }
 
   let SlotRequirements = 0;
@@ -530,6 +532,43 @@ export function getStatSum(
   ];
 }
 
+function applyMasterworkStats(
+  item: IPermutatorArmor,
+  config: BuildConfiguration,
+  stats: number[] = [0, 0, 0, 0, 0, 0]
+): void {
+  if (item.armorSystem == ArmorSystem.Armor2) {
+    if (
+      item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL ||
+      (item.isExotic && config.assumeExoticsMasterworked) ||
+      (!item.isExotic && config.assumeLegendariesMasterworked)
+    ) {
+      // Armor 2.0 Masterworked items give +10 to all stats
+      for (let i = 0; i < 6; i++) {
+        stats[i] += 2;
+      }
+    }
+  } else if (item.armorSystem == ArmorSystem.Armor3) {
+    let multiplier = item.masterworkLevel;
+    if (
+      (item.isExotic && config.assumeExoticsMasterworked) ||
+      (!item.isExotic && config.assumeLegendariesMasterworked)
+    )
+      multiplier = MAXIMUM_MASTERWORK_LEVEL;
+    if (multiplier == 0) return;
+
+    // item.archetypeStats contains three stat indices. The OTHER THREE get +1 per multiplier
+    for (let i = 0; i < 6; i++) {
+      if (item.archetypeStats.includes(i)) continue;
+      stats[i] += multiplier;
+    }
+  } else {
+    console.warn(
+      `Unknown armor system for item ${item.hash} (${item.armorSystem}, ${item.slot}, instance= ${item.hash})`
+    );
+  }
+}
+
 export function handlePermutation(
   runtime: any,
   config: BuildConfiguration,
@@ -543,24 +582,10 @@ export function handlePermutation(
   doNotOutput = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
-  var totalStatBonus = 0;
-
-  for (let i = 0; i < items.length; i++) {
-    let item = items[i]; // add masterworked value, if necessary
-    if (
-      item.masterworked ||
-      (item.isExotic && config.assumeExoticsMasterworked) ||
-      (!item.isExotic && config.assumeLegendariesMasterworked)
-    )
-      totalStatBonus += 2;
-  }
   const stats = getStatSum(items);
-  stats[0] += totalStatBonus;
-  stats[1] += totalStatBonus + (!items[2].isExotic && config.addConstent1Health ? 1 : 0);
-  stats[2] += totalStatBonus;
-  stats[3] += totalStatBonus;
-  stats[4] += totalStatBonus;
-  stats[5] += totalStatBonus;
+  stats[1] += !items[2].isExotic && config.addConstent1Health ? 1 : 0;
+
+  for (let item of items) applyMasterworkStats(item, config, stats);
 
   const statsWithoutMods = [stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]];
   stats[0] += constantBonus[0];
@@ -626,6 +651,10 @@ export function handlePermutation(
     if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 100;
     if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 100;
 
+    // vendor and collection rolls last
+    if (a.source === InventoryArmorSource.Inventory) scoreA += 10;
+    if (b.source === InventoryArmorSource.Inventory) scoreB += 10;
+
     for (let i = 0; i < 6; i++) {
       if (distances[i] > 0) {
         scoreA += Math.min(
@@ -654,32 +683,26 @@ export function handlePermutation(
   // Try each class item with early termination
   for (const classItem of sortedClassItems) {
     const adjustedStats = [...stats];
-    let bonus = 0;
-    // if masterworked (or assumed masterworked) class item, add 2 to each stat
-    if (
-      classItem.masterworked ||
-      (classItem.isExotic && config.assumeExoticsMasterworked) ||
-      (!classItem.isExotic && config.assumeLegendariesMasterworked)
-    )
-      bonus += 2;
     const tmpArtificeCount =
       availableArtificeCount + (classItem.perk == ArmorPerkOrSlot.SlotArtifice ? 1 : 0);
 
-    adjustedStats[0] += classItem.mobility + bonus;
-    adjustedStats[1] += classItem.resilience + bonus;
-    adjustedStats[2] += classItem.recovery + bonus;
-    adjustedStats[3] += classItem.discipline + bonus;
-    adjustedStats[4] += classItem.intellect + bonus;
-    adjustedStats[5] += classItem.strength + bonus;
+    adjustedStats[0] += classItem.mobility;
+    adjustedStats[1] += classItem.resilience;
+    adjustedStats[2] += classItem.recovery;
+    adjustedStats[3] += classItem.discipline;
+    adjustedStats[4] += classItem.intellect;
+    adjustedStats[5] += classItem.strength;
+    applyMasterworkStats(classItem, config, adjustedStats);
 
     const adjustedStatsWithoutMods = [
-      statsWithoutMods[0] + classItem.mobility + bonus,
-      statsWithoutMods[1] + classItem.resilience + bonus,
-      statsWithoutMods[2] + classItem.recovery + bonus,
-      statsWithoutMods[3] + classItem.discipline + bonus,
-      statsWithoutMods[4] + classItem.intellect + bonus,
-      statsWithoutMods[5] + classItem.strength + bonus,
+      statsWithoutMods[0] + classItem.mobility,
+      statsWithoutMods[1] + classItem.resilience,
+      statsWithoutMods[2] + classItem.recovery,
+      statsWithoutMods[3] + classItem.discipline,
+      statsWithoutMods[4] + classItem.intellect,
+      statsWithoutMods[5] + classItem.strength,
     ];
+    applyMasterworkStats(classItem, config, adjustedStatsWithoutMods);
 
     // Recalculate distances with class item included
     const newDistances = [

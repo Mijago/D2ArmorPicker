@@ -127,7 +127,7 @@ function buildTestItem(
 ): IInventoryArmor {
   return {
     name: "item_" + slot,
-    armor2: true,
+    armorSystem: 3,
     clazz: DestinyClass.Titan,
     source: InventoryArmorSource.Inventory,
     description: "",
@@ -303,7 +303,7 @@ describe("Results Worker", () => {
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -374,7 +374,7 @@ describe("Results Worker", () => {
     const constantBonus = [-10, 0, 10, 0, 0, -10];
     let presult = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -438,7 +438,7 @@ describe("Results Worker", () => {
 
     let result = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -490,7 +490,7 @@ describe("Results Worker", () => {
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -673,7 +673,7 @@ describe("Results Worker", () => {
     const constantBonus = [0, 0, 0, 0, 0, 0];
     let presult = handlePermutation(
       runtime,
-      config, // todo config
+      config,
       mockItems[0] as IPermutatorArmor,
       mockItems[1] as IPermutatorArmor,
       mockItems[2] as IPermutatorArmor,
@@ -759,7 +759,6 @@ function CreateResultDefinition(
         name: instance.name,
         exotic: !!instance.isExotic,
         masterworked: instance.masterworked,
-        mayBeBugged: instance.mayBeBugged,
         slot: instance.slot,
         perk: instance.perk,
         transferState: 0, // TRANSFER_NONE

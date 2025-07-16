@@ -53,23 +53,23 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
       "" +
       armor.name +
       "  " +
-      "" +
-      (armor.mobility + (armor.masterworked ? 2 : 0)) +
+      "Base: " +
+      armor.mobility +
       "/" +
       "" +
-      (armor.resilience + (armor.masterworked ? 2 : 0)) +
+      armor.resilience +
       "/" +
       "" +
-      (armor.recovery + (armor.masterworked ? 2 : 0)) +
+      armor.recovery +
       "/" +
       "" +
-      (armor.discipline + (armor.masterworked ? 2 : 0)) +
+      armor.discipline +
       "/" +
       "" +
-      (armor.intellect + (armor.masterworked ? 2 : 0)) +
+      armor.intellect +
       "/" +
       "" +
-      (armor.strength + (armor.masterworked ? 2 : 0))
+      armor.strength
     );
   }
 
@@ -88,8 +88,10 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
           itemInstance = {
             id: 0,
             hash: 0,
+            tier: 1,
             itemInstanceId: hash,
             energyLevel: 0,
+            armorSystem: 3, // Default to Armor 3.0
             name: "Missing Armor",
             icon: "/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg",
             description: "This armor has been deleted",
@@ -99,7 +101,6 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
             slot: ArmorSlot.ArmorSlotNone,
             isExotic: 0,
             rarity: TierType.Unknown,
-            masterworked: false,
             source: InventoryArmorSource.Inventory,
             mobility: 0,
             resilience: 0,

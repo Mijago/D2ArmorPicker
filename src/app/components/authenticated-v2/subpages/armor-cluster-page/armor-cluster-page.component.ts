@@ -22,6 +22,7 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { InventoryService } from "../../../../services/inventory.service";
 import { debounceTime } from "rxjs/operators";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
+import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
 
 var clusterData = [
   {
@@ -470,8 +471,8 @@ export class ArmorClusterPageComponent implements AfterViewInit {
       if (this.classFilter != -1 && item.clazz != this.classFilter) continue;
       if (this.exoticFilter == -1 && item.isExotic) continue;
       if (this.exoticFilter == 1 && !item.isExotic) continue;
-      if (this.masterworkFilter == -1 && item.masterworked) continue;
-      if (this.masterworkFilter == 1 && !item.masterworked) continue;
+      if (this.masterworkFilter == -1 && item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL) continue;
+      if (this.masterworkFilter == 1 && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL) continue;
 
       var clusterId = this.getClusterid(item);
       clusters[clusterId].push(item);

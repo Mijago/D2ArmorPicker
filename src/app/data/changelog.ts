@@ -34,9 +34,14 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.X",
-    date: "??????, 2025",
+    version: "2.9.1",
+    date: "June 16, 2025",
     entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new Card-based view mode. You can switch between the Card view and the old Table view.",
+        issues: [],
+      },
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Reworked the input to be a slider to allow for more precise input of the stats between tiers. Usability may be improved, feedback is welcome! You can click the text on the right to set the value manually.",
@@ -84,7 +89,7 @@ export const CHANGELOG_DATA: {
       },
       {
         type: ChangelogEntryType.REMOVE,
-        text: "Removed the Theorizer page.",
+        text: "Removed now-invalid pages (Clustering, Theorizer, Investigator).",
         issues: [],
       },
       {

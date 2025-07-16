@@ -31,10 +31,11 @@ import {
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
   DestinyClass,
+  DestinyItemComponent,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -45,6 +46,8 @@ import { ArmorSlot } from "../data/enum/armor-slot";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
+  ArmorStat,
+  ArmorStatHashes,
   MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
 } from "../data/enum/armor-stat";
@@ -81,27 +84,44 @@ function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
-  // TODO: add t his for class items
-  if (r.slot != ArmorSlot.ArmorSlotClass) {
-    const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
-    r.statPlugHashes = plugs;
-    var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
-    for (let entry of plm) {
-      for (let newStats of entry.investmentStats) {
-        if (newStats.statTypeHash in investmentStats)
-          investmentStats[newStats.statTypeHash] += newStats.value;
-      }
+  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
+  r.statPlugHashes = plugs;
+  var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
+  for (let entry of plm) {
+    for (let newStats of entry.investmentStats) {
+      if (newStats.statTypeHash in investmentStats)
+        investmentStats[newStats.statTypeHash] += newStats.value;
     }
   }
 
   /*
   if (r.slot == ArmorSlot.ArmorSlotClass) {
-    if (r.name == "Mimetic Savior Mark")
+    if (r.name == "Temptation's Mark")
       investmentStats[2996146975] += 10; // DEBUG
   }
   //*/
 
   applyInvestmentStats(r, investmentStats);
+
+  // TODO: THIS IS A QUICK HACK: FIX THIS
+  const investmentStatsOverZero = Object.entries(investmentStats).filter(([_, value]) => value > 0);
+  if (investmentStatsOverZero.length != 3) return;
+  r.archetypeStats = [];
+  const stats = [
+    ArmorStat.StatWeapon,
+    ArmorStat.StatHealth,
+    ArmorStat.StatClass,
+    ArmorStat.StatGrenade,
+    ArmorStat.StatSuper,
+    ArmorStat.StatMelee,
+  ];
+  for (let i = 0; i < stats.length; i++) {
+    const stat = stats[i];
+    const statHash = ArmorStatHashes[stat];
+    if (investmentStatsOverZero.find(([hash, _]) => parseInt(hash) == statHash)) {
+      r.archetypeStats.push(i);
+    }
+  }
 }
 
 @Injectable({
@@ -329,7 +349,7 @@ export class BungieApiService {
         let stats = statData[d.itemInstanceId || ""]?.stats || {};
         return !!stats[392767087];
       })
-      .filter((d) => {
+      .filter((d: DestinyItemComponent) => {
         // remove sunset items
         let instanceData = profile.Response.itemComponents.instances.data || {};
         let instance = instanceData[d.itemInstanceId || ""] || {};
@@ -343,13 +363,22 @@ export class BungieApiService {
           console.warn("Missing manifest item for item hash", d.itemHash);
           return null;
         }
-
         let armorItem = createArmorItem(
           validManifestArmorMap[d.itemHash],
           d.itemInstanceId || "",
           InventoryArmorSource.Inventory
         );
-        armorItem.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
+        // 3.0
+        // TODO replace the (as any) once DIM Api is updated
+        if (!!(instance as any).gearTier) {
+          armorItem.armorSystem = ArmorSystem.Armor3;
+          armorItem.tier = (instance as any).gearTier;
+        } else {
+          armorItem.armorSystem = ArmorSystem.Armor2;
+          armorItem.masterworkLevel =
+            !!instance.energy && instance.energy.energyCapacity == 10 ? 5 : 0;
+        }
+
         armorItem.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
         const sockets = profile.Response.itemComponents.sockets.data || {};
         const socketsList =
@@ -360,9 +389,16 @@ export class BungieApiService {
           socketsList,
           modsMap
         );
+        // MW 0 to 5
+        const masterworkPlugHashes = [
+          2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,
+        ];
+        const masterworkPlugHash = socketsList.find((d) => masterworkPlugHashes.includes(d ?? 0));
+        if (!!masterworkPlugHash)
+          armorItem.masterworkLevel = masterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
 
-        // Take a look if it really has the artifice perk
         if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
+          // Take a look if it really has the artifice perk
           let statData = profile.Response.itemComponents.perks.data || {};
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
@@ -407,9 +443,9 @@ export class BungieApiService {
       .filter(Boolean) as IInventoryArmor[];
 
     filteredItems = filteredItems.concat(collectionRollItems);
-    filteredItems = filteredItems.filter(
-      (k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null
-    );
+    //    filteredItems = filteredItems.filter(
+    //      (k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null
+    //    );
 
     await this.updateDatabaseItems(filteredItems);
 
@@ -815,7 +851,7 @@ export class BungieApiService {
           name: v.displayProperties.name,
           description: v.displayProperties.description,
           clazz: clasz,
-          armor2: isArmor2,
+          armorSystem: isArmor2 ? 2 : 1, // TODO: There may be a smarter way
           slot: slot,
           isExotic: isExotic ? 1 : 0,
           isSunset: isSunset,

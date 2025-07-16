@@ -21,19 +21,19 @@
     src="assets/icons/exotic_helmet.jpg"
     matTooltip="Force to use ANY exotic (that is NOT a class item)"
     #tooltip="matTooltip"
-    (click)="selectExotic(-2, $event)" />
+    (click)="selectExotic([-2], $event)" />
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-1) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
     src="assets/icons/empty_modslot.png"
     matTooltip="Force to use NO exotic at all"
     #tooltip="matTooltip"
-    (click)="selectExotic(-1, $event)" />
+    (click)="selectExotic([-1], $event)" />
   <span class="container" *ngFor="let exotic of itemGroup">
     <img
-      class="exoticIcon {{ selectedExotics.indexOf(exotic.item.hash) > -1 ? 'selected' : '' }}"
-      src="https://www.bungie.net/{{ exotic.item.icon }}"
-      [exoticTooltip]="exotic.item"
+      class="exoticIcon {{ selectedExotics.indexOf(exotic.items[0].hash) > -1 ? 'selected' : '' }}"
+      src="https://www.bungie.net/{{ exotic.items[0].icon }}"
+      [exoticTooltip]="exotic.items[0]"
       [exoticTooltipInVendor]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
       [exoticTooltipInCollection]="
         !exotic.inInventory && includeCollectionRolls && exotic.inCollection
@@ -49,12 +49,12 @@
       "
       (click)="
         (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
-          selectExotic(exotic.item.hash, $event)
+          selectExotic(getHashesForExotic(exotic), $event)
       " />
     <img
       class="watermarkIcon"
-      *ngIf="exotic.item.watermarkIcon"
-      src="https://www.bungie.net/{{ exotic.item.watermarkIcon }}" />
+      *ngIf="exotic.items[0].watermarkIcon"
+      src="https://www.bungie.net/{{ exotic.items[0].watermarkIcon }}" />
     <div
       class="item-source-overlay"
       *ngIf="!exotic.inInventory"

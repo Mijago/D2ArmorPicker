@@ -546,12 +546,11 @@
     background: rgba(156, 39, 176, 0.1);
     border: 1px solid rgba(156, 39, 176, 0.3);
     font-weight: bold;
-
-    .total-label {
-      text-align: left !important;
-    }
   }
 
+  .total-label {
+    text-align: left !important;
+  }
   .positive {
     color: #4caf50;
   }
@@ -581,6 +580,51 @@
     text-overflow: ellipsis;
     min-width: 0; // Allow shrinking
     flex: 1;
+  }
+
+  .masterwork-level {
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: bold;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 4px;
+
+    // Armor 2.0 (armorSystem === 3) - Gold/yellow for partial, bright gold for complete
+    &.armor-v3 {
+      background: rgba(255, 193, 7, 0.8);
+      color: #000;
+      border: 1px solid rgba(255, 193, 7, 0.6);
+
+      &.fully-masterworked {
+        background: rgba(255, 215, 0, 0.9);
+        color: #000;
+        border: 1px solid #ffd700;
+        box-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+      }
+    }
+
+    // Legacy armor (armorSystem < 3) - Purple/violet theme
+    &.armor-legacy {
+      background: rgba(255, 193, 7, 0.6);
+      color: #000;
+      border: 1px solid rgba(255, 193, 7, 0.4);
+    }
+  }
+
+  .socket-container {
+    position: relative;
+    margin-left: 4px;
+    flex-shrink: 0;
+
+    app-armor-perk-icon {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      top: 0;
+      left: 0;
+    }
   }
 
   .transfer-state-indicators {

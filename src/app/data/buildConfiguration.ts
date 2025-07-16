@@ -55,7 +55,6 @@ export class BuildConfiguration {
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
 
-  // TODO: convert minimumStatTier -> minimumStatTiers for old configs
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = {
     [ArmorStat.StatWeapon]: { fixed: false, value: 0 },
     [ArmorStat.StatHealth]: { fixed: false, value: 0 },

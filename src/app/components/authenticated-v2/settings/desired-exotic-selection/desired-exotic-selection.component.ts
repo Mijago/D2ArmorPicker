@@ -83,20 +83,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   private async updateExoticsForClass() {
     const armors = await this.inventory.getExoticsForClass(this.currentClass);
 
-    function uniq(a: ClassExoticInfo[]) {
-      var seen: any = {};
-      return a.filter(function (item) {
-        var k = item.item.hash;
-        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
-      });
-    }
-
     this.exotics = [
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotHelmet)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotGauntlet)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotChest)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotLegs)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotClass)),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
     ];
   }
 
@@ -124,16 +116,22 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectExotic(hash: number, $event: any) {
-    const index = this.selectedExotics.indexOf(hash);
-    if (index > -1) {
-      // Always delete an item if it is already in the list
-      this.selectedExotics.splice(index, 1);
-    } else if (hash == FORCE_USE_NO_EXOTIC) {
-      this.selectedExotics = [FORCE_USE_NO_EXOTIC];
-    } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
-      // if length is 0 or shift is NOT pressed, add the exotic
-      this.selectedExotics = [hash];
+  getHashesForExotic(exotic: ClassExoticInfo): number[] {
+    if (exotic.items.length == 0) return [];
+    if (exotic.items[0].hash == FORCE_USE_NO_EXOTIC) return [FORCE_USE_NO_EXOTIC];
+    return exotic.items.map((x) => x.hash);
+  }
+
+  selectExotic(hashes: number[], $event: any) {
+    const anyHashSelected = hashes.some((hash) => this.selectedExotics.indexOf(hash) > -1);
+    if (anyHashSelected) {
+      // remove all of them
+      this.selectedExotics = this.selectedExotics.filter((x) => hashes.indexOf(x) == -1);
+    } else if (hashes.length > 0 && hashes[0] == FORCE_USE_NO_EXOTIC) {
+      // Otherwise, add the hashes to the selection
+      this.selectedExotics = hashes;
+    } else {
+      this.selectedExotics = hashes;
     }
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;

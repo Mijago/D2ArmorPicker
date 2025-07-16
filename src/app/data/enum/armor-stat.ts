@@ -93,17 +93,17 @@ export const ArmorStatHashes: EnumDictionary<ArmorStat, number> = {
 
 export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.StatWeapon]:
-    "https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png",
+    "https://www.bungie.net/common/destiny2_content/icons/bc69675acdae9e6b9a68a02fb4d62e07.png",
   [ArmorStat.StatHealth]:
-    "https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png",
+    "https://www.bungie.net/common/destiny2_content/icons/717b8b218cc14325a54869bef21d2964.png",
   [ArmorStat.StatClass]:
-    "https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png",
+    "https://www.bungie.net/common/destiny2_content/icons/7eb845acb5b3a4a9b7e0b2f05f5c43f1.png",
   [ArmorStat.StatGrenade]:
-    "https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png",
+    "https://www.bungie.net/common/destiny2_content/icons/065cdaabef560e5808e821cefaeaa22c.png",
   [ArmorStat.StatSuper]:
-    "https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png",
+    "https://www.bungie.net/common/destiny2_content/icons/585ae4ede9c3da96b34086fccccdc8cd.png",
   [ArmorStat.StatMelee]:
-    "https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png",
+    "https://www.bungie.net/common/destiny2_content/icons/fa534aca76d7f2d7e7b4ba4df4271b42.png",
 };
 
 export enum SpecialArmorStat {

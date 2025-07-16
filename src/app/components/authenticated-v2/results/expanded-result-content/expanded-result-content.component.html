@@ -21,13 +21,15 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatWeapon] }}</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatHealth] }}</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatClass] }}</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatGrenade] }}</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatSuper] }}</th>
-        <th>{{ ArmorStatNames[ArmorStat.StatMelee] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatHealth] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatMelee] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatGrenade] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatSuper] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatClass] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatWeapon] }}</th>
         <th></th>
+        <th></th>
+        <th>MW</th>
         <th></th>
       </tr>
     </thead>
@@ -44,42 +46,35 @@
           >
           <span *ngIf="!i.masterworked">{{ i.name }}</span>
         </td>
-        <ng-container
-          *ngVar="
-            i.masterworked ||
-            (!i.exotic && config_assumeLegendariesMasterworked) ||
-            (i.exotic && config_assumeExoticsMasterworked)
-              ? 2
-              : 0 as bonus
-          ">
+        <ng-container *ngVar="getMasterworkBonus(i) as bonus">
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatWeapon] + bonus
+              i.stats[ArmorStat.StatHealth] + bonus[1]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatHealth] + bonus
+              i.stats[ArmorStat.StatMelee] + bonus[5]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatClass] + bonus
+              i.stats[ArmorStat.StatGrenade] + bonus[3]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatGrenade] + bonus
+              i.stats[ArmorStat.StatSuper] + bonus[4]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatSuper] + bonus
+              i.stats[ArmorStat.StatClass] + bonus[2]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatMelee] + bonus
+              i.stats[ArmorStat.StatWeapon] + bonus[0]
             }}</span>
           </td>
         </ng-container>
@@ -99,6 +94,14 @@
             <app-armor-perk-icon [perk]="i.perk || 0"></app-armor-perk-icon>
           </div>
         </td>
+        <td style="text-align: center">
+          <ng-container *ngIf="i.armorSystem === 2; else showLevel">
+            <mat-icon aria-label="Masterworked" *ngIf="i.masterworked">check_circle</mat-icon>
+          </ng-container>
+          <ng-template #showLevel>
+            <span *ngIf="i.masterworkLevel !== undefined">{{ i.masterworkLevel }}</span>
+          </ng-template>
+        </td>
         <!-- Disable -->
         <td class="icon-column">
           <button
@@ -110,6 +113,7 @@
             <mat-icon>block</mat-icon>
           </button>
         </td>
+
         <!-- Moving to inventory -->
         <td *ngIf="i.transferState === 1 || i.transferState === 2" class="icon-column">
           <mat-progress-spinner
@@ -148,59 +152,33 @@
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total highlight-row">
       <td>Total (armor)</td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.StatWeapon] }}
-        <img
-          alt="Weapon"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
-      </td>
-      <td *ngIf="!!stats">
         {{ stats[ArmorStat.StatHealth] }}
-        <img
-          alt="Health"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
-      </td>
-      <td *ngIf="!!stats">
-        {{ stats[ArmorStat.StatClass] }}
-        <img
-          alt="Class"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
-      </td>
-      <td *ngIf="!!stats">
-        {{ stats[ArmorStat.StatGrenade] }}
-        <img
-          alt="Grenade"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
-      </td>
-      <td *ngIf="!!stats">
-        {{ stats[ArmorStat.StatSuper] }}
-        <img
-          alt="Super"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
+        <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
         {{ stats[ArmorStat.StatMelee] }}
-        <img
-          alt="Melee"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
+        <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
+      </td>
+      <td *ngIf="!!stats">
+        {{ stats[ArmorStat.StatGrenade] }}
+        <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
+      </td>
+      <td *ngIf="!!stats">
+        {{ stats[ArmorStat.StatSuper] }}
+        <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
+      </td>
+      <td *ngIf="!!stats">
+        {{ stats[ArmorStat.StatClass] }}
+        <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
+      </td>
+      <td *ngIf="!!stats">
+        {{ stats[ArmorStat.StatWeapon] }}
+        <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
       </td>
     </tr>
     <!-- Config Mods -->
     <tr class="result-config">
       <td>Configuration</td>
-      <td
-        ><span
-          *ngIf="this.configValues[ArmorStat.StatWeapon] !== 0"
-          [class]="this.configValues[ArmorStat.StatWeapon] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.StatWeapon] > 0">+</span
-          >{{ this.configValues[ArmorStat.StatWeapon] }}
-        </span></td
-      >
       <td
         ><span
           *ngIf="this.configValues[ArmorStat.StatHealth] !== 0"
@@ -211,10 +189,10 @@
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.StatClass] !== 0"
-          [class]="this.configValues[ArmorStat.StatClass] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.StatClass] > 0">+</span
-          >{{ this.configValues[ArmorStat.StatClass] }}
+          *ngIf="this.configValues[ArmorStat.StatMelee] !== 0"
+          [class]="this.configValues[ArmorStat.StatMelee] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatMelee] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatMelee] }}
         </span></td
       >
       <td
@@ -235,23 +213,28 @@
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.StatMelee] !== 0"
-          [class]="this.configValues[ArmorStat.StatMelee] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.StatMelee] > 0">+</span
-          >{{ this.configValues[ArmorStat.StatMelee] }}
+          *ngIf="this.configValues[ArmorStat.StatClass] !== 0"
+          [class]="this.configValues[ArmorStat.StatClass] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatClass] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatClass] }}
+        </span></td
+      >
+      <td
+        ><span
+          *ngIf="this.configValues[ArmorStat.StatWeapon] !== 0"
+          [class]="this.configValues[ArmorStat.StatWeapon] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatWeapon] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatWeapon] }}
         </span></td
       >
     </tr>
     <!-- +5 Mods -->
     <tr *ngVar="element?.mods as mods" class="highlight-row">
       <td>Minor Mods</td>
-      <td *ngVar="mods | count: StatModifier.MINOR_WEAPON as count">
-        <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
-      </td>
       <td *ngVar="mods | count: StatModifier.MINOR_HEALTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_CLASS as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_MELEE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
       <td *ngVar="mods | count: StatModifier.MINOR_GRENADE as count">
@@ -260,20 +243,20 @@
       <td *ngVar="mods | count: StatModifier.MINOR_SUPER as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_MELEE as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_CLASS as count">
+        <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
+      </td>
+      <td *ngVar="mods | count: StatModifier.MINOR_WEAPON as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
     </tr>
     <!-- +10 Mods -->
     <tr *ngVar="element?.mods as mods">
       <td>Major Mods</td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_WEAPON as count">
-        <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
-      </td>
       <td *ngVar="mods | count: StatModifier.MAJOR_HEALTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_CLASS as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_MELEE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
       <td *ngVar="mods | count: StatModifier.MAJOR_GRENADE as count">
@@ -282,20 +265,20 @@
       <td *ngVar="mods | count: StatModifier.MAJOR_SUPER as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_MELEE as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_CLASS as count">
+        <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
+      </td>
+      <td *ngVar="mods | count: StatModifier.MAJOR_WEAPON as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
     </tr>
     <ng-container *ngVar="element?.artifice as mods">
       <tr>
         <td>Artifice Mods</td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_WEAPON as count">
-          <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
-        </td>
         <td *ngVar="mods | count: StatModifier.ARTIFICE_HEALTH as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_CLASS as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_MELEE as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
         <td *ngVar="mods | count: StatModifier.ARTIFICE_GRENADE as count">
@@ -304,7 +287,10 @@
         <td *ngVar="mods | count: StatModifier.ARTIFICE_SUPER as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_MELEE as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_CLASS as count">
+          <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
+        </td>
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_WEAPON as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
       </tr>
@@ -314,46 +300,28 @@
     <tr *ngVar="element?.stats as stats" class="result-total-all result-total highlight-row">
       <td>Total</td>
       <td>
-        {{ stats[ArmorStat.StatWeapon] }}
-        <img
-          alt="Weapon"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
-      </td>
-      <td>
         {{ stats[ArmorStat.StatHealth] }}
-        <img
-          alt="Health"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
-      </td>
-      <td>
-        {{ stats[ArmorStat.StatClass] }}
-        <img
-          alt="Class"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
-      </td>
-      <td>
-        {{ stats[ArmorStat.StatGrenade] }}
-        <img
-          alt="Grenade"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
-      </td>
-      <td>
-        {{ stats[ArmorStat.StatSuper] }}
-        <img
-          alt="Super"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
+        <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
       </td>
       <td>
         {{ stats[ArmorStat.StatMelee] }}
-        <img
-          alt="Melee"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
+        <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
+      </td>
+      <td>
+        {{ stats[ArmorStat.StatGrenade] }}
+        <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
+      </td>
+      <td>
+        {{ stats[ArmorStat.StatSuper] }}
+        <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
+      </td>
+      <td>
+        {{ stats[ArmorStat.StatClass] }}
+        <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
+      </td>
+      <td>
+        {{ stats[ArmorStat.StatWeapon] }}
+        <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
       </td>
     </tr>
   </table>

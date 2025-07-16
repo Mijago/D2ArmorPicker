@@ -56,6 +56,21 @@
           <span class="info-stat-label">Time required</span>
           <span class="info-stat-value">{{ this.totalTime | number }}ms</span>
         </div>
+        <div class="view-mode-toggle">
+          <mat-button-toggle-group
+            [value]="viewMode"
+            (change)="onViewModeChange($event)"
+            aria-label="View Mode">
+            <mat-button-toggle value="cards">
+              <mat-icon>view_module</mat-icon>
+              Cards
+            </mat-button-toggle>
+            <mat-button-toggle value="table">
+              <mat-icon>table_view</mat-icon>
+              Table
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
       </div>
 
       <div class="config-summary-container">
@@ -189,22 +204,6 @@
         </mat-chip-listbox>
       </div>
 
-      <div class="view-controls">
-        <mat-button-toggle-group
-          [value]="viewMode"
-          (change)="onViewModeChange($event)"
-          aria-label="View Mode">
-          <mat-button-toggle value="cards">
-            <mat-icon>view_module</mat-icon>
-            Cards
-          </mat-button-toggle>
-          <mat-button-toggle value="table">
-            <mat-icon>table_view</mat-icon>
-            Table
-          </mat-button-toggle>
-        </mat-button-toggle-group>
-      </div>
-
       <!-- Card View -->
       <app-results-card-view *ngIf="viewMode === 'cards'" [results]="_results">
       </app-results-card-view>
@@ -232,10 +231,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatWeapon] }}
-            <img
-              alt="Weapon"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
+            <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
@@ -250,10 +246,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatHealth] }}
-            <img
-              alt="Health"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
+            <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
@@ -268,10 +261,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatClass] }}
-            <img
-              alt="Class"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
+            <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
@@ -286,10 +276,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatGrenade] }}
-            <img
-              alt="Grenade"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
+            <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
@@ -304,10 +291,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatSuper] }}
-            <img
-              alt="Super"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
+            <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
@@ -322,10 +306,7 @@
           </th>
           <td *matCellDef="let element" class="statColumn" mat-cell
             >{{ element.stats[ArmorStat.StatMelee] }}
-            <img
-              alt="Melee"
-              class="statIcon"
-              src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
+            <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
           </td>
         </ng-container>
 
