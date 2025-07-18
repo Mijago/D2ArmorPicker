@@ -50,6 +50,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public hoveredValue: number | null = null;
   public statValues: number[] = [];
   public editingValue: boolean = false;
+  private shouldSelectText: boolean = false;
 
   public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
@@ -75,8 +76,14 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     if (this.editingValue && this.valueInput) {
       this.valueInput.nativeElement.focus();
       const inputElem = this.valueInput.nativeElement;
-      const valueLength = inputElem.value.length;
-      inputElem.setSelectionRange(valueLength, valueLength);
+
+      if (this.shouldSelectText) {
+        inputElem.select();
+        this.shouldSelectText = false;
+      } else {
+        const valueLength = inputElem.value.length;
+        inputElem.setSelectionRange(valueLength, valueLength);
+      }
     }
   }
 
@@ -138,10 +145,17 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     this.selectedTier = num / 10;
     this.selectedTierChange.emit(this.selectedTier);
     this.editingValue = false;
+    this.shouldSelectText = false;
   }
 
   cancelValueEdit() {
     this.editingValue = false;
+    this.shouldSelectText = false;
+  }
+
+  startValueEdit() {
+    this.editingValue = true;
+    this.shouldSelectText = true;
   }
 
   /**

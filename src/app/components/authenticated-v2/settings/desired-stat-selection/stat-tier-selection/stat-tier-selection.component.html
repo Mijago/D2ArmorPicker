@@ -87,7 +87,7 @@
     <div class="value-section">
       <span
         *ngIf="!editingValue"
-        (click)="editingValue = true"
+        (click)="startValueEdit()"
         class="clickable-value"
         style="cursor: pointer; display: inline-block">
         {{ selectedValue }}
