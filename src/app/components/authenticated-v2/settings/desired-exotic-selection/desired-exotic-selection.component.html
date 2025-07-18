@@ -122,6 +122,14 @@
 <div>
   <mat-slide-toggle
     color="primary"
+    [checked]="allowLegacyArmor"
+    (change)="setAllowLegacyArmor($event.checked)">
+    Include legacy armor (2.0)
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="primary"
     [checked]="allowBlueArmorPieces"
     (change)="setAllowBlueArmorPieces($event.checked)">
     Include white, blue and green items

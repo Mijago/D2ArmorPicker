@@ -310,6 +310,8 @@ export class InventoryService {
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
         .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
+        // filter armor 3.0
+        .filter((item) => item.armorSystem === ArmorSystem.Armor3 || config.allowLegacyArmor)
         // filter collection/vendor rolls if not allowed
         .filter((item) => {
           switch (item.source) {

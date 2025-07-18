@@ -78,6 +78,7 @@ export class BuildConfiguration {
   putArtificeMods = true;
   useFotlArmor = true;
   allowBlueArmorPieces = true;
+  allowLegacyArmor = true; // Allow armor 2.0, which is the legacy armor system
   ignoreSunsetArmor = false;
   includeVendorRolls = false;
   includeCollectionRolls = false;
@@ -122,6 +123,7 @@ export class BuildConfiguration {
       includeCollectionRolls: false,
       includeVendorRolls: false,
       allowBlueArmorPieces: true,
+      allowLegacyArmor: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
       limitParsedResults: true,
