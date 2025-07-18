@@ -67,13 +67,26 @@
 
   .clickable-value {
     transition: all 0.2s ease;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
-    padding: 2px 4px;
-    border-radius: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    min-width: 35px;
+    text-align: center;
 
     &:hover {
       color: #2196f3;
-      border-bottom: 1px solid #2196f3;
+      border-color: #2196f3;
+      background: rgba(33, 150, 243, 0.1);
+      box-shadow: 0 0 4px rgba(33, 150, 243, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 0 2px rgba(33, 150, 243, 0.5);
     }
   }
 }
