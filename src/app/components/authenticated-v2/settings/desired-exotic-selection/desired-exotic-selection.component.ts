@@ -18,6 +18,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { BungieApiService } from "../../../../services/bungie-api.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
@@ -56,6 +57,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   allowLegacyArmor = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
+  importEquippedExoticInProgress = false;
 
   anyPerkValue = ArmorPerkOrSlot.Any;
   availableFirstPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
@@ -63,7 +65,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     public inventory: InventoryService,
-    public config: ConfigurationService
+    public config: ConfigurationService,
+    private bungieApi: BungieApiService
   ) {}
 
   ngOnInit(): void {
@@ -223,6 +226,17 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   async refreshAll() {
     await this.inventory.refreshAll(true, true);
+  }
+
+  async importEquippedExotic() {
+    this.importEquippedExoticInProgress = true;
+    try {
+      await this.bungieApi.importCurrentlyEquippedExotic();
+    } catch (error) {
+      console.error("Error importing equipped exotic:", error);
+    } finally {
+      this.importEquippedExoticInProgress = false;
+    }
   }
 
   private ngUnsubscribe = new Subject();

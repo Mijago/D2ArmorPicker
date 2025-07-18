@@ -64,6 +64,8 @@ import {
   ResultItemMoveState,
 } from "../components/authenticated-v2/results/results.component";
 import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
+import { SubclassHashes } from "../data/enum/armor-stat";
+import { ModInformation } from "../data/ModInformation";
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -756,6 +758,8 @@ export class BungieApiService {
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
         if (v.itemType == 19) return true; // mods
+        if (v.itemType == 16 && v.itemCategoryHashes && v.itemCategoryHashes.indexOf(50) > -1)
+          return true; // subclasses
         if (v.itemType == 2) return true; // armor
         if (v.inventory?.bucketTypeHash == 3448274439) return true; // helmets, required for festival masks
         if (v.inventory?.bucketTypeHash == 3551918588) return true; // gauntlets
@@ -1082,5 +1086,209 @@ export class BungieApiService {
     }
 
     return { success: true, allSuccessful };
+  }
+
+  /**
+   * Imports currently equipped exotic armor and updates the configuration accordingly
+   */
+  async importCurrentlyEquippedExotic(): Promise<boolean> {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "importCurrentlyEquippedExotic", "offline mode, skipping");
+      return false;
+    }
+
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      console.warn("No character found for current class");
+      return false;
+    }
+
+    console.info("BungieApiService", "Importing equipped exotic for character", characterId);
+
+    let profile = await getProfile((d) => this.http.$http(d, true), {
+      components: [
+        DestinyComponentType.CharacterEquipment,
+        DestinyComponentType.ItemSockets,
+        DestinyComponentType.ItemInstances,
+      ],
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+    });
+
+    const characterEquipment = profile.Response.characterEquipment.data?.[characterId];
+    if (!characterEquipment) {
+      console.warn("No equipment data found for character");
+      return false;
+    }
+
+    const manifestArmor = await this.db.manifestArmor.toArray();
+    const manifestArmorMap = Object.fromEntries(manifestArmor.map((_) => [_.hash, _]));
+
+    let updatedConfig = false;
+
+    // Import exotic armor
+    const exoticArmor = characterEquipment.items.find((item) => {
+      const manifest = manifestArmorMap[item.itemHash];
+      return manifest && manifest.isExotic === 1 && manifest.itemType === 2; // Armor type
+    });
+
+    if (exoticArmor) {
+      const manifestItem = manifestArmorMap[exoticArmor.itemHash];
+      if (manifestItem) {
+        // Find all variants of this exotic armor piece
+        const exoticVariants = manifestArmor
+          .filter(
+            (armor) =>
+              armor.isExotic === 1 &&
+              armor.itemType === 2 &&
+              armor.name === manifestItem.name &&
+              armor.clazz === manifestItem.clazz &&
+              armor.slot === manifestItem.slot
+          )
+          .map((armor) => armor.hash);
+
+        this.config.modifyConfiguration((config) => {
+          config.selectedExotics = exoticVariants;
+        });
+        updatedConfig = true;
+
+        // Handle exotic class item perks if applicable
+        if (manifestItem.slot === ArmorSlot.ArmorSlotClass) {
+          const sockets =
+            profile.Response.itemComponents.sockets.data?.[exoticArmor.itemInstanceId!];
+          if (sockets) {
+            const exoticPerks = this.extractExoticClassItemPerks(sockets.sockets);
+            if (exoticPerks.length > 0) {
+              this.config.modifyConfiguration((config) => {
+                config.selectedExoticPerks = [
+                  exoticPerks[0] || ArmorPerkOrSlot.Any,
+                  exoticPerks[1] || ArmorPerkOrSlot.Any,
+                ];
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return updatedConfig;
+  }
+
+  /**
+   * Imports currently equipped subclass and fragments and updates the configuration accordingly
+   */
+  async importCurrentlyEquippedSubclass(): Promise<boolean> {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "importCurrentlyEquippedSubclass", "offline mode, skipping");
+      return false;
+    }
+
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      console.warn("No character found for current class");
+      return false;
+    }
+
+    console.info("BungieApiService", "Importing equipped subclass for character", characterId);
+
+    let profile = await getProfile((d) => this.http.$http(d, true), {
+      components: [
+        DestinyComponentType.CharacterEquipment,
+        DestinyComponentType.ItemSockets,
+        DestinyComponentType.ItemInstances,
+      ],
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+    });
+
+    const characterEquipment = profile.Response.characterEquipment.data?.[characterId];
+    if (!characterEquipment) {
+      console.warn("No equipment data found for character");
+      return false;
+    }
+
+    let updatedConfig = false;
+
+    // Import subclass and fragments
+    const subclass = characterEquipment.items.find((item) => item.bucketHash === 3284755031); // Subclass bucket
+    if (subclass) {
+      const configClass = this.config.readonlyConfigurationSnapshot
+        .characterClass as keyof typeof SubclassHashes;
+      let subclassKey: string | null = null;
+      if (SubclassHashes[configClass]) {
+        for (const [key, hash] of Object.entries(SubclassHashes[configClass])) {
+          if (hash === subclass.itemHash) {
+            subclassKey = key;
+            break;
+          }
+        }
+      }
+      if (subclassKey) {
+        this.config.modifyConfiguration((config) => {
+          config.selectedModElement = Number(subclassKey);
+          config.enabledMods = [];
+        });
+        updatedConfig = true;
+      }
+    }
+
+    // fragments
+    if (subclass && subclass.itemInstanceId) {
+      const sockets = profile.Response.itemComponents.sockets.data?.[subclass.itemInstanceId];
+      if (sockets) {
+        const fragmentHashes = sockets.sockets
+          .filter((socket) => socket.plugHash && socket.plugHash !== 0)
+          .map((socket) => socket.plugHash)
+          .map((plugHash) => {
+            const modKey = Object.entries(ModInformation).find(
+              ([_, info]) => info.hash === plugHash
+            )?.[0];
+            return modKey ? Number(modKey) : undefined;
+          })
+          .filter(Boolean);
+        if (fragmentHashes && fragmentHashes.length > 0) {
+          this.config.modifyConfiguration((config) => {
+            console.debug("BungieApiService", "Importing fragments", fragmentHashes);
+            config.enabledMods = fragmentHashes as number[];
+          });
+          updatedConfig = true;
+        }
+      }
+    }
+
+    return updatedConfig;
+  }
+
+  private extractExoticClassItemPerks(sockets: any[]): ArmorPerkOrSlot[] {
+    const perks: ArmorPerkOrSlot[] = [];
+
+    for (const socket of sockets) {
+      if (
+        socket.plugHash &&
+        Object.keys(ExoticClassItemPerkNames).map(Number).includes(socket.plugHash)
+      ) {
+        // Map the exotic perk hash to ArmorPerkOrSlot if needed
+        // For now, we'll return the hash directly as it should match the enum
+        perks.push(socket.plugHash as ArmorPerkOrSlot);
+      }
+    }
+
+    return perks;
   }
 }

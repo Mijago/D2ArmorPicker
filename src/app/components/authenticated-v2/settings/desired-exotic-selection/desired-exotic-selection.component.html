@@ -104,6 +104,20 @@
 </div>
 
 <div>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="importEquippedExoticInProgress"
+    (click)="importEquippedExotic()">
+    Import Equipped Exotic
+  </button>
+  <mat-spinner
+    *ngIf="importEquippedExoticInProgress"
+    diameter="20"
+    class="inline-spinner"></mat-spinner>
+</div>
+<br />
+<div>
   <mat-slide-toggle
     color="primary"
     [checked]="includeCollectionRolls"

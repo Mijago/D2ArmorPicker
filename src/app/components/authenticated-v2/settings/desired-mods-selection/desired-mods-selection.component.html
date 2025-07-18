@@ -149,5 +149,20 @@
 </span>
 
 <div id="clear-container">
-  <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>
+  <button
+    (click)="importEquippedSubclass()"
+    [disabled]="isLoadingSubclass"
+    color="primary"
+    mat-raised-button
+    style="margin-right: 10px">
+    Import equipped Subclass & Fragments
+  </button>
+
+  <mat-spinner
+    *ngIf="isLoadingSubclass"
+    diameter="20"
+    style="margin-right: 8px; display: inline-block"></mat-spinner>
+  <button (click)="clear()" [disabled]="isLoadingSubclass" color="warn" mat-stroked-button>
+    Clear the whole selection
+  </button>
 </div>

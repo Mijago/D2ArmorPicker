@@ -21,6 +21,7 @@ import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
 import { ArmorStat, SpecialArmorStat } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle";
 import { DestinyClass } from "bungie-api-ts/destiny2";
@@ -47,8 +48,12 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
+  isLoadingSubclass: boolean = false;
 
-  constructor(private config: ConfigurationService) {
+  constructor(
+    private config: ConfigurationService,
+    private bungieApi: BungieApiService
+  ) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {
         return -1;
@@ -157,6 +162,22 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
         c.enabledMods.splice(position, 1);
       }
     });
+  }
+
+  async importEquippedSubclass() {
+    this.isLoadingSubclass = true;
+    try {
+      const success = await this.bungieApi.importCurrentlyEquippedSubclass();
+      if (success) {
+        console.log("Successfully imported equipped subclass and fragments");
+      } else {
+        console.log("No subclass found or no changes were made");
+      }
+    } catch (error) {
+      console.error("Failed to import equipped subclass:", error);
+    } finally {
+      this.isLoadingSubclass = false;
+    }
   }
 
   private ngUnsubscribe = new Subject();
