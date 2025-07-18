@@ -34,8 +34,50 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.2",
+    date: "July 18, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Gearset' armor to the Modslot selection. This allows you to buildcraft with them. I'll add a nicer UI later.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped subclass and fragments.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a filter to disable legacy armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped exotic.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the vendor API to support the new gearset armor perk.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved visibility of the text input for the stats. It now has a border and is more visible.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor bugfixes and performance improvements.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.1c",
-    date: "June 16, 2025",
+    date: "July 16, 2025",
     clearManifest: true,
     entries: [
       {
