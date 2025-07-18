@@ -32,6 +32,7 @@ import {
   DestinyItemInvestmentStatDefinition,
   DestinyClass,
   DestinyItemComponent,
+  DestinyManifestComponentName,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
@@ -66,6 +67,9 @@ import {
 import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
 import { SubclassHashes } from "../data/enum/armor-stat";
 import { ModInformation } from "../data/ModInformation";
+
+// TODO :Remove once DIM API is updated
+type DestinyEquipableItemSetDefinition = { [key: string]: any };
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -580,7 +584,10 @@ export class BungieApiService {
   }
     */
 
-  private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
+  private getArmorPerk(
+    v: DestinyInventoryItemDefinition,
+    itemSetDefinitions: DestinyEquipableItemSetDefinition
+  ): ArmorPerkOrSlot {
     // Guardian Games
     if (
       environment.featureFlags.enableGuardianGamesFeatures &&
@@ -618,6 +625,18 @@ export class BungieApiService {
       // find the key of ArmorPerkSocketHashes that matches the socketHash
       if (perk != ArmorPerkOrSlot.None) {
         return perk;
+      }
+    }
+
+    // TODO: Fix this as soon as DIM API is updated
+    for (const itemSet of Object.values(itemSetDefinitions)) {
+      if (itemSet.setItems.indexOf(v.hash) > -1) {
+        // This is an item set, so it has a perk
+        // find the ArmorPerkOrSlot id that is listed in ArmorPerkSocketHashes
+        const perk = Object.entries(ArmorPerkSocketHashes).find(
+          (kvpair) => kvpair[1] == itemSet.hash
+        );
+        if (perk) return Number.parseInt(perk[0]) as ArmorPerkOrSlot;
       }
     }
 
@@ -739,7 +758,8 @@ export class BungieApiService {
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
-      ],
+        "DestinyEquipableItemSetDefinition",
+      ] as any as DestinyManifestComponentName[],
       language: "en",
     });
 
@@ -914,7 +934,8 @@ export class BungieApiService {
           itemType: v.itemType,
           itemSubType: v.itemSubType,
           investmentStats: v.investmentStats,
-          perk: this.getArmorPerk(v),
+          // TODO: fix as soon as DIM Api is updated
+          perk: this.getArmorPerk(v, (manifestTables as any).DestinyEquipableItemSetDefinition),
           socketEntries: v.sockets?.socketEntries ?? [],
         } as IManifestArmor;
       });

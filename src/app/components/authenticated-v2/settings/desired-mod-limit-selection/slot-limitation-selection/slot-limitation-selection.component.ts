@@ -72,6 +72,12 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   readonly availableArmorPerks = [
     ArmorPerkOrSlot.Any,
     ArmorPerkOrSlot.None,
+    ArmorPerkOrSlot.GearsetTechsec,
+    ArmorPerkOrSlot.GearsetBushido,
+    ArmorPerkOrSlot.GearsetAionRenewal,
+    ArmorPerkOrSlot.GearsetLastDiscipline,
+    ArmorPerkOrSlot.GearsetAionAdapter,
+    ArmorPerkOrSlot.GearsetTwoFoldCrown,
     ArmorPerkOrSlot.SlotArtifice,
     ArmorPerkOrSlot.GuardianGamesClassItem,
     ArmorPerkOrSlot.PerkOverflowingCorruption,

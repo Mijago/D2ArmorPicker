@@ -130,6 +130,14 @@ export enum ArmorPerkOrSlot {
   SlotSalvationsEdge,
   SlotEidosApprentice,
   PerkOverflowingCorruption,
+
+  // Armor Gearset
+  GearsetTechsec = 100,
+  GearsetBushido,
+  GearsetAionRenewal,
+  GearsetLastDiscipline,
+  GearsetAionAdapter,
+  GearsetTwoFoldCrown,
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -151,6 +159,12 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.SlotEidosApprentice]: "Eido's Apprentice Perk",
   [ArmorPerkOrSlot.PerkOverflowingCorruption]: "Overflowing Corruption Perk",
+  [ArmorPerkOrSlot.GearsetTechsec]: "Techsec Gearset",
+  [ArmorPerkOrSlot.GearsetBushido]: "Bushido Gearset",
+  [ArmorPerkOrSlot.GearsetAionRenewal]: "Aion Renewal Gearset",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: "Last Discipline Gearset",
+  [ArmorPerkOrSlot.GearsetAionAdapter]: "Aion Adapter Gearset",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "Two-Fold Crown Gearset",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -190,6 +204,18 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
   [ArmorPerkOrSlot.PerkOverflowingCorruption]:
     "https://www.bungie.net/common/destiny2_content/icons/7a714dc1f8b669d8d5901c1543eb244b.png",
+  [ArmorPerkOrSlot.GearsetTechsec]:
+    "https://www.bungie.net/common/destiny2_content/icons/514be1a6a19e5f4b2e8e6aa4c8f3e58a.jpg",
+  [ArmorPerkOrSlot.GearsetBushido]:
+    "https://www.bungie.net/common/destiny2_content/icons/ac4ebb47f8268ba6f93cbae3413f147e.jpg",
+  [ArmorPerkOrSlot.GearsetAionRenewal]:
+    "https://www.bungie.net/common/destiny2_content/icons/eb51d5401d0856e771f7d46fd6e1ca1f.jpg",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]:
+    "https://www.bungie.net/common/destiny2_content/icons/9f2f06bc94326bc0282deacdc8848c24.jpg",
+  [ArmorPerkOrSlot.GearsetAionAdapter]:
+    "https://www.bungie.net/common/destiny2_content/icons/f77b2802da61b9eaf08adb8795a970e3.jpg",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]:
+    "https://www.bungie.net/common/destiny2_content/icons/e199fe652e70c67c3d838bdd4ebf6a8d.jpg",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -216,6 +242,12 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
   [ArmorPerkOrSlot.SlotEidosApprentice]: 273417606,
   [ArmorPerkOrSlot.PerkOverflowingCorruption]: 1128948126,
+  [ArmorPerkOrSlot.GearsetTechsec]: 239346083,
+  [ArmorPerkOrSlot.GearsetBushido]: 1083114430,
+  [ArmorPerkOrSlot.GearsetAionRenewal]: 1223381128,
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: 3252452908,
+  [ArmorPerkOrSlot.GearsetAionAdapter]: 894715166,
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: 3259216565,
 };
 
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
@@ -251,6 +283,12 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
   [ArmorPerkOrSlot.SlotEidosApprentice]: 'perkname:"eido\'s apprentice"',
   [ArmorPerkOrSlot.PerkOverflowingCorruption]: 'perkname:"overflowing corruption"',
+  [ArmorPerkOrSlot.GearsetTechsec]: "name:techsec",
+  [ArmorPerkOrSlot.GearsetBushido]: "name:bushido",
+  [ArmorPerkOrSlot.GearsetAionRenewal]: "name:'aion renewal'",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: "name:'last discipline'",
+  [ArmorPerkOrSlot.GearsetAionAdapter]: "name:'aion adapter'",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "name:'two-fold crown'",
 };
 
 export const SubclassHashes: EnumDictionary<
