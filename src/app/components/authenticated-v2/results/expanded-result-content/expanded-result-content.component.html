@@ -16,23 +16,20 @@
   -->
 
 <div>
-  <mat-toolbar *ngIf="mayAnyItemBeBugged" class="invalid-item-box mat-elevation-z4" color="warn">
-    Warning: The stats of one or more items used for this build may be invalid.<br />
-    Please remove all negative/positive stat modifiers from the marked items.
-  </mat-toolbar>
-
   This table shows you the expected stats of any item:
   <table class="specificStatTable">
     <thead>
       <tr>
         <th>Name</th>
-        <th>Mobility</th>
-        <th>Resilience</th>
-        <th>Recovery</th>
-        <th>Discipline</th>
-        <th>Intellect</th>
-        <th>Strength</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatHealth] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatMelee] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatGrenade] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatSuper] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatClass] }}</th>
+        <th class="ability-column">{{ ArmorStatNames[ArmorStat.StatWeapon] }}</th>
         <th></th>
+        <th></th>
+        <th>MW</th>
         <th></th>
       </tr>
     </thead>
@@ -49,42 +46,35 @@
           >
           <span *ngIf="!i.masterworked">{{ i.name }}</span>
         </td>
-        <ng-container
-          *ngVar="
-            i.masterworked ||
-            (!i.exotic && config_assumeLegendariesMasterworked) ||
-            (i.exotic && config_assumeExoticsMasterworked)
-              ? 2
-              : 0 as bonus
-          ">
+        <ng-container *ngVar="getMasterworkBonus(i) as bonus">
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Mobility] + bonus
+              i.stats[ArmorStat.StatHealth] + bonus[1]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Resilience] + bonus
+              i.stats[ArmorStat.StatMelee] + bonus[5]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Recovery] + bonus
+              i.stats[ArmorStat.StatGrenade] + bonus[3]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Discipline] + bonus
+              i.stats[ArmorStat.StatSuper] + bonus[4]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Intellect] + bonus
+              i.stats[ArmorStat.StatClass] + bonus[2]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.Strength] + bonus
+              i.stats[ArmorStat.StatWeapon] + bonus[0]
             }}</span>
           </td>
         </ng-container>
@@ -104,6 +94,14 @@
             <app-armor-perk-icon [perk]="i.perk || 0"></app-armor-perk-icon>
           </div>
         </td>
+        <td style="text-align: center">
+          <ng-container *ngIf="i.armorSystem === 2; else showLevel">
+            <mat-icon aria-label="Masterworked" *ngIf="i.masterworked">check_circle</mat-icon>
+          </ng-container>
+          <ng-template #showLevel>
+            <span *ngIf="i.masterworkLevel !== undefined">{{ i.masterworkLevel }}</span>
+          </ng-template>
+        </td>
         <!-- Disable -->
         <td class="icon-column">
           <button
@@ -115,6 +113,7 @@
             <mat-icon>block</mat-icon>
           </button>
         </td>
+
         <!-- Moving to inventory -->
         <td *ngIf="i.transferState === 1 || i.transferState === 2" class="icon-column">
           <mat-progress-spinner
@@ -147,150 +146,34 @@
           </mat-icon>
         </td>
         <!-- // Moving to inventory -->
-        <td *ngIf="i.mayBeBugged">
-          <mat-icon
-            #tooltip="matTooltip"
-            aria-hidden="false"
-            aria-label="Error"
-            class="report-problem-icon"
-            inline
-            matTooltip="The stats of this item may be incorrect. Make sure that you remove every positive or negative stat modifier from this item.">
-            report_problem
-          </mat-icon>
-        </td>
       </tr>
     </ng-container>
-    <!-- Class Item -->
-    <tr *ngIf="!exoticClassItemRow && config_assumeClassItemMasterworked">
-      <td #tooltip="matTooltip" class="item-name-mw" matTooltip="Class item should be masterworked."
-        >Any Class Item</td
-      >
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td></td>
-      <td>
-        <div style="position: relative; width: 25px">
-          <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
-        </div>
-      </td>
-      <td>
-        <button
-          (click)="disableAllItems()"
-          style="padding: 0; top: 0; left: 0"
-          class="item-info-menu-btn report-problem-icon"
-          mat-icon-button
-          matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
-          <mat-icon>block</mat-icon>
-        </button>
-      </td>
-    </tr>
-    <tr *ngIf="!exoticClassItemRow && !config_assumeClassItemMasterworked">
-      <td>Any Class Item</td>
-      <td class="text-centered" colspan="6">You chose to use non-masterworked class items.</td>
-      <td></td>
-      <td></td>
-      <td>
-        <button
-          (click)="disableAllItems()"
-          style="padding: 0; top: 0; left: 0"
-          class="item-info-menu-btn report-problem-icon"
-          mat-icon-button
-          matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
-          <mat-icon>block</mat-icon>
-        </button>
-      </td>
-    </tr>
-
-    <!-- Exotic Class Item -->
-    <tr *ngIf="exoticClassItemRow">
-      <td
-        #tooltip="matTooltip"
-        class="item-name-mw"
-        matTooltip="Class item should be masterworked."
-        >{{ element?.exotic?.name }}</td
-      >
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="text-mw">{{ 2 }}</td>
-      <td class="icon-column">
-        <!-- Item Icon -->
-        <div [itemTooltip]="ExoticArmorItem!" class="item-icon-container">
-          <app-item-icon
-            [itemHash]="ExoticArmorItem!.hash"
-            [masterworked]="ExoticArmorItem!.masterworked"
-            [source]="ExoticArmorItem!.source"
-            class="item-icon">
-          </app-item-icon>
-        </div>
-      </td>
-      <td class="icon-column">
-        <div style="position: relative; width: 25px">
-          <app-armor-perk-icon [perk]="element?.classItem?.perk || 0"></app-armor-perk-icon>
-        </div>
-      </td>
-      <td>
-        <button
-          (click)="disableAllItems()"
-          style="padding: 0; top: 0; left: 0"
-          class="item-info-menu-btn report-problem-icon"
-          mat-icon-button
-          matTooltip="Disable all four items above from the results. They will not be used to generate results anymore, but you can always undo this.">
-          <mat-icon>block</mat-icon>
-        </button>
-      </td>
-    </tr>
-
     <!--Sum line without mods-->
     <tr *ngVar="element?.statsNoMods as stats" class="result-total-gear result-total highlight-row">
       <td>Total (armor)</td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Mobility] }}
-        <img
-          alt="Mobility"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
+        {{ stats[ArmorStat.StatHealth] }}
+        <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Resilience] }}
-        <img
-          alt="Resilience"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
+        {{ stats[ArmorStat.StatMelee] }}
+        <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Recovery] }}
-        <img
-          alt="Recovery"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
+        {{ stats[ArmorStat.StatGrenade] }}
+        <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Discipline] }}
-        <img
-          alt="Discipline"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
+        {{ stats[ArmorStat.StatSuper] }}
+        <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Intellect] }}
-        <img
-          alt="Intellect"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
+        {{ stats[ArmorStat.StatClass] }}
+        <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
       </td>
       <td *ngIf="!!stats">
-        {{ stats[ArmorStat.Strength] }}
-        <img
-          alt="Strength"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
+        {{ stats[ArmorStat.StatWeapon] }}
+        <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
       </td>
     </tr>
     <!-- Config Mods -->
@@ -298,116 +181,116 @@
       <td>Configuration</td>
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Mobility] !== 0"
-          [class]="this.configValues[ArmorStat.Mobility] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Mobility] > 0">+</span
-          >{{ this.configValues[ArmorStat.Mobility] }}
+          *ngIf="this.configValues[ArmorStat.StatHealth] !== 0"
+          [class]="this.configValues[ArmorStat.StatHealth] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatHealth] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatHealth] }}
         </span></td
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Resilience] !== 0"
-          [class]="this.configValues[ArmorStat.Resilience] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Resilience] > 0">+</span
-          >{{ this.configValues[ArmorStat.Resilience] }}
+          *ngIf="this.configValues[ArmorStat.StatMelee] !== 0"
+          [class]="this.configValues[ArmorStat.StatMelee] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatMelee] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatMelee] }}
         </span></td
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Recovery] !== 0"
-          [class]="this.configValues[ArmorStat.Recovery] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Recovery] > 0">+</span
-          >{{ this.configValues[ArmorStat.Recovery] }}
+          *ngIf="this.configValues[ArmorStat.StatGrenade] !== 0"
+          [class]="this.configValues[ArmorStat.StatGrenade] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatGrenade] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatGrenade] }}
         </span></td
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Discipline] !== 0"
-          [class]="this.configValues[ArmorStat.Discipline] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Discipline] > 0">+</span
-          >{{ this.configValues[ArmorStat.Discipline] }}
+          *ngIf="this.configValues[ArmorStat.StatSuper] !== 0"
+          [class]="this.configValues[ArmorStat.StatSuper] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatSuper] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatSuper] }}
         </span></td
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Intellect] !== 0"
-          [class]="this.configValues[ArmorStat.Intellect] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Intellect] > 0">+</span
-          >{{ this.configValues[ArmorStat.Intellect] }}
+          *ngIf="this.configValues[ArmorStat.StatClass] !== 0"
+          [class]="this.configValues[ArmorStat.StatClass] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatClass] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatClass] }}
         </span></td
       >
       <td
         ><span
-          *ngIf="this.configValues[ArmorStat.Strength] !== 0"
-          [class]="this.configValues[ArmorStat.Strength] > 0 ? 'positive' : 'negative'">
-          <span *ngIf="this.configValues[ArmorStat.Strength] > 0">+</span
-          >{{ this.configValues[ArmorStat.Strength] }}
+          *ngIf="this.configValues[ArmorStat.StatWeapon] !== 0"
+          [class]="this.configValues[ArmorStat.StatWeapon] > 0 ? 'positive' : 'negative'">
+          <span *ngIf="this.configValues[ArmorStat.StatWeapon] > 0">+</span
+          >{{ this.configValues[ArmorStat.StatWeapon] }}
         </span></td
       >
     </tr>
     <!-- +5 Mods -->
     <tr *ngVar="element?.mods as mods" class="highlight-row">
       <td>Minor Mods</td>
-      <td *ngVar="mods | count: StatModifier.MINOR_MOBILITY as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_HEALTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_RESILIENCE as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_MELEE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_RECOVERY as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_GRENADE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_DISCIPLINE as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_SUPER as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_INTELLECT as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_CLASS as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MINOR_STRENGTH as count">
+      <td *ngVar="mods | count: StatModifier.MINOR_WEAPON as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×5</span>
       </td>
     </tr>
     <!-- +10 Mods -->
     <tr *ngVar="element?.mods as mods">
       <td>Major Mods</td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_MOBILITY as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_HEALTH as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_RESILIENCE as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_MELEE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_RECOVERY as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_GRENADE as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_DISCIPLINE as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_SUPER as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_INTELLECT as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_CLASS as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
-      <td *ngVar="mods | count: StatModifier.MAJOR_STRENGTH as count">
+      <td *ngVar="mods | count: StatModifier.MAJOR_WEAPON as count">
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
     </tr>
     <ng-container *ngVar="element?.artifice as mods">
       <tr>
         <td>Artifice Mods</td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_MOBILITY as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_HEALTH as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_RESILIENCE as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_MELEE as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_RECOVERY as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_GRENADE as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_DISCIPLINE as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_SUPER as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_INTELLECT as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_CLASS as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
-        <td *ngVar="mods | count: StatModifier.ARTIFICE_STRENGTH as count">
+        <td *ngVar="mods | count: StatModifier.ARTIFICE_WEAPON as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
         </td>
       </tr>
@@ -417,46 +300,28 @@
     <tr *ngVar="element?.stats as stats" class="result-total-all result-total highlight-row">
       <td>Total</td>
       <td>
-        {{ stats[ArmorStat.Mobility] }}
-        <img
-          alt="Mobility"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png" />
+        {{ stats[ArmorStat.StatHealth] }}
+        <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
       </td>
       <td>
-        {{ stats[ArmorStat.Resilience] }}
-        <img
-          alt="Resilience"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png" />
+        {{ stats[ArmorStat.StatMelee] }}
+        <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
       </td>
       <td>
-        {{ stats[ArmorStat.Recovery] }}
-        <img
-          alt="Recovery"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png" />
+        {{ stats[ArmorStat.StatGrenade] }}
+        <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
       </td>
       <td>
-        {{ stats[ArmorStat.Discipline] }}
-        <img
-          alt="Discipline"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png" />
+        {{ stats[ArmorStat.StatSuper] }}
+        <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
       </td>
       <td>
-        {{ stats[ArmorStat.Intellect] }}
-        <img
-          alt="Intellect"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png" />
+        {{ stats[ArmorStat.StatClass] }}
+        <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
       </td>
       <td>
-        {{ stats[ArmorStat.Strength] }}
-        <img
-          alt="Strength"
-          class="statIcon"
-          src="https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png" />
+        {{ stats[ArmorStat.StatWeapon] }}
+        <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
       </td>
     </tr>
   </table>
@@ -531,199 +396,5 @@
   </div>
 </div>
 
-<mat-accordion>
-  <mat-expansion-panel class="mat-elevation-z6">
-    <mat-expansion-panel-header>
-      <mat-panel-title> What to do now? </mat-panel-title>
-      <mat-panel-description>
-        Detailed Instructions of to get your loadout ready.
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <div>
-      <ol>
-        <li>
-          Move all related items into your inventory
-          <span *ngIf="config_assumeClassItemMasterworked"> and use a masterworked class item</span
-          >.
-        </li>
-        <!-- Masterwork and elements -->
-        <ng-container *ngVar="getItemsThatMustBeMasterworked() as mwItems">
-          <li *ngIf="mwItems.length > 0">
-            Masterwork these items:
-            <ul>
-              <li *ngFor="let item1 of mwItems">
-                {{ item1.name }}
-              </li>
-            </ul>
-          </li>
-        </ng-container>
-
-        <!-- Mods -->
-        <li
-          *ngIf="
-            $any(element?.mods).length > 0 && ($any(element?.mods) | count: StatModifier.NONE) < 5
-          "
-          >Equip the following stat mods:
-          <ul *ngVar="element?.mods as mods">
-            <!-- MOBILITY -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_MOBILITY as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_MOBILITY as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Mobility Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /MOBILITY -->
-            <!-- RESILIENCE -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_RESILIENCE as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_RESILIENCE as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Resilience Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /RESILIENCE -->
-            <!-- RECOVERY -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_RECOVERY as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_RECOVERY as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Recovery Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /RECOVERY -->
-            <!-- DISCIPLINE -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_DISCIPLINE as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_DISCIPLINE as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Discipline Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /DISCIPLINE -->
-            <!-- INTELLECT -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_INTELLECT as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_INTELLECT as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Intellect Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /INTELLECT -->
-            <!-- STRENGTH -->
-            <ng-container *ngVar="mods | count: StatModifier.MINOR_STRENGTH as minorCount">
-              <ng-container *ngVar="mods | count: StatModifier.MAJOR_STRENGTH as majorCount">
-                <li *ngIf="minorCount + majorCount > 0" class="positive">
-                  <span *ngIf="minorCount > 0">{{ minorCount }} minor</span>
-                  <ng-container *ngIf="minorCount > 0 && majorCount > 0"> and</ng-container>
-                  <span *ngIf="majorCount > 0"> {{ majorCount }} major </span>
-                  Strength Mod<ng-container *ngIf="minorCount + majorCount > 1">s</ng-container>
-                </li>
-              </ng-container>
-            </ng-container>
-            <!-- /STRENGTH -->
-          </ul>
-        </li>
-        <li *ngIf="config_enabledMods.length > 0">
-          Equip any mods and fragments that you enabled in the configuration:
-          <ul>
-            <ng-container *ngFor="let mod of config_enabledMods">
-              <ng-container *ngVar="ModInformation[mod] as info">
-                <li *ngIf="info.type === ModifierType.CombatStyleMod">
-                  Equip the mod {{ info.name }}
-                </li>
-              </ng-container>
-            </ng-container>
-            <ng-container *ngFor="let mod of config_enabledMods">
-              <ng-container *ngVar="ModInformation[mod] as info">
-                <li *ngIf="info.type === ModifierType.Stasis">
-                  Equip the stasis fragment {{ info.name }}
-                </li>
-              </ng-container>
-            </ng-container>
-          </ul>
-        </li>
-      </ol>
-    </div>
-  </mat-expansion-panel>
-  <mat-expansion-panel class="mat-elevation-z6">
-    <mat-expansion-panel-header>
-      <mat-panel-title> Stat overview </mat-panel-title>
-      <mat-panel-description>
-        Shows a summary of all the stats and where they come from.
-      </mat-panel-description>
-    </mat-expansion-panel-header>
-    <table class="stat-preview">
-      <tr>
-        <td colspan="2">Stat</td>
-        <td class="tier-column">1</td>
-        <td class="tier-column">2</td>
-        <td class="tier-column">3</td>
-        <td class="tier-column">4</td>
-        <td class="tier-column">5</td>
-        <td class="tier-column">6</td>
-        <td class="tier-column">7</td>
-        <td class="tier-column">8</td>
-        <td class="tier-column">9</td>
-        <td class="tier-column">10</td>
-        <td>Tiers</td>
-      </tr>
-      <tr *ngFor="let statId of armorStatIds">
-        <td>{{ ArmorStatNames[statId] }}</td>
-        <td>
-          <img
-            alt="{{ ArmorStatNames[statId] }}"
-            src="{{ ArmorStatIconUrls[statId] }}"
-            style="height: 18px" />
-        </td>
-        <td *ngFor="let d of getColumnForStat(statId)">
-          <div *ngIf="!!d" [class]="d" class="energy-bar"></div>
-        </td>
-        <td class="sum-tiers">{{ getTiersForStat(statId) }}</td>
-      </tr>
-      <tr class="legend">
-        <td colspan="2">Armor</td>
-        <td>
-          <div class="energy-bar normal"></div>
-        </td>
-        <td colspan="3">Stat Mod</td>
-        <td>
-          <div class="energy-bar mod"></div>
-        </td>
-        <td colspan="4">Fragments & Mods</td>
-        <td>
-          <div class="energy-bar config"></div>
-        </td>
-      </tr>
-      <ng-container *ngVar="element?.exotic as exotic">
-        <tr *ngIf="exotic">
-          <td>Exotic:</td>
-          <td colspan="10">{{ exotic.name }}</td>
-          <td colspan="1">
-            <div class="item-icon-container">
-              <img class="item-icon" src="https://bungie.net/{{ exotic.icon }}" />
-              <img class="item-icon-overlay" src="https://bungie.net/{{ exotic.watermark }}" />
-            </div>
-          </td>
-        </tr>
-      </ng-container>
-    </table>
-  </mat-expansion-panel>
-</mat-accordion>
 <br />
 <br />

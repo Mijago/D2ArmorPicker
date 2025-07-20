@@ -73,6 +73,12 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     ArmorPerkOrSlot.Any,
     ArmorPerkOrSlot.None,
     ArmorPerkOrSlot.SlotArtifice,
+    ArmorPerkOrSlot.GearsetTechsec,
+    ArmorPerkOrSlot.GearsetBushido,
+    ArmorPerkOrSlot.GearsetAionRenewal,
+    ArmorPerkOrSlot.GearsetLastDiscipline,
+    ArmorPerkOrSlot.GearsetAionAdapter,
+    ArmorPerkOrSlot.GearsetTwoFoldCrown,
     ArmorPerkOrSlot.GuardianGamesClassItem,
     ArmorPerkOrSlot.PerkOverflowingCorruption,
     ArmorPerkOrSlot.SlotEidosApprentice,
@@ -188,8 +194,9 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
 
       this.fixedExoticInThisSlot =
         (await this.inventory.getExoticsForClass(c.characterClass))
-          .filter((x) => c.selectedExotics.indexOf(x.item.hash) > -1)
-          .map((e) => e.item.slot)
+          // TODO LOOK AT THIS
+          .filter((x) => c.selectedExotics.indexOf(x.items[0].hash) > -1)
+          .map((e) => e.items[0].slot)
           .indexOf(this.slot) > -1;
 
       if (mustRunPossibilityCheck) await this.runPossibilityCheck();

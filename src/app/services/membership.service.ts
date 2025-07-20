@@ -18,7 +18,6 @@ import { H } from "highlight.run";
 export class MembershipService {
   constructor(
     private http: HttpClientService,
-    private authService: AuthService,
     private status: StatusProviderService,
     private auth: AuthService
   ) {
@@ -89,7 +88,7 @@ export class MembershipService {
         console.error("PrimaryMembershipId was not found");
         lastLoggedInProfileIndex = 0;
         this.status.setAuthError();
-        this.authService.logout();
+        //this.authService.logout();
       }
       result = memberships?.[lastLoggedInProfileIndex];
       console.info(

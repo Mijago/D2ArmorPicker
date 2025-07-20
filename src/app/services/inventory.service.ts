@@ -17,7 +17,7 @@
 
 import { Injectable } from "@angular/core";
 import { DatabaseService } from "./database.service";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
@@ -42,7 +42,7 @@ import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
 import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
-import { FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { VendorsService } from "./vendors.service";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 import { isEqual as _isEqual } from "lodash";
@@ -62,7 +62,8 @@ export type ClassExoticInfo = {
   inInventory: boolean;
   inCollection: boolean;
   inVendor: boolean;
-  item: IManifestArmor;
+  items: IManifestArmor[];
+  instances: IInventoryArmor[];
 };
 
 @Injectable({
@@ -85,6 +86,9 @@ export class InventoryService {
 
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
+
+  private _reachableTiers: BehaviorSubject<number[]>;
+  public readonly reachableTiers: Observable<number[]>;
 
   private _calculationProgress: Subject<number> = new Subject<number>();
   public readonly calculationProgress: Observable<number> =
@@ -121,6 +125,9 @@ export class InventoryService {
       results: this.allArmorResults,
     } as info);
     this.armorResults = this._armorResults.asObservable();
+
+    this._reachableTiers = new BehaviorSubject([0, 0, 0, 0, 0, 0]);
+    this.reachableTiers = this._reachableTiers.asObservable();
 
     this.workers = [];
     let dataAlreadyFetched = false;
@@ -303,6 +310,8 @@ export class InventoryService {
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
         .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
+        // filter armor 3.0
+        .filter((item) => item.armorSystem === ArmorSystem.Armor3 || config.allowLegacyArmor)
         // filter collection/vendor rolls if not allowed
         .filter((item) => {
           switch (item.source) {
@@ -320,23 +329,23 @@ export class InventoryService {
         )
         .filter(
           (item) =>
-            this.selectedExotics.length != 1 ||
-            (item.isExotic && this.selectedExotics[0].hash == item.hash) ||
-            (!item.isExotic && this.selectedExotics[0].slot != item.slot)
+            this.selectedExotics.length === 0 ||
+            (item.isExotic && this.selectedExotics.some((exotic) => exotic.hash === item.hash)) ||
+            (!item.isExotic && this.selectedExotics.every((exotic) => exotic.slot !== item.slot))
         )
 
         // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
         .filter(
           (item) =>
             !config.onlyUseMasterworkedExotics ||
-            !(item.rarity == TierType.Exotic && !item.masterworked)
+            !(item.rarity == TierType.Exotic && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
         )
 
         // config.OnlyUseMasterworkedLegendaries - only keep legendaries that are masterworked
         .filter(
           (item) =>
             !config.onlyUseMasterworkedLegendaries ||
-            !(item.rarity == TierType.Superior && !item.masterworked)
+            !(item.rarity == TierType.Superior && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
         )
 
         // non-legendaries and non-exotics
@@ -371,7 +380,6 @@ export class InventoryService {
         // already has a real copy of the same item.
         return purchasedItemInstance === undefined;
       });
-
       this.permutatorArmorItems = this.inventoryArmorItems.map((armor) => {
         return {
           id: armor.id,
@@ -382,7 +390,8 @@ export class InventoryService {
           isExotic: armor.isExotic,
           rarity: armor.rarity,
           isSunset: armor.isSunset,
-          masterworked: armor.masterworked,
+          masterworkLevel: armor.masterworkLevel,
+          archetypeStats: armor.archetypeStats,
           mobility: armor.mobility,
           resilience: armor.resilience,
           recovery: armor.recovery,
@@ -390,7 +399,15 @@ export class InventoryService {
           intellect: armor.intellect,
           strength: armor.strength,
           source: armor.source,
-        } as IPermutatorArmor;
+          exoticPerkHash: armor.exoticPerkHash,
+
+          icon: armor.icon,
+          watermarkIcon: armor.watermarkIcon,
+          name: armor.name,
+          energyLevel: armor.energyLevel,
+          tier: armor.tier,
+          armorSystem: armor.armorSystem,
+        };
       });
 
       nthreads = this.estimateRequiredThreads();
@@ -400,6 +417,9 @@ export class InventoryService {
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
       const threadCalculationDoneArr = [...Array(nthreads).keys()].map(() => 0);
+      const threadCalculationReachableTiers: number[][] = [...Array(nthreads).keys()].map(() =>
+        Array(6).fill(0)
+      );
       let oldProgressValue = 0;
 
       // Improve per thread performance by shuffling the inventory
@@ -418,8 +438,17 @@ export class InventoryService {
           let data = ev.data;
           threadCalculationDoneArr[n] = data.checkedCalculations;
           threadCalculationAmountArr[n] = data.estimatedCalculations;
+          threadCalculationReachableTiers[n] =
+            data.reachableTiers || data.runtime.maximumPossibleTiers;
           const sumTotal = threadCalculationAmountArr.reduce((a, b) => a + b, 0);
           const sumDone = threadCalculationDoneArr.reduce((a, b) => a + b, 0);
+          const minReachableTiers = threadCalculationReachableTiers
+            .reduce((minArr, currArr) => {
+              // Using MAX would be more accurate, but using min is more visually appealing as it leads to larger jumps
+              return minArr.map((val, idx) => Math.max(val, currArr[idx]));
+            })
+            .map((k) => Math.min(200, k) / 10);
+          this._reachableTiers.next(minReachableTiers);
 
           if (
             threadCalculationDoneArr[0] > 0 &&
@@ -453,7 +482,7 @@ export class InventoryService {
                 this.inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
-              let v = {
+              let v: ResultDefinition = {
                 exotic:
                   exotic == null
                     ? undefined
@@ -481,11 +510,14 @@ export class InventoryService {
                     itemInstanceId: instance.itemInstanceId,
                     name: instance.name,
                     exotic: !!instance.isExotic,
-                    masterworked: instance.masterworked,
-                    mayBeBugged: instance.mayBeBugged,
+                    masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+                    archetypeStats: instance.archetypeStats,
+                    armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
+                    masterworkLevel: instance.masterworkLevel,
                     slot: instance.slot,
                     perk: instance.perk,
                     transferState: 0, // TRANSFER_NONE
+                    tier: instance.tier,
                     stats: [
                       instance.mobility,
                       instance.resilience,
@@ -498,13 +530,6 @@ export class InventoryService {
                     statsNoMods: [],
                   })
                 ),
-                classItem: {
-                  canBeExotic:
-                    (exotic == null || exotic?.slot == ArmorSlot.ArmorSlotClass) &&
-                    config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1,
-                  isExotic: exotic?.slot == ArmorSlot.ArmorSlotClass,
-                  perk: armorSet.classItemPerk,
-                },
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
@@ -526,7 +551,7 @@ export class InventoryService {
                   },
                   [0, 0, 0, 0, 0, 0]
                 )
-                .map((k) => Math.floor(Math.min(100, k) / 10)),
+                .map((k) => Math.min(200, k) / 10),
               statCombo3x100:
                 Array.from(this.resultStatCombo3x100 as Set<number>).map((d: number) => {
                   let r: ArmorStat[] = [];
@@ -622,16 +647,27 @@ export class InventoryService {
 
   async getExoticsForClass(clazz: DestinyClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
     let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray();
-    inventory = inventory.filter((d) => d.clazz == clazz && d.armor2 && (!slot || d.slot == slot));
+    inventory = inventory.filter(
+      (d) =>
+        d.clazz == clazz &&
+        (d.armorSystem == ArmorSystem.Armor2 || d.armorSystem == ArmorSystem.Armor3) &&
+        (!slot || d.slot == slot)
+    );
 
     let exotics = await this.db.manifestArmor.where("isExotic").equals(1).toArray();
-    exotics = exotics.filter((d) => d.clazz == clazz && d.armor2 && (!slot || d.slot == slot));
+    exotics = exotics.filter(
+      (d) =>
+        d.clazz == clazz &&
+        (d.armorSystem == ArmorSystem.Armor2 || d.armorSystem == ArmorSystem.Armor3) &&
+        (!slot || d.slot == slot)
+    );
 
     return exotics
       .map((ex) => {
         const instances = inventory.filter((i) => i.hash == ex.hash);
         return {
-          item: ex,
+          items: [ex],
+          instances: instances,
           inCollection:
             instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
           inInventory:
@@ -639,7 +675,20 @@ export class InventoryService {
           inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
         };
       })
-      .sort((x, y) => x.item.name.localeCompare(y.item.name));
+      .reduce((acc: ClassExoticInfo[], curr: ClassExoticInfo) => {
+        const existing = acc.find((e) => e.items[0].name === curr.items[0].name);
+        if (existing) {
+          existing.items.push(curr.items[0]);
+          existing.instances.push(...curr.instances);
+          existing.inCollection = existing.inCollection || curr.inCollection;
+          existing.inInventory = existing.inInventory || curr.inInventory;
+          existing.inVendor = existing.inVendor || curr.inVendor;
+        } else {
+          acc.push({ ...curr, items: [curr.items[0]] });
+        }
+        return acc;
+      }, [] as ClassExoticInfo[])
+      .sort((x, y) => x.items[0].name.localeCompare(y.items[0].name));
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
@@ -674,8 +723,12 @@ export class InventoryService {
 
       this.status.modifyStatus((s) => (s.updatingInventory = false));
       console.error(e);
-      await this.updateManifest(true);
-      return await this.updateInventoryItems(true, errorLoop++);
+
+      await this.status.setApiError();
+
+      //await this.updateManifest(true);
+      //return await this.updateInventoryItems(true, errorLoop++);
+      return false;
     }
   }
 }

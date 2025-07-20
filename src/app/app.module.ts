@@ -75,6 +75,7 @@ import {
 
 import { environment } from "../environments/environment";
 import { H } from "highlight.run";
+import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
 
 if (!!environment.highlight_project_id) {
   H.init(environment.highlight_project_id, {
@@ -120,14 +121,6 @@ const routes: Routes = [
       {
         path: "investigate",
         component: ArmorInvestigationPageComponent,
-      },
-      {
-        path: "theory",
-        // load TheorizerPageModule
-        loadChildren: () =>
-          import(
-            "./components/authenticated-v2/subpages/theorizer-page/theorizer-page.module"
-          ).then((m) => m.TheorizerPageModule),
       },
       {
         path: "account",
@@ -187,6 +180,7 @@ const routes: Routes = [
     ModDescriptionTooltipComponent,
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
+    ResultsCardViewComponent,
   ],
   imports: [
     CommonModule,

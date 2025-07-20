@@ -8,7 +8,7 @@ import {
 } from "bungie-api-ts/destiny2";
 import { MembershipService } from "./membership.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -91,7 +91,9 @@ export class VendorsService {
       .filter(
         ([vendorHash, vendor]) =>
           Object.entries(vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {}).find(
-            ([vendorItemIndex, saleItem]) => manifestItems[saleItem.itemHash]?.armor2 == true
+            ([vendorItemIndex, saleItem]) =>
+              manifestItems[saleItem.itemHash]?.armorSystem == ArmorSystem.Armor2 ||
+              manifestItems[saleItem.itemHash]?.armorSystem == ArmorSystem.Armor3
           ) !== undefined
       )
       .map(([vendorHash, vendor]) => ({

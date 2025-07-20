@@ -21,6 +21,7 @@ import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
 import { ArmorStat, SpecialArmorStat } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle";
 import { DestinyClass } from "bungie-api-ts/destiny2";
@@ -42,21 +43,17 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
-  displayedColumns = [
-    "name",
-    "mobility",
-    "resilience",
-    "recovery",
-    "discipline",
-    "intellect",
-    "strength",
-  ];
+  displayedColumns = ["name", "weapon", "health", "class", "grenade", "super", "melee"];
   private selectedClass: DestinyClass = DestinyClass.Unknown;
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];
   selectedElement: ModifierType = ModifierType.Solar;
+  isLoadingSubclass: boolean = false;
 
-  constructor(private config: ConfigurationService) {
+  constructor(
+    private config: ConfigurationService,
+    private bungieApi: BungieApiService
+  ) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {
         return -1;
@@ -122,9 +119,11 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
       .filter((v) => {
         if (v.stat == type) return true;
         if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat) {
-          if (this.selectedClass == DestinyClass.Titan && type == ArmorStat.Resilience) return true;
-          if (this.selectedClass == DestinyClass.Hunter && type == ArmorStat.Mobility) return true;
-          if (this.selectedClass == DestinyClass.Warlock && type == ArmorStat.Recovery) return true;
+          if (this.selectedClass == DestinyClass.Titan && type == ArmorStat.StatHealth) return true;
+          if (this.selectedClass == DestinyClass.Hunter && type == ArmorStat.StatWeapon)
+            return true;
+          if (this.selectedClass == DestinyClass.Warlock && type == ArmorStat.StatClass)
+            return true;
         }
         return false;
       })
@@ -163,6 +162,22 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
         c.enabledMods.splice(position, 1);
       }
     });
+  }
+
+  async importEquippedSubclass() {
+    this.isLoadingSubclass = true;
+    try {
+      const success = await this.bungieApi.importCurrentlyEquippedSubclass();
+      if (success) {
+        console.log("Successfully imported equipped subclass and fragments");
+      } else {
+        console.log("No subclass found or no changes were made");
+      }
+    } catch (error) {
+      console.error("Failed to import equipped subclass:", error);
+    } finally {
+      this.isLoadingSubclass = false;
+    }
   }
 
   private ngUnsubscribe = new Subject();

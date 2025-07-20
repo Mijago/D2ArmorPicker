@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ArmorStat } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
@@ -42,14 +42,13 @@ function calcScore(d: number[]) {
 export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   readonly stats: { name: string; value: ArmorStat }[];
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
-  maximumPossibleTiers: number[] = [10, 10, 10, 10, 10, 10];
+  maximumPossibleTiers: number[] = [20, 20, 20, 20, 20, 20];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
   _statCombo4x100: ArmorStat[][] = [];
   _statCombo3x100: ArmorStat[][] = [];
   config_zero_waste = false;
   config_mod_strategy = ModOptimizationStrategy.None;
   config_reduce_waste = false;
-  config_allowExactStats = false;
 
   constructor(
     public config: ConfigurationService,
@@ -58,7 +57,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     this.stats = Object.keys(ArmorStat)
       .filter((value) => !isNaN(Number(value)))
       .map((value) => {
-        return { name: (ArmorStat as any)[value], value: +value };
+        return { name: (ArmorStatNames as any)[+value], value: +value };
       });
   }
 
@@ -75,13 +74,19 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_zero_waste = c.onlyShowResultsWithNoWastedStats;
       this.config_mod_strategy = c.modOptimizationStrategy;
       this.config_reduce_waste = c.tryLimitWastedStats;
-      this.config_allowExactStats = c.allowExactStats;
+    });
+
+    this.inventory.reachableTiers.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
+      // Do not update if we get 0 results
+      const tiers = d || [20, 20, 20, 20, 20, 20];
+      if (tiers.filter((d) => d == 0).length < 6) {
+        this.maximumPossibleTiers = tiers;
+      }
     });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
-      const tiers = d.maximumPossibleTiers || [10, 10, 10, 10, 10, 10];
-      console.debug("Maximum Possible Tiers", { tiers: tiers });
+      const tiers = d.maximumPossibleTiers || [20, 20, 20, 20, 20, 20];
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }

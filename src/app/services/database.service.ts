@@ -116,4 +116,25 @@ export class DatabaseService extends Database {
       version: lastManifestVersion,
     };
   }
+
+  // Database migration helper for exoticPerkHash field
+  // When loading existing data, convert single values to arrays
+  migrateExoticPerkHash(item: any): void {
+    if (item.exoticPerkHash !== undefined && item.exoticPerkHash !== null) {
+      // If it's already an array, leave it as is
+      if (Array.isArray(item.exoticPerkHash)) {
+        return;
+      }
+
+      // If it's a single value, convert to array
+      if (typeof item.exoticPerkHash === "number") {
+        item.exoticPerkHash = [item.exoticPerkHash];
+      } else {
+        // If it's null or undefined, set to empty array
+        item.exoticPerkHash = [];
+      }
+    } else {
+      item.exoticPerkHash = [];
+    }
+  }
 }

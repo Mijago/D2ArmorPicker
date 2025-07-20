@@ -18,12 +18,18 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { BungieApiService } from "../../../../services/bungie-api.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
+import { ArmorPerkOrSlot } from "../../../../data/enum/armor-stat";
+import {
+  ExoticClassItemPerkNames,
+  ExoticClassItemSpirits,
+} from "../../../../data/exotic-class-item-spirits";
 
 export const listAnimation = trigger("listAnimation", [
   transition("* <=> *", [
@@ -43,16 +49,24 @@ export const listAnimation = trigger("listAnimation", [
 })
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   selectedExotics: number[] = [];
+  selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
   includeCollectionRolls = false;
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
+  allowLegacyArmor = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
+  importEquippedExoticInProgress = false;
+
+  anyPerkValue = ArmorPerkOrSlot.Any;
+  availableFirstPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
+  availableSecondPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
 
   constructor(
     public inventory: InventoryService,
-    public config: ConfigurationService
+    public config: ConfigurationService,
+    private bungieApi: BungieApiService
   ) {}
 
   ngOnInit(): void {
@@ -64,8 +78,10 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.includeCollectionRolls = c.includeCollectionRolls;
       this.includeVendorRolls = c.includeVendorRolls;
       this.selectedExotics = c.selectedExotics;
+      this.selectedExoticPerks = c.selectedExoticPerks;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
+      this.allowLegacyArmor = c.allowLegacyArmor;
     });
 
     this.inventory.manifest
@@ -83,21 +99,71 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   private async updateExoticsForClass() {
     const armors = await this.inventory.getExoticsForClass(this.currentClass);
 
-    function uniq(a: ClassExoticInfo[]) {
-      var seen: any = {};
-      return a.filter(function (item) {
-        var k = item.item.hash;
-        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
-      });
-    }
-
     this.exotics = [
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotHelmet)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotGauntlet)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotChest)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotLegs)),
-      uniq(armors.filter((a) => a.item.slot == ArmorSlot.ArmorSlotClass)),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
+      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
     ];
+
+    // Update available exotic class item perks
+    this.updateAvailableExoticClassItemPerks();
+  }
+
+  private updateAvailableExoticClassItemPerks() {
+    const classItemExotics = this.exotics[4]; // Class items are at index 4
+    const firstPerks = new Set<number>();
+    const secondPerks = new Set<number>();
+
+    // Collect first and second perks separately from exotic class items
+    classItemExotics.forEach((exotic) => {
+      exotic.instances.forEach((item) => {
+        // Exotic class items have exactly two perks in exoticPerkHash array
+        if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
+          // Add first perk (left dropdown)
+          firstPerks.add(item.exoticPerkHash[0]);
+          // Add second perk (right dropdown)
+          secondPerks.add(item.exoticPerkHash[1]);
+        }
+      });
+    });
+
+    // Convert first perk hashes to display format
+    this.availableFirstPerks = Array.from(firstPerks)
+      .map((perkHash) => ({
+        name:
+          ExoticClassItemPerkNames[perkHash as ExoticClassItemSpirits] ||
+          `Unknown Perk ${perkHash}`,
+        value: perkHash as ArmorPerkOrSlot,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Convert second perk hashes to display format
+    this.availableSecondPerks = Array.from(secondPerks)
+      .map((perkHash) => ({
+        name:
+          ExoticClassItemPerkNames[perkHash as ExoticClassItemSpirits] ||
+          `Unknown Perk ${perkHash}`,
+        value: perkHash as ArmorPerkOrSlot,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.debug("Available first perks:", this.availableFirstPerks);
+    console.debug("Available second perks:", this.availableSecondPerks);
+  }
+
+  hasSelectedExoticClassItem(): boolean {
+    const classItemExotics = this.exotics[4] || [];
+    return classItemExotics.some((exotic) =>
+      exotic.items.some((item) => this.selectedExotics.includes(item.hash))
+    );
+  }
+
+  setExoticPerk(index: number, perk: ArmorPerkOrSlot) {
+    this.config.modifyConfiguration((c) => {
+      c.selectedExoticPerks[index] = perk;
+    });
   }
 
   setAllowCollectionRolls(allow: boolean) {
@@ -118,30 +184,59 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
+  setAllowLegacyArmor(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.allowLegacyArmor = allow;
+    });
+  }
+
   setIgnoreSunsetArmor(ignore: boolean) {
     this.config.modifyConfiguration((c) => {
       c.ignoreSunsetArmor = ignore;
     });
   }
 
-  selectExotic(hash: number, $event: any) {
-    const index = this.selectedExotics.indexOf(hash);
-    if (index > -1) {
-      // Always delete an item if it is already in the list
-      this.selectedExotics.splice(index, 1);
-    } else if (hash == FORCE_USE_NO_EXOTIC) {
-      this.selectedExotics = [FORCE_USE_NO_EXOTIC];
-    } else if (this.selectedExotics.length == 0 || !$event.shiftKey) {
-      // if length is 0 or shift is NOT pressed, add the exotic
-      this.selectedExotics = [hash];
+  getHashesForExotic(exotic: ClassExoticInfo): number[] {
+    if (exotic.items.length == 0) return [];
+    if (exotic.items[0].hash == FORCE_USE_NO_EXOTIC) return [FORCE_USE_NO_EXOTIC];
+    return exotic.items.map((x) => x.hash);
+  }
+
+  selectExotic(hashes: number[], $event: any) {
+    const anyHashSelected = hashes.some((hash) => this.selectedExotics.indexOf(hash) > -1);
+    if (anyHashSelected) {
+      // remove all of them
+      this.selectedExotics = this.selectedExotics.filter((x) => hashes.indexOf(x) == -1);
+    } else if (hashes.length > 0 && hashes[0] == FORCE_USE_NO_EXOTIC) {
+      // Otherwise, add the hashes to the selection
+      this.selectedExotics = hashes;
+    } else {
+      this.selectedExotics = hashes;
     }
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;
+
+      // Reset exotic perks to Any when no exotic class item is selected
+      if (!this.hasSelectedExoticClassItem()) {
+        c.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+        this.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+      }
     });
   }
 
   async refreshAll() {
     await this.inventory.refreshAll(true, true);
+  }
+
+  async importEquippedExotic() {
+    this.importEquippedExoticInProgress = true;
+    try {
+      await this.bungieApi.importCurrentlyEquippedExotic();
+    } catch (error) {
+      console.error("Error importing equipped exotic:", error);
+    } finally {
+      this.importEquippedExoticInProgress = false;
+    }
   }
 
   private ngUnsubscribe = new Subject();

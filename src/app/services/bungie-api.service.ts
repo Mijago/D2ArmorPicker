@@ -31,20 +31,25 @@ import {
   DestinyCollectiblesComponent,
   DestinyItemInvestmentStatDefinition,
   DestinyClass,
+  DestinyItemComponent,
+  DestinyManifestComponentName,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
   createArmorItem,
   applyInvestmentStats,
+  getInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
+  ArmorStat,
+  ArmorStatHashes,
   MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
 } from "../data/enum/armor-stat";
@@ -55,6 +60,16 @@ import { HttpClientService } from "./http-client.service";
 import { IVendorInfo } from "../data/types/IVendorInfo";
 import { StatusProviderService } from "./status-provider.service";
 import { IVendorItemSubscreen } from "../data/types/IVendorItemSubscreen";
+import {
+  ResultDefinition,
+  ResultItemMoveState,
+} from "../components/authenticated-v2/results/results.component";
+import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
+import { SubclassHashes } from "../data/enum/armor-stat";
+import { ModInformation } from "../data/ModInformation";
+
+// TODO :Remove once DIM API is updated
+type DestinyEquipableItemSetDefinition = { [key: string]: any };
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -77,19 +92,41 @@ function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
-  if (r.slot != ArmorSlot.ArmorSlotClass) {
-    const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
-    r.statPlugHashes = plugs;
-    var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
-    for (let entry of plm) {
-      for (let newStats of entry.investmentStats) {
-        if (newStats.statTypeHash in investmentStats)
-          investmentStats[newStats.statTypeHash] += newStats.value;
-      }
+  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
+  if (r.isExotic && r.slot === ArmorSlot.ArmorSlotClass) {
+    plugs.push(plugHashes[10]); // Exotic class item perk
+    plugs.push(plugHashes[11]); // Exotic class item perk
+  }
+  r.statPlugHashes = plugs;
+  var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
+  for (let entry of plm) {
+    for (let newStats of entry.investmentStats) {
+      if (newStats.statTypeHash in investmentStats)
+        investmentStats[newStats.statTypeHash] += newStats.value;
     }
   }
 
   applyInvestmentStats(r, investmentStats);
+
+  // TODO: THIS IS A QUICK HACK: FIX THIS
+  const investmentStatsOverZero = Object.entries(investmentStats).filter(([_, value]) => value > 0);
+  if (investmentStatsOverZero.length > 3) return;
+  r.archetypeStats = [];
+  const stats = [
+    ArmorStat.StatWeapon,
+    ArmorStat.StatHealth,
+    ArmorStat.StatClass,
+    ArmorStat.StatGrenade,
+    ArmorStat.StatSuper,
+    ArmorStat.StatMelee,
+  ];
+  for (let i = 0; i < stats.length; i++) {
+    const stat = stats[i];
+    const statHash = ArmorStatHashes[stat];
+    if (investmentStatsOverZero.find(([hash, _]) => parseInt(hash) == statHash)) {
+      r.archetypeStats.push(i);
+    }
+  }
 }
 
 @Injectable({
@@ -146,7 +183,7 @@ export class BungieApiService {
 
       const payload = {
         characterId: targetCharacter,
-        membershipType: 3,
+        membershipType: destinyMembership.membershipType,
         itemId: r1?.Response.item.data?.itemInstanceId || "",
         itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
         stackSize: 1,
@@ -158,7 +195,7 @@ export class BungieApiService {
     if (equip) {
       let equipPayload = {
         characterId: targetCharacter,
-        membershipType: 3,
+        membershipType: destinyMembership.membershipType,
         stackSize: 1,
         itemId: r1?.Response.item.data?.itemInstanceId || "",
         itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
@@ -188,7 +225,7 @@ export class BungieApiService {
 
     const payload = {
       characterId: r1?.Response.characterId || "",
-      membershipType: 3,
+      membershipType: destinyMembership.membershipType,
       itemId: r1?.Response.item.data?.itemInstanceId || "",
       itemReferenceHash: r1?.Response.item.data?.itemHash || 0,
       stackSize: 1,
@@ -317,7 +354,7 @@ export class BungieApiService {
         let stats = statData[d.itemInstanceId || ""]?.stats || {};
         return !!stats[392767087];
       })
-      .filter((d) => {
+      .filter((d: DestinyItemComponent) => {
         // remove sunset items
         let instanceData = profile.Response.itemComponents.instances.data || {};
         let instance = instanceData[d.itemInstanceId || ""] || {};
@@ -331,13 +368,38 @@ export class BungieApiService {
           console.warn("Missing manifest item for item hash", d.itemHash);
           return null;
         }
-
         let armorItem = createArmorItem(
           validManifestArmorMap[d.itemHash],
           d.itemInstanceId || "",
           InventoryArmorSource.Inventory
         );
-        armorItem.masterworked = !!instance.energy && instance.energy.energyCapacity == 10;
+        // 3.0
+        // TODO replace the (as any) once DIM Api is updated
+        if (!!(instance as any).gearTier) {
+          armorItem.armorSystem = ArmorSystem.Armor3;
+          armorItem.tier = (instance as any).gearTier;
+        } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          armorItem.armorSystem = ArmorSystem.Armor3;
+        } else {
+          armorItem.armorSystem = ArmorSystem.Armor2;
+          armorItem.masterworkLevel =
+            !!instance.energy && instance.energy.energyCapacity == 10 ? 5 : 0;
+        }
+
+        if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          armorItem.exoticPerkHash = [];
+          const sockets =
+            profile.Response.itemComponents.sockets.data?.[d.itemInstanceId!]?.sockets || [];
+          for (const socket of sockets) {
+            if (
+              socket.plugHash &&
+              Object.keys(ExoticClassItemPerkNames).map(Number).includes(socket.plugHash)
+            ) {
+              armorItem.exoticPerkHash.push(socket.plugHash);
+            }
+          }
+        }
+
         armorItem.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
         const sockets = profile.Response.itemComponents.sockets.data || {};
         const socketsList =
@@ -349,13 +411,55 @@ export class BungieApiService {
           modsMap
         );
 
-        // Take a look if it really has the artifice perk
+        if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
+          let statData = profile.Response.itemComponents.stats.data || {};
+          let stats = statData[d.itemInstanceId || ""]?.stats || {};
+          for (let n = 0; n < 7; n++) {
+            const sock = sockets[d.itemInstanceId!]?.sockets[n];
+            if (!sock || !sock.plugHash) continue;
+            const mod = modsMap[sock.plugHash];
+            if (!mod) continue;
+            if (mod.investmentStats.length == 0) continue;
+            for (const stat of mod.investmentStats) {
+              if (stat.statTypeHash in stats) {
+                (stats[stat.statTypeHash] as any).value -= stat.value;
+              }
+            }
+          }
+          // Sort the stats by value in descending order and get the third highest value
+          const sortedStats = Object.entries(stats)
+            .map(([hash, statObj]) => ({ hash: parseInt(hash), value: (statObj as any).value }))
+            .sort((a, b) => b.value - a.value);
+
+          if (sortedStats.length >= 3) {
+            const thirdHighestStatHash = sortedStats[2].hash;
+            // Use thirdHighestStatHash as needed
+            armorItem.archetypeStats.push(
+              Object.values(ArmorStatHashes).indexOf(thirdHighestStatHash)
+            );
+
+            const investmentStat = getInvestmentStats(armorItem);
+            // TODO: This must be tiered
+            investmentStat[thirdHighestStatHash] += 13;
+            applyInvestmentStats(armorItem, investmentStat);
+          }
+        }
+
+        // MW 0 to 5
+        const masterworkPlugHashes = [
+          2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,
+        ];
+        const masterworkPlugHash = socketsList.find((d) => masterworkPlugHashes.includes(d ?? 0));
+        if (!!masterworkPlugHash)
+          armorItem.masterworkLevel = masterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
+
         if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
+          // Take a look if it really has the artifice perk
           let statData = profile.Response.itemComponents.perks.data || {};
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
           if (!hasPerk) armorItem.perk = ArmorPerkOrSlot.None;
-        } else if (armorItem.isExotic) {
+        } else if (armorItem.isExotic && armorItem.slot !== ArmorSlot.ArmorSlotClass) {
           // 720825311 is "UNLOCKED exotic artifice slot"
           // 1656746282 is "LOCKED exotic artifice slot"
           const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
@@ -395,9 +499,9 @@ export class BungieApiService {
       .filter(Boolean) as IInventoryArmor[];
 
     filteredItems = filteredItems.concat(collectionRollItems);
-    filteredItems = filteredItems.filter(
-      (k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null
-    );
+    //    filteredItems = filteredItems.filter(
+    //      (k) => !k["statPlugHashes"] || k["statPlugHashes"][0] != null
+    //    );
 
     await this.updateDatabaseItems(filteredItems);
 
@@ -480,7 +584,10 @@ export class BungieApiService {
   }
     */
 
-  private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
+  private getArmorPerk(
+    v: DestinyInventoryItemDefinition,
+    itemSetDefinitions: DestinyEquipableItemSetDefinition
+  ): ArmorPerkOrSlot {
     // Guardian Games
     if (
       environment.featureFlags.enableGuardianGamesFeatures &&
@@ -518,6 +625,18 @@ export class BungieApiService {
       // find the key of ArmorPerkSocketHashes that matches the socketHash
       if (perk != ArmorPerkOrSlot.None) {
         return perk;
+      }
+    }
+
+    // TODO: Fix this as soon as DIM API is updated
+    for (const itemSet of Object.values(itemSetDefinitions)) {
+      if (itemSet.setItems.indexOf(v.hash) > -1) {
+        // This is an item set, so it has a perk
+        // find the ArmorPerkOrSlot id that is listed in ArmorPerkSocketHashes
+        const perk = Object.entries(ArmorPerkSocketHashes).find(
+          (kvpair) => kvpair[1] == itemSet.hash
+        );
+        if (perk) return Number.parseInt(perk[0]) as ArmorPerkOrSlot;
       }
     }
 
@@ -639,7 +758,8 @@ export class BungieApiService {
         "DestinyCollectibleDefinition",
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
-      ],
+        "DestinyEquipableItemSetDefinition",
+      ] as any as DestinyManifestComponentName[],
       language: "en",
     });
 
@@ -658,6 +778,8 @@ export class BungieApiService {
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
         if (v.itemType == 19) return true; // mods
+        if (v.itemType == 16 && v.itemCategoryHashes && v.itemCategoryHashes.indexOf(50) > -1)
+          return true; // subclasses
         if (v.itemType == 2) return true; // armor
         if (v.inventory?.bucketTypeHash == 3448274439) return true; // helmets, required for festival masks
         if (v.inventory?.bucketTypeHash == 3551918588) return true; // gauntlets
@@ -709,13 +831,13 @@ export class BungieApiService {
           ).length > 0;
 
         const isExotic = v.inventory?.tierType == 6;
-        let exoticPerkHash = null;
+        let exoticPerkHash: number[] = [];
         if (isExotic) {
           const perks =
             v.sockets?.socketEntries
               .filter((s) => s.socketTypeHash == 965959289)
               .map((d) => d.singleInitialItemHash) || [];
-          exoticPerkHash = perks[0];
+          exoticPerkHash = perks.filter((p) => p !== undefined && p !== null);
         }
 
         var sunsetPowerCaps = [
@@ -803,7 +925,7 @@ export class BungieApiService {
           name: v.displayProperties.name,
           description: v.displayProperties.description,
           clazz: clasz,
-          armor2: isArmor2,
+          armorSystem: isArmor2 ? 2 : 1, // TODO: There may be a smarter way
           slot: slot,
           isExotic: isExotic ? 1 : 0,
           isSunset: isSunset,
@@ -812,7 +934,8 @@ export class BungieApiService {
           itemType: v.itemType,
           itemSubType: v.itemSubType,
           investmentStats: v.investmentStats,
-          perk: this.getArmorPerk(v),
+          // TODO: fix as soon as DIM Api is updated
+          perk: this.getArmorPerk(v, (manifestTables as any).DestinyEquipableItemSetDefinition),
           socketEntries: v.sockets?.socketEntries ?? [],
         } as IManifestArmor;
       });
@@ -820,5 +943,373 @@ export class BungieApiService {
     await this.db.writeManifestArmor(entries, manifestVersion);
 
     return manifestTables;
+  }
+
+  async moveItem(
+    itemInstanceId: string,
+    sourceCharacterId: string,
+    targetCharacterId: string
+  ): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const item = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item) return false;
+
+    // If the item is already on the target character, do nothing
+    if (item.Response.characterId === targetCharacterId) return true;
+
+    // If the item is not in the vault, move it to the vault first
+    if (item.Response.item.data?.location !== 2) {
+      await this.moveItemToVault(itemInstanceId);
+    }
+
+    // Now transfer from vault to the target character
+    return this.transferItem(itemInstanceId, targetCharacterId);
+  }
+
+  async swapItems(
+    itemInstanceId1: string,
+    itemInstanceId2: string,
+    characterId: string
+  ): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    // Get both items
+    const item1 = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId1,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+    const item2 = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId2,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item1 || !item2) return false;
+
+    // If both items are on the same character, we can't really swap them in-place
+    // So we'll move item1 to vault and then transfer item2 to the character
+    if (item1.Response.characterId === item2.Response.characterId) {
+      await this.moveItemToVault(itemInstanceId1);
+      // Item2 is already on the target character, so we're done
+      return true;
+    }
+
+    // Otherwise, move item 1 to vault (if not already there) and then transfer item 2 to item 1's previous location
+    await this.moveItemToVault(itemInstanceId1);
+
+    return this.transferItem(itemInstanceId2, item1.Response.characterId || "");
+  }
+
+  async equipItemById(itemInstanceId: string, characterId: string): Promise<boolean> {
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const item = await getItem((d) => this.http.$http(d, false), {
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+      itemInstanceId: itemInstanceId,
+      components: [DestinyComponentType.ItemCommonData],
+    });
+
+    if (!item) return false;
+
+    const payload = {
+      characterId: characterId,
+      membershipType: destinyMembership.membershipType,
+      stackSize: 1,
+      itemId: item.Response.item.data?.itemInstanceId || "",
+      itemReferenceHash: item.Response.item.data?.itemHash || 0,
+    };
+
+    return !!(await equipItem((d) => this.http.$httpPost(d), payload));
+  }
+
+  /**
+   * Gets the character ID for the configured character class
+   */
+  async getCharacterIdForCurrentClass(): Promise<string | null> {
+    const config = this.config.readonlyConfigurationSnapshot;
+    let characters = await this.membership.getCharacters();
+    characters = characters.filter((c: any) => c.clazz == config.characterClass);
+
+    if (characters.length == 0) {
+      return null;
+    }
+
+    return characters[0].characterId;
+  }
+
+  /**
+   * Moves all items from a result to the character's inventory
+   * @param result The result definition containing items to move
+   * @param equip Whether to equip the items after moving them
+   * @returns Promise<{success: boolean, allSuccessful: boolean}>
+   */
+  async moveResultItems(
+    result: ResultDefinition,
+    equip = false
+  ): Promise<{ success: boolean; allSuccessful: boolean }> {
+    // Set all items to waiting state
+    for (let item of (result?.items || []).flat()) {
+      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
+    }
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      // Reset transfer states on error
+      for (let item of (result?.items || []).flat()) {
+        item.transferState = ResultItemMoveState.ERROR_DURING_TRANSFER;
+      }
+      return { success: false, allSuccessful: false };
+    }
+
+    let allSuccessful = true;
+    // Sort items so exotics are moved last (they might need special handling)
+    const items = (result?.items || []).flat().sort((i) => (i.exotic ? 1 : -1));
+
+    for (let item of items) {
+      item.transferState = ResultItemMoveState.TRANSFERRING;
+      const success = await this.transferItem(item.itemInstanceId, characterId, equip);
+      item.transferState = success
+        ? ResultItemMoveState.TRANSFERRED
+        : ResultItemMoveState.ERROR_DURING_TRANSFER;
+
+      if (!success) {
+        allSuccessful = false;
+      }
+    }
+
+    return { success: true, allSuccessful };
+  }
+
+  /**
+   * Imports currently equipped exotic armor and updates the configuration accordingly
+   */
+  async importCurrentlyEquippedExotic(): Promise<boolean> {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "importCurrentlyEquippedExotic", "offline mode, skipping");
+      return false;
+    }
+
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      console.warn("No character found for current class");
+      return false;
+    }
+
+    console.info("BungieApiService", "Importing equipped exotic for character", characterId);
+
+    let profile = await getProfile((d) => this.http.$http(d, true), {
+      components: [
+        DestinyComponentType.CharacterEquipment,
+        DestinyComponentType.ItemSockets,
+        DestinyComponentType.ItemInstances,
+      ],
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+    });
+
+    const characterEquipment = profile.Response.characterEquipment.data?.[characterId];
+    if (!characterEquipment) {
+      console.warn("No equipment data found for character");
+      return false;
+    }
+
+    const manifestArmor = await this.db.manifestArmor.toArray();
+    const manifestArmorMap = Object.fromEntries(manifestArmor.map((_) => [_.hash, _]));
+
+    let updatedConfig = false;
+
+    // Import exotic armor
+    const exoticArmor = characterEquipment.items.find((item) => {
+      const manifest = manifestArmorMap[item.itemHash];
+      return manifest && manifest.isExotic === 1 && manifest.itemType === 2; // Armor type
+    });
+
+    if (exoticArmor) {
+      const manifestItem = manifestArmorMap[exoticArmor.itemHash];
+      if (manifestItem) {
+        // Find all variants of this exotic armor piece
+        const exoticVariants = manifestArmor
+          .filter(
+            (armor) =>
+              armor.isExotic === 1 &&
+              armor.itemType === 2 &&
+              armor.name === manifestItem.name &&
+              armor.clazz === manifestItem.clazz &&
+              armor.slot === manifestItem.slot
+          )
+          .map((armor) => armor.hash);
+
+        this.config.modifyConfiguration((config) => {
+          config.selectedExotics = exoticVariants;
+        });
+        updatedConfig = true;
+
+        // Handle exotic class item perks if applicable
+        if (manifestItem.slot === ArmorSlot.ArmorSlotClass) {
+          const sockets =
+            profile.Response.itemComponents.sockets.data?.[exoticArmor.itemInstanceId!];
+          if (sockets) {
+            const exoticPerks = this.extractExoticClassItemPerks(sockets.sockets);
+            if (exoticPerks.length > 0) {
+              this.config.modifyConfiguration((config) => {
+                config.selectedExoticPerks = [
+                  exoticPerks[0] || ArmorPerkOrSlot.Any,
+                  exoticPerks[1] || ArmorPerkOrSlot.Any,
+                ];
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return updatedConfig;
+  }
+
+  /**
+   * Imports currently equipped subclass and fragments and updates the configuration accordingly
+   */
+  async importCurrentlyEquippedSubclass(): Promise<boolean> {
+    if (environment.offlineMode) {
+      console.info("BungieApiService", "importCurrentlyEquippedSubclass", "offline mode, skipping");
+      return false;
+    }
+
+    let destinyMembership = await this.membership.getMembershipDataForCurrentUser();
+    if (!destinyMembership) {
+      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      return false;
+    }
+    this.status.clearAuthError();
+    this.status.clearApiError();
+
+    const characterId = await this.getCharacterIdForCurrentClass();
+    if (!characterId) {
+      console.warn("No character found for current class");
+      return false;
+    }
+
+    console.info("BungieApiService", "Importing equipped subclass for character", characterId);
+
+    let profile = await getProfile((d) => this.http.$http(d, true), {
+      components: [
+        DestinyComponentType.CharacterEquipment,
+        DestinyComponentType.ItemSockets,
+        DestinyComponentType.ItemInstances,
+      ],
+      membershipType: destinyMembership.membershipType,
+      destinyMembershipId: destinyMembership.membershipId,
+    });
+
+    const characterEquipment = profile.Response.characterEquipment.data?.[characterId];
+    if (!characterEquipment) {
+      console.warn("No equipment data found for character");
+      return false;
+    }
+
+    let updatedConfig = false;
+
+    // Import subclass and fragments
+    const subclass = characterEquipment.items.find((item) => item.bucketHash === 3284755031); // Subclass bucket
+    if (subclass) {
+      const configClass = this.config.readonlyConfigurationSnapshot
+        .characterClass as keyof typeof SubclassHashes;
+      let subclassKey: string | null = null;
+      if (SubclassHashes[configClass]) {
+        for (const [key, hash] of Object.entries(SubclassHashes[configClass])) {
+          if (hash === subclass.itemHash) {
+            subclassKey = key;
+            break;
+          }
+        }
+      }
+      if (subclassKey) {
+        this.config.modifyConfiguration((config) => {
+          config.selectedModElement = Number(subclassKey);
+          config.enabledMods = [];
+        });
+        updatedConfig = true;
+      }
+    }
+
+    // fragments
+    if (subclass && subclass.itemInstanceId) {
+      const sockets = profile.Response.itemComponents.sockets.data?.[subclass.itemInstanceId];
+      if (sockets) {
+        const fragmentHashes = sockets.sockets
+          .filter((socket) => socket.plugHash && socket.plugHash !== 0)
+          .map((socket) => socket.plugHash)
+          .map((plugHash) => {
+            const modKey = Object.entries(ModInformation).find(
+              ([_, info]) => info.hash === plugHash
+            )?.[0];
+            return modKey ? Number(modKey) : undefined;
+          })
+          .filter(Boolean);
+        if (fragmentHashes && fragmentHashes.length > 0) {
+          this.config.modifyConfiguration((config) => {
+            console.debug("BungieApiService", "Importing fragments", fragmentHashes);
+            config.enabledMods = fragmentHashes as number[];
+          });
+          updatedConfig = true;
+        }
+      }
+    }
+
+    return updatedConfig;
+  }
+
+  private extractExoticClassItemPerks(sockets: any[]): ArmorPerkOrSlot[] {
+    const perks: ArmorPerkOrSlot[] = [];
+
+    for (const socket of sockets) {
+      if (
+        socket.plugHash &&
+        Object.keys(ExoticClassItemPerkNames).map(Number).includes(socket.plugHash)
+      ) {
+        // Map the exotic perk hash to ArmorPerkOrSlot if needed
+        // For now, we'll return the hash directly as it should match the enum
+        perks.push(socket.plugHash as ArmorPerkOrSlot);
+      }
+    }
+
+    return perks;
   }
 }

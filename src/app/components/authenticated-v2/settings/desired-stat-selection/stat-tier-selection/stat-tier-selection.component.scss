@@ -15,19 +15,229 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.stat-tier-value {
+  min-width: 90px;
+  text-align: right;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .value-section {
+    width: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .separator-section {
+    width: 10px;
+    text-align: center;
+  }
+
+  .max-value-section {
+    width: 40px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hover-value-indicator {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    font-size: 0.8em;
+    color: #2196f3;
+    white-space: nowrap;
+    transition: opacity 0.05s linear;
+    font-weight: bold;
+  }
+
+  .value-input {
+    width: 45px;
+    text-align: center;
+    border: none;
+    border-bottom: 1px solid #888;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    color: white;
+  }
+
+  .clickable-value {
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    min-width: 35px;
+    text-align: center;
+
+    &:hover {
+      color: #2196f3;
+      border-color: #2196f3;
+      background: rgba(33, 150, 243, 0.1);
+      box-shadow: 0 0 4px rgba(33, 150, 243, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 0 2px rgba(33, 150, 243, 0.5);
+    }
+  }
+}
+
 .select-button {
   min-width: 38px;
 }
-
-:host .mat-button-toggle-label-content {
-  padding: 0 !important;
-  width: 100%;
-}
-
 .stat-button-content {
   width: 100%;
 }
 
+.custom-stat-slider {
+  position: relative;
+
+  .milestone-labels {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    height: 20px;
+    pointer-events: none;
+    margin-top: -2px;
+  }
+
+  .milestone-label {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0px;
+  }
+
+  .milestone-button {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.65em;
+    min-width: unset !important;
+    height: 18px !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    pointer-events: auto;
+    margin-top: 1px;
+
+    &.zero-button {
+      width: 24px;
+    }
+
+    &.max-button {
+      width: 16px;
+
+      .max-text {
+        transform: rotate(90deg);
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 0.8em;
+      }
+    }
+  }
+
+  .selected-value-label {
+    position: absolute;
+    top: 100%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #2196f3;
+    margin-top: -2px;
+    font-weight: bold;
+    pointer-events: none;
+  }
+
+  .stat-line {
+    width: 1px;
+    min-width: 1px;
+    flex-grow: 1;
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    position: relative;
+    align-self: center; /* Center the bar vertically */
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      bottom: -8px;
+      left: -1px;
+      right: -2px;
+      opacity: 0;
+      pointer-events: auto;
+    }
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 6px 2px rgba(76, 175, 80, 0.25);
+    }
+
+    &.lower-than-hovered {
+      background-color: rgba(173, 216, 255, 0.3);
+    }
+
+    &.lower-than-selected {
+      background-color: rgba(33, 150, 243, 0.25);
+    }
+    &.higher-than-hovered {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    &.zero-line {
+      background-color: red;
+
+      &:hover {
+        background-color: darkred;
+      }
+    }
+
+    &.milestone-line {
+      background-color: rgba(255, 255, 255, 0.7);
+
+      &:hover {
+        background-color: #ffffff;
+      }
+    }
+
+    &.selected {
+      background-color: #2196f3;
+      width: 2px;
+      min-width: 2px;
+
+      &:hover {
+        background-color: #1565c0;
+      }
+    }
+
+    &.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+}
+
 .lock-locked {
   color: #f44336;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

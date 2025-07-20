@@ -1,4 +1,4 @@
-import { ArmorPerkOrSlot, StatModifier } from "../enum/armor-stat";
+import { StatModifier } from "../enum/armor-stat";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export interface IPermutatorArmorSet {
@@ -6,7 +6,6 @@ export interface IPermutatorArmorSet {
   useExoticClassItem: boolean;
   usedArtifice: StatModifier[];
   usedMods: StatModifier[];
-  classItemPerk: ArmorPerkOrSlot;
   statsWithMods: number[];
   statsWithoutMods: number[];
 }
@@ -16,17 +15,17 @@ export function createArmorSet(
   gauntlet: IPermutatorArmor,
   chest: IPermutatorArmor,
   leg: IPermutatorArmor,
+  classItem: IPermutatorArmor,
   usedArtifice: StatModifier[],
   usedMods: StatModifier[],
   statsWithMods: number[],
   statsWithoutMods: number[]
 ): IPermutatorArmorSet {
   return {
-    armor: [helmet.id, gauntlet.id, chest.id, leg.id],
+    armor: [helmet.id, gauntlet.id, chest.id, leg.id, classItem.id],
     useExoticClassItem: false,
     usedArtifice,
     usedMods,
-    classItemPerk: ArmorPerkOrSlot.Any,
     statsWithMods,
     statsWithoutMods,
   };
@@ -38,7 +37,6 @@ export function isIPermutatorArmorSet(obj: any): obj is IPermutatorArmorSet {
     Object.prototype.hasOwnProperty.call(obj, "useExoticClassItem") &&
     Object.prototype.hasOwnProperty.call(obj, "usedArtifice") &&
     Object.prototype.hasOwnProperty.call(obj, "usedMods") &&
-    Object.prototype.hasOwnProperty.call(obj, "statsWithMods") &&
-    Object.prototype.hasOwnProperty.call(obj, "classItemPerk")
+    Object.prototype.hasOwnProperty.call(obj, "statsWithMods")
   );
 }

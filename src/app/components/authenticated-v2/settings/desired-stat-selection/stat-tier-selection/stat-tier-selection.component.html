@@ -15,46 +15,110 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<ng-container *ngIf="!allowExactStats">
-  <mat-button-toggle-group appearance="standard" name="fontStyle">
-    <mat-button-toggle
-      (click)="setValue(i)"
-      *ngFor="let tier of TierRange; let i = index"
-      [checked]="selectedTier === i"
-      [class.isFromMod]="isAddedByConfigMods(i)"
-      [class.mat-button-toggle-checked]="selectedTier >= i"
-      [class.not-checked]="selectedTier < i"
-      [disabled]="maximumAvailableTier < i"
-      class="select-button"
-      value="{{ i }}">
+<div style="display: flex; align-items: center; gap: 12px">
+  <div class="custom-stat-slider" style="width: 350px; height: 30px">
+    <div style="display: flex; align-items: center; height: 100%; width: 100%; gap: 0">
+      <ng-container *ngFor="let value of statValues">
+        <div
+          class="stat-line"
+          [class.zero-line]="value === 0"
+          [class.milestone-line]="value === 50 || value === 100 || value === 150 || value === 200"
+          [class.selected]="value === selectedValue"
+          [class.lower-than-selected]="value < selectedValue"
+          [class.lower-than-hovered]="hoveredValue !== null && value < hoveredValue"
+          [class.higher-than-hovered]="hoveredValue !== null && value >= hoveredValue"
+          [class.disabled]="value > currentAnimatedMaxValue"
+          [style.height]="
+            value === 0 || value === 50 || value === 100 || value === 150 || value === 200
+              ? '16px'
+              : '8px'
+          "
+          [matTooltip]="'Value: ' + value + (value % 50 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
+          [matTooltipDisabled]="value > currentAnimatedMaxValue"
+          matTooltipPosition="above"
+          [matTooltipShowDelay]="0"
+          (click)="value <= maximumAvailableTier * 10 && setValueMob(value)"
+          (mouseenter)="handleHover(value)"
+          (mouseleave)="clearHover()">
+        </div>
+      </ng-container>
+    </div>
+    <div class="milestone-labels">
+      <button
+        class="milestone-button zero-button"
+        style="left: 0%"
+        *ngIf="selectedValue < -12 || selectedValue > 12"
+        (click)="setValueMob(0)"
+        mat-flat-button
+        >0</button
+      >
       <div
-        class="stat-button-content"
-        statCooldownTooltip
-        [tooltipTier]="i"
-        [tooltipDifferenceTier]="selectedTier"
-        [tooltipStat]="stat">
-        {{ i * 10 }}
-      </div>
-    </mat-button-toggle>
-  </mat-button-toggle-group>
-</ng-container>
-
-<ng-container *ngIf="allowExactStats">
-  <mat-form-field>
-    <input
-      matInput
-      type="number"
-      min="0"
-      [max]="maximumAvailableTier * 10"
-      [value]="selectedTier * 10"
-      (input)="setValueMob($event)" />
-  </mat-form-field>
-</ng-container>
-
-<button
-  mat-icon-button
-  (click)="toggleLockState()"
-  matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
-  <mat-icon *ngIf="!locked">lock_open</mat-icon>
-  <mat-icon *ngIf="locked" class="lock-locked">lock</mat-icon>
-</button>
+        class="milestone-label"
+        style="left: 25%"
+        *ngIf="isSixthStat() && (selectedValue < 38 || selectedValue > 62)"
+        >50</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 50%"
+        *ngIf="isSixthStat() && (selectedValue < 88 || selectedValue > 112)"
+        >100</div
+      >
+      <div
+        class="milestone-label"
+        style="left: 75%"
+        *ngIf="isSixthStat() && (selectedValue < 138 || selectedValue > 162)"
+        >150</div
+      >
+      <button
+        class="milestone-button max-button"
+        style="left: 100%"
+        *ngIf="selectedValue < 188 || selectedValue > 212"
+        (click)="setValueMob(maximumAvailableTier * 10)"
+        mat-flat-button>
+        <span class="max-text">MAX</span>
+      </button>
+    </div>
+    <div class="selected-value-label" [style.left.%]="getSelectedValuePosition()">
+      {{ selectedValue }}
+    </div>
+  </div>
+  <div class="stat-tier-value">
+    <div class="value-section">
+      <span
+        *ngIf="!editingValue"
+        (click)="startValueEdit()"
+        class="clickable-value"
+        style="cursor: pointer; display: inline-block">
+        {{ selectedValue }}
+      </span>
+      <input
+        *ngIf="editingValue"
+        #valueInput
+        type="number"
+        class="value-input"
+        [min]="0"
+        [max]="maximumAvailableTier * 10"
+        [value]="selectedValue"
+        (blur)="commitValueEdit(valueInput.value)"
+        (keydown.enter)="commitValueEdit(valueInput.value)"
+        (keydown.escape)="cancelValueEdit()" />
+    </div>
+    <div class="separator-section">/</div>
+    <div class="max-value-section">{{ maximumAvailableTier * 10 }}</div>
+    <!--
+    <div
+      *ngIf="hoveredValue !== null && hoveredValue <= maximumAvailableTier * 10"
+      class="hover-value-indicator">
+      Hovering: {{ hoveredValue }}
+    </div>
+    -->
+  </div>
+  <button
+    mat-icon-button
+    (click)="toggleLockState()"
+    matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan.">
+    <mat-icon *ngIf="!locked">lock_open</mat-icon>
+    <mat-icon *ngIf="locked" class="lock-locked">lock</mat-icon>
+  </button>
+</div>

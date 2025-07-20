@@ -117,12 +117,12 @@ export class ConfigurationService {
     c.configuration = Object.assign(BuildConfiguration.buildEmptyConfiguration(), c.configuration);
     if (c.configuration.hasOwnProperty("minimumStatTier")) {
       let tiers = (c.configuration as any).minimumStatTier as EnumDictionary<ArmorStat, number>;
-      c.configuration.minimumStatTiers[ArmorStat.Mobility].value = tiers[ArmorStat.Mobility];
-      c.configuration.minimumStatTiers[ArmorStat.Resilience].value = tiers[ArmorStat.Resilience];
-      c.configuration.minimumStatTiers[ArmorStat.Recovery].value = tiers[ArmorStat.Recovery];
-      c.configuration.minimumStatTiers[ArmorStat.Discipline].value = tiers[ArmorStat.Discipline];
-      c.configuration.minimumStatTiers[ArmorStat.Intellect].value = tiers[ArmorStat.Intellect];
-      c.configuration.minimumStatTiers[ArmorStat.Strength].value = tiers[ArmorStat.Strength];
+      c.configuration.minimumStatTiers[ArmorStat.StatWeapon].value = tiers[ArmorStat.StatWeapon];
+      c.configuration.minimumStatTiers[ArmorStat.StatHealth].value = tiers[ArmorStat.StatHealth];
+      c.configuration.minimumStatTiers[ArmorStat.StatClass].value = tiers[ArmorStat.StatClass];
+      c.configuration.minimumStatTiers[ArmorStat.StatGrenade].value = tiers[ArmorStat.StatGrenade];
+      c.configuration.minimumStatTiers[ArmorStat.StatSuper].value = tiers[ArmorStat.StatSuper];
+      c.configuration.minimumStatTiers[ArmorStat.StatMelee].value = tiers[ArmorStat.StatMelee];
       delete (c.configuration as any).minimumStatTier;
     }
 
@@ -142,7 +142,7 @@ export class ConfigurationService {
 
     // Always reset risky mods on reload
     c.configuration.limitParsedResults = true;
-    c.configuration.addConstent1Resilience = false;
+    c.configuration.addConstent1Health = false;
   }
 
   listSavedConfigurations(): StoredConfiguration[] {

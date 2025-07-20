@@ -8,4 +8,5 @@ export interface IPermutatorArmor extends IDestinyArmor {
   isExotic: 0 | 1;
   rarity: TierType;
   isSunset: boolean;
+  exoticPerkHash: number[];
 }

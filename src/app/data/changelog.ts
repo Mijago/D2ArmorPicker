@@ -34,6 +34,125 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.2",
+    date: "July 18, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Gearset' armor to the Modslot selection. This allows you to buildcraft with them. I'll add a nicer UI later.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped subclass and fragments.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a filter to disable legacy armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped exotic.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the vendor API to support the new gearset armor perk.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved visibility of the text input for the stats. It now has a border and is more visible.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor bugfixes and performance improvements.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.1c",
+    date: "July 16, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new Card-based view mode. You can switch between the Card view and the old Table view.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Perk filter for exotic class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the input to be a slider to allow for more precise input of the stats between tiers. Usability may be improved, feedback is welcome! You can click the text on the right to set the value manually.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The table now shows a 'Total' column instead of the 'Tiers' column.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Renamed the stats.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the Algorithm to select and utilize class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the result table to correctly display the selected class item.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the 'Move items to inventory' button. It still will only work when you have space in the inventory.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed 3x100 and 4x100 buttons. We do not need these anymore. Maybe I add another feature like this later when a use case arises.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the setting to assume that all legendary class items are masterworked. This is included in the other masterwork assumption settings.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the Wasted Stats column.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed now-invalid pages (Clustering, Theorizer, Investigator).",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed old features that were not updated for a long time and are not used anymore.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the feature 'Replace the tier selection with text fields for exact stat values', as this is now the default behavior.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.7.4",
     date: "March 15, 2025",
     clearManifest: false,

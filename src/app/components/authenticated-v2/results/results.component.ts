@@ -40,11 +40,6 @@ export interface ResultDefinition {
         hash: string;
       };
   artifice: number[];
-  classItem: {
-    canBeExotic: boolean;
-    isExotic: boolean;
-    perk: ArmorPerkOrSlot;
-  };
   mods: number[];
   stats: number[];
   statsNoMods: number[];
@@ -70,10 +65,13 @@ export interface ResultItem {
   energyLevel: number;
   hash: number;
   itemInstanceId: string;
+  tier: number; // 0 = exotic, 1-5 = legendary
   name: string;
   exotic: boolean;
   masterworked: boolean;
-  mayBeBugged: boolean;
+  armorSystem: number; // 2 = Armor 2.0, 3 = Armor 3.0
+  masterworkLevel: number; // 0-5, 5 = full masterwork
+  archetypeStats: ArmorStat[]; // [Mobility, Resilience, Recovery, Discipline, Intellect, Strength]
   stats: number[];
   slot: ArmorSlot;
   perk: ArmorPerkOrSlot;
@@ -99,10 +97,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
   ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
 
-  private _results: ResultDefinition[] = [];
+  _results: ResultDefinition[] = [];
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
-  _config_assumeClassItemMasterworked: Boolean = false;
 
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
@@ -123,13 +120,13 @@ export class ResultsComponent implements OnInit, OnDestroy {
   expandedElement: ResultDefinition | null = null;
   shownColumns = [
     "exotic",
-    "mobility",
-    "resilience",
-    "recovery",
-    "discipline",
-    "intellect",
-    "strength",
-    "tiers",
+    "health",
+    "melee",
+    "grenade",
+    "super",
+    "class",
+    "weapon",
+    "total",
     "mods",
     "dropdown",
   ];
@@ -140,19 +137,25 @@ export class ResultsComponent implements OnInit, OnDestroy {
   itemCount: number = 0;
   totalResults: number = 0;
   parsedResults: number = 0;
+  viewMode: "table" | "cards" = "table";
 
   constructor(
     private inventory: InventoryService,
-    private config: ConfigurationService,
+    private configService: ConfigurationService,
     private status: StatusProviderService
-  ) {}
+  ) {
+    // Load saved view mode from localStorage
+    const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
+    if (savedViewMode) {
+      this.viewMode = savedViewMode;
+    }
+  }
 
   ngOnInit(): void {
-    this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
+    this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c: any) => {
       this.selectedClass = c.characterClass;
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
       this._config_maximumStatMods = c.maximumStatMods;
@@ -165,24 +168,23 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
       this._config_selectedExotics = c.selectedExotics;
       this._config_armorPerkLimitation = Object.entries(c.armorPerks)
-        .filter((v) => v[1].value != ArmorPerkOrSlot.Any)
-        .map((k) => k[1]);
+        .filter((v: any) => v[1].value != ArmorPerkOrSlot.Any)
+        .map((k: any) => k[1]);
       this._config_modslotLimitation = Object.entries(c.maximumModSlots)
-        .filter((v) => v[1].value < 5)
-        .map((k) => k[1]);
+        .filter((v: any) => v[1].value < 5)
+        .map((k: any) => k[1]);
 
       let columns = [
         "exotic",
-        "mobility",
-        "resilience",
-        "recovery",
-        "discipline",
-        "intellect",
-        "strength",
-        c.showPotentialTierColumn ? "potential_tiers" : "tiers",
+        "health",
+        "melee",
+        "grenade",
+        "super",
+        "class",
+        "weapon",
+        "total",
         "mods",
       ];
-      if (c.showWastedStatsColumn) columns.push("waste");
       if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
       columns.push("dropdown");
       this.shownColumns = columns;
@@ -204,24 +206,22 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
       switch (sortHeaderId) {
-        case "Mobility":
-          return data.stats[ArmorStat.Mobility];
-        case "Resilience":
-          return data.stats[ArmorStat.Resilience];
-        case "Recovery":
-          return data.stats[ArmorStat.Recovery];
-        case "Discipline":
-          return data.stats[ArmorStat.Discipline];
-        case "Intellect":
-          return data.stats[ArmorStat.Intellect];
-        case "Strength":
-          return data.stats[ArmorStat.Strength];
+        case "Weapon":
+          return data.stats[ArmorStat.StatWeapon];
+        case "Health":
+          return data.stats[ArmorStat.StatHealth];
+        case "Class":
+          return data.stats[ArmorStat.StatClass];
+        case "Grenade":
+          return data.stats[ArmorStat.StatGrenade];
+        case "Super":
+          return data.stats[ArmorStat.StatSuper];
+        case "Melee":
+          return data.stats[ArmorStat.StatMelee];
         case "Tiers":
           return data.tiers;
-        case "Max Tiers":
-          return 10 * (data.tiers + (5 - data.modCount));
-        case "Waste":
-          return data.waste;
+        case "Total":
+          return data.stats.reduce((sum, stat) => sum + stat, 0);
         case "Mods":
           return (
             +100 * data.modCount +
@@ -239,11 +239,26 @@ export class ResultsComponent implements OnInit, OnDestroy {
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
+
+    // Ensure sorting is properly initialized after data update
+    if (this.viewMode === "table") {
+      setTimeout(() => {
+        this.initializeTableSorting();
+      }, 50);
+    }
+
     console.timeEnd("Update Table Data");
   }
 
-  checkIfAnyItemsMayBeInvalid(element: ResultDefinition) {
-    return element.items.filter((x) => x.mayBeBugged).length > 0;
+  getTotalStats(element: ResultDefinition): number {
+    return (
+      element.stats[0] +
+      element.stats[1] +
+      element.stats[2] +
+      element.stats[3] +
+      element.stats[4] +
+      element.stats[5]
+    );
   }
 
   private ngUnsubscribe = new Subject();
@@ -255,8 +270,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   saveBuilds() {
     let jsonData = {
-      configCompressed: this.config.getCurrentConfigBase64Compressed(),
-      config: this.config.readonlyConfigurationSnapshot,
+      configCompressed: this.configService.getCurrentConfigBase64Compressed(),
+      config: this.configService.readonlyConfigurationSnapshot,
       results: this._results.map((r) => {
         let p = Object.assign({}, r);
         p.items = p.items.map((i) => {
@@ -276,5 +291,31 @@ export class ResultsComponent implements OnInit, OnDestroy {
     link.setAttribute("download", "d2ap_results.json");
     document.body.appendChild(link);
     link.click();
+  }
+
+  onViewModeChange(event: any) {
+    this.viewMode = event.value;
+    localStorage.setItem("d2ap-view-mode", this.viewMode);
+
+    // Reinitialize table sorting when switching to table view
+    if (this.viewMode === "table") {
+      // Use a longer timeout to ensure DOM is fully rendered
+      setTimeout(() => {
+        this.initializeTableSorting();
+      }, 100);
+    }
+  }
+
+  private initializeTableSorting() {
+    if (this.sort && this.tableDataSource) {
+      this.tableDataSource.sort = this.sort;
+      // Force sort to re-evaluate the current sort state
+      if (this.sort.active) {
+        this.sort.sortChange.emit({
+          active: this.sort.active,
+          direction: this.sort.direction,
+        });
+      }
+    }
   }
 }
