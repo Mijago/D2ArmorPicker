@@ -94,13 +94,6 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_selectedExotics.length > 1 && _config_selectedExotics.indexOf(-1) === -1"
-            disableRipple
-            matTooltip="The tool will try to fulfill your settings for all the selected exotics. If you select exotics in different slots then it will search for legendary items to allow hotswapping with the same stats.">
-            Multiple Exotics
-          </mat-chip-option>
-          <mat-chip-option
-            #tooltip="matTooltip"
             *ngIf="_config_maximumStatMods === 0"
             disableRipple
             matTooltip="You enforced that no stat mods are used."
