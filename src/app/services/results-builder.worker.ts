@@ -16,7 +16,7 @@
  */
 
 // region Imports
-import { BuildConfiguration } from "../data/buildConfiguration";
+import { BuildConfiguration, FixableSelection } from "../data/buildConfiguration";
 import { IDestinyArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { FORCE_USE_ANY_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
@@ -266,6 +266,9 @@ addEventListener("message", async ({ data }) => {
 
   const threadSplit = data.threadSplit as { count: number; current: number };
   const config = data.config as BuildConfiguration;
+  const anyStatFixed = Object.values(config.minimumStatTiers).some(
+    (v: FixableSelection<number>) => v.fixed
+  );
   let items = data.items as IPermutatorArmor[];
 
   if (threadSplit == undefined || config == undefined || items == undefined) {
@@ -324,6 +327,8 @@ addEventListener("message", async ({ data }) => {
   }
 
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
+  // Sort by Masterwork, descending
+  classItems = classItems.sort((a, b) => (b.masterworkLevel ?? 0) - (a.masterworkLevel ?? 0));
 
   // Filter exotic class items based on selected exotic perks if they are not "Any"
   if (config.selectedExoticPerks && config.selectedExoticPerks.length >= 2) {
@@ -389,6 +394,13 @@ addEventListener("message", async ({ data }) => {
           i.intellect === item.intellect &&
           i.strength === item.strength &&
           i.isExotic === item.isExotic &&
+          ((i.isExotic && config.assumeExoticsMasterworked) ||
+            (!i.isExotic && config.assumeLegendariesMasterworked) ||
+            // If there is any stat fixed, we check if the masterwork level is the same as the first item
+            (anyStatFixed && i.masterworkLevel === item.masterworkLevel) ||
+            // If there is no stat fixed, then we just use the masterwork level of the first item.
+            // As it is already sorted descending, we can just check if the masterwork level is the same
+            !anyStatFixed) &&
           (i.isExotic
             ? i.exoticPerkHash[0] === item.exoticPerkHash[0] &&
               i.exoticPerkHash[1] === item.exoticPerkHash[1]
