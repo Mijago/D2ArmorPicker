@@ -34,6 +34,23 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.3",
+    date: "July 22, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new setting to enforce featured armor only. This will filter out all non-featured armor from the results.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Class item selection is now even more robust.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.2",
     date: "July 18, 2025",
     clearManifest: true,
