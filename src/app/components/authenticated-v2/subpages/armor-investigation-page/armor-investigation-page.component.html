@@ -151,6 +151,18 @@
           /></mat-slider>
         </td>
       </tr>
+      <tr>
+        <td colspan="3">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Armor System</mat-label>
+            <mat-select [(ngModel)]="armorSystemFilter">
+              <mat-option [value]="0">Any</mat-option>
+              <mat-option [value]="2">Armor 2.0</mat-option>
+              <mat-option [value]="3">Armor 3.0</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </td>
+      </tr>
     </table>
 
     <a mat-raised-button color="primary" (click)="updateItems()">Update</a>&nbsp;
