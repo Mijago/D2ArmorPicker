@@ -135,6 +135,14 @@
 </div>
 <div>
   <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedArmor"
+    (change)="setEnforceFeaturedArmor($event.checked)">
+    Enforce featured armor only
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
     color="primary"
     [checked]="allowLegacyArmor"
     (change)="setAllowLegacyArmor($event.checked)">

@@ -55,6 +55,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
   allowLegacyArmor = false;
+  enforceFeaturedArmor = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
   importEquippedExoticInProgress = false;
@@ -82,6 +83,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
       this.allowLegacyArmor = c.allowLegacyArmor;
+      this.enforceFeaturedArmor = c.enforceFeaturedArmor;
     });
 
     this.inventory.manifest
@@ -193,6 +195,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   setIgnoreSunsetArmor(ignore: boolean) {
     this.config.modifyConfiguration((c) => {
       c.ignoreSunsetArmor = ignore;
+    });
+  }
+
+  setEnforceFeaturedArmor(enforce: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.enforceFeaturedArmor = enforce;
     });
   }
 

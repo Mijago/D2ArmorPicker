@@ -100,6 +100,7 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
             clazz: DestinyClass.Unknown,
             slot: ArmorSlot.ArmorSlotNone,
             isExotic: 0,
+            isFeatured: false,
             rarity: TierType.Unknown,
             source: InventoryArmorSource.Inventory,
             mobility: 0,
