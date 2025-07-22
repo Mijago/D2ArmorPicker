@@ -75,7 +75,10 @@
 
       <div class="config-summary-container">
         <h4 class="config-summary-title">Summary of important configuration choices</h4>
-        <mat-chip-listbox aria-label="Configuration Summary" class="config-summary-chips">
+        <mat-chip-listbox
+          aria-label="Configuration Summary"
+          class="config-summary-chips"
+          [selectable]="false">
           <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="_config_selectedExotics.indexOf(-1) > -1"
