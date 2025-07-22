@@ -16,7 +16,7 @@
   -->
 
 <table>
-  <tr *ngFor="let enum of stats">
+  <tr *ngFor="let enum of stats; let i = index">
     <td>
       {{ enum.name }}
     </td>
@@ -29,7 +29,8 @@
         [selectedTier]="minimumStatTiers[enum.value].value"
         [locked]="minimumStatTiers[enum.value].fixed"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
-        (lockedChange)="setLockState(enum.value, $event)"></app-stat-tier-selection>
+        (lockedChange)="setLockState(enum.value, $event)"
+        [tabIndexOffset]="i * 10"></app-stat-tier-selection>
     </td>
   </tr>
 </table>

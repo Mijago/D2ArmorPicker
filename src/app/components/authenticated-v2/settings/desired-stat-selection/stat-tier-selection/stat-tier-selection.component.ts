@@ -41,6 +41,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Input() maximumAvailableTier: number = 20;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
+  @Input() tabIndexOffset: number = 0;
   @Output() selectedTierChange = new EventEmitter<number>();
   @Output() lockedChange = new EventEmitter<boolean>();
 
