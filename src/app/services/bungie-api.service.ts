@@ -937,7 +937,7 @@ export class BungieApiService {
           // TODO: fix as soon as DIM Api is updated
           perk: this.getArmorPerk(v, (manifestTables as any).DestinyEquipableItemSetDefinition),
           socketEntries: v.sockets?.socketEntries ?? [],
-          isFeatured: !!(v as any)?.isFeatured, // TODO: Fix this as soon as DIM Api is updated
+          isFeatured: !!(v as any)?.isFeaturedItem, // TODO: Fix this as soon as DIM Api is updated
         } as IManifestArmor;
       });
 
