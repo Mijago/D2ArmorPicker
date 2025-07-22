@@ -189,6 +189,14 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
+            *ngIf="_config_enforceFeaturedArmor"
+            disableRipple
+            matTooltip="This setting enforces that only featured armor pieces (from specific activities or vendors) are used in builds."
+            selected>
+            Featured Armor Only
+          </mat-chip-option>
+          <mat-chip-option
+            #tooltip="matTooltip"
             *ngIf="_config_includeCollectionRolls"
             disableRipple
             matTooltip="Collection Exotic rolls will be included in the search.">
