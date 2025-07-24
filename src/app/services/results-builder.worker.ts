@@ -447,8 +447,6 @@ addEventListener("message", async ({ data }) => {
   // runtime variables
   const runtime = {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
   };
 
   if (classItems.length == 0) {

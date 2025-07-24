@@ -26,14 +26,6 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { ModOptimizationStrategy } from "../../../../data/enum/mod-optimization-strategy";
 
-function calcScore(d: number[]) {
-  let score = 0;
-  for (let n of d) {
-    score += Math.pow(10, 6 - n);
-  }
-  return score;
-}
-
 @Component({
   selector: "app-desired-stat-selection",
   templateUrl: "./desired-stat-selection.component.html",
@@ -44,8 +36,6 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = getDefaultStatDict(1);
   maximumPossibleTiers: number[] = [20, 20, 20, 20, 20, 20];
   statsByMods: number[] = [0, 0, 0, 0, 0, 0];
-  _statCombo4x100: ArmorStat[][] = [];
-  _statCombo3x100: ArmorStat[][] = [];
   config_zero_waste = false;
   config_mod_strategy = ModOptimizationStrategy.None;
   config_reduce_waste = false;
@@ -90,9 +80,6 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       if (tiers.filter((d) => d == 0).length < 6) {
         this.maximumPossibleTiers = tiers;
       }
-
-      this._statCombo3x100 = (d.statCombo3x100 || []).sort((a, b) => calcScore(b) - calcScore(a));
-      this._statCombo4x100 = d.statCombo4x100 || [];
     });
   }
 
