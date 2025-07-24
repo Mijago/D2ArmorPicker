@@ -34,6 +34,38 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.4",
+    date: "July 24, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Collective Psyche' armor perk to the available armor perks and updated related mappings.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Artifice assumptions now only affect legacy (armor 2.0) items. It will also be disabled when you choose not to allow legacy armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor perk seleciton now defaults to non-fixed. UI Rework follows in the future.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the status chip to correctly display when an exotic is selected.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved handling for cases where no class items are available. Yes, there was a guardian who deleted every legendary class item. Hehe.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.3",
     date: "July 22, 2025",
     clearManifest: true,
