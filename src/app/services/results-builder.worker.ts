@@ -443,6 +443,31 @@ addEventListener("message", async ({ data }) => {
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
 
+  if (classItems.length == 0) {
+    console.warn(
+      `Thread#${threadSplit.current} - No class items found with the current configuration.`
+    );
+    postMessage({
+      runtime: {},
+      results: [],
+      done: true,
+      checkedCalculations: 0,
+      estimatedCalculations: 0,
+      stats: {
+        permutationCount: 0,
+        itemCount: items.length - classItems.length,
+        totalTime: Date.now() - startTime,
+      },
+    });
+    return;
+  } else if (exoticClassItems.length > 0 && legendaryClassItems.length == 0) {
+    // If we do not have legendary class items, we can not use any exotic armor in other slots
+    helmets = helmets.filter((d) => !d.isExotic);
+    gauntlets = gauntlets.filter((d) => !d.isExotic);
+    chests = chests.filter((d) => !d.isExotic);
+    legs = legs.filter((d) => !d.isExotic);
+  }
+
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
 
   // runtime variables
