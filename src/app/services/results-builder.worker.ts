@@ -1082,18 +1082,12 @@ function get_mods_precalc(
     return true;
   }
 
-  const costMinor = [1, 2, 2, 1, 2, 1];
-  const costMajor = [3, 4, 4, 3, 4, 3];
-
   function score(entries: [number, number, number, number][]) {
     if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
       const n1 = entries.reduce((a, b) => a + b[1] + b[2], 0);
       return n1;
     } else if (optimize == ModOptimizationStrategy.ReduceUsedModPoints) {
-      return entries.reduce(
-        (a, b, currentIndex) => a + costMinor[currentIndex] * b[1] + costMajor[currentIndex] * b[2],
-        0
-      );
+      return entries.reduce((a, b, currentIndex) => a + 1 * b[1] + 3 * b[2], 0);
     }
     return entries.reduce((a, b) => a + b[3], 0);
   }
@@ -1123,12 +1117,9 @@ function get_mods_precalc(
     let usedModCost: number[] = [];
     for (let statIdx = 0; statIdx < entries.length; statIdx++) {
       const entry = entries[statIdx];
-      const isSmallMod = statIdx == 0 || statIdx == 3 || statIdx == 5;
-      let minorModCost = isSmallMod ? 1 : 2;
-      let majorModCost = isSmallMod ? 3 : 4;
 
-      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(minorModCost);
-      for (let major = 0; major < entry[2]; major++) usedModCost.push(majorModCost);
+      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(1);
+      for (let major = 0; major < entry[2]; major++) usedModCost.push(3);
     }
 
     if (usedModCost.length == 0) return true;

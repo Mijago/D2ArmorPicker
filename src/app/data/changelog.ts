@@ -63,6 +63,11 @@ export const CHANGELOG_DATA: {
         text: "Improved handling for cases where no class items are available. Yes, there was a guardian who deleted every legendary class item. Hehe.",
         issues: [],
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted modslot costs for the new season. The costs are now 1 for minor and 3 for major mods.",
+        issues: [],
+      },
     ],
   },
   {
