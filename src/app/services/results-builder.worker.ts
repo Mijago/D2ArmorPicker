@@ -442,13 +442,21 @@ addEventListener("message", async ({ data }) => {
   const exoticClassItemIsEnforced = exoticClassItems.some(
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
+  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
+
+  // runtime variables
+  const runtime = {
+    maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+    statCombo3x100: new Set(),
+    statCombo4x100: new Set(),
+  };
 
   if (classItems.length == 0) {
     console.warn(
       `Thread#${threadSplit.current} - No class items found with the current configuration.`
     );
     postMessage({
-      runtime: {},
+      runtime: runtime,
       results: [],
       done: true,
       checkedCalculations: 0,
@@ -468,14 +476,6 @@ addEventListener("message", async ({ data }) => {
     legs = legs.filter((d) => !d.isExotic);
   }
 
-  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
-
-  // runtime variables
-  const runtime = {
-    maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
-  };
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
