@@ -139,6 +139,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   totalResults: number = 0;
   parsedResults: number = 0;
   viewMode: "table" | "cards" = "table";
+  _config_legacyArmor: any;
 
   constructor(
     private inventory: InventoryService,
@@ -160,6 +161,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
       this._config_maximumStatMods = c.maximumStatMods;
+      this._config_legacyArmor = c.allowLegacyArmor;
       this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
       this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
       this._config_includeCollectionRolls = c.includeCollectionRolls;

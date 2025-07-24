@@ -364,7 +364,12 @@ export class InventoryService {
             (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
             config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
             !config.armorPerks[item.slot].fixed ||
-            (config.armorPerks[item.slot].fixed && config.armorPerks[item.slot].value == item.perk)
+            (config.armorPerks[item.slot].fixed &&
+              config.armorPerks[item.slot].value == item.perk) ||
+            (config.armorPerks[item.slot].value === ArmorPerkOrSlot.SlotArtifice &&
+              item.armorSystem === ArmorSystem.Armor2 &&
+              ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+                (config.assumeEveryExoticIsArtifice && item.isExotic)))
           );
         });
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))

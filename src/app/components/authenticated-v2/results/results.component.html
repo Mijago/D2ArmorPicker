@@ -133,9 +133,9 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_assumeEveryLegendaryIsArtifice"
+            *ngIf="_config_assumeEveryLegendaryIsArtifice && _config_legacyArmor"
             disableRipple
-            matTooltip="EVERY legendary is assumed to be artifice."
+            matTooltip="EVERY legacy legendary is assumed to be artifice."
             selected
             color="warn">
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
@@ -146,11 +146,11 @@
             #tooltip="matTooltip"
             *ngIf="_config_assumeEveryExoticIsArtifice"
             disableRipple
-            matTooltip="EVERY exotic is assumed to be artifice."
+            matTooltip="EVERY legacy (Armor 2.0) exotic is assumed to be artifice."
             selected
             color="warn">
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-            &nbsp;Assume exotics are artifice&nbsp;
+            &nbsp;Assume legacy exotics are artifice&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
           </mat-chip-option>
 

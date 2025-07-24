@@ -56,28 +56,49 @@ function checkSlots(
 ) {
   let requirements = new Map(constantModslotRequirement);
   if (
-    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      helmet.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      helmet.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
   )
     return { valid: false };
   if (
-    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      gauntlet.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      gauntlet.armorSystem == ArmorSystem.Armor2
+    ) &&
+    !(
+      !gauntlet.isExotic &&
+      config.assumeEveryLegendaryIsArtifice &&
+      gauntlet.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
   )
     return { valid: false };
   if (
-    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      chest.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      chest.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
   )
     return { valid: false };
   if (
-    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      leg.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      leg.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -352,11 +373,17 @@ addEventListener("message", async ({ data }) => {
     }
   }
 
-  if (config.assumeEveryLegendaryIsArtifice || config.assumeEveryExoticIsArtifice) {
+  if (
+    config.assumeEveryLegendaryIsArtifice ||
+    config.assumeEveryExoticIsArtifice ||
+    config.assumeClassItemIsArtifice
+  ) {
     classItems = classItems.map((item) => {
       if (
-        (config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-        (config.assumeEveryExoticIsArtifice && item.isExotic)
+        (item.armorSystem == ArmorSystem.Armor2 &&
+          ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+            (config.assumeEveryExoticIsArtifice && item.isExotic))) ||
+        (config.assumeClassItemIsArtifice && !item.isExotic)
       ) {
         return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
       }
@@ -641,8 +668,9 @@ export function handlePermutation(
   let availableArtificeCount = items.filter(
     (d) =>
       d.perk == ArmorPerkOrSlot.SlotArtifice ||
-      (config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
-      (config.assumeEveryExoticIsArtifice && d.isExotic)
+      (d.armorSystem === ArmorSystem.Armor2 &&
+        ((config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
+          (config.assumeEveryExoticIsArtifice && d.isExotic)))
   ).length;
 
   // get distance

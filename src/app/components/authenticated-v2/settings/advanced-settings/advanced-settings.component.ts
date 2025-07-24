@@ -111,34 +111,34 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             help: undefined,
           },
         ],
-        "Artifice Slots": [
+        "Artifice Slots (for legacy armor 2.0)": [
           {
-            name: "Assume every legendary class item is an artifice armor.",
+            name: "Assume every legacy legendary class item is an artifice armor.",
             type: "boolean",
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeClassItemIsArtifice = v)),
             value: c.assumeClassItemIsArtifice || c.assumeEveryLegendaryIsArtifice,
-            disabled: c.assumeEveryLegendaryIsArtifice,
+            disabled: c.assumeEveryLegendaryIsArtifice || !c.allowLegacyArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
           },
           {
-            name: "Assume every legendary is an artifice armor.",
+            name: "Assume every legacy legendary is an artifice armor.",
             type: "boolean",
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryLegendaryIsArtifice = v)),
             value: c.assumeEveryLegendaryIsArtifice,
-            disabled: false,
+            disabled: !c.allowLegacyArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
           },
           {
-            name: "Assume every exotic has an artifice slot.",
+            name: "Assume every legacy exotic has an artifice slot.",
             type: "boolean",
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryExoticIsArtifice = v)),
             value: c.assumeEveryExoticIsArtifice,
-            disabled: false,
+            disabled: !c.allowLegacyArmor,
             impactsResultCount: true,
             help: "Preparation for the upcoming Artifice Mod Slot for exotics.",
           },

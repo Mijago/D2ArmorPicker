@@ -133,19 +133,13 @@ function collectInvestmentStats(
   providedIn: "root",
 })
 export class BungieApiService {
-  config_assumeEveryLegendaryIsArtifice = false;
-
   constructor(
     private status: StatusProviderService,
     private http: HttpClientService,
     private db: DatabaseService,
     private config: ConfigurationService,
     private membership: MembershipService
-  ) {
-    this.config.configuration.subscribe(async (config) => {
-      this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
-    });
-  }
+  ) {}
 
   async transferItem(
     itemInstanceId: string,
