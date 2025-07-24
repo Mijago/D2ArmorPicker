@@ -138,6 +138,7 @@ export enum ArmorPerkOrSlot {
   GearsetLastDiscipline,
   GearsetAionAdapter,
   GearsetTwoFoldCrown,
+  GearsetCollectivePsyche,
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -165,6 +166,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GearsetLastDiscipline]: "Last Discipline Gearset",
   [ArmorPerkOrSlot.GearsetAionAdapter]: "Aion Adapter Gearset",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "Two-Fold Crown Gearset",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "Collective Psyche Gearset",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -216,6 +218,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/f77b2802da61b9eaf08adb8795a970e3.jpg",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]:
     "https://www.bungie.net/common/destiny2_content/icons/e199fe652e70c67c3d838bdd4ebf6a8d.jpg",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]:
+    "https://www.bungie.net/common/destiny2_content/icons/04fb8637f82f72da8dfdb9b8ca3e7339.jpg",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -248,6 +252,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.GearsetLastDiscipline]: 3252452908,
   [ArmorPerkOrSlot.GearsetAionAdapter]: 894715166,
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: 3259216565,
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: 3259216566,
 };
 
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
@@ -289,6 +294,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GearsetLastDiscipline]: "name:'last discipline'",
   [ArmorPerkOrSlot.GearsetAionAdapter]: "name:'aion adapter'",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "name:'two-fold crown'",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "name:'collective psyche'",
 };
 
 export const SubclassHashes: EnumDictionary<

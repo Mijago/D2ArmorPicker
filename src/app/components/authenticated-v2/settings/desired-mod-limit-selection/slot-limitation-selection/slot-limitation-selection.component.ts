@@ -79,6 +79,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     ArmorPerkOrSlot.GearsetLastDiscipline,
     ArmorPerkOrSlot.GearsetAionAdapter,
     ArmorPerkOrSlot.GearsetTwoFoldCrown,
+    ArmorPerkOrSlot.GearsetCollectivePsyche,
     ArmorPerkOrSlot.GuardianGamesClassItem,
     ArmorPerkOrSlot.PerkOverflowingCorruption,
     ArmorPerkOrSlot.SlotEidosApprentice,
