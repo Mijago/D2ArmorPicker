@@ -89,7 +89,7 @@
           <mat-chip-option
             #tooltip="matTooltip"
             *ngIf="
-              _config_selectedExotics.length === 1 && _config_selectedExotics.indexOf(-1) === -1
+              _config_selectedExotics.length >= 1 && _config_selectedExotics.indexOf(-1) === -1
             "
             disableRipple
             matTooltip="This setting enforces that only one specific exotic is used."
