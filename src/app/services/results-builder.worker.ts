@@ -733,13 +733,17 @@ export function handlePermutation(
     let scoreA = 0,
       scoreB = 0;
 
-    // add 100 to artifice
-    if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 100;
-    if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 100;
+    // add 10 if the class item is Armor 3.0
+    if (a.armorSystem == ArmorSystem.Armor3) scoreA += 10;
+    if (b.armorSystem == ArmorSystem.Armor3) scoreB += 10;
+
+    // add 10 if the class item has an artifice slot
+    if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 10;
+    if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 10;
 
     // vendor and collection rolls last
-    if (a.source === InventoryArmorSource.Inventory) scoreA += 10;
-    if (b.source === InventoryArmorSource.Inventory) scoreB += 10;
+    if (a.source === InventoryArmorSource.Inventory) scoreA += 5;
+    if (b.source === InventoryArmorSource.Inventory) scoreB += 5;
 
     for (let i = 0; i < 6; i++) {
       if (distances[i] > 0) {

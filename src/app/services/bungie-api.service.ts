@@ -377,8 +377,6 @@ export class BungieApiService {
           armorItem.armorSystem = ArmorSystem.Armor3;
         } else {
           armorItem.armorSystem = ArmorSystem.Armor2;
-          armorItem.masterworkLevel =
-            !!instance.energy && instance.energy.energyCapacity == 10 ? 5 : 0;
         }
 
         if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
@@ -440,23 +438,22 @@ export class BungieApiService {
           }
         }
 
-        // MW 0 to 5
-        const masterworkPlugHashesExotic = [
-          2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,
-        ];
-        const masterworkPlugHashesLegendary = [
-          2416688579, 2416688578, 2416688577, 2416688576, 2416688583, 2416688582,
-        ];
-
-        let usedMasterworkPlugHashes = armorItem.isExotic
-          ? masterworkPlugHashesExotic
-          : masterworkPlugHashesLegendary;
-
-        const masterworkPlugHash = socketsList.find((d) =>
-          usedMasterworkPlugHashes.includes(d ?? 0)
-        );
-        if (!!masterworkPlugHash)
-          armorItem.masterworkLevel = usedMasterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
+        for (let socket of socketsList) {
+          if (!socket) continue;
+          // grab the mod instance
+          const mod = modsMap[socket];
+          if (!mod || mod.name !== "Upgrade Armor") continue;
+          const mmod = mod.investmentStats.find(
+            (k: DestinyItemInvestmentStatDefinition) =>
+              k.statTypeHash == ArmorStatHashes[ArmorStat.StatWeapon]
+          );
+          if (mmod) {
+            if (armorItem.armorSystem == ArmorSystem.Armor3) armorItem.masterworkLevel = mmod.value;
+            else if (armorItem.armorSystem == ArmorSystem.Armor2) {
+              armorItem.masterworkLevel = mmod.value == 2 ? 5 : 0;
+            }
+          }
+        }
 
         if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
           // Take a look if it really has the artifice perk
