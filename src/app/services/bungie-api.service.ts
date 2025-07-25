@@ -369,6 +369,7 @@ export class BungieApiService {
         );
         // 3.0
         // TODO replace the (as any) once DIM Api is updated
+
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
@@ -440,12 +441,22 @@ export class BungieApiService {
         }
 
         // MW 0 to 5
-        const masterworkPlugHashes = [
+        const masterworkPlugHashesExotic = [
           2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,
         ];
-        const masterworkPlugHash = socketsList.find((d) => masterworkPlugHashes.includes(d ?? 0));
+        const masterworkPlugHashesLegendary = [
+          2416688579, 2416688578, 2416688577, 2416688576, 2416688583, 2416688582,
+        ];
+
+        let usedMasterworkPlugHashes = armorItem.isExotic
+          ? masterworkPlugHashesExotic
+          : masterworkPlugHashesLegendary;
+
+        const masterworkPlugHash = socketsList.find((d) =>
+          usedMasterworkPlugHashes.includes(d ?? 0)
+        );
         if (!!masterworkPlugHash)
-          armorItem.masterworkLevel = masterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
+          armorItem.masterworkLevel = usedMasterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
 
         if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
           // Take a look if it really has the artifice perk
