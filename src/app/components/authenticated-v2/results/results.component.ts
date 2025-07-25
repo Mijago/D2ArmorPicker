@@ -140,11 +140,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
   parsedResults: number = 0;
   viewMode: "table" | "cards" = "table";
   _config_legacyArmor: any;
+  computationProgress: number = 0;
+  isCalculatingPermutations: boolean = false;
+  initializing: boolean = true; // Flag to indicate if the page is still initializing
 
   constructor(
     private inventory: InventoryService,
-    private configService: ConfigurationService,
-    private status: StatusProviderService
+    public configService: ConfigurationService,
+    public status: StatusProviderService
   ) {
     // Load saved view mode from localStorage
     const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
@@ -154,6 +157,18 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.status.status.pipe(takeUntil(this.ngUnsubscribe)).subscribe((s) => {
+      this.isCalculatingPermutations = s.calculatingPermutations || s.calculatingResults;
+
+      if (this.isCalculatingPermutations) {
+        this.initializing = false;
+      }
+    });
+
+    this.inventory.calculationProgress.subscribe((progress) => {
+      this.computationProgress = progress;
+    });
+    //
     this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c: any) => {
       this.selectedClass = c.characterClass;
       this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;

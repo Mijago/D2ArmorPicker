@@ -208,226 +208,282 @@
         </mat-chip-listbox>
       </div>
 
-      <!-- Card View -->
-      <app-results-card-view *ngIf="viewMode === 'cards'" [results]="_results">
-      </app-results-card-view>
+      <div class="initializing-container" *ngIf="initializing">
+        <mat-icon class="rotate">hourglass_top</mat-icon>
+        <h3>Initializing...</h3>
+        <p>Please wait while the application is loading your data.</p>
+        <p>
+          This may take a while, depending on your settings and the number of items you have.
+          <br />
+          Please be patient.
+        </p></div
+      >
 
-      <!-- Table View -->
-      <table
-        *ngIf="viewMode === 'table'"
-        [dataSource]="tableDataSource"
-        class="result-table"
-        mat-table
-        matSort
-        matSortActive="Mods"
-        matSortDirection="asc"
-        multiTemplateDataRows>
-        <!--- Note that these columns can be defined in any order.
-         The actual rendered columns are set as a property on the row definition" -->
-        <!-- Name Column -->
-        <ng-container matColumnDef="weapon">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Weapon"
-            matTooltip="The weapon Stat of this armor combination."
-            >Weapon
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatWeapon] }}
-            <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+      <div
+        class="progress-bar-container"
+        *ngIf="_results.length === 0 && isCalculatingPermutations && !initializing">
+        <mat-icon class="rotate"> hourglass_top </mat-icon>
+        <h3>Calculating permutations...</h3>
+        <mat-progress-bar
+          [value]="computationProgress"
+          aria-label="Calculating permutations..."></mat-progress-bar>
+        <p>
+          This may take a while, depending on your settings and the number of items you have.
+          <br />
+          Please be patient.
+        </p>
+      </div>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="health">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Health"
-            matTooltip="The  stat of this armor combination.">
-            Health
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatHealth] }}
-            <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+      <!-- No results message -->
+      <div
+        class="no-results"
+        *ngIf="_results.length === 0 && !isCalculatingPermutations && !initializing">
+        <mat-icon>search_off</mat-icon>
+        <h3>No results found</h3>
+        <p>Try adjusting your filters or search criteria.</p>
+        <div id="common-issues">
+          <p>Common issues:</p>
+          <ul>
+            <li> Desired stats may simply not be possible with your current configuration. </li>
+            <li>Make sure that you have at least one legendary item per slot.</li>
+            <li *ngIf="_config_enforceFeaturedArmor">
+              You enforced that only featured armor is used. Do you have at least one piece of
+              featured armor for each slot?
+            </li>
+            <li *ngIf="!_config_legacyArmor">
+              Maybe you wanted to include legacy (Armor 2.0) armor too?
+            </li>
+            <li *ngIf="!_config_includeVendorRolls"> Maybe you wanted to include vendor items? </li>
+            <li *ngIf="!_config_includeCollectionRolls">
+              Maybe you wanted to include exotics in the collection?
+            </li>
+          </ul>
+        </div>
+      </div>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="class">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Class"
-            matTooltip="The class stat of this armor combination.">
-            Class
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatClass] }}
-            <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+      <!-- Results Content -->
+      <div *ngIf="_results.length > 0">
+        <!-- Card View -->
+        <app-results-card-view *ngIf="viewMode === 'cards'" [results]="_results">
+        </app-results-card-view>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="grenade">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Grenade"
-            matTooltip="The grenade stat of this armor combination.">
-            Grenade
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatGrenade] }}
-            <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+        <!-- Table View -->
+        <table
+          *ngIf="viewMode === 'table'"
+          [dataSource]="tableDataSource"
+          class="result-table"
+          mat-table
+          matSort
+          matSortActive="Mods"
+          matSortDirection="asc"
+          multiTemplateDataRows>
+          <!--- Note that these columns can be defined in any order.
+           The actual rendered columns are set as a property on the row definition" -->
+          <!-- Name Column -->
+          <ng-container matColumnDef="weapon">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Weapon"
+              matTooltip="The weapon Stat of this armor combination."
+              >Weapon
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatWeapon] }}
+              <app-stat-icon [stat]="ArmorStat.StatWeapon" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="super">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Super"
-            matTooltip="The super stat of this armor combination.">
-            Super
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatSuper] }}
-            <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="health">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Health"
+              matTooltip="The  stat of this armor combination.">
+              Health
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatHealth] }}
+              <app-stat-icon [stat]="ArmorStat.StatHealth" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="melee">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Melee"
-            matTooltip="The melee stat of this armor combination."
-            >Melee
-          </th>
-          <td *matCellDef="let element" class="statColumn" mat-cell
-            >{{ element.stats[ArmorStat.StatMelee] }}
-            <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="class">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Class"
+              matTooltip="The class stat of this armor combination.">
+              Class
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatClass] }}
+              <app-stat-icon [stat]="ArmorStat.StatClass" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="mods">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Mods"
-            matTooltip="The amount of mods required for each combination. Sorting after this takes the mod cost into account.">
-            Used Mods
-          </th>
-          <td *matCellDef="let element" mat-cell>
-            <app-table-mod-display
-              [mods]="element.mods"
-              [artifice]="element.artifice"
-              class="modPreview"></app-table-mod-display>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="grenade">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Grenade"
+              matTooltip="The grenade stat of this armor combination.">
+              Grenade
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatGrenade] }}
+              <app-stat-icon [stat]="ArmorStat.StatGrenade" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="exotic">
-          <th *matHeaderCellDef mat-header-cell style="text-align: center">Exotic</th>
-          <td *matCellDef="let element" mat-cell>
-            <div class="itemDiv">
-              <img
-                *ngIf="element.exotic !== undefined"
-                #tooltip="matTooltip"
-                class="itemIcon"
-                matTooltip="{{ element.exotic.name }}"
-                src="https://bungie.net/{{ element.exotic.icon }}" />
-              <img
-                *ngIf="element.exotic !== undefined"
-                class="itemIconWatermark"
-                src="https://bungie.net/{{ element.exotic.watermark }}" />
-              <img
-                *ngIf="element.exotic === undefined"
-                class="itemIcon"
-                src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
-            </div>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="super">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Super"
+              matTooltip="The super stat of this armor combination.">
+              Super
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatSuper] }}
+              <app-stat-icon [stat]="ArmorStat.StatSuper" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Vendor/Collection Column -->
-        <ng-container matColumnDef="source">
-          <th *matHeaderCellDef mat-header-cell>Sources</th>
-          <td *matCellDef="let element" mat-cell>
-            <span class="source-column">
-              <img
-                *ngIf="!!element.usesCollectionRoll"
-                matTooltip="This build uses a collection exotic. You have to collect it before you can use it."
-                class="collectionIcon"
-                src="https://www.bungie.net/common/destiny2_content/icons/1d01287dd47af97fef16fa6acbac23ba.png" />
-              <img
-                *ngIf="!!element.usesVendorRoll"
-                matTooltip="This build uses a vendor item. You have to collect it before you can use it."
-                class="vendorIcon"
-                src="https://www.bungie.net/common/destiny2_content/icons/8ef4b5bd32277dba9aee7c368404ad5d.jpg" />
-            </span>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="melee">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Melee"
+              matTooltip="The melee stat of this armor combination."
+              >Melee
+            </th>
+            <td *matCellDef="let element" class="statColumn" mat-cell
+              >{{ element.stats[ArmorStat.StatMelee] }}
+              <app-stat-icon [stat]="ArmorStat.StatMelee" class="statIcon"></app-stat-icon>
+            </td>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="dropdown">
-          <th *matHeaderCellDef mat-header-cell></th>
-          <td *matCellDef="let element" mat-cell>
-            <mat-icon
-              *ngIf="expandedElement !== element"
-              matTooltip="Click to show details for this build.">
-              expand_more
-            </mat-icon>
-            <mat-icon
-              *ngIf="expandedElement === element"
-              matTooltip="Click to hide details for this build.">
-              expand_less
-            </mat-icon>
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="mods">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Mods"
+              matTooltip="The amount of mods required for each combination. Sorting after this takes the mod cost into account.">
+              Used Mods
+            </th>
+            <td *matCellDef="let element" mat-cell>
+              <app-table-mod-display
+                [mods]="element.mods"
+                [artifice]="element.artifice"
+                class="modPreview"></app-table-mod-display>
+            </td>
+          </ng-container>
 
-        <!-- Total Column -->
-        <ng-container matColumnDef="total">
-          <th
-            *matHeaderCellDef
-            mat-header-cell
-            mat-sort-header="Total"
-            matTooltip="The total sum of all stats in this armor combination."
-            >Total
-          </th>
-          <td *matCellDef="let element" mat-cell>
-            {{ getTotalStats(element) }}
-          </td>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="exotic">
+            <th *matHeaderCellDef mat-header-cell style="text-align: center">Exotic</th>
+            <td *matCellDef="let element" mat-cell>
+              <div class="itemDiv">
+                <img
+                  *ngIf="element.exotic !== undefined"
+                  #tooltip="matTooltip"
+                  class="itemIcon"
+                  matTooltip="{{ element.exotic.name }}"
+                  src="https://bungie.net/{{ element.exotic.icon }}" />
+                <img
+                  *ngIf="element.exotic !== undefined"
+                  class="itemIconWatermark"
+                  src="https://bungie.net/{{ element.exotic.watermark }}" />
+                <img
+                  *ngIf="element.exotic === undefined"
+                  class="itemIcon"
+                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
+              </div>
+            </td>
+          </ng-container>
 
-        <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
-        <ng-container matColumnDef="expandedDetail">
-          <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
-            <div
-              [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
-              class="result-element-detail">
-              <app-expanded-result-content [element]="element"></app-expanded-result-content>
-            </div>
-          </td>
-        </ng-container>
+          <!-- Vendor/Collection Column -->
+          <ng-container matColumnDef="source">
+            <th *matHeaderCellDef mat-header-cell>Sources</th>
+            <td *matCellDef="let element" mat-cell>
+              <span class="source-column">
+                <img
+                  *ngIf="!!element.usesCollectionRoll"
+                  matTooltip="This build uses a collection exotic. You have to collect it before you can use it."
+                  class="collectionIcon"
+                  src="https://www.bungie.net/common/destiny2_content/icons/1d01287dd47af97fef16fa6acbac23ba.png" />
+                <img
+                  *ngIf="!!element.usesVendorRoll"
+                  matTooltip="This build uses a vendor item. You have to collect it before you can use it."
+                  class="vendorIcon"
+                  src="https://www.bungie.net/common/destiny2_content/icons/8ef4b5bd32277dba9aee7c368404ad5d.jpg" />
+              </span>
+            </td>
+          </ng-container>
 
-        <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
-        <tr
-          (click)="expandedElement = expandedElement === element ? null : element"
-          *matRowDef="let element; columns: shownColumns"
-          [class.example-expanded-row]="expandedElement === element"
-          class="result-element-row"
-          mat-row>
-        </tr>
-        <tr
-          *matRowDef="let row; columns: ['expandedDetail']"
-          class="result-detail-row"
-          mat-row></tr>
-      </table>
+          <!-- Name Column -->
+          <ng-container matColumnDef="dropdown">
+            <th *matHeaderCellDef mat-header-cell></th>
+            <td *matCellDef="let element" mat-cell>
+              <mat-icon
+                *ngIf="expandedElement !== element"
+                matTooltip="Click to show details for this build.">
+                expand_more
+              </mat-icon>
+              <mat-icon
+                *ngIf="expandedElement === element"
+                matTooltip="Click to hide details for this build.">
+                expand_less
+              </mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Total Column -->
+          <ng-container matColumnDef="total">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header="Total"
+              matTooltip="The total sum of all stats in this armor combination."
+              >Total
+            </th>
+            <td *matCellDef="let element" mat-cell>
+              {{ getTotalStats(element) }}
+            </td>
+          </ng-container>
+
+          <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+          <ng-container matColumnDef="expandedDetail">
+            <td *matCellDef="let element" [attr.colspan]="shownColumns.length" mat-cell>
+              <div
+                [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'"
+                class="result-element-detail">
+                <app-expanded-result-content [element]="element"></app-expanded-result-content>
+              </div>
+            </td>
+          </ng-container>
+
+          <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
+          <tr
+            (click)="expandedElement = expandedElement === element ? null : element"
+            *matRowDef="let element; columns: shownColumns"
+            [class.example-expanded-row]="expandedElement === element"
+            class="result-element-row"
+            mat-row>
+          </tr>
+          <tr
+            *matRowDef="let row; columns: ['expandedDetail']"
+            class="result-detail-row"
+            mat-row></tr>
+        </table>
+      </div>
       <mat-paginator
         [style.display]="viewMode === 'table' ? 'block' : 'none'"
         [pageSizeOptions]="[25, 50, 75, 100]"
