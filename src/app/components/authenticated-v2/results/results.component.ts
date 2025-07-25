@@ -143,6 +143,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
   computationProgress: number = 0;
   isCalculatingPermutations: boolean = false;
   initializing: boolean = true; // Flag to indicate if the page is still initializing
+  cancelledCalculation: boolean = false;
 
   constructor(
     private inventory: InventoryService,
@@ -163,6 +164,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
       if (this.isCalculatingPermutations) {
         this.initializing = false;
       }
+      this.cancelledCalculation = s.cancelledCalculation;
     });
 
     this.inventory.calculationProgress.subscribe((progress) => {
@@ -250,6 +252,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
       }
       return 0;
     };
+  }
+
+  cancelCalculation() {
+    this.inventory.cancelCalculation();
   }
 
   async updateData() {

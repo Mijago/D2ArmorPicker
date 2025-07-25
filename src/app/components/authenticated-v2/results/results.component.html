@@ -232,12 +232,38 @@
           <br />
           Please be patient.
         </p>
+
+        <br />
+        <button
+          mat-raised-button
+          color="warn"
+          matTooltip="Cancel the current calculation. This is useful if you want to change your settings or if the calculation takes too long."
+          (click)="cancelCalculation()"
+          [disabled]="!isCalculatingPermutations">
+          Cancel Calculation
+        </button>
+      </div>
+
+      <!-- Cancelled Message -->
+      <div class="cancelled-message" *ngIf="_results.length === 0 && cancelledCalculation">
+        <mat-icon>cancel</mat-icon>
+        <h3>You cancelled the calculation process</h3>
+        <p>
+          The calculation has been cancelled. You can try again with different settings.
+          <br />
+          If you want to continue, just change anything in your settings.
+        </p>
       </div>
 
       <!-- No results message -->
       <div
         class="no-results"
-        *ngIf="_results.length === 0 && !isCalculatingPermutations && !initializing">
+        *ngIf="
+          _results.length === 0 &&
+          !isCalculatingPermutations &&
+          !initializing &&
+          !cancelledCalculation
+        ">
         <mat-icon>search_off</mat-icon>
         <h3>No results found</h3>
         <p>Try adjusting your filters or search criteria.</p>

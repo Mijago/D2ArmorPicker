@@ -265,6 +265,16 @@ export class InventoryService {
     return totalCalculations;
   }
 
+  cancelCalculation() {
+    console.info("Cancelling calculation");
+    this.killWorkers();
+    this.status.modifyStatus((s) => (s.calculatingResults = false));
+    this.status.modifyStatus((s) => (s.cancelledCalculation = true));
+
+    this._calculationProgress.next(0);
+    this.clearResults();
+  }
+
   async updateResults(nthreads: number = 3) {
     let config = this._config;
     console.debug("Using config for Workers", { configuration: config });
@@ -274,6 +284,7 @@ export class InventoryService {
     try {
       console.time("updateResults with WebWorker");
       this.status.modifyStatus((s) => (s.calculatingResults = true));
+      this.status.modifyStatus((s) => (s.cancelledCalculation = false));
       let doneWorkerCount = 0;
 
       this.results = [];

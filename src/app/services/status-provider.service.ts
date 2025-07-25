@@ -21,6 +21,7 @@ import { isEqual as _isEqual } from "lodash";
 import { getDifferences } from "../data/commonFunctions";
 
 export interface Status {
+  cancelledCalculation: boolean;
   calculatingPermutations: boolean;
   calculatingResults: boolean;
   updatingResultsTable: boolean;
@@ -37,6 +38,7 @@ export interface Status {
 })
 export class StatusProviderService {
   private __status: Status = {
+    cancelledCalculation: false,
     calculatingResults: false,
     calculatingPermutations: false,
     updatingResultsTable: false,
