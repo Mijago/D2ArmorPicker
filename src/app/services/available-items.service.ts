@@ -17,7 +17,7 @@
 
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Observable } from "rxjs";
-import { map, distinctUntilChanged, take, tap } from "rxjs/operators";
+import { map, distinctUntilChanged, take, debounceTime } from "rxjs/operators";
 import { DatabaseService } from "./database.service";
 import { ConfigurationService } from "./configuration.service";
 import { AuthService } from "./auth.service";
@@ -49,11 +49,7 @@ type ValidArmorSlot =
 export interface AvailableItemsInfo {
   itemsBySlot: AvailableItemsBySlot;
   totalItems: number;
-  classItems: IPermutatorArmor[];
-  availableClassItemPerkTypes: Set<ArmorPerkOrSlot>;
-  exoticClassItems: IPermutatorArmor[];
-  legendaryClassItems: IPermutatorArmor[];
-  exoticClassItemIsEnforced: boolean;
+  filteredClassItemsForGeneration: IPermutatorArmor[];
 }
 
 @Injectable({
@@ -69,20 +65,11 @@ export class AvailableItemsService {
       [ArmorSlot.ArmorSlotClass]: [],
     },
     totalItems: 0,
-    classItems: [],
-    availableClassItemPerkTypes: new Set(),
-    exoticClassItems: [],
-    legendaryClassItems: [],
-    exoticClassItemIsEnforced: false,
+    filteredClassItemsForGeneration: [],
   });
 
-  public readonly availableItems$: Observable<AvailableItemsInfo> = this._availableItems
-    .asObservable()
-    .pipe(
-      tap((items: AvailableItemsInfo) =>
-        console.debug("AvailableItemsService: availableItems$ emitted", items)
-      )
-    );
+  public readonly availableItems$: Observable<AvailableItemsInfo> =
+    this._availableItems.asObservable();
 
   // Memoized slot observables to ensure consistency
   private _slotObservables = new Map<ArmorSlot, Observable<IPermutatorArmor[]>>();
@@ -95,15 +82,7 @@ export class AvailableItemsService {
     // Update available items when config changes
     this.config.configuration
       .pipe(
-        distinctUntilChanged((prev, curr) => {
-          for (let key of Object.keys(prev) as (keyof BuildConfiguration)[]) {
-            if (!curr.hasOwnProperty(key) || !_isEqual(prev[key], curr[key])) {
-              return false;
-            }
-          }
-          return true;
-        })
-        //debounceTime(1) // Debounce to avoid rapid updates
+        debounceTime(1) // Debounce to avoid rapid updates
       )
       .subscribe(async (config) => {
         if (this.auth.isAuthenticated()) {
@@ -175,9 +154,6 @@ export class AvailableItemsService {
       const slotObservable = this.availableItems$.pipe(
         map((items) => {
           const slotItems = items.itemsBySlot[slot as ValidArmorSlot] || [];
-          console.debug(
-            `AvailableItemsService: getItemsForSlot$ for slot ${slot} returned ${slotItems.length} items`
-          );
           return slotItems;
         }),
         distinctUntilChanged((prev, curr) => _isEqual(prev, curr))
@@ -186,40 +162,6 @@ export class AvailableItemsService {
     }
 
     return this._slotObservables.get(slot)!;
-  }
-
-  /**
-   * Get all class items
-   */
-  get classItems(): IPermutatorArmor[] {
-    return this._availableItems.value.classItems;
-  }
-
-  /**
-   * Get all class items as observable
-   */
-  get classItems$(): Observable<IPermutatorArmor[]> {
-    return this.availableItems$.pipe(
-      map((items) => items.classItems),
-      distinctUntilChanged((prev, curr) => _isEqual(prev, curr))
-    );
-  }
-
-  /**
-   * Get available class item perk types
-   */
-  get availableClassItemPerkTypes(): Set<ArmorPerkOrSlot> {
-    return this._availableItems.value.availableClassItemPerkTypes;
-  }
-
-  /**
-   * Get available class item perk types as observable
-   */
-  get availableClassItemPerkTypes$(): Observable<Set<ArmorPerkOrSlot>> {
-    return this.availableItems$.pipe(
-      map((items) => items.availableClassItemPerkTypes),
-      distinctUntilChanged((prev, curr) => _isEqual(prev, curr))
-    );
   }
 
   /**
@@ -255,38 +197,18 @@ export class AvailableItemsService {
       // Remove duplicates (collection/vendor items if inventory version exists)
       const deduplicatedItems = this.removeDuplicateItems(permutatorItems);
 
-      // Process class items specially
-      const processedClassItems = this.processClassItems(deduplicatedItems, config);
-
       // Group items by slot
       const itemsBySlot = this.groupItemsBySlot(deduplicatedItems);
 
-      // Calculate additional info
-      const availableClassItemPerkTypes = new Set(processedClassItems.map((item) => item.perk));
-      const exoticClassItems = processedClassItems.filter((item) => item.isExotic);
-      const legendaryClassItems = processedClassItems.filter((item) => !item.isExotic);
-      const exoticClassItemIsEnforced = exoticClassItems.some(
-        (item) => config.selectedExotics.indexOf(item.hash) > -1
+      const classItems = this.deduplicateClassItemsForGeneration(
+        itemsBySlot[ArmorSlot.ArmorSlotClass],
+        config
       );
-
-      // Update the behavior subject
-      console.debug("AvailableItemsService: Updating available items", {
-        totalItems: deduplicatedItems.length,
-        helmets: itemsBySlot[ArmorSlot.ArmorSlotHelmet].length,
-        gauntlets: itemsBySlot[ArmorSlot.ArmorSlotGauntlet].length,
-        chests: itemsBySlot[ArmorSlot.ArmorSlotChest].length,
-        legs: itemsBySlot[ArmorSlot.ArmorSlotLegs].length,
-        classItems: itemsBySlot[ArmorSlot.ArmorSlotClass].length,
-      });
 
       this._availableItems.next({
         itemsBySlot,
         totalItems: deduplicatedItems.length,
-        classItems: processedClassItems,
-        availableClassItemPerkTypes,
-        exoticClassItems,
-        legendaryClassItems,
-        exoticClassItemIsEnforced,
+        filteredClassItemsForGeneration: classItems,
       });
     } catch (error) {
       console.error("Error updating available items:", error);
@@ -337,6 +259,38 @@ export class AvailableItemsService {
             // For non-exotic items, ensure no selected exotic conflicts with this slot
             return item.slot !== exoticLimitedSlots;
           }
+        })
+        // If it is an exotic class item, and we enforced perks, filter by selected exotic perks
+        // Filter exotic class items based on selected exotic perks
+        .filter((item) => {
+          if (
+            item.slot !== ArmorSlot.ArmorSlotClass ||
+            !item.isExotic ||
+            !config.selectedExoticPerks ||
+            config.selectedExoticPerks.length < 2
+          ) {
+            return true;
+          }
+
+          const firstPerkFilter = config.selectedExoticPerks[0];
+          const secondPerkFilter = config.selectedExoticPerks[1];
+
+          if (firstPerkFilter === ArmorPerkOrSlot.Any && secondPerkFilter === ArmorPerkOrSlot.Any) {
+            return true;
+          }
+
+          if (!item.exoticPerkHash || item.exoticPerkHash.length < 2) {
+            return true;
+          }
+
+          const hasFirstPerk =
+            firstPerkFilter === ArmorPerkOrSlot.Any ||
+            item.exoticPerkHash.includes(firstPerkFilter);
+          const hasSecondPerk =
+            secondPerkFilter === ArmorPerkOrSlot.Any ||
+            item.exoticPerkHash.includes(secondPerkFilter);
+
+          return hasFirstPerk && hasSecondPerk;
         })
         // Filter masterworked exotics if required
         .filter(
@@ -443,67 +397,10 @@ export class AvailableItemsService {
     return isEqualItem(armor1, armor2);
   }
 
-  private processClassItems(
-    items: IPermutatorArmor[],
+  private deduplicateClassItemsForGeneration(
+    classItems: IPermutatorArmor[],
     config: BuildConfiguration
   ): IPermutatorArmor[] {
-    let classItems = items.filter((item) => item.slot === ArmorSlot.ArmorSlotClass);
-
-    // Apply artifice assumptions
-    if (
-      config.assumeEveryLegendaryIsArtifice ||
-      config.assumeEveryExoticIsArtifice ||
-      config.assumeClassItemIsArtifice
-    ) {
-      classItems = classItems.map((item) => {
-        if (
-          (item.armorSystem === ArmorSystem.Armor2 &&
-            ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-              (config.assumeEveryExoticIsArtifice && item.isExotic))) ||
-          (config.assumeClassItemIsArtifice && !item.isExotic)
-        ) {
-          return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
-        }
-        return item;
-      });
-    }
-
-    // Filter class items based on fixed perk requirements
-    if (
-      config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-      config.armorPerks[ArmorSlot.ArmorSlotClass].value !== ArmorPerkOrSlot.Any
-    ) {
-      classItems = classItems.filter(
-        (item) => item.perk === config.armorPerks[ArmorSlot.ArmorSlotClass].value
-      );
-    }
-
-    // Filter exotic class items based on selected exotic perks
-    if (config.selectedExoticPerks && config.selectedExoticPerks.length >= 2) {
-      const firstPerkFilter = config.selectedExoticPerks[0];
-      const secondPerkFilter = config.selectedExoticPerks[1];
-
-      if (firstPerkFilter !== ArmorPerkOrSlot.Any || secondPerkFilter !== ArmorPerkOrSlot.Any) {
-        classItems = classItems.filter((item) => {
-          if (!item.isExotic || !item.exoticPerkHash || item.exoticPerkHash.length < 2) {
-            return true; // Keep non-exotic items or items without proper perk data
-          }
-
-          const hasFirstPerk =
-            firstPerkFilter === ArmorPerkOrSlot.Any ||
-            item.exoticPerkHash.includes(firstPerkFilter);
-          const hasSecondPerk =
-            secondPerkFilter === ArmorPerkOrSlot.Any ||
-            item.exoticPerkHash.includes(secondPerkFilter);
-
-          return hasFirstPerk && hasSecondPerk;
-        });
-      }
-    }
-
-    // Sort by masterwork level, descending
-    classItems = classItems.sort((a, b) => (b.masterworkLevel ?? 0) - (a.masterworkLevel ?? 0));
-
     // Check if any armor perks is not "any" for deduplication purposes
     const doesNotRequireArmorPerks = ![
       config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,

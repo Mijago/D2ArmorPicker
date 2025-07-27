@@ -309,7 +309,7 @@ export class InventoryService {
         ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotGauntlet],
         ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotChest],
         ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotLegs],
-        ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotClass],
+        ...availableItemsInfo.filteredClassItemsForGeneration,
       ];
 
       nthreads = this.estimateRequiredThreads();
@@ -372,6 +372,18 @@ export class InventoryService {
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
+            const allItemIds = this.results.flatMap((x) => x.armor);
+            let inventoryArmorItems = (await this.db.inventoryArmor
+              .where("clazz")
+              .equals(config.characterClass)
+              .distinct()
+              .and((item) => item != null)
+              .toArray()) as IInventoryArmor[];
+
+            inventoryArmorItems = inventoryArmorItems.filter(
+              (x) => allItemIds.includes(x.id) || this.selectedExotics.some((y) => y.hash == x.hash)
+            );
+
             this.status.modifyStatus((s) => (s.calculatingResults = false));
             this._calculationProgress.next(0);
 
@@ -379,7 +391,7 @@ export class InventoryService {
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                this.permutatorArmorItems.find((y) => y.id == x)
+                inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
               let v: ResultDefinition = {
