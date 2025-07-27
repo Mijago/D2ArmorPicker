@@ -314,7 +314,8 @@ export class InventoryService {
         // filter disabled items
         .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
         // filter armor 3.0
-        .filter((item) => !config.enforceFeaturedArmor || item.isFeatured)
+        .filter((item) => item.isExotic || !config.enforceFeaturedLegendaryArmor || item.isFeatured)
+        .filter((item) => !item.isExotic || !config.enforceFeaturedExoticArmor || item.isFeatured)
         .filter((item) => item.armorSystem === ArmorSystem.Armor3 || config.allowLegacyArmor)
         // filter collection/vendor rolls if not allowed
         .filter((item) => {

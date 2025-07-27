@@ -79,7 +79,8 @@ export class BuildConfiguration {
   useFotlArmor = true;
   allowBlueArmorPieces = true;
   allowLegacyArmor = true; // Allow armor 2.0, which is the legacy armor system
-  enforceFeaturedArmor = false;
+  enforceFeaturedLegendaryArmor = false;
+  enforceFeaturedExoticArmor = false;
 
   ignoreSunsetArmor = false;
   includeVendorRolls = false;
@@ -124,7 +125,8 @@ export class BuildConfiguration {
       ignoreSunsetArmor: false,
       includeCollectionRolls: false,
       includeVendorRolls: false,
-      enforceFeaturedArmor: false,
+      enforceFeaturedLegendaryArmor: false,
+      enforceFeaturedExoticArmor: false,
       allowBlueArmorPieces: true,
       allowLegacyArmor: true,
       assumeLegendariesMasterworked: true,

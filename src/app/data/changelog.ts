@@ -34,7 +34,7 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.5a",
+    version: "2.9.5b",
     date: "July 27, 2025",
     clearManifest: false,
     entries: [
@@ -46,6 +46,11 @@ export const CHANGELOG_DATA: {
       {
         type: ChangelogEntryType.ADD,
         text: "Added a 'Cancel Calculation' button to stop the calculation process.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Split the 'Enforce featured armor only' setting into two separate settings: one for legendary armor and one for exotic armor.",
         issues: [],
       },
       {

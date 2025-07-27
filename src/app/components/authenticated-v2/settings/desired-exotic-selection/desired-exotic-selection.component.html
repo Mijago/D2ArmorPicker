@@ -133,9 +133,16 @@
 <div>
   <mat-slide-toggle
     color="warn"
-    [checked]="enforceFeaturedArmor"
-    (change)="setEnforceFeaturedArmor($event.checked)">
-    Enforce featured armor only
+    [checked]="enforceFeaturedLegendaryArmor"
+    (change)="setEnforceFeaturedLegendaryArmor($event.checked)">
+    Enforce featured <span style="color: #b266ff">legendary</span> armor only
+  </mat-slide-toggle> </div
+><div>
+  <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedExoticArmor"
+    (change)="setEnforceFeaturedExoticArmor($event.checked)">
+    Enforce featured <span style="color: gold">exotic</span> armor only
   </mat-slide-toggle>
 </div>
 <div>
