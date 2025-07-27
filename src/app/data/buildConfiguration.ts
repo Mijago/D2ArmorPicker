@@ -78,7 +78,9 @@ export class BuildConfiguration {
   putArtificeMods = true;
   useFotlArmor = true;
   allowBlueArmorPieces = true;
-  allowLegacyArmor = true; // Allow armor 2.0, which is the legacy armor system
+  // Allow armor 2.0, which is the legacy armor system
+  allowLegacyLegendaryArmor = true;
+  allowLegacyExoticArmor = true;
   enforceFeaturedLegendaryArmor = false;
   enforceFeaturedExoticArmor = false;
 
@@ -128,7 +130,8 @@ export class BuildConfiguration {
       enforceFeaturedLegendaryArmor: false,
       enforceFeaturedExoticArmor: false,
       allowBlueArmorPieces: true,
-      allowLegacyArmor: true,
+      allowLegacyLegendaryArmor: true,
+      allowLegacyExoticArmor: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
       limitParsedResults: true,

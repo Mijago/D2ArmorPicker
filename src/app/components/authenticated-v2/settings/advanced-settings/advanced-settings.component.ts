@@ -118,7 +118,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeClassItemIsArtifice = v)),
             value: c.assumeClassItemIsArtifice || c.assumeEveryLegendaryIsArtifice,
-            disabled: c.assumeEveryLegendaryIsArtifice || !c.allowLegacyArmor,
+            disabled: c.assumeEveryLegendaryIsArtifice || !c.allowLegacyLegendaryArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
           },
@@ -128,7 +128,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryLegendaryIsArtifice = v)),
             value: c.assumeEveryLegendaryIsArtifice,
-            disabled: !c.allowLegacyArmor,
+            disabled: !c.allowLegacyLegendaryArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
           },
@@ -138,7 +138,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeEveryExoticIsArtifice = v)),
             value: c.assumeEveryExoticIsArtifice,
-            disabled: !c.allowLegacyArmor,
+            disabled: !c.allowLegacyExoticArmor,
             impactsResultCount: true,
             help: "Preparation for the upcoming Artifice Mod Slot for exotics.",
           },

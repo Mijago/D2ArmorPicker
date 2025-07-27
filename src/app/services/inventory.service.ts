@@ -316,7 +316,18 @@ export class InventoryService {
         // filter armor 3.0
         .filter((item) => item.isExotic || !config.enforceFeaturedLegendaryArmor || item.isFeatured)
         .filter((item) => !item.isExotic || !config.enforceFeaturedExoticArmor || item.isFeatured)
-        .filter((item) => item.armorSystem === ArmorSystem.Armor3 || config.allowLegacyArmor)
+        .filter(
+          (item) =>
+            item.armorSystem === ArmorSystem.Armor3 ||
+            item.isExotic ||
+            config.allowLegacyLegendaryArmor
+        )
+        .filter(
+          (item) =>
+            item.armorSystem === ArmorSystem.Armor3 ||
+            !item.isExotic ||
+            config.allowLegacyExoticArmor
+        )
         // filter collection/vendor rolls if not allowed
         .filter((item) => {
           switch (item.source) {

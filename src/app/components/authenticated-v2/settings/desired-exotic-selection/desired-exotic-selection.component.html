@@ -116,6 +116,26 @@
 <br />
 <div>
   <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedLegendaryArmor"
+    (change)="setEnforceFeaturedLegendaryArmor($event.checked)">
+    Enforce featured <span style="color: #b266ff">legendary</span> armor only
+  </mat-slide-toggle>
+</div>
+
+<div>
+  <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedExoticArmor"
+    (change)="setEnforceFeaturedExoticArmor($event.checked)">
+    Enforce featured <span style="color: gold">exotic</span> armor only
+  </mat-slide-toggle>
+</div>
+
+<div class="minispace"></div>
+
+<div>
+  <mat-slide-toggle
     color="primary"
     [checked]="includeCollectionRolls"
     (change)="setAllowCollectionRolls($event.checked)">
@@ -130,27 +150,22 @@
     Include <u>legendary and exotic</u> vendor armor (slower)
   </mat-slide-toggle>
 </div>
+
+<div class="minispace"></div>
 <div>
   <mat-slide-toggle
-    color="warn"
-    [checked]="enforceFeaturedLegendaryArmor"
-    (change)="setEnforceFeaturedLegendaryArmor($event.checked)">
-    Enforce featured <span style="color: #b266ff">legendary</span> armor only
-  </mat-slide-toggle> </div
-><div>
-  <mat-slide-toggle
-    color="warn"
-    [checked]="enforceFeaturedExoticArmor"
-    (change)="setEnforceFeaturedExoticArmor($event.checked)">
-    Enforce featured <span style="color: gold">exotic</span> armor only
+    color="primary"
+    [checked]="allowLegacyLegendaryArmor"
+    (change)="setAllowLegacyLegendaryArmor($event.checked)">
+    Include legacy (Armor 2.0) <span style="color: #b266ff">legendary</span> armor
   </mat-slide-toggle>
 </div>
 <div>
   <mat-slide-toggle
     color="primary"
-    [checked]="allowLegacyArmor"
-    (change)="setAllowLegacyArmor($event.checked)">
-    Include legacy armor (2.0)
+    [checked]="allowLegacyExoticArmor"
+    (change)="setAllowLegacyExoticArmor($event.checked)">
+    Include legacy (Armor 2.0) <span style="color: gold">exotic</span> armor
   </mat-slide-toggle>
 </div>
 <div>

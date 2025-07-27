@@ -54,7 +54,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   includeVendorRolls = false;
   ignoreSunsetArmor = false;
   allowBlueArmorPieces = false;
-  allowLegacyArmor = false;
+  allowLegacyLegendaryArmor = false;
+  allowLegacyExoticArmor: boolean = false;
   enforceFeaturedLegendaryArmor = false;
   enforceFeaturedExoticArmor: boolean = false;
   currentClass: DestinyClass = DestinyClass.Unknown;
@@ -83,7 +84,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.selectedExoticPerks = c.selectedExoticPerks;
       this.ignoreSunsetArmor = c.ignoreSunsetArmor;
       this.allowBlueArmorPieces = c.allowBlueArmorPieces;
-      this.allowLegacyArmor = c.allowLegacyArmor;
+      this.allowLegacyLegendaryArmor = c.allowLegacyLegendaryArmor;
+      this.allowLegacyExoticArmor = c.allowLegacyExoticArmor;
       this.enforceFeaturedLegendaryArmor = c.enforceFeaturedLegendaryArmor;
       this.enforceFeaturedExoticArmor = c.enforceFeaturedExoticArmor;
     });
@@ -188,9 +190,15 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
-  setAllowLegacyArmor(allow: boolean) {
+  setAllowLegacyLegendaryArmor(allow: boolean) {
     this.config.modifyConfiguration((c) => {
-      c.allowLegacyArmor = allow;
+      c.allowLegacyLegendaryArmor = allow;
+    });
+  }
+
+  setAllowLegacyExoticArmor(allow: boolean) {
+    this.config.modifyConfiguration((c) => {
+      c.allowLegacyExoticArmor = allow;
     });
   }
 
