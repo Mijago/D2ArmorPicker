@@ -56,28 +56,49 @@ function checkSlots(
 ) {
   let requirements = new Map(constantModslotRequirement);
   if (
-    !(helmet.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      helmet.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      helmet.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
   )
     return { valid: false };
   if (
-    !(gauntlet.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      gauntlet.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      gauntlet.armorSystem == ArmorSystem.Armor2
+    ) &&
+    !(
+      !gauntlet.isExotic &&
+      config.assumeEveryLegendaryIsArtifice &&
+      gauntlet.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
   )
     return { valid: false };
   if (
-    !(chest.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      chest.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      chest.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
   )
     return { valid: false };
   if (
-    !(leg.isExotic && config.assumeEveryExoticIsArtifice) &&
+    !(
+      leg.isExotic &&
+      config.assumeEveryExoticIsArtifice &&
+      leg.armorSystem == ArmorSystem.Armor2
+    ) &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.Any &&
     config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
@@ -352,11 +373,17 @@ addEventListener("message", async ({ data }) => {
     }
   }
 
-  if (config.assumeEveryLegendaryIsArtifice || config.assumeEveryExoticIsArtifice) {
+  if (
+    config.assumeEveryLegendaryIsArtifice ||
+    config.assumeEveryExoticIsArtifice ||
+    config.assumeClassItemIsArtifice
+  ) {
     classItems = classItems.map((item) => {
       if (
-        (config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-        (config.assumeEveryExoticIsArtifice && item.isExotic)
+        (item.armorSystem == ArmorSystem.Armor2 &&
+          ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+            (config.assumeEveryExoticIsArtifice && item.isExotic))) ||
+        (config.assumeClassItemIsArtifice && !item.isExotic)
       ) {
         return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
       }
@@ -415,15 +442,38 @@ addEventListener("message", async ({ data }) => {
   const exoticClassItemIsEnforced = exoticClassItems.some(
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
-
   let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
 
   // runtime variables
   const runtime = {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
   };
+
+  if (classItems.length == 0) {
+    console.warn(
+      `Thread#${threadSplit.current} - No class items found with the current configuration.`
+    );
+    postMessage({
+      runtime: runtime,
+      results: [],
+      done: true,
+      checkedCalculations: 0,
+      estimatedCalculations: 0,
+      stats: {
+        permutationCount: 0,
+        itemCount: items.length - classItems.length,
+        totalTime: Date.now() - startTime,
+      },
+    });
+    return;
+  } else if (exoticClassItems.length > 0 && legendaryClassItems.length == 0) {
+    // If we do not have legendary class items, we can not use any exotic armor in other slots
+    helmets = helmets.filter((d) => !d.isExotic);
+    gauntlets = gauntlets.filter((d) => !d.isExotic);
+    chests = chests.filter((d) => !d.isExotic);
+    legs = legs.filter((d) => !d.isExotic);
+  }
+
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
   const constantAvailableModslots = prepareConstantAvailableModslots(config);
@@ -641,8 +691,9 @@ export function handlePermutation(
   let availableArtificeCount = items.filter(
     (d) =>
       d.perk == ArmorPerkOrSlot.SlotArtifice ||
-      (config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
-      (config.assumeEveryExoticIsArtifice && d.isExotic)
+      (d.armorSystem === ArmorSystem.Armor2 &&
+        ((config.assumeEveryLegendaryIsArtifice && !d.isExotic) ||
+          (config.assumeEveryExoticIsArtifice && d.isExotic)))
   ).length;
 
   // get distance
@@ -682,13 +733,17 @@ export function handlePermutation(
     let scoreA = 0,
       scoreB = 0;
 
-    // add 100 to artifice
-    if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 100;
-    if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 100;
+    // add 10 if the class item is Armor 3.0
+    if (a.armorSystem == ArmorSystem.Armor3) scoreA += 10;
+    if (b.armorSystem == ArmorSystem.Armor3) scoreB += 10;
+
+    // add 10 if the class item has an artifice slot
+    if (a.perk == ArmorPerkOrSlot.SlotArtifice) scoreA += 10;
+    if (b.perk == ArmorPerkOrSlot.SlotArtifice) scoreB += 10;
 
     // vendor and collection rolls last
-    if (a.source === InventoryArmorSource.Inventory) scoreA += 10;
-    if (b.source === InventoryArmorSource.Inventory) scoreB += 10;
+    if (a.source === InventoryArmorSource.Inventory) scoreA += 5;
+    if (b.source === InventoryArmorSource.Inventory) scoreB += 5;
 
     for (let i = 0; i < 6; i++) {
       if (distances[i] > 0) {
@@ -1029,18 +1084,12 @@ function get_mods_precalc(
     return true;
   }
 
-  const costMinor = [1, 2, 2, 1, 2, 1];
-  const costMajor = [3, 4, 4, 3, 4, 3];
-
   function score(entries: [number, number, number, number][]) {
     if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
       const n1 = entries.reduce((a, b) => a + b[1] + b[2], 0);
       return n1;
     } else if (optimize == ModOptimizationStrategy.ReduceUsedModPoints) {
-      return entries.reduce(
-        (a, b, currentIndex) => a + costMinor[currentIndex] * b[1] + costMajor[currentIndex] * b[2],
-        0
-      );
+      return entries.reduce((a, b, currentIndex) => a + 1 * b[1] + 3 * b[2], 0);
     }
     return entries.reduce((a, b) => a + b[3], 0);
   }
@@ -1070,12 +1119,9 @@ function get_mods_precalc(
     let usedModCost: number[] = [];
     for (let statIdx = 0; statIdx < entries.length; statIdx++) {
       const entry = entries[statIdx];
-      const isSmallMod = statIdx == 0 || statIdx == 3 || statIdx == 5;
-      let minorModCost = isSmallMod ? 1 : 2;
-      let majorModCost = isSmallMod ? 3 : 4;
 
-      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(minorModCost);
-      for (let major = 0; major < entry[2]; major++) usedModCost.push(majorModCost);
+      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(1);
+      for (let major = 0; major < entry[2]; major++) usedModCost.push(3);
     }
 
     if (usedModCost.length == 0) return true;

@@ -146,12 +146,12 @@ export class BuildConfiguration {
         [ArmorSlot.ArmorSlotNone]: { fixed: false, value: 5 },
       },
       armorPerks: {
-        [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotChest]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotLegs]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotClass]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotNone]: { fixed: false, value: ArmorPerkOrSlot.Any },
       },
       minimumStatTiers: getDefaultStatDict(0),
     };

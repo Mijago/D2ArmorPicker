@@ -56,17 +56,17 @@ export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, n
   [StatModifier.MINOR_WEAPON]: [ArmorStat.StatWeapon, 5, 1, 1703647492],
   [StatModifier.MAJOR_WEAPON]: [ArmorStat.StatWeapon, 10, 3, 4183296050],
   [StatModifier.ARTIFICE_WEAPON]: [ArmorStat.StatWeapon, 3, 0, 2322202118],
-  [StatModifier.MINOR_HEALTH]: [ArmorStat.StatHealth, 5, 2, 2532323436],
-  [StatModifier.MAJOR_HEALTH]: [ArmorStat.StatHealth, 10, 4, 1180408010],
+  [StatModifier.MINOR_HEALTH]: [ArmorStat.StatHealth, 5, 1, 2532323436],
+  [StatModifier.MAJOR_HEALTH]: [ArmorStat.StatHealth, 10, 3, 1180408010],
   [StatModifier.ARTIFICE_HEALTH]: [ArmorStat.StatHealth, 3, 0, 199176566],
-  [StatModifier.MINOR_CLASS]: [ArmorStat.StatClass, 5, 2, 1237786518],
-  [StatModifier.MAJOR_CLASS]: [ArmorStat.StatClass, 10, 4, 4204488676],
+  [StatModifier.MINOR_CLASS]: [ArmorStat.StatClass, 5, 1, 1237786518],
+  [StatModifier.MAJOR_CLASS]: [ArmorStat.StatClass, 10, 3, 4204488676],
   [StatModifier.ARTIFICE_CLASS]: [ArmorStat.StatClass, 3, 0, 539459624],
   [StatModifier.MINOR_GRENADE]: [ArmorStat.StatGrenade, 5, 1, 4021790309],
   [StatModifier.MAJOR_GRENADE]: [ArmorStat.StatGrenade, 10, 3, 1435557120],
   [StatModifier.ARTIFICE_GRENADE]: [ArmorStat.StatGrenade, 3, 0, 617569843],
-  [StatModifier.MINOR_SUPER]: [ArmorStat.StatSuper, 5, 2, 350061697],
-  [StatModifier.MAJOR_SUPER]: [ArmorStat.StatSuper, 10, 4, 2724608735],
+  [StatModifier.MINOR_SUPER]: [ArmorStat.StatSuper, 5, 1, 350061697],
+  [StatModifier.MAJOR_SUPER]: [ArmorStat.StatSuper, 10, 3, 2724608735],
   [StatModifier.ARTIFICE_SUPER]: [ArmorStat.StatSuper, 3, 0, 3160845295],
   [StatModifier.MINOR_MELEE]: [ArmorStat.StatMelee, 5, 1, 2639422088],
   [StatModifier.MAJOR_MELEE]: [ArmorStat.StatMelee, 10, 3, 4287799666],
@@ -138,6 +138,7 @@ export enum ArmorPerkOrSlot {
   GearsetLastDiscipline,
   GearsetAionAdapter,
   GearsetTwoFoldCrown,
+  GearsetCollectivePsyche,
 }
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -165,6 +166,7 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GearsetLastDiscipline]: "Last Discipline Gearset",
   [ArmorPerkOrSlot.GearsetAionAdapter]: "Aion Adapter Gearset",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "Two-Fold Crown Gearset",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "Collective Psyche Gearset",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
@@ -216,6 +218,8 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/f77b2802da61b9eaf08adb8795a970e3.jpg",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]:
     "https://www.bungie.net/common/destiny2_content/icons/e199fe652e70c67c3d838bdd4ebf6a8d.jpg",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]:
+    "https://www.bungie.net/common/destiny2_content/icons/04fb8637f82f72da8dfdb9b8ca3e7339.jpg",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -248,6 +252,7 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.GearsetLastDiscipline]: 3252452908,
   [ArmorPerkOrSlot.GearsetAionAdapter]: 894715166,
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: 3259216565,
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: 3259216566,
 };
 
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
@@ -289,6 +294,7 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.GearsetLastDiscipline]: "name:'last discipline'",
   [ArmorPerkOrSlot.GearsetAionAdapter]: "name:'aion adapter'",
   [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "name:'two-fold crown'",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "name:'collective psyche'",
 };
 
 export const SubclassHashes: EnumDictionary<

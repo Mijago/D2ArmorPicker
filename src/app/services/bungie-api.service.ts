@@ -133,19 +133,13 @@ function collectInvestmentStats(
   providedIn: "root",
 })
 export class BungieApiService {
-  config_assumeEveryLegendaryIsArtifice = false;
-
   constructor(
     private status: StatusProviderService,
     private http: HttpClientService,
     private db: DatabaseService,
     private config: ConfigurationService,
     private membership: MembershipService
-  ) {
-    this.config.configuration.subscribe(async (config) => {
-      this.config_assumeEveryLegendaryIsArtifice = config.assumeEveryLegendaryIsArtifice;
-    });
-  }
+  ) {}
 
   async transferItem(
     itemInstanceId: string,
@@ -375,6 +369,7 @@ export class BungieApiService {
         );
         // 3.0
         // TODO replace the (as any) once DIM Api is updated
+
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
@@ -382,8 +377,6 @@ export class BungieApiService {
           armorItem.armorSystem = ArmorSystem.Armor3;
         } else {
           armorItem.armorSystem = ArmorSystem.Armor2;
-          armorItem.masterworkLevel =
-            !!instance.energy && instance.energy.energyCapacity == 10 ? 5 : 0;
         }
 
         if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
@@ -445,13 +438,22 @@ export class BungieApiService {
           }
         }
 
-        // MW 0 to 5
-        const masterworkPlugHashes = [
-          2024015888, 2024015889, 2024015890, 2024015891, 2024015892, 2024015893,
-        ];
-        const masterworkPlugHash = socketsList.find((d) => masterworkPlugHashes.includes(d ?? 0));
-        if (!!masterworkPlugHash)
-          armorItem.masterworkLevel = masterworkPlugHashes.indexOf(masterworkPlugHash ?? 0);
+        for (let socket of socketsList) {
+          if (!socket) continue;
+          // grab the mod instance
+          const mod = modsMap[socket];
+          if (!mod || mod.name !== "Upgrade Armor") continue;
+          const mmod = mod.investmentStats.find(
+            (k: DestinyItemInvestmentStatDefinition) =>
+              k.statTypeHash == ArmorStatHashes[ArmorStat.StatWeapon]
+          );
+          if (mmod) {
+            if (armorItem.armorSystem == ArmorSystem.Armor3) armorItem.masterworkLevel = mmod.value;
+            else if (armorItem.armorSystem == ArmorSystem.Armor2) {
+              armorItem.masterworkLevel = mmod.value == 2 ? 5 : 0;
+            }
+          }
+        }
 
         if (armorItem.perk == ArmorPerkOrSlot.SlotArtifice) {
           // Take a look if it really has the artifice perk

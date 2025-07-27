@@ -32,6 +32,7 @@ import { takeUntil } from "rxjs/operators";
 import { environment } from "../../../../../../environments/environment";
 import { ItemIconServiceService } from "src/app/services/item-icon-service.service";
 import { ModUrl } from "../../../results/table-mod-display/table-mod-display.component";
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 
 @Component({
   selector: "app-slot-limitation-selection",
@@ -79,6 +80,7 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
     ArmorPerkOrSlot.GearsetLastDiscipline,
     ArmorPerkOrSlot.GearsetAionAdapter,
     ArmorPerkOrSlot.GearsetTwoFoldCrown,
+    ArmorPerkOrSlot.GearsetCollectivePsyche,
     ArmorPerkOrSlot.GuardianGamesClassItem,
     ArmorPerkOrSlot.PerkOverflowingCorruption,
     ArmorPerkOrSlot.SlotEidosApprentice,
@@ -104,47 +106,68 @@ export class SlotLimitationSelectionComponent implements OnInit, OnDestroy {
   ) {}
 
   public async runPossibilityCheck() {
-    if (
-      this.configAssumeLegendaryIsArtifice ||
-      (this.slot == ArmorSlot.ArmorSlotClass && this.configAssumeClassItemIsArtifice)
-    ) {
-      this.isPossible = true;
-    } else {
-      const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.Any;
+    const mustCheckArmorPerk = this.armorPerkLock && this.armorPerk != ArmorPerkOrSlot.Any;
 
-      let results = 0;
-      if (mustCheckArmorPerk) {
-        // check if the current slot is locked to a specific exotic
-        if (this.fixedExoticInThisSlot) {
-          if (this.armorPerk == ArmorPerkOrSlot.SlotArtifice && this.configAssumeExoticIsArtifice) {
-            results += 1;
-          } else {
-            this.configSelectedExotic.forEach(async (exoticHash) => {
-              var exotics = await this.db.inventoryArmor
-                .where("clazz")
-                .equals(this.configSelectedClass)
-                .and((f) => f.perk == this.armorPerk)
-                .and((f) => f.hash == exoticHash)
-                .and((f) => f.isExotic == 1)
-                .count();
-              results += exotics;
-              this.isPossible = results > 0;
-              this.possible.next(this.isPossible);
-            });
-          }
-        } else {
-          results += await this.db.inventoryArmor
+    let results = 0;
+    if (mustCheckArmorPerk) {
+      // check if the current slot is locked to a specific exotic
+      if (this.fixedExoticInThisSlot) {
+        this.configSelectedExotic.forEach(async (exoticHash) => {
+          var exotics = await this.db.inventoryArmor
             .where("clazz")
             .equals(this.configSelectedClass)
-            .and((f) => this.configSelectedExoticSum == 0 || !f.isExotic)
-            .and((f) => f.slot == this.slot)
-            .and((f) => f.perk == this.armorPerk)
+            .and(
+              (f) =>
+                f.perk == this.armorPerk ||
+                (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                  this.configAssumeExoticIsArtifice &&
+                  f.isExotic &&
+                  f.armorSystem == ArmorSystem.Armor2) ||
+                (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                  this.configAssumeLegendaryIsArtifice &&
+                  !f.isExotic &&
+                  f.armorSystem == ArmorSystem.Armor2) ||
+                (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                  this.configAssumeClassItemIsArtifice &&
+                  f.slot == ArmorSlot.ArmorSlotClass &&
+                  !f.isExotic &&
+                  f.armorSystem === ArmorSystem.Armor2)
+            )
+            .and((f) => f.hash == exoticHash)
+            .and((f) => f.isExotic == 1)
             .count();
+          results += exotics;
           this.isPossible = results > 0;
-        }
+          this.possible.next(this.isPossible);
+        });
       } else {
-        this.isPossible = true;
+        results += await this.db.inventoryArmor
+          .where("clazz")
+          .equals(this.configSelectedClass)
+          .and((f) => this.configSelectedExoticSum == 0 || !f.isExotic)
+          .and((f) => f.slot == this.slot)
+          .and(
+            (f) =>
+              f.perk == this.armorPerk ||
+              (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                this.configAssumeExoticIsArtifice &&
+                f.isExotic &&
+                f.armorSystem == ArmorSystem.Armor2) ||
+              (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                this.configAssumeLegendaryIsArtifice &&
+                !f.isExotic &&
+                f.armorSystem == ArmorSystem.Armor2) ||
+              (this.armorPerk == ArmorPerkOrSlot.SlotArtifice &&
+                this.configAssumeClassItemIsArtifice &&
+                f.slot == ArmorSlot.ArmorSlotClass &&
+                !f.isExotic &&
+                f.armorSystem === ArmorSystem.Armor2)
+          )
+          .count();
+        this.isPossible = results > 0;
       }
+    } else {
+      this.isPossible = true;
     }
     this.possible.next(this.isPossible);
   }

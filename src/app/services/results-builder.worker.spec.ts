@@ -202,8 +202,6 @@ function generateRandomBuild() {
 function buildRuntime() {
   return {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
   };
 }
 

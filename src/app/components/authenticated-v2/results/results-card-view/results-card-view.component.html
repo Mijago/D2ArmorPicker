@@ -107,13 +107,6 @@
     </div>
   </div>
 
-  <!-- No results message -->
-  <div class="no-results" *ngIf="filteredResults.length === 0 && !isLoading">
-    <mat-icon>search_off</mat-icon>
-    <h3>No results found</h3>
-    <p>Try adjusting your filters or search criteria.</p>
-  </div>
-
   <!-- Cards Container -->
   <div class="cards-container" (scroll)="onScroll($event)">
     <div class="card-grid">
