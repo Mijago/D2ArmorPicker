@@ -19,7 +19,12 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
-import { ArmorStat, SpecialArmorStat } from "../../../../data/enum/armor-stat";
+import {
+  ArmorStat,
+  ARMORSTAT_ORDER,
+  ArmorStatNames,
+  SpecialArmorStat,
+} from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
@@ -40,10 +45,16 @@ import { Subject } from "rxjs";
   ],
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
+  ARMORSTAT_ORDER = ARMORSTAT_ORDER;
+  ArmorStatNames = ArmorStatNames;
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
-  displayedColumns = ["name", "weapon", "health", "class", "grenade", "super", "melee"];
+  displayedColumns = ["name"].concat(
+    ARMORSTAT_ORDER.map((stat) => {
+      return ArmorStatNames[stat];
+    })
+  );
   private selectedClass: DestinyClass = DestinyClass.Unknown;
   data: { data: Modifier[]; name: string; group: boolean; type: ModifierType }[];
   selectedMods: ModOrAbility[] = [];

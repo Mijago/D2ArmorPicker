@@ -61,81 +61,28 @@
         </td>
       </ng-container>
 
-      <!-- Position Column -->
-      <ng-container matColumnDef="weapon">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="0"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 0) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-      <!-- Position Column -->
-      <ng-container matColumnDef="health">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="1"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 1) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="class">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="2"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 2) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="grenade">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="3"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 3) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="super">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="4"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 4) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="melee">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="5"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 5) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
+      <ng-container *ngFor="let stat of ARMORSTAT_ORDER; let i = index">
+        <ng-container [matColumnDef]="ArmorStatNames[stat]">
+          <th *matHeaderCellDef mat-header-cell [matTooltip]="ArmorStatNames[stat]">
+            <app-stat-icon [stat]="stat"></app-stat-icon>
+          </th>
+          <td *matCellDef="let element" mat-cell>
+            <span *ngVar="getModifierTextForValue(element.bonus, stat) as value">
+              <span
+                *ngIf="value > 0"
+                class="stat-positive"
+                [matTooltip]="'+' + value + ' ' + ArmorStatNames[stat]"
+                >+{{ value }}</span
+              >
+              <span
+                *ngIf="value < 0"
+                class="stat-negative"
+                [matTooltip]="value + ' ' + ArmorStatNames[stat]"
+                >{{ value }}</span
+              >
+            </span>
+          </td>
+        </ng-container>
       </ng-container>
 
       <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
