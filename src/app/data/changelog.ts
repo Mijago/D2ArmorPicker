@@ -34,7 +34,7 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.5",
+    version: "2.9.5a",
     date: "July 27, 2025",
     clearManifest: false,
     entries: [
@@ -50,7 +50,17 @@ export const CHANGELOG_DATA: {
       },
       {
         type: ChangelogEntryType.MODIFIED,
+        text: "Adapted the visible order of the stats so that they reflect the current state of the game.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
         text: "Completely reworked the detection of masterworks on items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "During calculation, the algorithm now combines the (exotic) class items with the same stats, no matter which perks they have. This reduces the calculation time drastically. Selecting perks will still enforce these (exotic) class items.",
         issues: [],
       },
       {
