@@ -428,10 +428,6 @@ addEventListener("message", async ({ data }) => {
             // If there is no stat fixed, then we just use the masterwork level of the first item.
             // As it is already sorted descending, we can just check if the masterwork level is the same
             !anyStatFixed) &&
-          (i.isExotic
-            ? i.exoticPerkHash[0] === item.exoticPerkHash[0] &&
-              i.exoticPerkHash[1] === item.exoticPerkHash[1]
-            : true) && // if it's not exotic, we don't care about the exotic perks
           (doesNotRequireArmorPerks || i.perk === item.perk)
       )
   );
