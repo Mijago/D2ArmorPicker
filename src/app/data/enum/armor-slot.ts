@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { EnumDictionary } from "../types/EnumDictionary";
+
 export enum ArmorSlot {
   ArmorSlotNone,
   ArmorSlotHelmet,
@@ -23,3 +25,12 @@ export enum ArmorSlot {
   ArmorSlotLegs,
   ArmorSlotClass,
 }
+
+export const ArmorSlotNames: EnumDictionary<ArmorSlot, string> = {
+  [ArmorSlot.ArmorSlotNone]: "None",
+  [ArmorSlot.ArmorSlotHelmet]: "Helmet",
+  [ArmorSlot.ArmorSlotGauntlet]: "Gauntlet",
+  [ArmorSlot.ArmorSlotChest]: "Chest",
+  [ArmorSlot.ArmorSlotLegs]: "Legs",
+  [ArmorSlot.ArmorSlotClass]: "Class Item",
+};

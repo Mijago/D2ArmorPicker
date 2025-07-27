@@ -267,6 +267,31 @@
         <mat-icon>search_off</mat-icon>
         <h3>No results found</h3>
         <p>Try adjusting your filters or search criteria.</p>
+
+        <div *ngIf="slotsWithNoLegendaryItems > 1">
+          <div class="no-items-warning">
+            <mat-icon color="warn">warning</mat-icon>
+            <strong>Warning:</strong> There is not enough legendary armor available for your current
+            settings.
+          </div>
+        </div>
+
+        <ng-container *ngIf="slotsWithNoLegendaryItems < 2">
+          <div *ngFor="let slot of itemCountPerSlot | keyvalue; let i = index">
+            <ng-container
+              *ngIf="
+                slot.value[0] + slot.value[1] === 0 ||
+                (slot.value[0] === 0 && _selectedExoticSlot !== 0 && i + 1 !== _selectedExoticSlot)
+              ">
+              <div class="no-items-warning">
+                <mat-icon color="warn">warning</mat-icon>
+                <strong>{{ getArmorSlotName(slot.key) }}:</strong> No items available for this slot
+                due to your current settings.
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+
         <div id="common-issues">
           <p>Common issues:</p>
           <ul>

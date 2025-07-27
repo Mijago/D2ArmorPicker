@@ -22,7 +22,7 @@ import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorPerkOrSlot, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
@@ -32,13 +32,8 @@ import {
   ResultDefinition,
   ResultItem,
 } from "../components/authenticated-v2/results/results.component";
-import {
-  IInventoryArmor,
-  InventoryArmorSource,
-  isEqualItem,
-  totalStats,
-} from "../data/types/IInventoryArmor";
-import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
+import { IInventoryArmor, InventoryArmorSource, totalStats } from "../data/types/IInventoryArmor";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
 import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
@@ -47,6 +42,7 @@ import { VendorsService } from "./vendors.service";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 import { isEqual as _isEqual } from "lodash";
 import { getDifferences } from "../data/commonFunctions";
+import { AvailableItemsService } from "./available-items.service";
 
 type info = {
   results: ResultDefinition[];
@@ -99,7 +95,6 @@ export class InventoryService {
   private totalPermutationCount = 0;
   private resultMaximumTiers: number[][] = [];
   private selectedExotics: IManifestArmor[] = [];
-  private inventoryArmorItems: IInventoryArmor[] = [];
   private permutatorArmorItems: IPermutatorArmor[] = [];
   private endResults: ResultDefinition[] = [];
 
@@ -110,7 +105,8 @@ export class InventoryService {
     private api: BungieApiService,
     private auth: AuthService,
     private router: Router,
-    private vendors: VendorsService
+    private vendors: VendorsService,
+    private availableItems: AvailableItemsService
   ) {
     this._inventory = new ReplaySubject(1);
     this.inventory = this._inventory.asObservable();
@@ -208,7 +204,11 @@ export class InventoryService {
     triggerResultsUpdate: boolean = true
   ) {
     // trigger armor update behaviour
-    if (triggerInventoryUpdate) this._inventory.next(null);
+    if (triggerInventoryUpdate) {
+      this._inventory.next(null);
+      // Refresh available items when inventory changes
+      await this.availableItems.refreshAvailableItems();
+    }
 
     // Do not update results in Help and Cluster pages
     if (this.shouldCalculateResults()) {
@@ -302,122 +302,15 @@ export class InventoryService {
       );
       this.selectedExotics = this.selectedExotics.filter((i) => !!i);
 
-      this.inventoryArmorItems = (await this.db.inventoryArmor
-        .where("clazz")
-        .equals(config.characterClass)
-        .distinct()
-        .toArray()) as IInventoryArmor[];
-
-      this.inventoryArmorItems = this.inventoryArmorItems
-        // only armor :)
-        .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
-        // filter disabled items
-        .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
-        // filter armor 3.0
-        .filter((item) => !config.enforceFeaturedArmor || item.isFeatured)
-        .filter((item) => item.armorSystem === ArmorSystem.Armor3 || config.allowLegacyArmor)
-        // filter collection/vendor rolls if not allowed
-        .filter((item) => {
-          switch (item.source) {
-            case InventoryArmorSource.Collections:
-              return config.includeCollectionRolls;
-            case InventoryArmorSource.Vendor:
-              return config.includeVendorRolls;
-            default:
-              return true;
-          }
-        })
-        // filter the selected exotic right here
-        .filter(
-          (item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic
-        )
-        .filter(
-          (item) =>
-            this.selectedExotics.length === 0 ||
-            (item.isExotic && this.selectedExotics.some((exotic) => exotic.hash === item.hash)) ||
-            (!item.isExotic && this.selectedExotics.every((exotic) => exotic.slot !== item.slot))
-        )
-
-        // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
-        .filter(
-          (item) =>
-            !config.onlyUseMasterworkedExotics ||
-            !(item.rarity == TierType.Exotic && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
-        )
-
-        // config.OnlyUseMasterworkedLegendaries - only keep legendaries that are masterworked
-        .filter(
-          (item) =>
-            !config.onlyUseMasterworkedLegendaries ||
-            !(item.rarity == TierType.Superior && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
-        )
-
-        // non-legendaries and non-exotics
-        .filter(
-          (item) =>
-            config.allowBlueArmorPieces ||
-            item.rarity == TierType.Exotic ||
-            item.rarity == TierType.Superior
-        )
-        // sunset armor
-        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset)
-        // armor perks
-        .filter((item) => {
-          return (
-            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
-            !config.armorPerks[item.slot].fixed ||
-            (config.armorPerks[item.slot].fixed &&
-              config.armorPerks[item.slot].value == item.perk) ||
-            (config.armorPerks[item.slot].value === ArmorPerkOrSlot.SlotArtifice &&
-              item.armorSystem === ArmorSystem.Armor2 &&
-              ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-                (config.assumeEveryExoticIsArtifice && item.isExotic)))
-          );
-        });
-      // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
-
-      // Remove collection items if they are in inventory
-      this.inventoryArmorItems = this.inventoryArmorItems.filter((item) => {
-        if (item.source === InventoryArmorSource.Inventory) return true;
-
-        const purchasedItemInstance = this.inventoryArmorItems.find(
-          (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
-        );
-
-        // If this item is a collection/vendor item, ignore it if the player
-        // already has a real copy of the same item.
-        return purchasedItemInstance === undefined;
-      });
-      this.permutatorArmorItems = this.inventoryArmorItems.map((armor) => {
-        return {
-          id: armor.id,
-          hash: armor.hash,
-          slot: armor.slot,
-          clazz: armor.clazz,
-          perk: armor.perk,
-          isExotic: armor.isExotic,
-          rarity: armor.rarity,
-          isSunset: armor.isSunset,
-          masterworkLevel: armor.masterworkLevel,
-          archetypeStats: armor.archetypeStats,
-          mobility: armor.mobility,
-          resilience: armor.resilience,
-          recovery: armor.recovery,
-          discipline: armor.discipline,
-          intellect: armor.intellect,
-          strength: armor.strength,
-          source: armor.source,
-          exoticPerkHash: armor.exoticPerkHash,
-
-          icon: armor.icon,
-          watermarkIcon: armor.watermarkIcon,
-          name: armor.name,
-          energyLevel: armor.energyLevel,
-          tier: armor.tier,
-          armorSystem: armor.armorSystem,
-        };
-      });
+      // Get filtered items from the available items service
+      const availableItemsInfo = this.availableItems.availableItems;
+      this.permutatorArmorItems = [
+        ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotHelmet],
+        ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotGauntlet],
+        ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotChest],
+        ...availableItemsInfo.itemsBySlot[ArmorSlot.ArmorSlotLegs],
+        ...availableItemsInfo.filteredClassItemsForGeneration,
+      ];
 
       nthreads = this.estimateRequiredThreads();
 
@@ -479,6 +372,18 @@ export class InventoryService {
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
+            const allItemIds = this.results.flatMap((x) => x.armor);
+            let inventoryArmorItems = (await this.db.inventoryArmor
+              .where("clazz")
+              .equals(config.characterClass)
+              .distinct()
+              .and((item) => item != null)
+              .toArray()) as IInventoryArmor[];
+
+            inventoryArmorItems = inventoryArmorItems.filter(
+              (x) => allItemIds.includes(x.id) || this.selectedExotics.some((y) => y.hash == x.hash)
+            );
+
             this.status.modifyStatus((s) => (s.calculatingResults = false));
             this._calculationProgress.next(0);
 
@@ -486,7 +391,7 @@ export class InventoryService {
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                this.inventoryArmorItems.find((y) => y.id == x)
+                inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
               let v: ResultDefinition = {
@@ -725,5 +630,16 @@ export class InventoryService {
       //return await this.updateInventoryItems(true, errorLoop++);
       return false;
     }
+  }
+
+  getSlotByItemHash(hash: number): PromiseLike<ArmorSlot> {
+    return this.db.manifestArmor
+      .where("hash")
+      .equals(hash)
+      .first()
+      .then((item) => {
+        if (item == null) return ArmorSlot.ArmorSlotNone;
+        return item.slot;
+      });
   }
 }
