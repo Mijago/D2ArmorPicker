@@ -34,6 +34,33 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.5",
+    date: "July 27, 2025",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new panel that shows the current status: initializing, calculating, or ready.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a 'Cancel Calculation' button to stop the calculation process.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Completely reworked the detection of masterworks on items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adjusted mod costs.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.4",
     date: "July 24, 2025",
     clearManifest: true,
