@@ -75,7 +75,6 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (cb) => {
-      this.characterClass = null;
       const newDisabledItems: IDisplayInventoryArmor[][] = [[], [], [], [], [], []];
 
       let items = [];
@@ -118,11 +117,10 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
         newDisabledItems[item.slot].push(item);
       }
 
-      this.characterClass = cb.characterClass;
-
       for (let row of newDisabledItems) {
         row.sort((a, b) => a.hash - b.hash);
       }
+      this.characterClass = cb.characterClass;
       this.disabledItems = newDisabledItems;
     });
   }
