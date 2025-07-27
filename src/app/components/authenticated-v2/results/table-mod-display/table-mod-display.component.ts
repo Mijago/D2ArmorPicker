@@ -20,6 +20,7 @@ import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
   ArmorStat,
+  ARMORSTAT_ORDER,
   ArmorStatNames,
   StatModifier,
 } from "src/app/data/enum/armor-stat";
@@ -70,7 +71,7 @@ export const ModUrl: { [k: number]: string } = {
 })
 export class TableModDisplayComponent {
   artificeUrl = ArmorPerkOrSlotIcons[ArmorPerkOrSlot.SlotArtifice];
-  modIndex = [0, 1, 2, 3, 4, 5];
+  modIndex = ARMORSTAT_ORDER;
   modTypeIndex = [1, 2];
   ModUrl = ModUrl;
   @Input()

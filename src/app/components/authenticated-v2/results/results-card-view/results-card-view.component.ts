@@ -25,6 +25,7 @@ import {
   ArmorStatNames,
   ArmorStatIconUrls,
   StatModifier,
+  ARMORSTAT_ORDER,
 } from "../../../../data/enum/armor-stat";
 import { ModInformation } from "src/app/data/ModInformation";
 import { DimService } from "../../../../services/dim.service";
@@ -37,6 +38,8 @@ import { ArmorSystem } from "src/app/data/types/IManifestArmor";
   styleUrls: ["./results-card-view.component.scss"],
 })
 export class ResultsCardViewComponent implements OnChanges, OnDestroy {
+  STAT_ORDER = ARMORSTAT_ORDER;
+  ArmorStatNames = ArmorStatNames;
   @Input() results: ResultDefinition[] = [];
 
   filteredResults: ResultDefinition[] = [];
@@ -53,8 +56,6 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   // Infinite scroll settings
   private readonly PAGE_SIZE = 25;
   private currentPage = 0;
-
-  statOrder = [1, 5, 3, 4, 2, 0]; // Health, Melee, Grenade, Super, Class, Weapon
   Math = Math;
 
   private destroy$ = new Subject<void>();

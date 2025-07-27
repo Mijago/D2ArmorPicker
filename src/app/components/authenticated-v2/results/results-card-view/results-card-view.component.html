@@ -142,7 +142,10 @@
             </div>
 
             <div class="stats-section">
-              <div class="stat-item-compact" *ngFor="let stat of statOrder; let statIndex = index">
+              <div
+                class="stat-item-compact"
+                *ngFor="let stat of STAT_ORDER; let statIndex = index"
+                [matTooltip]="getStatName(stat)">
                 <img
                   [src]="getStatIcon(stat)"
                   [alt]="getStatName(stat)"
@@ -208,13 +211,14 @@
                 <div class="stats-grid">
                   <div
                     class="stat-item-large"
-                    *ngFor="let stat of statOrder; let statIndex = index">
+                    *ngFor="let stat of STAT_ORDER"
+                    [matTooltip]="getStatName(stat)">
                     <img
-                      [src]="getStatIcon(statIndex)"
-                      [alt]="getStatName(statIndex)"
+                      [src]="getStatIcon(stat)"
+                      [alt]="getStatName(stat)"
                       class="stat-icon-large" />
                     <div class="stat-info">
-                      <span class="stat-value-large">{{ result.stats[statIndex] }}</span>
+                      <span class="stat-value-large">{{ result.stats[stat] }}</span>
                     </div>
                   </div>
                 </div>
@@ -229,12 +233,9 @@
                   <thead>
                     <tr>
                       <th>Piece</th>
-                      <th>Health</th>
-                      <th>Melee</th>
-                      <th>Grenade</th>
-                      <th>Super</th>
-                      <th>Class</th>
-                      <th>Weapon</th>
+                      <th *ngFor="let stat of STAT_ORDER">
+                        {{ ArmorStatNames[stat] }}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -300,12 +301,9 @@
                           </div>
                         </div>
                       </td>
-                      <td>{{ getItemStatWithMasterwork(item, 1) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 5) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 3) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 4) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 2) }}</td>
-                      <td>{{ getItemStatWithMasterwork(item, 0) }}</td>
+                      <td *ngFor="let stat of STAT_ORDER">{{
+                        getItemStatWithMasterwork(item, stat)
+                      }}</td>
                     </tr>
 
                     <!-- Total armor stats row -->
@@ -325,69 +323,19 @@
                       <td class="total-label" *ngIf="!hasBreakdownRows(result)">
                         <strong>Total (armor)</strong>
                       </td>
-                      <td
-                        ><strong>{{ result.statsNoMods[1] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.statsNoMods[5] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.statsNoMods[3] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.statsNoMods[4] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.statsNoMods[2] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.statsNoMods[0] }}</strong></td
-                      >
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <strong>{{ result.statsNoMods[stat] }}</strong>
+                      </td>
                     </tr>
 
                     <!-- Configuration bonus row -->
                     <tr class="config-row" *ngIf="hasConfigBonus() && isBreakdownExpanded(i)">
                       <td class="config-label">Configuration</td>
-                      <td
+                      <td *ngFor="let stat of STAT_ORDER"
                         ><span
-                          *ngIf="getConfigValue(1) !== 0"
-                          [class]="getConfigValue(1) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(1) > 0 ? "+" : "" }}{{ getConfigValue(1) }}</span
-                        ></td
-                      >
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(5) !== 0"
-                          [class]="getConfigValue(5) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(5) > 0 ? "+" : "" }}{{ getConfigValue(5) }}</span
-                        ></td
-                      >
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(3) !== 0"
-                          [class]="getConfigValue(3) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(3) > 0 ? "+" : "" }}{{ getConfigValue(3) }}</span
-                        ></td
-                      >
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(4) !== 0"
-                          [class]="getConfigValue(4) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(4) > 0 ? "+" : "" }}{{ getConfigValue(4) }}</span
-                        ></td
-                      >
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(2) !== 0"
-                          [class]="getConfigValue(2) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(2) > 0 ? "+" : "" }}{{ getConfigValue(2) }}</span
-                        ></td
-                      >
-                      <td
-                        ><span
-                          *ngIf="getConfigValue(0) !== 0"
-                          [class]="getConfigValue(0) > 0 ? 'positive' : 'negative'"
-                          >{{ getConfigValue(0) > 0 ? "+" : "" }}{{ getConfigValue(0) }}</span
+                          *ngIf="getConfigValue(stat) !== 0"
+                          [class]="getConfigValue(stat) > 0 ? 'positive' : 'negative'"
+                          >{{ getConfigValue(stat) > 0 ? "+" : "" }}{{ getConfigValue(stat) }}</span
                         ></td
                       >
                     </tr>
@@ -397,34 +345,9 @@
                       class="minor-mods-row"
                       *ngIf="hasMinorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Minor Mods</td>
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 1) > 0" class="positive"
-                          >{{ getMinorModCount(result, 1) }}×5</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 5) > 0" class="positive"
-                          >{{ getMinorModCount(result, 5) }}×5</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 3) > 0" class="positive"
-                          >{{ getMinorModCount(result, 3) }}×5</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 4) > 0" class="positive"
-                          >{{ getMinorModCount(result, 4) }}×5</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 2) > 0" class="positive"
-                          >{{ getMinorModCount(result, 2) }}×5</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMinorModCount(result, 0) > 0" class="positive"
-                          >{{ getMinorModCount(result, 0) }}×5</span
+                      <td *ngFor="let stat of STAT_ORDER"
+                        ><span *ngIf="getMinorModCount(result, stat) > 0" class="positive"
+                          >{{ getMinorModCount(result, stat) }}×5</span
                         ></td
                       >
                     </tr>
@@ -434,34 +357,9 @@
                       class="major-mods-row"
                       *ngIf="hasMajorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Major Mods</td>
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 1) > 0" class="positive"
-                          >{{ getMajorModCount(result, 1) }}×10</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 5) > 0" class="positive"
-                          >{{ getMajorModCount(result, 5) }}×10</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 3) > 0" class="positive"
-                          >{{ getMajorModCount(result, 3) }}×10</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 4) > 0" class="positive"
-                          >{{ getMajorModCount(result, 4) }}×10</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 2) > 0" class="positive"
-                          >{{ getMajorModCount(result, 2) }}×10</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getMajorModCount(result, 0) > 0" class="positive"
-                          >{{ getMajorModCount(result, 0) }}×10</span
+                      <td *ngFor="let stat of STAT_ORDER"
+                        ><span *ngIf="getMajorModCount(result, stat) > 0" class="positive"
+                          >{{ getMajorModCount(result, stat) }}×10</span
                         ></td
                       >
                     </tr>
@@ -471,34 +369,9 @@
                       class="artifice-mods-row"
                       *ngIf="hasArtificeMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Artifice Mods</td>
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 1) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 1) }}×3</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 5) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 5) }}×3</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 3) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 3) }}×3</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 4) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 4) }}×3</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 2) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 2) }}×3</span
-                        ></td
-                      >
-                      <td
-                        ><span *ngIf="getArtificeModCount(result, 0) > 0" class="positive"
-                          >{{ getArtificeModCount(result, 0) }}×3</span
+                      <td *ngFor="let stat of STAT_ORDER"
+                        ><span *ngIf="getArtificeModCount(result, stat) > 0" class="positive"
+                          >{{ getArtificeModCount(result, stat) }}×3</span
                         ></td
                       >
                     </tr>
@@ -508,23 +381,8 @@
                       <td class="total-label" style="text-align: left"
                         ><strong>Total (with Mods)</strong></td
                       >
-                      <td
-                        ><strong>{{ result.stats[1] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.stats[5] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.stats[3] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.stats[4] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.stats[2] }}</strong></td
-                      >
-                      <td
-                        ><strong>{{ result.stats[0] }}</strong></td
+                      <td *ngFor="let stat of STAT_ORDER"
+                        ><strong>{{ result.stats[stat] }}</strong></td
                       >
                     </tr>
                   </tbody>

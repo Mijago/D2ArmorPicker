@@ -17,7 +17,7 @@
 
 import { Component, Input } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
-import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ARMORSTAT_ORDER, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
@@ -32,14 +32,7 @@ export class ArmorTooltipComponent {
   @Input() itemTooltip: ResultItem | undefined;
 
   // Define the correct order of stats as used in the expanded-result-content component
-  armorStatIds: ArmorStat[] = [
-    ArmorStat.StatHealth,
-    ArmorStat.StatMelee,
-    ArmorStat.StatGrenade,
-    ArmorStat.StatSuper,
-    ArmorStat.StatClass,
-    ArmorStat.StatWeapon,
-  ];
+  armorStatIds = ARMORSTAT_ORDER;
 
   getSourceText() {
     if (!this.itemTooltip) {

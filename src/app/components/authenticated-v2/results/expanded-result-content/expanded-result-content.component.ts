@@ -49,7 +49,6 @@ import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public MAXIMUM_MASTERWORK_LEVEL = MAXIMUM_MASTERWORK_LEVEL;
-  public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
   public ArmorStatNames = ArmorStatNames;

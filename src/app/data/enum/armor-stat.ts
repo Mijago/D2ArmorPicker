@@ -50,6 +50,15 @@ export enum ArmorStat {
   StatMelee,
 }
 
+export const ARMORSTAT_ORDER = [
+  ArmorStat.StatHealth,
+  ArmorStat.StatMelee,
+  ArmorStat.StatGrenade,
+  ArmorStat.StatSuper,
+  ArmorStat.StatClass,
+  ArmorStat.StatWeapon,
+];
+
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {
   [StatModifier.NONE]: [ArmorStat.StatMelee, 0, 0, 0],

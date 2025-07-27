@@ -34,7 +34,7 @@
       <tr>
         <td>Current stats:</td>
       </tr>
-      <tr *ngFor="let statId of armorStatIds; let i = index">
+      <tr *ngFor="let statId of armorStatIds">
         <td>{{ getArmorStatName(statId) }}</td>
         <td>
           <span>{{ getStatWithMasterwork(statId) }}</span>

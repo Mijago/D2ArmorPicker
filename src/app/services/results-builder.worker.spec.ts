@@ -18,7 +18,13 @@
 import { getSkillTier, getWaste, handlePermutation } from "./results-builder.worker";
 import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import {
+  ArmorPerkOrSlot,
+  ArmorStat,
+  ARMORSTAT_ORDER,
+  STAT_MOD_VALUES,
+  StatModifier,
+} from "../data/enum/armor-stat";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
@@ -543,7 +549,7 @@ describe("Results Worker", () => {
 
       // grab the runtime.maximumPossibleTiers and iterate over them to see if it correctly fills them
       // first, pick a random order
-      const order = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+      const order = ARMORSTAT_ORDER.sort(() => Math.random() - 0.5);
 
       for (let statId of order) {
         config.minimumStatTiers[statId as ArmorStat].value =

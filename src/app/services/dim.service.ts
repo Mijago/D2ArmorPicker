@@ -22,6 +22,7 @@ import { Injectable } from "@angular/core";
 import { ConfigurationService } from "./configuration.service";
 import {
   ArmorStat,
+  ARMORSTAT_ORDER,
   ArmorStatHashes,
   STAT_MOD_VALUES,
   StatModifier,
@@ -41,7 +42,7 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
   providedIn: "root",
 })
 export class DimService {
-  private armorStatIds = [0, 1, 2, 3, 4, 5];
+  private armorStatIds = ARMORSTAT_ORDER;
 
   constructor(private configService: ConfigurationService) {}
 
