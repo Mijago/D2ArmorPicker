@@ -373,6 +373,21 @@ tr.result-detail-row {
   text-align: center;
   color: var(--mdc-theme-on-surface);
 
+  .no-items-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ff9800;
+    background: rgba(255, 152, 0, 0.08);
+    border: 1px solid #ff9800;
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin: 8px 0;
+    font-size: 14px;
+    font-weight: 500;
+    width: fit-content;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+  }
   mat-icon {
     font-size: 4rem;
     width: 4rem;

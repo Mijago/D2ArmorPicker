@@ -631,4 +631,15 @@ export class InventoryService {
       return false;
     }
   }
+
+  getSlotByItemHash(hash: number): PromiseLike<ArmorSlot> {
+    return this.db.manifestArmor
+      .where("hash")
+      .equals(hash)
+      .first()
+      .then((item) => {
+        if (item == null) return ArmorSlot.ArmorSlotNone;
+        return item.slot;
+      });
+  }
 }

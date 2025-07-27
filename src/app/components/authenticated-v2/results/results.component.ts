@@ -25,11 +25,12 @@ import { MatSort } from "@angular/material/sort";
 import { StatusProviderService } from "../../../services/status-provider.service";
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { ArmorSlot } from "../../../data/enum/armor-slot";
+import { ArmorSlot, ArmorSlotNames } from "../../../data/enum/armor-slot";
 import { FixableSelection } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { AvailableItemsService } from "src/app/services/available-items.service";
 
 export interface ResultDefinition {
   exotic:
@@ -103,6 +104,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
+  _selectedExoticSlot: ArmorSlot = ArmorSlot.ArmorSlotNone; // Used to filter results by selected exotic slots
   _config_tryLimitWastedStats: boolean = false;
   _config_onlyUseMasterworkedExotics: Boolean = false;
   _config_onlyUseMasterworkedLegendaries: Boolean = false;
@@ -145,10 +147,21 @@ export class ResultsComponent implements OnInit, OnDestroy {
   initializing: boolean = true; // Flag to indicate if the page is still initializing
   cancelledCalculation: boolean = false;
 
+  // Count of items per armor slot, [legendary, exotic]
+  slotsWithNoLegendaryItems: number = 0;
+  itemCountPerSlot: { [key in Exclude<ArmorSlot, ArmorSlot.ArmorSlotNone>]: [number, number] } = {
+    [ArmorSlot.ArmorSlotHelmet]: [0, 0],
+    [ArmorSlot.ArmorSlotGauntlet]: [0, 0],
+    [ArmorSlot.ArmorSlotChest]: [0, 0],
+    [ArmorSlot.ArmorSlotLegs]: [0, 0],
+    [ArmorSlot.ArmorSlotClass]: [0, 0],
+  };
+
   constructor(
     private inventory: InventoryService,
     public configService: ConfigurationService,
-    public status: StatusProviderService
+    public status: StatusProviderService,
+    public availableItems: AvailableItemsService
   ) {
     // Load saved view mode from localStorage
     const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
@@ -158,6 +171,29 @@ export class ResultsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Check for item counts per slot so that we can  show a warning if no items are available for a slot
+    for (let slot of Object.values(ArmorSlot) as ArmorSlot[]) {
+      if (slot === ArmorSlot.ArmorSlotNone) continue; // Skip the 'none' slot
+      if (this.itemCountPerSlot[slot] === undefined || this.itemCountPerSlot[slot] === null)
+        continue;
+      this.itemCountPerSlot[slot] = [0, 0];
+      const sll = slot;
+      this.availableItems
+        .getItemsForSlot$(slot)
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe((items) => {
+          const exoticCount = items.filter((i) => i.isExotic).length;
+          this.itemCountPerSlot[sll] = [
+            items.length - exoticCount, // Legendary count
+            exoticCount, // Exotic count
+          ];
+
+          this.slotsWithNoLegendaryItems = Object.values(this.itemCountPerSlot).filter(
+            (count) => count[0] === 0
+          ).length;
+        });
+    }
+
     this.status.status.pipe(takeUntil(this.ngUnsubscribe)).subscribe((s) => {
       this.isCalculatingPermutations = s.calculatingPermutations || s.calculatingResults;
 
@@ -171,45 +207,54 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this.computationProgress = progress;
     });
     //
-    this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c: any) => {
-      this.selectedClass = c.characterClass;
-      this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
-      this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_tryLimitWastedStats = c.tryLimitWastedStats;
+    this.configService.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async (c: any) => {
+        this.selectedClass = c.characterClass;
+        this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+        this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+        this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
-      this._config_maximumStatMods = c.maximumStatMods;
-      this._config_legacyArmor = c.allowLegacyArmor;
-      this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
-      this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
-      this._config_includeCollectionRolls = c.includeCollectionRolls;
-      this._config_includeVendorRolls = c.includeVendorRolls;
-      this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
-      this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
-      this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
-      this._config_enforceFeaturedArmor = c.enforceFeaturedArmor;
-      this._config_selectedExotics = c.selectedExotics;
-      this._config_armorPerkLimitation = Object.entries(c.armorPerks)
-        .filter((v: any) => v[1].value != ArmorPerkOrSlot.Any)
-        .map((k: any) => k[1]);
-      this._config_modslotLimitation = Object.entries(c.maximumModSlots)
-        .filter((v: any) => v[1].value < 5)
-        .map((k: any) => k[1]);
+        this._config_maximumStatMods = c.maximumStatMods;
+        this._config_legacyArmor = c.allowLegacyArmor;
+        this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
+        this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
+        this._config_includeCollectionRolls = c.includeCollectionRolls;
+        this._config_includeVendorRolls = c.includeVendorRolls;
+        this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
+        this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
+        this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
+        this._config_enforceFeaturedArmor = c.enforceFeaturedArmor;
+        this._config_selectedExotics = c.selectedExotics;
 
-      let columns = [
-        "exotic",
-        "health",
-        "melee",
-        "grenade",
-        "super",
-        "class",
-        "weapon",
-        "total",
-        "mods",
-      ];
-      if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
-      columns.push("dropdown");
-      this.shownColumns = columns;
-    });
+        if (c.selectedExotics.length > 0 && c.selectedExotics[0] > 0) {
+          this._selectedExoticSlot = await this.inventory.getSlotByItemHash(c.selectedExotics[0]);
+        } else {
+          this._selectedExoticSlot = ArmorSlot.ArmorSlotNone;
+        }
+
+        this._config_armorPerkLimitation = Object.entries(c.armorPerks)
+          .filter((v: any) => v[1].value != ArmorPerkOrSlot.Any)
+          .map((k: any) => k[1]);
+        this._config_modslotLimitation = Object.entries(c.maximumModSlots)
+          .filter((v: any) => v[1].value < 5)
+          .map((k: any) => k[1]);
+
+        let columns = [
+          "exotic",
+          "health",
+          "melee",
+          "grenade",
+          "super",
+          "class",
+          "weapon",
+          "total",
+          "mods",
+        ];
+        if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
+        columns.push("dropdown");
+        this.shownColumns = columns;
+      });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (value) => {
       this._results = value.results;
@@ -252,6 +297,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
       }
       return 0;
     };
+  }
+
+  getArmorSlotName(slot: ArmorSlot | string): string {
+    return ArmorSlotNames[slot as ArmorSlot] || "Unknown Slot";
   }
 
   cancelCalculation() {
