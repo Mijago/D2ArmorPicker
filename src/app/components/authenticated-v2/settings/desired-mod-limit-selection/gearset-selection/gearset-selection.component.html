@@ -40,11 +40,7 @@
             *ngVar="gearSet.fourPieceBonus as bonus"
             (click)="onFourPieceBonusChange(i)"
             [gearsetTooltip]="bonus.perk">
-            <mat-slide-toggle
-              color="primary"
-              [id]="'four-piece-' + i"
-              [checked]="bonus.enabled"
-              [disabled]="isFourPieceDisabled()">
+            <mat-slide-toggle color="primary" [id]="'four-piece-' + i" [checked]="bonus.enabled">
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img

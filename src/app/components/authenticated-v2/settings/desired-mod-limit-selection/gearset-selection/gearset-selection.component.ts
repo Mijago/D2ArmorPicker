@@ -103,7 +103,7 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     this.gearSets[gearSetIndex].twoPieceBonus.enabled = enabled;
 
     // If we now have 2 two-piece bonuses selected, disable all 4-piece bonuses
-    if (this.selectedTwoPieceCount >= 2) {
+    if (this.selectedTwoPieceCount > 0) {
       this.gearSets.forEach((gearSet) => {
         gearSet.fourPieceBonus.enabled = false;
       });
@@ -112,11 +112,6 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
   onFourPieceBonusChange(gearSetIndex: number, enabled?: boolean) {
     if (enabled === undefined) enabled = !this.gearSets[gearSetIndex].fourPieceBonus.enabled;
-
-    // Only allow enabling if no two-piece bonuses are selected
-    if (enabled && this.hasTwoPieceSelected) {
-      return;
-    }
 
     this.gearSets[gearSetIndex].fourPieceBonus.enabled = enabled;
 
