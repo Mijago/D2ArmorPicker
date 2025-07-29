@@ -55,55 +55,28 @@ function checkSlots(
   leg: IPermutatorArmor
 ) {
   let requirements = new Map(constantModslotRequirement);
-  if (
-    !(
-      helmet.isExotic &&
-      config.assumeEveryExoticIsArtifice &&
-      helmet.armorSystem == ArmorSystem.Armor2
-    ) &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.Any &&
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != helmet.perk
-  )
-    return { valid: false };
-  if (
-    !(
-      gauntlet.isExotic &&
-      config.assumeEveryExoticIsArtifice &&
-      gauntlet.armorSystem == ArmorSystem.Armor2
-    ) &&
-    !(
-      !gauntlet.isExotic &&
-      config.assumeEveryLegendaryIsArtifice &&
-      gauntlet.armorSystem == ArmorSystem.Armor2
-    ) &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.Any &&
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != gauntlet.perk
-  )
-    return { valid: false };
-  if (
-    !(
-      chest.isExotic &&
-      config.assumeEveryExoticIsArtifice &&
-      chest.armorSystem == ArmorSystem.Armor2
-    ) &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.Any &&
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value != chest.perk
-  )
-    return { valid: false };
-  if (
-    !(
-      leg.isExotic &&
-      config.assumeEveryExoticIsArtifice &&
-      leg.armorSystem == ArmorSystem.Armor2
-    ) &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != ArmorPerkOrSlot.Any &&
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value != leg.perk
-  )
-    return { valid: false };
+  const slots = [
+    { slot: ArmorSlot.ArmorSlotHelmet, item: helmet },
+    { slot: ArmorSlot.ArmorSlotGauntlet, item: gauntlet },
+    { slot: ArmorSlot.ArmorSlotChest, item: chest },
+    { slot: ArmorSlot.ArmorSlotLegs, item: leg },
+  ];
+
+  for (const { slot, item } of slots) {
+    const statIsFixed = config.armorPerks[slot].fixed;
+    const value = config.armorPerks[slot].value;
+    const assumingArtifice =
+      (item.isExotic &&
+        config.assumeEveryExoticIsArtifice &&
+        item.armorSystem == ArmorSystem.Armor2) ||
+      (!item.isExotic &&
+        config.assumeEveryLegendaryIsArtifice &&
+        item.armorSystem == ArmorSystem.Armor2);
+
+    if (!assumingArtifice && statIsFixed && value != ArmorPerkOrSlot.Any && value != item.perk) {
+      return { valid: false };
+    }
+  }
   // also return if we can not find the correct class item.
   if (
     config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
@@ -117,46 +90,29 @@ function checkSlots(
   requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
   requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
 
-  // For each selected exotic, adjust requirements if present in the armor set
-  for (const exoticId of config.selectedExotics) {
-    if (exoticId > 0) {
-      if (helmet.hash === exoticId)
-        requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
-      else if (gauntlet.hash === exoticId)
-        requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
-      else if (chest.hash === exoticId)
-        requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
-      else if (leg.hash === exoticId)
-        requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
-    }
-  }
-
   let SlotRequirements = 0;
   for (let [key] of requirements) {
-    if (key == ArmorPerkOrSlot.Any) continue;
+    if (key == ArmorPerkOrSlot.Any || key == ArmorPerkOrSlot.None) continue;
     SlotRequirements += Math.max(0, requirements.get(key) ?? 0);
   }
 
+  if (SlotRequirements > 1) return { valid: false };
+
   let requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
-  if (
-    requiredClassItemType == ArmorPerkOrSlot.Any &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed
-  ) {
-    SlotRequirements--;
-  } else if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    requiredClassItemType != ArmorPerkOrSlot.Any
-  ) {
-    // Class item is fixed to a specific perk - check if we need to reduce slot requirements
-    if (
-      requirements.has(requiredClassItemType) &&
-      (requirements.get(requiredClassItemType) ?? 0) > 0
-    ) {
-      SlotRequirements--;
-    }
-  } else {
-    if (SlotRequirements > 1) {
+  const isClassItemFixed = config.armorPerks[ArmorSlot.ArmorSlotClass].fixed;
+
+  if (SlotRequirements > 0) {
+    if (requiredClassItemType != ArmorPerkOrSlot.Any && isClassItemFixed) {
+      // Class item is fixed to a specific perk - check if we need to reduce slot requirements
+      if (
+        requirements.has(requiredClassItemType) &&
+        (requirements.get(requiredClassItemType) ?? 0) > 0
+      ) {
+        SlotRequirements--;
+      }
+    } else {
       for (let [key, value] of requirements) {
+        if (key == ArmorPerkOrSlot.None) continue;
         if (value <= 0) continue;
         if (availableClassItemTypes.has(key)) {
           requiredClassItemType = key;
@@ -194,27 +150,18 @@ function prepareConstantModslotRequirement(config: BuildConfiguration) {
     constantPerkRequirement.set(key, 0);
   }
 
-  if (config.armorPerks[ArmorSlot.ArmorSlotHelmet].value != ArmorPerkOrSlot.Any)
-    constantPerkRequirement.set(
-      config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
-      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotHelmet].value) ?? 0) + 1
-    );
-  if (config.armorPerks[ArmorSlot.ArmorSlotChest].value != ArmorPerkOrSlot.Any)
-    constantPerkRequirement.set(
-      config.armorPerks[ArmorSlot.ArmorSlotChest].value,
-      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotChest].value) ?? 0) + 1
-    );
-  if (config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value != ArmorPerkOrSlot.Any)
-    constantPerkRequirement.set(
-      config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
-      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value) ?? 0) + 1
-    );
-
-  if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any)
-    constantPerkRequirement.set(
-      config.armorPerks[ArmorSlot.ArmorSlotClass].value,
-      (constantPerkRequirement.get(config.armorPerks[ArmorSlot.ArmorSlotClass].value) ?? 0) + 1
-    );
+  for (const slot of [
+    ArmorSlot.ArmorSlotHelmet,
+    ArmorSlot.ArmorSlotChest,
+    ArmorSlot.ArmorSlotGauntlet,
+    ArmorSlot.ArmorSlotLegs,
+    ArmorSlot.ArmorSlotClass,
+  ]) {
+    const perkValue = config.armorPerks[slot].value;
+    if (perkValue != ArmorPerkOrSlot.Any) {
+      constantPerkRequirement.set(perkValue, (constantPerkRequirement.get(perkValue) ?? 0) + 1);
+    }
+  }
 
   return constantPerkRequirement;
 }
@@ -540,6 +487,15 @@ addEventListener("message", async ({ data }) => {
     } else if (config.selectedExotics[0] == FORCE_USE_ANY_EXOTIC || exoticClassItemIsEnforced) {
       // if we have no exotic armor piece, we can use the exotic class item
       classItemsToUse = exoticClassItems;
+    }
+    if (slotCheckResult.requiredClassItemType != ArmorPerkOrSlot.Any) {
+      classItemsToUse = classItems.filter(
+        (item) => item.perk == slotCheckResult.requiredClassItemType
+      );
+    }
+    if (classItemsToUse.length == 0) {
+      // If we have no class items, we do not need to calculate the permutation
+      continue;
     }
 
     const result = handlePermutation(
