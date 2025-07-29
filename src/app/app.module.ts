@@ -59,6 +59,7 @@ import { ChangelogListComponent } from "./components/authenticated-v2/components
 import { LayoutModule } from "@angular/cdk/layout";
 import { ArmorPerkIconComponent } from "./components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component";
 import { ExoticPerkTooltipComponent } from "./components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-perk-tooltip.component";
+
 import { ExoticTooltipDirective } from "./components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-tooltip.directive";
 import { AccountConfigPageComponent } from "./components/authenticated-v2/subpages/account-config-page/account-config-page.component";
 import { ModDescriptionTooltipComponent } from "./components/authenticated-v2/overlays/mod-description-tooltip/mod-description-tooltip.component";
@@ -76,6 +77,9 @@ import {
 import { environment } from "../environments/environment";
 import { H } from "highlight.run";
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
+import { GearsetSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/gearset-selection/gearset-selection.component";
+import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
+import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
 if (!!environment.highlight_project_id) {
   H.init(environment.highlight_project_id, {
@@ -150,6 +154,8 @@ const routes: Routes = [
     StatIconComponent,
     DesiredModsSelectionComponent,
     VarDirectiveDirective,
+    GearsetTooltipDirective,
+    GearsetTooltipComponent,
     AdvancedSettingsComponent,
     LoadAndSaveSettingsComponent,
     ConfirmDialogComponent,
@@ -181,6 +187,7 @@ const routes: Routes = [
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
     ResultsCardViewComponent,
+    GearsetSelectionComponent,
   ],
   imports: [
     CommonModule,

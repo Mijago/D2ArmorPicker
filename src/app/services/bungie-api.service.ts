@@ -33,6 +33,7 @@ import {
   DestinyClass,
   DestinyItemComponent,
   DestinyManifestComponentName,
+  AllDestinyManifestComponents,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
@@ -67,9 +68,26 @@ import {
 import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
 import { SubclassHashes } from "../data/enum/armor-stat";
 import { ModInformation } from "../data/ModInformation";
+import { Subject, Observable } from "rxjs";
 
 // TODO :Remove once DIM API is updated
-type DestinyEquipableItemSetDefinition = { [key: string]: any };
+
+export interface DestinyEquipableItemSetDefinition {
+  displayProperties: {
+    name: string;
+    description: string;
+    hasIcon: boolean;
+  };
+  setItems: number[];
+  setPerks: Array<{
+    requiredSetCount: number;
+    sandboxPerkHash: number;
+  }>;
+  hash: number;
+  index: number;
+  redacted: boolean;
+  blacklisted: boolean;
+}
 
 function collectInvestmentStats(
   r: IInventoryArmor,
@@ -133,6 +151,19 @@ function collectInvestmentStats(
   providedIn: "root",
 })
 export class BungieApiService {
+  /**
+   * Emits after a manifest update.
+   */
+  private manifestUpdatedSubject = new Subject<void>();
+  private manifestAlreadyUpdated = false;
+
+  /**
+   * Observable that emits when the manifest is updated.
+   */
+  public get manifestUpdated$(): Observable<void> {
+    return this.manifestUpdatedSubject.asObservable();
+  }
+
   constructor(
     private status: StatusProviderService,
     private http: HttpClientService,
@@ -725,6 +756,10 @@ export class BungieApiService {
   async updateManifest(force = false) {
     if (environment.offlineMode) {
       console.info("BungieApiService", "updateManifest", "offline mode, skipping");
+      if (!this.manifestAlreadyUpdated) {
+        this.manifestAlreadyUpdated = true;
+        this.manifestUpdatedSubject.next();
+      }
       return;
     }
 
@@ -737,12 +772,20 @@ export class BungieApiService {
         const version = destinyManifest.Response.version;
         if (manifestCache.version == version) {
           console.info("bungieApiService - updateManifest", "Manifest is last version");
+          if (!this.manifestAlreadyUpdated) {
+            this.manifestAlreadyUpdated = true;
+            this.manifestUpdatedSubject.next();
+          }
           return;
         }
       }
 
       if (Date.now() - manifestCache.updatedAt < 1000 * 3600 * 24) {
         console.info("bungieApiService - updateManifest", "Manifest is less than a day old");
+        if (!this.manifestAlreadyUpdated) {
+          this.manifestAlreadyUpdated = true;
+          this.manifestUpdatedSubject.next();
+        }
         return;
       }
     }
@@ -761,6 +804,7 @@ export class BungieApiService {
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
         "DestinyEquipableItemSetDefinition",
+        "DestinySandboxPerkDefinition",
       ] as any as DestinyManifestComponentName[],
       language: "en",
     });
@@ -775,6 +819,8 @@ export class BungieApiService {
     await this.updateVendorNames(manifestTables);
     await this.updateAbilities(manifestTables);
     await this.updateVendorItemSubScreens(manifestTables);
+    await this.updateEquipableItemSetDefinitions(manifestTables);
+    await this.updateSandboxPerks(manifestTables);
 
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
@@ -945,8 +991,38 @@ export class BungieApiService {
       });
 
     await this.db.writeManifestArmor(entries, manifestVersion);
-
+    this.manifestUpdatedSubject.next();
     return manifestTables;
+  }
+  updateSandboxPerks(manifestTables: DestinyManifestSlice<"DestinySandboxPerkDefinition"[]>) {
+    const sandboxPerks = manifestTables.DestinySandboxPerkDefinition;
+    if (!sandboxPerks) {
+      console.warn("No sandbox perks found in manifest");
+      return;
+    }
+
+    const mappedSandboxPerks = Object.entries(sandboxPerks).map(([key, value]) => {
+      return value;
+    });
+
+    this.db.sandboxPerkDefinition.clear();
+    this.db.sandboxPerkDefinition.bulkPut(mappedSandboxPerks);
+  }
+  updateEquipableItemSetDefinitions(
+    manifestTables: DestinyManifestSlice<(keyof AllDestinyManifestComponents)[]>
+  ) {
+    const equipableItemSetDefinitions = (manifestTables as any)
+      .DestinyEquipableItemSetDefinition as { [key: string]: DestinyEquipableItemSetDefinition };
+    if (!equipableItemSetDefinitions) {
+      console.warn("No equipable item set definitions found in manifest");
+      return;
+    }
+    this.db.equipableItemSetDefinition.clear();
+
+    const mapped = Object.entries(equipableItemSetDefinitions).map(([key, value]) => {
+      return value as DestinyEquipableItemSetDefinition;
+    });
+    this.db.equipableItemSetDefinition.bulkPut(mapped);
   }
 
   async moveItem(
