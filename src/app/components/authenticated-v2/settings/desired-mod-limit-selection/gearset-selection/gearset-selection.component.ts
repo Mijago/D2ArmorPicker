@@ -51,6 +51,12 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
         this.gearSets = [];
         const gearsets = await this.db.equipableItemSetDefinition.toArray();
+        gearsets.sort((a, b) => {
+          // Sort by name, case-insensitive
+          const nameA = a.displayProperties.name?.toLowerCase() || "";
+          const nameB = b.displayProperties.name?.toLowerCase() || "";
+          return nameA.localeCompare(nameB);
+        });
         for (const gearset of gearsets) {
           const twoPieceBonusInfo =
             gearset.setPerks.find((perk) => perk.requiredSetCount == 2)?.sandboxPerkHash || 0;
