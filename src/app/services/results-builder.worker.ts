@@ -908,6 +908,11 @@ function get_mods_precalc(
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   if (totalDistance > 65) return null;
 
+  if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
+    // no mods needed, return empty array
+    return [];
+  }
+
   const modCombinations = config.onlyShowResultsWithNoWastedStats
     ? precalculatedZeroWasteModCombinations
     : precalculatedModCombinations;
