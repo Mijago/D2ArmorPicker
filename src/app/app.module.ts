@@ -48,7 +48,6 @@ import { HelpPageComponent } from "./components/authenticated-v2/subpages/help-p
 import { ArmorPickerPageComponent } from "./components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component";
 import { ArmorClusterPageComponent } from "./components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component";
 import { TableModDisplayComponent } from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
-import { SlotLimitationSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component";
 import { ArmorTooltipComponent } from "./components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component";
 import { ItemTooltipRendererDirective } from "./components/authenticated-v2/overlays/armor-tooltip-component/item-tooltip-renderer.directive";
 import { ItemIconComponent } from "./components/authenticated-v2/components/item-icon/item-icon.component";
@@ -59,7 +58,6 @@ import { ChangelogListComponent } from "./components/authenticated-v2/components
 import { LayoutModule } from "@angular/cdk/layout";
 import { ArmorPerkIconComponent } from "./components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component";
 import { ExoticPerkTooltipComponent } from "./components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-perk-tooltip.component";
-
 import { ExoticTooltipDirective } from "./components/authenticated-v2/overlays/exotic-perk-tooltip/exotic-tooltip.directive";
 import { AccountConfigPageComponent } from "./components/authenticated-v2/subpages/account-config-page/account-config-page.component";
 import { ModDescriptionTooltipComponent } from "./components/authenticated-v2/overlays/mod-description-tooltip/mod-description-tooltip.component";
@@ -103,6 +101,9 @@ if (!!environment.highlight_project_id) {
     },
   });
 }
+
+import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
+import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
 
 const routes: Routes = [
   {
@@ -168,7 +169,6 @@ const routes: Routes = [
     ArmorPickerPageComponent,
     ArmorClusterPageComponent,
     TableModDisplayComponent,
-    SlotLimitationSelectionComponent,
     ArmorTooltipComponent,
     ItemTooltipRendererDirective,
     ItemIconComponent,
@@ -188,6 +188,8 @@ const routes: Routes = [
     SlotLimitationTitleComponent,
     ResultsCardViewComponent,
     GearsetSelectionComponent,
+    ModslotVisualizationComponent,
+    ModLimitSegmentedComponent,
   ],
   imports: [
     CommonModule,

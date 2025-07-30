@@ -23,7 +23,7 @@ import { FORCE_USE_ANY_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constant
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
-  ArmorPerkOrSlotNames,
+  ArmorPerkSocketHashes,
   ArmorStat,
   SpecialArmorStat,
   STAT_MOD_VALUES,
@@ -47,7 +47,7 @@ import { ArmorSystem } from "../data/types/IManifestArmor";
 // region Validation and Preparation Functions
 function checkSlots(
   config: BuildConfiguration,
-  constantModslotRequirement: Map<ArmorPerkOrSlot, number>,
+  constantModslotRequirement: Map<number, number>,
   availableClassItemTypes: Set<ArmorPerkOrSlot>,
   helmet: IPermutatorArmor,
   gauntlet: IPermutatorArmor,
@@ -62,33 +62,27 @@ function checkSlots(
     { slot: ArmorSlot.ArmorSlotLegs, item: leg },
   ];
 
-  for (const { slot, item } of slots) {
-    const statIsFixed = config.armorPerks[slot].fixed;
-    const value = config.armorPerks[slot].value;
-    const assumingArtifice =
-      (item.isExotic &&
-        config.assumeEveryExoticIsArtifice &&
-        item.armorSystem == ArmorSystem.Armor2) ||
-      (!item.isExotic &&
-        config.assumeEveryLegendaryIsArtifice &&
-        item.armorSystem == ArmorSystem.Armor2);
-
-    if (!assumingArtifice && statIsFixed && value != ArmorPerkOrSlot.Any && value != item.perk) {
-      return { valid: false };
+  for (let { item } of slots) {
+    if (item.armorSystem === ArmorSystem.Armor2) {
+      if (
+        (item.isExotic && config.assumeEveryLegendaryIsArtifice) ||
+        (!item.isExotic && config.assumeEveryLegendaryIsArtifice) ||
+        (!item.isExotic &&
+          item.slot == ArmorSlot.ArmorSlotClass &&
+          config.assumeClassItemIsArtifice)
+      ) {
+        requirements.set(
+          ArmorPerkOrSlot.SlotArtifice,
+          (requirements.get(ArmorPerkOrSlot.SlotArtifice) ?? 0) - 1
+        );
+        continue;
+      }
     }
-  }
-  // also return if we can not find the correct class item.
-  if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any &&
-    !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value)
-  )
-    return { valid: false };
 
-  requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
-  requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
-  requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
-  requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
+    requirements.set(item.perk, (requirements.get(item.perk) ?? 0) - 1);
+    if (item.gearSetHash != null)
+      requirements.set(item.gearSetHash, (requirements.get(item.gearSetHash) ?? 0) - 1);
+  }
 
   let SlotRequirements = 0;
   for (let [key] of requirements) {
@@ -97,34 +91,14 @@ function checkSlots(
   }
 
   if (SlotRequirements > 1) return { valid: false };
+  if (SlotRequirements == 0) return { valid: true, requiredClassItemType: ArmorPerkOrSlot.Any };
 
-  let requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
-  const isClassItemFixed = config.armorPerks[ArmorSlot.ArmorSlotClass].fixed;
-
-  if (SlotRequirements > 0) {
-    if (requiredClassItemType != ArmorPerkOrSlot.Any && isClassItemFixed) {
-      // Class item is fixed to a specific perk - check if we need to reduce slot requirements
-      if (
-        requirements.has(requiredClassItemType) &&
-        (requirements.get(requiredClassItemType) ?? 0) > 0
-      ) {
-        SlotRequirements--;
-      }
-    } else {
-      for (let [key, value] of requirements) {
-        if (key == ArmorPerkOrSlot.None) continue;
-        if (value <= 0) continue;
-        if (availableClassItemTypes.has(key)) {
-          requiredClassItemType = key;
-          SlotRequirements--;
-          break;
-        }
-      }
-    }
-  }
-
-  // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
-  return { valid: SlotRequirements <= 0, requiredClassItemType };
+  const requiredClassItemPerk = [...requirements.entries()].find((c) => c[1] > 0)?.[0];
+  if (!requiredClassItemPerk) return { valid: false, requiredClassItemType: ArmorPerkOrSlot.Any };
+  return {
+    valid: availableClassItemTypes.has(requiredClassItemPerk),
+    requiredClassItemType: requiredClassItemPerk,
+  };
 }
 
 function prepareConstantStatBonus(config: BuildConfiguration) {
@@ -150,30 +124,40 @@ function prepareConstantModslotRequirement(config: BuildConfiguration) {
     constantPerkRequirement.set(key, 0);
   }
 
-  for (const slot of [
-    ArmorSlot.ArmorSlotHelmet,
-    ArmorSlot.ArmorSlotChest,
-    ArmorSlot.ArmorSlotGauntlet,
-    ArmorSlot.ArmorSlotLegs,
-    ArmorSlot.ArmorSlotClass,
-  ]) {
-    const perkValue = config.armorPerks[slot].value;
-    if (perkValue != ArmorPerkOrSlot.Any) {
-      constantPerkRequirement.set(perkValue, (constantPerkRequirement.get(perkValue) ?? 0) + 1);
+  for (const req of config.armorRequirements) {
+    if ("perk" in req) {
+      let perk = req.perk;
+
+      const e = Object.entries(ArmorPerkSocketHashes).find(([, value]) => value == perk);
+      if (e) perk = Number.parseInt(e[0]) as any as ArmorPerkOrSlot;
+
+      if (perk != ArmorPerkOrSlot.Any && perk != ArmorPerkOrSlot.None) {
+        constantPerkRequirement.set(perk, (constantPerkRequirement.get(perk) ?? 0) + 1);
+      }
+    } else if ("gearSetHash" in req) {
+      // Gear set requirement
+      constantPerkRequirement.set(
+        req.gearSetHash,
+        (constantPerkRequirement.get(req.gearSetHash) ?? 0) + 1
+      );
     }
   }
-
   return constantPerkRequirement;
 }
 
 function prepareConstantAvailableModslots(config: BuildConfiguration) {
   var availableModCost: number[] = [];
-
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
+  const maxMods = Math.max(0, Math.min(5, config.statModLimits.maxMods));
+  const maxMajor = Math.max(0, Math.min(maxMods, config.statModLimits.maxMajorMods));
+  for (let mj = 0; mj < maxMajor; mj++) {
+    availableModCost.push(3);
+  }
+  for (let mn = 0; mn < maxMods - maxMajor; mn++) {
+    availableModCost.push(1);
+  }
+  while (availableModCost.length < 5) {
+    availableModCost.push(0);
+  }
   return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
 }
 
@@ -249,11 +233,10 @@ addEventListener("message", async ({ data }) => {
   config.onlyShowResultsWithNoWastedStats =
     environment.featureFlags.enableZeroWaste && config.onlyShowResultsWithNoWastedStats;
   if (!environment.featureFlags.enableModslotLimitation) {
-    config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotChest].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
+    config.statModLimits = {
+      maxMods: 5, // M: total mods allowed (0–5)
+      maxMajorMods: 5, // N: major mods allowed (0–maxMods)
+    };
   }
 
   let helmets = items
@@ -338,23 +321,8 @@ addEventListener("message", async ({ data }) => {
     });
   }
 
-  // If the config says that we need a fixed class item, filter the class items accordingly
-  if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any
-  )
-    classItems = classItems.filter(
-      (d) => d.perk == config.armorPerks[ArmorSlot.ArmorSlotClass].value
-    );
-
   // true if any armorPerks is not "any"
-  const doesNotRequireArmorPerks = ![
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value,
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value,
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value,
-  ].every((v) => v === ArmorPerkOrSlot.Any);
+  const doesNotRequireArmorPerks = config.armorRequirements.length == 0;
 
   classItems = classItems.filter(
     (item, index, self) =>
@@ -385,7 +353,8 @@ addEventListener("message", async ({ data }) => {
   const exoticClassItemIsEnforced = exoticClassItems.some(
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
-  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
+  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.gearSetHash || d.perk));
+  // let availableClassItemPerkTypes1 = new Set(classItems.map((d) => d.gearSetHash));
 
   // runtime variables
   const runtime = {
@@ -435,21 +404,11 @@ addEventListener("message", async ({ data }) => {
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
   console.info(`Estimated calculations for Thread#${threadSplit.current}`, estimatedCalculations);
-  console.debug(
-    `Thread#${threadSplit.current} items`,
-    JSON.stringify({
-      helmets: helmets.length,
-      gauntlets: gauntlets.length,
-      chests: chests.length,
-      legs: legs.length,
-      availableClassItemTypes: Array.from(availableClassItemPerkTypes).map(
-        (x) => ArmorPerkOrSlotNames[x]
-      ),
-    })
-  );
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
+
+  console.debug("DEBUG", "constantModslotRequirement", constantModslotRequirement);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
     helmets,
@@ -490,7 +449,9 @@ addEventListener("message", async ({ data }) => {
     }
     if (slotCheckResult.requiredClassItemType != ArmorPerkOrSlot.Any) {
       classItemsToUse = classItems.filter(
-        (item) => item.perk == slotCheckResult.requiredClassItemType
+        (item) =>
+          item.perk == slotCheckResult.requiredClassItemType ||
+          item.gearSetHash == slotCheckResult.requiredClassItemType
       );
     }
     if (classItemsToUse.length == 0) {

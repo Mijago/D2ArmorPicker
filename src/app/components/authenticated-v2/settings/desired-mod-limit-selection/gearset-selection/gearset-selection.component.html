@@ -17,12 +17,13 @@
             class="bonus-toggle"
             *ngVar="gearSet.twoPieceBonus as bonus"
             (click)="onTwoPieceBonusChange(i)"
+            [class.disabled]="!bonus.available"
             [gearsetTooltip]="bonus.perk">
             <mat-slide-toggle
               color="primary"
               [id]="'two-piece-' + i"
               [checked]="bonus.enabled"
-              [disabled]="selectedTwoPieceCount >= 2 && !bonus.enabled">
+              [disabled]="(selectedTwoPieceCount >= 2 && !bonus.enabled) || !bonus.available">
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img
@@ -39,8 +40,13 @@
             class="bonus-toggle"
             *ngVar="gearSet.fourPieceBonus as bonus"
             (click)="onFourPieceBonusChange(i)"
+            [class.disabled]="!bonus.available"
             [gearsetTooltip]="bonus.perk">
-            <mat-slide-toggle color="primary" [id]="'four-piece-' + i" [checked]="bonus.enabled">
+            <mat-slide-toggle
+              color="primary"
+              [id]="'four-piece-' + i"
+              [checked]="bonus.enabled"
+              [disabled]="!bonus.available">
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img

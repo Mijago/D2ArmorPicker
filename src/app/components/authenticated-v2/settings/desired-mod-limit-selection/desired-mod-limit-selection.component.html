@@ -15,150 +15,22 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<mat-toolbar color="warn" class="mat-elevation-z4 impossible-container" *ngIf="!allPossible">
-  Some of your chosen limitations contain no armor pieces and will yield no results.
-</mat-toolbar>
-
-<mat-toolbar color="primary" class="mat-elevation-z4 impossible-container">
-  This has not yet been updated for the new expansion.
-</mat-toolbar>
-
 <div class="container">
-  <!-- Title -->
-  <app-slot-limitation-title></app-slot-limitation-title>
-  <!-- /Title -->
-  <app-slot-limitation-selection
-    [slot]="$any(ArmorSlot.ArmorSlotHelmet)"
-    (possible)="updatePossibility(0, $event)"></app-slot-limitation-selection>
-  <br />
-  <app-slot-limitation-selection
-    [slot]="$any(ArmorSlot.ArmorSlotGauntlet)"
-    (possible)="updatePossibility(1, $event)"></app-slot-limitation-selection>
-  <br />
-  <app-slot-limitation-selection
-    [slot]="$any(ArmorSlot.ArmorSlotChest)"
-    (possible)="updatePossibility(2, $event)"></app-slot-limitation-selection>
-  <br />
-  <app-slot-limitation-selection
-    [slot]="$any(ArmorSlot.ArmorSlotLegs)"
-    (possible)="updatePossibility(3, $event)"></app-slot-limitation-selection>
-  <br />
-  <app-slot-limitation-selection
-    [slot]="$any(ArmorSlot.ArmorSlotClass)"
-    (possible)="updatePossibility(4, $event)"></app-slot-limitation-selection>
-  <!-- Gearset Selection -->
-  <app-gearset-selection></app-gearset-selection>
+  <div class="section-spacing">
+    <!-- Gearset Selection -->
+    <app-gearset-selection></app-gearset-selection>
+  </div>
+  <div class="section-spacing">
+    <!-- Modslot Visualization -->
+    <app-modslot-visualization></app-modslot-visualization>
+  </div>
+  <div class="section-spacing">
+    <!-- Mod Limit Selection -->
+    <app-mod-limit-segmented></app-mod-limit-segmented>
+  </div>
 </div>
 
 <div id="clear-container">
   <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>
 </div>
 <div class="minispace"></div>
-
-<mat-toolbar
-  color="warn"
-  class="mat-elevation-z4 impossible-container"
-  *ngIf="disabledSlotLimitation">
-  The mod cost limitation is currently disabled. Modslot filtering still works.
-</mat-toolbar>
-<div class="minispace"></div>
-<mat-accordion>
-  <mat-expansion-panel class="mat-elevation-z6">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <mat-icon aria-hidden="false" inline>info</mat-icon>
-        Explanation
-      </mat-panel-title>
-      <mat-panel-description> Detailed instructions for this section. </mat-panel-description>
-    </mat-expansion-panel-header>
-    <div id="explanation-description">
-      This section allows you to further finetune the results to your requirements.<br />
-
-      <div class="minispace"></div>
-      <u>Limitation of available stat mod types</u><br />
-      First off, you are able to
-      <span class="text-highlight">select the kind and amount of stat mods</span> you want. By
-      filling the bars you
-      <span class="text-highlight">specify how many modslots are already occupied</span> and thus
-      the tool knows how much space it is able to use for your builds. Hover over the bars, it will
-      show you which mods are available after you changed your selection.
-      <div class="minispace"></div>
-      <div class="example-usecase">
-        Example Use Case: "On one item I can only use up to four recovery mods, no major super mod.
-        One item can not hold any mods". In this scenario you would set one slot to 10 used slots,
-        and the rest to 6.
-      </div>
-      <br />
-
-      <u>Filter Armor Perk/Slot</u><br />
-      This allows you to super-finetune your armor-perk or modslot requirements. You can change the
-      settings for <span class="text-highlight">each armor slot</span>. There are two modes per
-      armor slot: <span class="text-highlight">Locked</span> and
-      <span class="text-highlight">Unlocked</span>. Per default each entry is in the
-      <span class="text-highlight">Locked</span> mode.
-      <div class="minispace"></div>
-      <span class="text-highlight">Locked</span> means that
-      <span class="text-highlight">this armor slot must have</span> the selected perk or modslot.
-      <div class="minispace"></div>
-      <span class="text-highlight">Unlocked</span> means that the perk must exist, but
-      <span class="text-highlight">the exact armor slot is irrelevant</span>. That means that the
-      tool can decide where it puts the desired perk.
-      <div class="minispace"></div>
-      <div class="example-usecase">
-        Example Use Case: "The Class Item
-        <span class="text-highlight">must be Artifice</span>. Oh, and I need two Iron Banner perks,
-        but the position does not matter". In this scenario, Class Item would be
-        <span class="text-highlight">Locked</span> and the rest would be
-        <span class="text-highlight">Unlocked</span>.
-      </div>
-      <br />
-      Legend:
-      <table class="modslot-legend">
-        <tr>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotVaultOfGlass"></app-armor-perk-icon>
-          </td>
-          <td>Vault of Glass</td>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotDeepStoneCrypt"></app-armor-perk-icon>
-          </td>
-          <td>Deep Stone Crypt</td>
-          <td>
-            <app-armor-perk-icon
-              [perk]="ArmorPerkOrSlot.SlotGardenOfSalvation"></app-armor-perk-icon>
-          </td>
-          <td>Garden of Salvation</td>
-        </tr>
-        <tr>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotLastWish"></app-armor-perk-icon>
-          </td>
-          <td>Last Wish</td>
-          <td>
-            <app-armor-perk-icon
-              [perk]="ArmorPerkOrSlot.SlotVowOfTheDisciple"></app-armor-perk-icon>
-          </td>
-          <td>Vow of the Disciple</td>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotNightmare"></app-armor-perk-icon>
-          </td>
-          <td>Nightmare Modslot</td>
-        </tr>
-        <tr>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.SlotArtifice"></app-armor-perk-icon>
-          </td>
-          <td>Artifice Modslot</td>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.PerkIronBanner"></app-armor-perk-icon>
-          </td>
-          <td>Iron Banner Perk</td>
-          <td>
-            <app-armor-perk-icon [perk]="ArmorPerkOrSlot.PerkEchoesOfGlory"></app-armor-perk-icon>
-          </td>
-          <td>Echoes of Glory Perk</td>
-        </tr>
-      </table>
-    </div>
-  </mat-expansion-panel>
-</mat-accordion>

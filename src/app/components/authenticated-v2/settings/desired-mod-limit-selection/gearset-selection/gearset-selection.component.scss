@@ -51,6 +51,10 @@
   gap: 0.3rem;
   min-width: 120px;
   margin-bottom: 2px;
+
+  &.disabled .bonus-name {
+    color: #888;
+  }
 }
 
 .bonus-name {

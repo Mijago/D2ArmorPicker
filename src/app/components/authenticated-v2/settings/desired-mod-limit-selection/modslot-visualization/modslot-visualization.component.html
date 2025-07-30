@@ -1,0 +1,68 @@
+<div class="modslot-visualization-flex">
+  <div class="modslot-visualization-description">
+    <div class="modslot-title">Mod Slot Configuration</div>
+    <div class="modslot-desc"
+      >Shows your currently selected exotic, gearset, and perk slots. Click a slot to remove it or
+      add a new perk.</div
+    >
+  </div>
+  <div class="modslot-row">
+    <ng-container *ngFor="let slot of slots; let i = index">
+      <div class="modslot" [ngClass]="{ blocked: slot.type !== SlotType.SlotTypeEmpty }">
+        <ng-container [ngSwitch]="slot.type">
+          <ng-container *ngSwitchCase="SlotType.SlotTypeExotic">
+            <app-item-icon [itemHash]="slot.hash" class="modslot-icon exotic"></app-item-icon>
+          </ng-container>
+          <ng-container *ngSwitchCase="SlotType.SlotTypeGearset">
+            <img
+              [src]="'https://bungie.net/' + slot.icon"
+              class="modslot-icon gearset"
+              alt="Gearset"
+              [matTooltip]="slot.name || ''" />
+          </ng-container>
+          <ng-container *ngSwitchCase="SlotType.SlotTypePerk">
+            <div
+              class="perk-slot-wrapper"
+              (mouseenter)="hoveredPerkIndex = i"
+              (mouseleave)="hoveredPerkIndex = null"
+              [matTooltip]="getPerkName(slot.hash)"
+              (click)="removePerk(slot)">
+              <app-item-icon [itemHash]="slot.hash" class="modslot-icon perk"></app-item-icon>
+              <div *ngIf="hoveredPerkIndex === i" class="perk-x-overlay">
+                <span class="perk-x">&#10006;</span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngSwitchDefault>
+            <img
+              src="assets/icons/empty_modslot.png"
+              class="modslot-icon empty"
+              alt="Empty Modslot" />
+            <ng-container *ngIf="slot.type === SlotType.SlotTypeEmpty">
+              <ng-container *ngIf="i === firstEmptySlotIndex">
+                <button mat-stroked-button [matMenuTriggerFor]="perkMenu" class="perk-menu-btn">
+                  <span style="display: flex; align-items: center">
+                    <mat-icon>add</mat-icon>
+                  </span>
+                </button>
+                <mat-menu #perkMenu="matMenu" class="modslot-select-scroll-menu">
+                  <button
+                    mat-menu-item
+                    *ngFor="let perk of availablePerks"
+                    (click)="onPerkSelect(i, perk)">
+                    <span style="display: flex; align-items: center">
+                      <app-item-icon
+                        [itemHash]="perk"
+                        style="width: 24px; height: 24px; margin-right: 8px"></app-item-icon>
+                      <span>{{ getPerkName(perk) }}</span>
+                    </span>
+                  </button>
+                </mat-menu>
+              </ng-container>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+</div>

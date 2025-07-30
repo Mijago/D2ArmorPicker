@@ -617,10 +617,7 @@ export class BungieApiService {
   }
     */
 
-  private getArmorPerk(
-    v: DestinyInventoryItemDefinition,
-    itemSetDefinitions: DestinyEquipableItemSetDefinition
-  ): ArmorPerkOrSlot {
+  private getArmorPerk(v: DestinyInventoryItemDefinition): ArmorPerkOrSlot {
     // Guardian Games
     if (
       environment.featureFlags.enableGuardianGamesFeatures &&
@@ -658,18 +655,6 @@ export class BungieApiService {
       // find the key of ArmorPerkSocketHashes that matches the socketHash
       if (perk != ArmorPerkOrSlot.None) {
         return perk;
-      }
-    }
-
-    // TODO: Fix this as soon as DIM API is updated
-    for (const itemSet of Object.values(itemSetDefinitions)) {
-      if (itemSet.setItems.indexOf(v.hash) > -1) {
-        // This is an item set, so it has a perk
-        // find the ArmorPerkOrSlot id that is listed in ArmorPerkSocketHashes
-        const perk = Object.entries(ArmorPerkSocketHashes).find(
-          (kvpair) => kvpair[1] == itemSet.hash
-        );
-        if (perk) return Number.parseInt(perk[0]) as ArmorPerkOrSlot;
       }
     }
 
@@ -984,7 +969,11 @@ export class BungieApiService {
           itemSubType: v.itemSubType,
           investmentStats: v.investmentStats,
           // TODO: fix as soon as DIM Api is updated
-          perk: this.getArmorPerk(v, (manifestTables as any).DestinyEquipableItemSetDefinition),
+          perk: this.getArmorPerk(v),
+          gearSetHash: this.getGearSet(
+            v,
+            (manifestTables as any).DestinyEquipableItemSetDefinition
+          ),
           socketEntries: v.sockets?.socketEntries ?? [],
           isFeatured: isFeatured,
         } as IManifestArmor;
@@ -993,6 +982,17 @@ export class BungieApiService {
     await this.db.writeManifestArmor(entries, manifestVersion);
     this.manifestUpdatedSubject.next();
     return manifestTables;
+  }
+  getGearSet(
+    v: DestinyInventoryItemDefinition,
+    itemSetDefinitions: DestinyEquipableItemSetDefinition[]
+  ) {
+    for (const itemSet of Object.values(itemSetDefinitions)) {
+      if (itemSet.setItems.indexOf(v.hash) > -1) {
+        return itemSet.hash;
+      }
+    }
+    return null;
   }
   updateSandboxPerks(manifestTables: DestinyManifestSlice<"DestinySandboxPerkDefinition"[]>) {
     const sandboxPerks = manifestTables.DestinySandboxPerkDefinition;

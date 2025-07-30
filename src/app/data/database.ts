@@ -38,10 +38,10 @@ export class Database extends Dexie {
 
   constructor() {
     super("d2armorpicker-v2");
-    this.version(29).stores({
+    this.version(31).stores({
       manifestArmor: "id++, hash, isExotic",
       inventoryArmor:
-        "id++, itemInstanceId, isExotic, hash, name, masterworked, clazz, slot, source",
+        "id++, itemInstanceId, isExotic, hash, name, masterworked, clazz, slot, source, gearSetHash, perk, [clazz+gearSetHash]",
       sandboxPerkDefinition: "id++, hash",
       equipableItemSetDefinition: "id++, hash, setPerks, setItems",
       manifestCollectibles: "id++, hash",
