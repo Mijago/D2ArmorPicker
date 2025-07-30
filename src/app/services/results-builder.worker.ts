@@ -145,22 +145,6 @@ function prepareConstantModslotRequirement(config: BuildConfiguration) {
   return constantPerkRequirement;
 }
 
-function prepareConstantAvailableModslots(config: BuildConfiguration) {
-  var availableModCost: number[] = [];
-  const maxMods = Math.max(0, Math.min(5, config.statModLimits.maxMods));
-  const maxMajor = Math.max(0, Math.min(maxMods, config.statModLimits.maxMajorMods));
-  for (let mj = 0; mj < maxMajor; mj++) {
-    availableModCost.push(3);
-  }
-  for (let mn = 0; mn < maxMods - maxMajor; mn++) {
-    availableModCost.push(1);
-  }
-  while (availableModCost.length < 5) {
-    availableModCost.push(0);
-  }
-  return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
-}
-
 function* generateArmorCombinations(
   helmets: IPermutatorArmor[],
   gauntlets: IPermutatorArmor[],
@@ -388,7 +372,6 @@ addEventListener("message", async ({ data }) => {
 
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
-  const constantAvailableModslots = prepareConstantAvailableModslots(config);
 
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
 
@@ -468,7 +451,6 @@ addEventListener("message", async ({ data }) => {
       leg,
       classItemsToUse,
       constantBonus,
-      constantAvailableModslots,
       doNotOutput
     );
     // Only add 50k to the list if the setting is activated.
@@ -576,7 +558,6 @@ export function handlePermutation(
   leg: IPermutatorArmor,
   classItems: IPermutatorArmor[],
   constantBonus: number[],
-  availableModCost: number[],
   doNotOutput = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
@@ -758,7 +739,6 @@ export function handlePermutation(
         newDistances,
         newOptionalDistances,
         tmpArtificeCount,
-        availableModCost,
         config.modOptimizationStrategy
       );
 
@@ -769,8 +749,7 @@ export function handlePermutation(
         config,
         adjustedStats,
         newDistances,
-        tmpArtificeCount,
-        availableModCost
+        tmpArtificeCount
       );
 
       // This may lead to issues later.
@@ -790,7 +769,6 @@ export function handlePermutation(
           adjustedStatsWithoutMods,
           newDistances,
           tmpArtificeCount,
-          availableModCost,
           doNotOutput
         );
       }
@@ -806,8 +784,7 @@ function performTierAvailabilityTesting(
   config: BuildConfiguration,
   stats: number[],
   distances: number[],
-  availableArtificeCount: number,
-  availableModCost: number[]
+  availableArtificeCount: number
 ): void {
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
@@ -843,7 +820,6 @@ function performTierAvailabilityTesting(
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        availableModCost,
         ModOptimizationStrategy.None
       );
 
@@ -867,7 +843,6 @@ function performTierAvailabilityTesting(
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        availableModCost,
         ModOptimizationStrategy.None
       );
       if (mods != null) {
@@ -890,7 +865,6 @@ function tryCreateArmorSetWithClassItem(
   statsWithoutMods: number[],
   newDistances: number[],
   availableArtificeCount: number,
-  availableModCost: number[],
   doNotOutput: boolean
 ): IPermutatorArmorSet | never[] {
   if (doNotOutput) return [];
@@ -927,7 +901,6 @@ function get_mods_precalc(
   distances: number[],
   optionalDistances: number[],
   availableArtificeCount: number,
-  availableModCost: number[],
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
   // check distances <= 65
@@ -974,28 +947,21 @@ function get_mods_precalc(
       }
     }
   }
+
+  for (let i = 0; i < 6; i++) {
+    precalculatedMods[i] = precalculatedMods[i].filter(
+      (d) =>
+        d[2] <= config.statModLimits.maxMajorMods && d[1] + d[2] <= config.statModLimits.maxMods
+    );
+
+    if (precalculatedMods[i] == null || precalculatedMods[i].length == 0) {
+      // if there are no mods for this distance, we can not calculate anything
+      return null;
+    }
+  }
+
   let bestMods: any = null;
   let bestScore = 1000;
-
-  const availableModCostLen = availableModCost.length;
-  const minAvailableModCost = availableModCost[availableModCostLen - 1];
-
-  // const maxAvailableModCost = availableModCost[0];
-
-  function validateMods(usedModCost: number[]): boolean {
-    let usedModCount = usedModCost.length;
-    if (usedModCount == 0) return true;
-    if (usedModCount > availableModCostLen) return false;
-    // sort usedMods ascending
-    usedModCost.sort((a, b) => b - a);
-    // check if the usedMods are valid
-    // substract the usedMods from the availableMods, start at the highest cost
-    for (let i = 0; i < availableModCost.length && i < usedModCount; i++) {
-      if (availableModCost[i] < usedModCost[i]) return false;
-    }
-
-    return true;
-  }
 
   function score(entries: [number, number, number, number][]) {
     if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
@@ -1007,10 +973,7 @@ function get_mods_precalc(
     return entries.reduce((a, b) => a + b[3], 0);
   }
 
-  function validate(
-    entries: [number, number, number, number][],
-    alsoValidateMods = false
-  ): boolean {
+  function validate(entries: [number, number, number, number][]): boolean {
     // sum up the stats
     const sum = entries.reduce(
       (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
@@ -1019,26 +982,9 @@ function get_mods_precalc(
 
     if (score(entries) > bestScore) return false;
     if (sum[0] > availableArtificeCount) return false;
-    if (sum[1] + sum[2] > availableModCostLen) return false;
+    if (sum[1] + sum[2] > config.statModLimits.maxMods) return false;
+    if (sum[2] > config.statModLimits.maxMajorMods) return false;
     if (sum[3] < 0) return false;
-
-    // test availableModCosts
-    // the used mods translate as follows:
-    // entries[0], entries[3] and entries[5]: minor 1, major 3
-    // entries[1], entries[2] and entries[4]: minor 2, major 4
-
-    if (!alsoValidateMods || minAvailableModCost == 5) return true;
-
-    let usedModCost: number[] = [];
-    for (let statIdx = 0; statIdx < entries.length; statIdx++) {
-      const entry = entries[statIdx];
-
-      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(1);
-      for (let major = 0; major < entry[2]; major++) usedModCost.push(3);
-    }
-
-    if (usedModCost.length == 0) return true;
-    if (!validateMods(usedModCost)) return false;
 
     return true;
   }
@@ -1069,7 +1015,7 @@ function get_mods_precalc(
             inner: for (let strength of precalculatedMods[5]) {
               let mods = [mobility, resilience, recovery, discipline, intellect, strength];
 
-              if (!validate(mods, true)) continue;
+              if (!validate(mods)) continue;
 
               // Fill optional distances
               for (let m = 0; m < 6; m++)
