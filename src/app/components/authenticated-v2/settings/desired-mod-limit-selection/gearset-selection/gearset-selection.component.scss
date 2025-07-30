@@ -21,8 +21,8 @@
 
 .gearset-table th {
   background: rgba(60, 60, 60, 0.8);
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-weight: bold !important;
+  border-bottom: 2px solid #888;
 }
 
 .gearset-table td {
