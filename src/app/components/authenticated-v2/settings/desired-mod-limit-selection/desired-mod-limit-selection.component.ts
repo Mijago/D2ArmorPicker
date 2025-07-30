@@ -31,6 +31,7 @@ export class DesiredModLimitSelectionComponent {
   clear() {
     this.config.modifyConfiguration((c) => {
       c.statModLimits = { maxMods: 5, maxMajorMods: 5 };
+      c.armorRequirements = [];
     });
   }
 }
