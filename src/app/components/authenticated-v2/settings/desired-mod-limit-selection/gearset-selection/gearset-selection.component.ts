@@ -93,7 +93,6 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
    * Refreshes the gearSets array from the database and sorts them by name.
    */
   private async refreshGearSets(): Promise<void> {
-    const newGearsets = [];
     const gearsets = await this.db.equipableItemSetDefinition.toArray();
     gearsets.sort((a, b) => {
       // Sort by name, case-insensitive
@@ -102,6 +101,11 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
       return nameA.localeCompare(nameB);
     });
     for (const gearset of gearsets) {
+      if (this.gearSets.some((gs) => gs.hash === gearset.hash)) {
+        // If the gearset is already in the list, skip it
+        continue;
+      }
+
       const twoPieceBonusInfo =
         gearset.setPerks.find((perk) => perk.requiredSetCount == 2)?.sandboxPerkHash || 0;
       const twoPieceBonusData = await this.db.sandboxPerkDefinition
@@ -118,7 +122,7 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
         (req) => "gearSetHash" in req && req.gearSetHash === gearset.hash
       ).length;
 
-      newGearsets.push({
+      const newEntry = {
         name: gearset.displayProperties.name || "Unknown Gear Set",
         hash: gearset.hash,
         twoPieceBonus: {
@@ -131,9 +135,15 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
           enabled: configCount == 4,
           available: false,
         },
-      });
+      };
+
+      let insertIndex = this.gearSets.findIndex((gs) => gs.name.localeCompare(newEntry.name) > 0);
+      if (insertIndex === -1) {
+        this.gearSets.push(newEntry);
+      } else {
+        this.gearSets.splice(insertIndex, 0, newEntry);
+      }
     }
-    this.gearSets = newGearsets;
   }
   public gearSets: GearSet[] = [];
 
