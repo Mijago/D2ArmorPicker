@@ -88,7 +88,11 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
       gearSet.twoPieceBonus.available = amount >= 2;
       gearSet.fourPieceBonus.available = amount >= 4;
+
+      if (!gearSet.twoPieceBonus.available) gearSet.twoPieceBonus.enabled = false;
+      if (!gearSet.fourPieceBonus.available) gearSet.fourPieceBonus.enabled = false;
     }
+    this.updateConfiguration();
   }
 
   /**
