@@ -43,6 +43,8 @@ interface GearSet {
   styleUrls: ["./gearset-selection.component.scss"],
 })
 export class GearsetSelectionComponent implements OnInit, OnDestroy {
+  private refreshingGearsets = false;
+  public gearSets: GearSet[] = [];
   constructor(
     private inventoryService: InventoryService,
     private db: DatabaseService,
@@ -93,6 +95,9 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
    * Refreshes the gearSets array from the database and sorts them by name.
    */
   private async refreshGearSets(): Promise<void> {
+    if (this.refreshingGearsets) return;
+    this.refreshingGearsets = true;
+
     const gearsets = await this.db.equipableItemSetDefinition.toArray();
     gearsets.sort((a, b) => {
       // Sort by name, case-insensitive
@@ -144,8 +149,8 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
         this.gearSets.splice(insertIndex, 0, newEntry);
       }
     }
+    this.refreshingGearsets = false;
   }
-  public gearSets: GearSet[] = [];
 
   get hasTwoPieceSelected(): boolean {
     return this.gearSets.some((gearSet) => gearSet.twoPieceBonus.enabled);
