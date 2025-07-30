@@ -162,6 +162,18 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkOverflowingCorruption]: "Overflowing Corruption Perk",
 };
 
+// To be used in the item icon component to display special icons for certain items
+export const SpecialItemIconUrls: EnumDictionary<number, string> = {
+  [717667840]:
+    "https://www.bungie.net/common/destiny2_content/icons/d89e12c918cb0c6b1087b073ad14d6c2.png",
+  [4144354978]:
+    "https://www.bungie.net/common/destiny2_content/icons/f2b6ec58e14244e4972705897667c246.png",
+  [1728096240]:
+    "https://www.bungie.net/common/destiny2_content/icons/0e515c7cf25a2f2350b788e6f5b7f8eb.png",
+  [2447143568]:
+    "https://www.bungie.net/common/destiny2_content/icons/b84b6ea72dd05de7123aa2ae87ba0d6a.png",
+};
+
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.Any]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
   [ArmorPerkOrSlot.None]:
