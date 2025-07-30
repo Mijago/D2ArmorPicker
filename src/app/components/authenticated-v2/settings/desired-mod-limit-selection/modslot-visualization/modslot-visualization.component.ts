@@ -70,7 +70,16 @@ export class ModslotVisualizationComponent implements OnInit, OnDestroy {
     }
 
     this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((config) => {
-      console.log("CONFIG config.armorRequirements", config.armorRequirements);
+      const isExoticSelectionEnabled =
+        config.selectedExotics.length > 0 && config.selectedExotics[0] !== FORCE_USE_NO_EXOTIC;
+      if (config.armorRequirements.length > 4 && isExoticSelectionEnabled) {
+        this.configService.modifyConfiguration((cb) => {
+          // If there are more than 4 armor requirements and an exotic is selected, trim the requirements to 4
+          cb.armorRequirements = cb.armorRequirements.slice(0, 4);
+        });
+        return;
+      }
+
       const newSlots: SlotInformation[] = [];
       if (config.selectedExotics && config.selectedExotics.length > 0) {
         if (config.selectedExotics[0] != FORCE_USE_NO_EXOTIC) {
