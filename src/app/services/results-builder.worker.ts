@@ -294,10 +294,10 @@ addEventListener("message", async ({ data }) => {
   ) {
     classItems = classItems.map((item) => {
       if (
-        (item.armorSystem == ArmorSystem.Armor2 &&
-          ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-            (config.assumeEveryExoticIsArtifice && item.isExotic))) ||
-        (config.assumeClassItemIsArtifice && !item.isExotic)
+        item.armorSystem == ArmorSystem.Armor2 &&
+        ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+          (config.assumeEveryExoticIsArtifice && item.isExotic) ||
+          (config.assumeClassItemIsArtifice && !item.isExotic))
       ) {
         return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
       }
