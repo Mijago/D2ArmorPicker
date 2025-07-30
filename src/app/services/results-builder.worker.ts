@@ -635,7 +635,7 @@ export function handlePermutation(
   for (let n: ArmorStat = 0; n < 6; n++) {
     // Abort here if we are already above the limit, in case of fixed stat tiers
     if (config.minimumStatTiers[n].fixed) {
-      if (stats[n] / 10 - 0.001 > config.minimumStatTiers[n].value) return null;
+      if (stats[n] > config.minimumStatTiers[n].value * 10) return null;
     }
   }
 
@@ -736,6 +736,13 @@ export function handlePermutation(
     adjustedStats[4] += classItem.intellect;
     adjustedStats[5] += classItem.strength;
     applyMasterworkStats(classItem, config, adjustedStats);
+
+    for (let n: ArmorStat = 0; n < 6; n++) {
+      // Abort here if we are already above the limit, in case of fixed stat tiers
+      if (config.minimumStatTiers[n].fixed) {
+        if (adjustedStats[n] > config.minimumStatTiers[n].value * 10) return null;
+      }
+    }
 
     const adjustedStatsWithoutMods = [
       statsWithoutMods[0] + classItem.mobility,
