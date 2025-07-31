@@ -34,9 +34,9 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.9.5c",
-    date: "July 27, 2025",
-    clearManifest: false,
+    version: "2.9.5",
+    date: "July 31, 2025",
+    clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.ADD,
@@ -76,6 +76,21 @@ export const CHANGELOG_DATA: {
       {
         type: ChangelogEntryType.MODIFIED,
         text: "Adjusted mod costs.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed armor perk filtering.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixing a value to a constant will now work correctly again.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Modified the 'Assume class item is artifice' check to only work on Armor 2.0 items.",
         issues: [],
       },
     ],
