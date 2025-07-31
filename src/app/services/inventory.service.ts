@@ -17,18 +17,21 @@
 
 import { Injectable } from "@angular/core";
 import { DatabaseService } from "./database.service";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { ArmorPerkOrSlot, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import { NavigationEnd, Router } from "@angular/router";
-import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
+import {
+  ResultDefinition,
+  ResultItem,
+} from "../components/authenticated-v2/results/results.component";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -39,16 +42,16 @@ import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
 import { getSkillTier, getWaste } from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
-import { FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { VendorsService } from "./vendors.service";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
+import { isEqual as _isEqual } from "lodash";
+import { getDifferences } from "../data/commonFunctions";
 
 type info = {
   results: ResultDefinition[];
   totalResults: number;
   maximumPossibleTiers: number[];
-  statCombo3x100: ArmorStat[][];
-  statCombo4x100: ArmorStat[][];
   itemCount: number;
   totalTime: number;
 };
@@ -57,7 +60,8 @@ export type ClassExoticInfo = {
   inInventory: boolean;
   inCollection: boolean;
   inVendor: boolean;
-  item: IManifestArmor;
+  items: IManifestArmor[];
+  instances: IInventoryArmor[];
 };
 
 @Injectable({
@@ -81,6 +85,9 @@ export class InventoryService {
   private _armorResults: BehaviorSubject<info>;
   public readonly armorResults: Observable<info>;
 
+  private _reachableTiers: BehaviorSubject<number[]>;
+  public readonly reachableTiers: Observable<number[]>;
+
   private _calculationProgress: Subject<number> = new Subject<number>();
   public readonly calculationProgress: Observable<number> =
     this._calculationProgress.asObservable();
@@ -91,11 +98,9 @@ export class InventoryService {
   private results: IPermutatorArmorSet[] = [];
   private totalPermutationCount = 0;
   private resultMaximumTiers: number[][] = [];
-  private resultStatCombo3x100 = new Set<number>();
-  private resultStatCombo4x100 = new Set<number>();
   private selectedExotics: IManifestArmor[] = [];
-  private itemz: IInventoryArmor[] = [];
-  private items: IPermutatorArmor[] = [];
+  private inventoryArmorItems: IInventoryArmor[] = [];
+  private permutatorArmorItems: IPermutatorArmor[] = [];
   private endResults: ResultDefinition[] = [];
 
   constructor(
@@ -116,6 +121,9 @@ export class InventoryService {
       results: this.allArmorResults,
     } as info);
     this.armorResults = this._armorResults.asObservable();
+
+    this._reachableTiers = new BehaviorSubject([0, 0, 0, 0, 0, 0]);
+    this.reachableTiers = this._reachableTiers.asObservable();
 
     this.workers = [];
     let dataAlreadyFetched = false;
@@ -144,9 +152,10 @@ export class InventoryService {
       }
       if (!auth.isAuthenticated()) return;
 
-      this._config = c;
+      if (_isEqual(c, this._config)) return;
+      console.debug("Build configuration changed", getDifferences(this._config, c));
 
-      console.debug("Trigger refreshAll due to config change");
+      this._config = structuredClone(c);
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
     });
@@ -160,8 +169,6 @@ export class InventoryService {
       totalTime: 0,
       itemCount: 0,
       maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-      statCombo3x100: [],
-      statCombo4x100: [],
     });
   }
 
@@ -173,7 +180,7 @@ export class InventoryService {
 
   async refreshAll(forceArmor: boolean = false, forceManifest = false) {
     if (this.refreshing) return;
-    console.debug("Execute refreshAll");
+    console.info("Refreshing User information");
     try {
       this.refreshing = true;
       if (this.auth.refreshTokenExpired && !(await this.auth.autoRegenerateTokens())) {
@@ -227,7 +234,7 @@ export class InventoryService {
   }
 
   private killWorkers() {
-    console.log("killing workers");
+    console.debug("Terminating workers");
     this.workers.forEach((w) => {
       w.terminate();
     });
@@ -258,23 +265,33 @@ export class InventoryService {
     return totalCalculations;
   }
 
+  cancelCalculation() {
+    console.info("Cancelling calculation");
+    this.killWorkers();
+    this.status.modifyStatus((s) => (s.calculatingResults = false));
+    this.status.modifyStatus((s) => (s.cancelledCalculation = true));
+
+    this._calculationProgress.next(0);
+    this.clearResults();
+  }
+
   async updateResults(nthreads: number = 3) {
+    let config = this._config;
+    console.debug("Using config for Workers", { configuration: config });
     this.clearResults();
     this.killWorkers();
 
     try {
       console.time("updateResults with WebWorker");
       this.status.modifyStatus((s) => (s.calculatingResults = true));
+      this.status.modifyStatus((s) => (s.cancelledCalculation = false));
       let doneWorkerCount = 0;
 
       this.results = [];
       this.totalPermutationCount = 0;
       this.resultMaximumTiers = [];
-      this.resultStatCombo3x100 = new Set<number>();
-      this.resultStatCombo4x100 = new Set<number>();
       const startTime = Date.now();
 
-      let config = this._config;
       this.selectedExotics = await Promise.all(
         config.selectedExotics
           .filter((hash) => hash != FORCE_USE_NO_EXOTIC)
@@ -285,17 +302,32 @@ export class InventoryService {
       );
       this.selectedExotics = this.selectedExotics.filter((i) => !!i);
 
-      this.itemz = (await this.db.inventoryArmor
+      this.inventoryArmorItems = (await this.db.inventoryArmor
         .where("clazz")
         .equals(config.characterClass)
         .distinct()
         .toArray()) as IInventoryArmor[];
 
-      this.itemz = this.itemz
+      this.inventoryArmorItems = this.inventoryArmorItems
         // only armor :)
         .filter((item) => item.slot != ArmorSlot.ArmorSlotNone)
         // filter disabled items
         .filter((item) => config.disabledItems.indexOf(item.itemInstanceId) == -1)
+        // filter armor 3.0
+        .filter((item) => item.isExotic || !config.enforceFeaturedLegendaryArmor || item.isFeatured)
+        .filter((item) => !item.isExotic || !config.enforceFeaturedExoticArmor || item.isFeatured)
+        .filter(
+          (item) =>
+            item.armorSystem === ArmorSystem.Armor3 ||
+            item.isExotic ||
+            config.allowLegacyLegendaryArmor
+        )
+        .filter(
+          (item) =>
+            item.armorSystem === ArmorSystem.Armor3 ||
+            !item.isExotic ||
+            config.allowLegacyExoticArmor
+        )
         // filter collection/vendor rolls if not allowed
         .filter((item) => {
           switch (item.source) {
@@ -313,23 +345,23 @@ export class InventoryService {
         )
         .filter(
           (item) =>
-            this.selectedExotics.length != 1 ||
-            (item.isExotic && this.selectedExotics[0].hash == item.hash) ||
-            (!item.isExotic && this.selectedExotics[0].slot != item.slot)
+            this.selectedExotics.length === 0 ||
+            (item.isExotic && this.selectedExotics.some((exotic) => exotic.hash === item.hash)) ||
+            (!item.isExotic && this.selectedExotics.every((exotic) => exotic.slot !== item.slot))
         )
 
         // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
         .filter(
           (item) =>
             !config.onlyUseMasterworkedExotics ||
-            !(item.rarity == TierType.Exotic && !item.masterworked)
+            !(item.rarity == TierType.Exotic && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
         )
 
         // config.OnlyUseMasterworkedLegendaries - only keep legendaries that are masterworked
         .filter(
           (item) =>
             !config.onlyUseMasterworkedLegendaries ||
-            !(item.rarity == TierType.Superior && !item.masterworked)
+            !(item.rarity == TierType.Superior && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL)
         )
 
         // non-legendaries and non-exotics
@@ -344,19 +376,24 @@ export class InventoryService {
         // armor perks
         .filter((item) => {
           return (
-            item.isExotic ||
+            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
+            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
             !config.armorPerks[item.slot].fixed ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.None ||
-            config.armorPerks[item.slot].value == item.perk
+            (config.armorPerks[item.slot].fixed &&
+              config.armorPerks[item.slot].value == item.perk) ||
+            (config.armorPerks[item.slot].value === ArmorPerkOrSlot.SlotArtifice &&
+              item.armorSystem === ArmorSystem.Armor2 &&
+              ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
+                (config.assumeEveryExoticIsArtifice && item.isExotic)))
           );
         });
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
-      this.itemz = this.itemz.filter((item) => {
+      this.inventoryArmorItems = this.inventoryArmorItems.filter((item) => {
         if (item.source === InventoryArmorSource.Inventory) return true;
 
-        const purchasedItemInstance = this.itemz.find(
+        const purchasedItemInstance = this.inventoryArmorItems.find(
           (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
         );
 
@@ -364,18 +401,18 @@ export class InventoryService {
         // already has a real copy of the same item.
         return purchasedItemInstance === undefined;
       });
-
-      this.items = this.itemz.map((armor) => {
+      this.permutatorArmorItems = this.inventoryArmorItems.map((armor) => {
         return {
           id: armor.id,
           hash: armor.hash,
           slot: armor.slot,
           clazz: armor.clazz,
           perk: armor.perk,
-          isExotic: !!armor.isExotic,
+          isExotic: armor.isExotic,
           rarity: armor.rarity,
           isSunset: armor.isSunset,
-          masterworked: armor.masterworked,
+          masterworkLevel: armor.masterworkLevel,
+          archetypeStats: armor.archetypeStats,
           mobility: armor.mobility,
           resilience: armor.resilience,
           recovery: armor.recovery,
@@ -383,22 +420,35 @@ export class InventoryService {
           intellect: armor.intellect,
           strength: armor.strength,
           source: armor.source,
-        } as IPermutatorArmor;
+          exoticPerkHash: armor.exoticPerkHash,
+
+          icon: armor.icon,
+          watermarkIcon: armor.watermarkIcon,
+          name: armor.name,
+          energyLevel: armor.energyLevel,
+          tier: armor.tier,
+          armorSystem: armor.armorSystem,
+        };
       });
 
       nthreads = this.estimateRequiredThreads();
 
-      console.log("nthreads for calculation", nthreads);
+      console.info("Threads for calculation", nthreads);
 
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
       const threadCalculationDoneArr = [...Array(nthreads).keys()].map(() => 0);
+      const threadCalculationReachableTiers: number[][] = [...Array(nthreads).keys()].map(() =>
+        Array(6).fill(0)
+      );
       let oldProgressValue = 0;
 
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
-      this.items = this.items.sort((a, b) => totalStats(b) - totalStats(a));
+      this.permutatorArmorItems = this.permutatorArmorItems.sort(
+        (a, b) => totalStats(b) - totalStats(a)
+      );
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
@@ -409,8 +459,17 @@ export class InventoryService {
           let data = ev.data;
           threadCalculationDoneArr[n] = data.checkedCalculations;
           threadCalculationAmountArr[n] = data.estimatedCalculations;
+          threadCalculationReachableTiers[n] =
+            data.reachableTiers || data.runtime.maximumPossibleTiers;
           const sumTotal = threadCalculationAmountArr.reduce((a, b) => a + b, 0);
           const sumDone = threadCalculationDoneArr.reduce((a, b) => a + b, 0);
+          const minReachableTiers = threadCalculationReachableTiers
+            .reduce((minArr, currArr) => {
+              // Using MAX would be more accurate, but using min is more visually appealing as it leads to larger jumps
+              return minArr.map((val, idx) => Math.max(val, currArr[idx]));
+            })
+            .map((k) => Math.min(200, k) / 10);
+          this._reachableTiers.next(minReachableTiers);
 
           if (
             threadCalculationDoneArr[0] > 0 &&
@@ -430,8 +489,6 @@ export class InventoryService {
             doneWorkerCount++;
             this.totalPermutationCount += data.stats.permutationCount;
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
-            for (let elem of data.runtime.statCombo3x100) this.resultStatCombo3x100.add(elem);
-            for (let elem of data.runtime.statCombo4x100) this.resultStatCombo4x100.add(elem);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus((s) => (s.calculatingResults = false));
@@ -441,21 +498,19 @@ export class InventoryService {
 
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
-                this.itemz.find((y) => y.id == x)
+                this.inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
-              let v = {
+              let v: ResultDefinition = {
                 exotic:
                   exotic == null
-                    ? []
-                    : [
-                        {
-                          icon: exotic?.icon,
-                          watermark: exotic?.watermarkIcon,
-                          name: exotic?.name,
-                          hash: exotic?.hash,
-                        },
-                      ],
+                    ? undefined
+                    : {
+                        icon: exotic?.icon,
+                        watermark: exotic?.watermarkIcon,
+                        name: exotic?.name,
+                        hash: exotic?.hash,
+                      },
                 artifice: armorSet.usedArtifice,
                 modCount: armorSet.usedMods.length,
                 modCost: armorSet.usedMods.reduce(
@@ -467,39 +522,38 @@ export class InventoryService {
                 statsNoMods: armorSet.statsWithoutMods,
                 tiers: getSkillTier(armorSet.statsWithMods),
                 waste: getWaste(armorSet.statsWithMods),
-                items: items.reduce(
-                  (p: any, instance) => {
-                    p[instance.slot - 1].push({
-                      energyLevel: instance.energyLevel,
-                      hash: instance.hash,
-                      itemInstanceId: instance.itemInstanceId,
-                      name: instance.name,
-                      exotic: !!instance.isExotic,
-                      masterworked: instance.masterworked,
-                      mayBeBugged: instance.mayBeBugged,
-                      slot: instance.slot,
-                      perk: instance.perk,
-                      transferState: 0, // TRANSFER_NONE
-                      stats: [
-                        instance.mobility,
-                        instance.resilience,
-                        instance.recovery,
-                        instance.discipline,
-                        instance.intellect,
-                        instance.strength,
-                      ],
-                      source: instance.source,
-                    });
-                    return p;
-                  },
-                  [[], [], [], [], []]
+                items: items.map(
+                  (instance): ResultItem => ({
+                    energyLevel: instance.energyLevel,
+                    hash: instance.hash,
+                    itemInstanceId: instance.itemInstanceId,
+                    name: instance.name,
+                    exotic: !!instance.isExotic,
+                    masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+                    archetypeStats: instance.archetypeStats,
+                    armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
+                    masterworkLevel: instance.masterworkLevel,
+                    slot: instance.slot,
+                    perk: instance.perk,
+                    transferState: 0, // TRANSFER_NONE
+                    tier: instance.tier,
+                    stats: [
+                      instance.mobility,
+                      instance.resilience,
+                      instance.recovery,
+                      instance.discipline,
+                      instance.intellect,
+                      instance.strength,
+                    ],
+                    source: instance.source,
+                    statsNoMods: [],
+                  })
                 ),
-                classItem: armorSet.classItemPerk,
                 usesCollectionRoll: items.some(
                   (y) => y.source === InventoryArmorSource.Collections
                 ),
                 usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-              } as unknown as ResultDefinition;
+              } as ResultDefinition;
               this.endResults.push(v);
             }
 
@@ -516,19 +570,7 @@ export class InventoryService {
                   },
                   [0, 0, 0, 0, 0, 0]
                 )
-                .map((k) => Math.floor(Math.min(100, k) / 10)),
-              statCombo3x100:
-                Array.from(this.resultStatCombo3x100 as Set<number>).map((d: number) => {
-                  let r: ArmorStat[] = [];
-                  for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
-                  return r;
-                }) || [],
-              statCombo4x100:
-                Array.from(this.resultStatCombo4x100 as Set<number>).map((d: number) => {
-                  let r = [];
-                  for (let n = 0; n < 6; n++) if ((d & (1 << n)) > 0) r.push(n);
-                  return r;
-                }, []) || [],
+                .map((k) => Math.min(200, k) / 10),
             });
             console.timeEnd("updateResults with WebWorker");
             this.workers[n].terminate();
@@ -539,13 +581,14 @@ export class InventoryService {
         };
 
         this.workers[n].postMessage({
+          type: "builderRequest",
           currentClass: this.currentClass,
           config: this._config,
           threadSplit: {
             count: nthreads,
             current: n,
           },
-          items: this.items,
+          items: this.permutatorArmorItems,
           selectedExotics: this.selectedExotics,
         });
       }
@@ -554,10 +597,12 @@ export class InventoryService {
   }
 
   estimateRequiredThreads(): number {
-    const helmets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
-    const gauntlets = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotGauntlet);
-    const chests = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
-    const legs = this.items.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
+    const helmets = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotHelmet);
+    const gauntlets = this.permutatorArmorItems.filter(
+      (d) => d.slot == ArmorSlot.ArmorSlotGauntlet
+    );
+    const chests = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotChest);
+    const legs = this.permutatorArmorItems.filter((d) => d.slot == ArmorSlot.ArmorSlotLegs);
     const estimatedCalculations = this.estimateCombinationsToBeChecked(
       helmets,
       gauntlets,
@@ -610,25 +655,47 @@ export class InventoryService {
   async getExoticsForClass(clazz: DestinyClass, slot?: ArmorSlot): Promise<ClassExoticInfo[]> {
     let inventory = await this.db.inventoryArmor.where("isExotic").equals(1).toArray();
     inventory = inventory.filter(
-      (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
+      (d) =>
+        d.clazz == clazz &&
+        (d.armorSystem == ArmorSystem.Armor2 || d.armorSystem == ArmorSystem.Armor3) &&
+        (!slot || d.slot == slot)
     );
 
     let exotics = await this.db.manifestArmor.where("isExotic").equals(1).toArray();
     exotics = exotics.filter(
-      (d) => d.clazz == (clazz as any) && d.armor2 && (!slot || d.slot == slot)
+      (d) =>
+        d.clazz == clazz &&
+        (d.armorSystem == ArmorSystem.Armor2 || d.armorSystem == ArmorSystem.Armor3) &&
+        (!slot || d.slot == slot)
     );
 
-    return exotics.map((ex) => {
-      const instances = inventory.filter((i) => i.hash == ex.hash);
-      return {
-        item: ex,
-        inCollection:
-          instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
-        inInventory:
-          instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
-        inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
-      };
-    });
+    return exotics
+      .map((ex) => {
+        const instances = inventory.filter((i) => i.hash == ex.hash);
+        return {
+          items: [ex],
+          instances: instances,
+          inCollection:
+            instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
+          inInventory:
+            instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
+          inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
+        };
+      })
+      .reduce((acc: ClassExoticInfo[], curr: ClassExoticInfo) => {
+        const existing = acc.find((e) => e.items[0].name === curr.items[0].name);
+        if (existing) {
+          existing.items.push(curr.items[0]);
+          existing.instances.push(...curr.instances);
+          existing.inCollection = existing.inCollection || curr.inCollection;
+          existing.inInventory = existing.inInventory || curr.inInventory;
+          existing.inVendor = existing.inVendor || curr.inVendor;
+        } else {
+          acc.push({ ...curr, items: [curr.items[0]] });
+        }
+        return acc;
+      }, [] as ClassExoticInfo[])
+      .sort((x, y) => x.items[0].name.localeCompare(y.items[0].name));
   }
 
   async updateManifest(force: boolean = false): Promise<boolean> {
@@ -663,8 +730,12 @@ export class InventoryService {
 
       this.status.modifyStatus((s) => (s.updatingInventory = false));
       console.error(e);
-      await this.updateManifest(true);
-      return await this.updateInventoryItems(true, errorLoop++);
+
+      await this.status.setApiError();
+
+      //await this.updateManifest(true);
+      //return await this.updateInventoryItems(true, errorLoop++);
+      return false;
     }
   }
 }

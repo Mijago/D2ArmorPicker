@@ -19,14 +19,14 @@
   <table id="settings">
     <tr>
       <td>
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" subscriptSizing="dynamic">
           <mat-label>Name to save the configuration</mat-label>
           <input
             formControlName="name"
             matInput
             maxlength="30"
             minlength="4"
-            placeholder="Awesome Discipline Build 4" />
+            placeholder="Awesome Grenade Build 4" />
         </mat-form-field>
       </td>
       <td>
@@ -38,8 +38,8 @@
           "
           color="primary"
           mat-raised-button
-          type="submit">
-          Save current
+          type="submit"
+          >Save current
         </button>
       </td>
       <td>
@@ -61,14 +61,14 @@
           [cdkCopyToClipboard]="config.getCurrentConfigBase64Compressed()"
           color="primary"
           mat-raised-button
-          matTooltip="Copy your current configuration into your clipboard. You will be able to share it with others and import it later.">
-          Copy Current
+          matTooltip="Copy your current configuration into your clipboard. You will be able to share it with others and import it later."
+          >Copy Current
         </button>
       </td>
     </tr>
     <tr style="display: none">
       <td>
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Load saved configuration</mat-label>
           <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length === 0">
             <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
@@ -236,7 +236,7 @@
     <table>
       <tr>
         <td>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Copied configuration</mat-label>
             <input formControlName="content" matInput />
           </mat-form-field>

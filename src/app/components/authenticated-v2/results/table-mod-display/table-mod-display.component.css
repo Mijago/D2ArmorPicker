@@ -35,33 +35,33 @@
   border: #00000000 solid 2px;
 
   -webkit-mask-image: url("../../../../../assets/masks/modmask.svg");
-  mask-image: image(url("../../../../../assets/masks/modmask.svg"), black);
+  mask-image: url("../../../../../assets/masks/modmask.svg");
 }
 
-.modIcon_Mobility {
+.modIcon_Weapon {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(0deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(0deg) brightness(100%) saturate(320%);
 }
 
-.modIcon_Resilience {
+.modIcon_Health {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(60deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(60deg) brightness(100%) saturate(320%);
 }
 
-.modIcon_Recovery {
+.modIcon_Class {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(120deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(120deg) brightness(100%) saturate(320%);
 }
-.modIcon_Discipline {
+.modIcon_Grenade {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(180deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(180deg) brightness(100%) saturate(320%);
 }
-.modIcon_Intellect {
+.modIcon_Super {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(240deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(240deg) brightness(100%) saturate(320%);
 }
 
-.modIcon_Strength {
+.modIcon_Melee {
   -webkit-filter: contrast(2.3) sepia(100%) hue-rotate(300deg) brightness(100%) saturate(320%);
   filter: contrast(2.3) sepia(100%) hue-rotate(300deg) brightness(100%) saturate(320%);
 }

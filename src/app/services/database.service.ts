@@ -20,13 +20,23 @@ import { AuthService } from "./auth.service";
 import { Database } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { environment } from "../../environments/environment";
+import { ChangelogService } from "./changelog.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class DatabaseService extends Database {
-  constructor(private auth: AuthService) {
+  constructor(
+    private auth: AuthService,
+    private changelog: ChangelogService
+  ) {
     super();
+
+    if (this.changelog.wipeManifest) {
+      console.log("Wiping manifest due to changelog request");
+      this.auth.clearManifestInfo();
+    }
+
     this.version(this.verno).upgrade(async (tx) => {
       this.auth.clearManifestInfo();
     });
@@ -105,5 +115,26 @@ export class DatabaseService extends Database {
       updatedAt: lastUpdate,
       version: lastManifestVersion,
     };
+  }
+
+  // Database migration helper for exoticPerkHash field
+  // When loading existing data, convert single values to arrays
+  migrateExoticPerkHash(item: any): void {
+    if (item.exoticPerkHash !== undefined && item.exoticPerkHash !== null) {
+      // If it's already an array, leave it as is
+      if (Array.isArray(item.exoticPerkHash)) {
+        return;
+      }
+
+      // If it's a single value, convert to array
+      if (typeof item.exoticPerkHash === "number") {
+        item.exoticPerkHash = [item.exoticPerkHash];
+      } else {
+        // If it's null or undefined, set to empty array
+        item.exoticPerkHash = [];
+      }
+    } else {
+      item.exoticPerkHash = [];
+    }
   }
 }

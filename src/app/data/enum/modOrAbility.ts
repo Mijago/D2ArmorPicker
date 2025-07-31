@@ -67,8 +67,6 @@ export enum ModOrAbility {
   SparkOfShock,
 
   // Artifact mods,
-  //MobileRetrofit = 1500, // +5 Mobility
-  //ResilientRetrofit, // +5 Resilience
 
   // Strand
   ThreadOfFury = 1600,

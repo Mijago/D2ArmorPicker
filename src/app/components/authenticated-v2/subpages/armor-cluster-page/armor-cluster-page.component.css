@@ -89,6 +89,7 @@ mat-card {
 .cluster-item {
   flex-grow: 1;
   flex-basis: 0;
+  min-width: 250px;
 }
 
 .avg-stat-value {

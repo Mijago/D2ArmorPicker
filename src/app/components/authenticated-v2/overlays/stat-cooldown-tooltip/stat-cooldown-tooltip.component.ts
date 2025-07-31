@@ -49,7 +49,7 @@ export class StatCooldownTooltipComponent implements OnInit {
 
   @Input() tier: number = 0;
   @Input() differenceTier: number = 0; // the tier we use to show a difference for
-  @Input() stat: ArmorStat = ArmorStat.Mobility;
+  @Input() stat: ArmorStat = ArmorStat.StatWeapon;
 
   public entries: CooldownEntry[] = [];
 

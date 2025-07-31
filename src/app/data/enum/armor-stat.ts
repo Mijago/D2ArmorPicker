@@ -21,89 +21,98 @@ import { ModifierType, Subclass } from "./modifierType";
 
 export enum StatModifier {
   NONE,
-  MINOR_MOBILITY,
-  MAJOR_MOBILITY,
-  ARTIFICE_MOBILITY,
-  MINOR_RESILIENCE,
-  MAJOR_RESILIENCE,
-  ARTIFICE_RESILIENCE,
-  MINOR_RECOVERY,
-  MAJOR_RECOVERY,
-  ARTIFICE_RECOVERY,
-  MINOR_DISCIPLINE,
-  MAJOR_DISCIPLINE,
-  ARTIFICE_DISCIPLINE,
-  MINOR_INTELLECT,
-  MAJOR_INTELLECT,
-  ARTIFICE_INTELLECT,
-  MINOR_STRENGTH,
-  MAJOR_STRENGTH,
-  ARTIFICE_STRENGTH,
+  MINOR_WEAPON,
+  MAJOR_WEAPON,
+  ARTIFICE_WEAPON,
+  MINOR_HEALTH,
+  MAJOR_HEALTH,
+  ARTIFICE_HEALTH,
+  MINOR_CLASS,
+  MAJOR_CLASS,
+  ARTIFICE_CLASS,
+  MINOR_GRENADE,
+  MAJOR_GRENADE,
+  ARTIFICE_GRENADE,
+  MINOR_SUPER,
+  MAJOR_SUPER,
+  ARTIFICE_SUPER,
+  MINOR_MELEE,
+  MAJOR_MELEE,
+  ARTIFICE_MELEE,
 }
 
 export enum ArmorStat {
-  Mobility,
-  Resilience,
-  Recovery,
-  Discipline,
-  Intellect,
-  Strength,
+  StatWeapon,
+  StatHealth,
+  StatClass,
+  StatGrenade,
+  StatSuper,
+  StatMelee,
 }
+
+export const ARMORSTAT_ORDER = [
+  ArmorStat.StatHealth,
+  ArmorStat.StatMelee,
+  ArmorStat.StatGrenade,
+  ArmorStat.StatSuper,
+  ArmorStat.StatClass,
+  ArmorStat.StatWeapon,
+];
 
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {
-  [StatModifier.NONE]: [ArmorStat.Strength, 0, 0, 0],
-  [StatModifier.MINOR_MOBILITY]: [ArmorStat.Mobility, 5, 1, 1703647492],
-  [StatModifier.MAJOR_MOBILITY]: [ArmorStat.Mobility, 10, 3, 4183296050],
-  [StatModifier.ARTIFICE_MOBILITY]: [ArmorStat.Mobility, 3, 0, 2322202118],
-  [StatModifier.MINOR_RESILIENCE]: [ArmorStat.Resilience, 5, 2, 2532323436],
-  [StatModifier.MAJOR_RESILIENCE]: [ArmorStat.Resilience, 10, 4, 1180408010],
-  [StatModifier.ARTIFICE_RESILIENCE]: [ArmorStat.Resilience, 3, 0, 199176566],
-  [StatModifier.MINOR_RECOVERY]: [ArmorStat.Recovery, 5, 2, 1237786518],
-  [StatModifier.MAJOR_RECOVERY]: [ArmorStat.Recovery, 10, 4, 4204488676],
-  [StatModifier.ARTIFICE_RECOVERY]: [ArmorStat.Recovery, 3, 0, 539459624],
-  [StatModifier.MINOR_DISCIPLINE]: [ArmorStat.Discipline, 5, 1, 4021790309],
-  [StatModifier.MAJOR_DISCIPLINE]: [ArmorStat.Discipline, 10, 3, 1435557120],
-  [StatModifier.ARTIFICE_DISCIPLINE]: [ArmorStat.Discipline, 3, 0, 617569843],
-  [StatModifier.MINOR_INTELLECT]: [ArmorStat.Intellect, 5, 2, 350061697],
-  [StatModifier.MAJOR_INTELLECT]: [ArmorStat.Intellect, 10, 4, 2724608735],
-  [StatModifier.ARTIFICE_INTELLECT]: [ArmorStat.Intellect, 3, 0, 3160845295],
-  [StatModifier.MINOR_STRENGTH]: [ArmorStat.Strength, 5, 1, 2639422088],
-  [StatModifier.MAJOR_STRENGTH]: [ArmorStat.Strength, 10, 3, 4287799666],
-  [StatModifier.ARTIFICE_STRENGTH]: [ArmorStat.Strength, 3, 0, 2507624050],
+  [StatModifier.NONE]: [ArmorStat.StatMelee, 0, 0, 0],
+  [StatModifier.MINOR_WEAPON]: [ArmorStat.StatWeapon, 5, 1, 1703647492],
+  [StatModifier.MAJOR_WEAPON]: [ArmorStat.StatWeapon, 10, 3, 4183296050],
+  [StatModifier.ARTIFICE_WEAPON]: [ArmorStat.StatWeapon, 3, 0, 2322202118],
+  [StatModifier.MINOR_HEALTH]: [ArmorStat.StatHealth, 5, 1, 2532323436],
+  [StatModifier.MAJOR_HEALTH]: [ArmorStat.StatHealth, 10, 3, 1180408010],
+  [StatModifier.ARTIFICE_HEALTH]: [ArmorStat.StatHealth, 3, 0, 199176566],
+  [StatModifier.MINOR_CLASS]: [ArmorStat.StatClass, 5, 1, 1237786518],
+  [StatModifier.MAJOR_CLASS]: [ArmorStat.StatClass, 10, 3, 4204488676],
+  [StatModifier.ARTIFICE_CLASS]: [ArmorStat.StatClass, 3, 0, 539459624],
+  [StatModifier.MINOR_GRENADE]: [ArmorStat.StatGrenade, 5, 1, 4021790309],
+  [StatModifier.MAJOR_GRENADE]: [ArmorStat.StatGrenade, 10, 3, 1435557120],
+  [StatModifier.ARTIFICE_GRENADE]: [ArmorStat.StatGrenade, 3, 0, 617569843],
+  [StatModifier.MINOR_SUPER]: [ArmorStat.StatSuper, 5, 1, 350061697],
+  [StatModifier.MAJOR_SUPER]: [ArmorStat.StatSuper, 10, 3, 2724608735],
+  [StatModifier.ARTIFICE_SUPER]: [ArmorStat.StatSuper, 3, 0, 3160845295],
+  [StatModifier.MINOR_MELEE]: [ArmorStat.StatMelee, 5, 1, 2639422088],
+  [StatModifier.MAJOR_MELEE]: [ArmorStat.StatMelee, 10, 3, 4287799666],
+  [StatModifier.ARTIFICE_MELEE]: [ArmorStat.StatMelee, 3, 0, 2507624050],
 };
 
 export const ArmorStatNames: EnumDictionary<ArmorStat, string> = {
-  [ArmorStat.Mobility]: "Mobility",
-  [ArmorStat.Resilience]: "Resilience",
-  [ArmorStat.Recovery]: "Recovery",
-  [ArmorStat.Discipline]: "Discipline",
-  [ArmorStat.Intellect]: "Intellect",
-  [ArmorStat.Strength]: "Strength",
+  [ArmorStat.StatWeapon]: "Weapon",
+  [ArmorStat.StatHealth]: "Health",
+  [ArmorStat.StatClass]: "Class",
+  [ArmorStat.StatGrenade]: "Grenade",
+  [ArmorStat.StatSuper]: "Super",
+  [ArmorStat.StatMelee]: "Melee",
 };
 
 export const ArmorStatHashes: EnumDictionary<ArmorStat, number> = {
-  [ArmorStat.Mobility]: 2996146975,
-  [ArmorStat.Resilience]: 392767087,
-  [ArmorStat.Recovery]: 1943323491,
-  [ArmorStat.Discipline]: 1735777505,
-  [ArmorStat.Intellect]: 144602215,
-  [ArmorStat.Strength]: 4244567218,
+  [ArmorStat.StatWeapon]: 2996146975,
+  [ArmorStat.StatHealth]: 392767087,
+  [ArmorStat.StatClass]: 1943323491,
+  [ArmorStat.StatGrenade]: 1735777505,
+  [ArmorStat.StatSuper]: 144602215,
+  [ArmorStat.StatMelee]: 4244567218,
 };
 
 export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
-  [ArmorStat.Mobility]:
-    "https://www.bungie.net/common/destiny2_content/icons/e26e0e93a9daf4fdd21bf64eb9246340.png",
-  [ArmorStat.Resilience]:
-    "https://www.bungie.net/common/destiny2_content/icons/202ecc1c6febeb6b97dafc856e863140.png",
-  [ArmorStat.Recovery]:
-    "https://www.bungie.net/common/destiny2_content/icons/128eee4ee7fc127851ab32eac6ca91cf.png",
-  [ArmorStat.Discipline]:
-    "https://www.bungie.net/common/destiny2_content/icons/79be2d4adef6a19203f7385e5c63b45b.png",
-  [ArmorStat.Intellect]:
-    "https://www.bungie.net/common/destiny2_content/icons/d1c154469670e9a592c9d4cbdcae5764.png",
-  [ArmorStat.Strength]:
-    "https://www.bungie.net/common/destiny2_content/icons/ea5af04ccd6a3470a44fd7bb0f66e2f7.png",
+  [ArmorStat.StatWeapon]:
+    "https://www.bungie.net/common/destiny2_content/icons/bc69675acdae9e6b9a68a02fb4d62e07.png",
+  [ArmorStat.StatHealth]:
+    "https://www.bungie.net/common/destiny2_content/icons/717b8b218cc14325a54869bef21d2964.png",
+  [ArmorStat.StatClass]:
+    "https://www.bungie.net/common/destiny2_content/icons/7eb845acb5b3a4a9b7e0b2f05f5c43f1.png",
+  [ArmorStat.StatGrenade]:
+    "https://www.bungie.net/common/destiny2_content/icons/065cdaabef560e5808e821cefaeaa22c.png",
+  [ArmorStat.StatSuper]:
+    "https://www.bungie.net/common/destiny2_content/icons/585ae4ede9c3da96b34086fccccdc8cd.png",
+  [ArmorStat.StatMelee]:
+    "https://www.bungie.net/common/destiny2_content/icons/fa534aca76d7f2d7e7b4ba4df4271b42.png",
 };
 
 export enum SpecialArmorStat {
@@ -111,7 +120,8 @@ export enum SpecialArmorStat {
 }
 
 export enum ArmorPerkOrSlot {
-  None,
+  None = -1,
+  Any,
   SlotCrotasEnd = 2,
   SlotRootOfNightmares,
   SlotKingsFall,
@@ -125,20 +135,24 @@ export enum ArmorPerkOrSlot {
   SlotNightmare,
   // A special case just for guardian games class items.
   GuardianGamesClassItem = 18,
-
   PerkEchoesOfGlory = 20,
   SlotSalvationsEdge,
   SlotEidosApprentice,
-  COUNT,
-}
+  PerkOverflowingCorruption,
 
-// In the case that a perk has multiple possible hashes, we can use this to determine a mapping
-export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
-  [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
-};
+  // Armor Gearset
+  GearsetTechsec = 100,
+  GearsetBushido,
+  GearsetAionRenewal,
+  GearsetLastDiscipline,
+  GearsetAionAdapter,
+  GearsetTwoFoldCrown,
+  GearsetCollectivePsyche,
+}
 
 export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.None]: "None",
+  [ArmorPerkOrSlot.Any]: "Any",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "Crota's End Modslot",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "Root of Nightmares Modslot",
   [ArmorPerkOrSlot.SlotKingsFall]: "King's Fall Modslot",
@@ -154,14 +168,23 @@ export const ArmorPerkOrSlotNames: EnumDictionary<ArmorPerkOrSlot, string> = {
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: "Echoes of Glory Perk",
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "Salvation's Edge Modslot",
   [ArmorPerkOrSlot.SlotEidosApprentice]: "Eido's Apprentice Perk",
-  [ArmorPerkOrSlot.COUNT]: "",
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: "Overflowing Corruption Perk",
+  [ArmorPerkOrSlot.GearsetTechsec]: "Techsec Gearset",
+  [ArmorPerkOrSlot.GearsetBushido]: "Bushido Gearset",
+  [ArmorPerkOrSlot.GearsetAionRenewal]: "Aion Renewal Gearset",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: "Last Discipline Gearset",
+  [ArmorPerkOrSlot.GearsetAionAdapter]: "Aion Adapter Gearset",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "Two-Fold Crown Gearset",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "Collective Psyche Gearset",
 };
 
 export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
-  [ArmorPerkOrSlot.None]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.Any]: "https://www.bungie.net/img/misc/missing_icon_d2.png",
+  [ArmorPerkOrSlot.None]:
+    "https://www.bungie.net//common/destiny2_content/icons/56761c8361e33a367c6fa94f397d8692.png",
   //[ArmorPerkOrSlot.None]: "https://www.bungie.net/common/destiny2_content/icons/58afd7d17e7b58883b94fd5ba2e66b76.png",
   [ArmorPerkOrSlot.SlotCrotasEnd]:
-    "https://www.bungie.net/common/destiny2_content/icons/7ddce334fe8391848f408227439c1d7a.png",
+    "https://www.bungie.net/common/destiny2_content/icons/d89e12c918cb0c6b1087b073ad14d6c2.png",
   [ArmorPerkOrSlot.SlotRootOfNightmares]:
     "https://www.bungie.net/common/destiny2_content/icons/f2b6ec58e14244e4972705897667c246.png",
   [ArmorPerkOrSlot.SlotKingsFall]:
@@ -190,7 +213,22 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
     "https://www.bungie.net/common/destiny2_content/icons/c67322c917e16f3b8a4cb962e3f11166.png",
   [ArmorPerkOrSlot.SlotEidosApprentice]:
     "https://www.bungie.net/common/destiny2_content/icons/e083d8a85c2c60825204d14b9e9263b7.png",
-  [ArmorPerkOrSlot.COUNT]: "",
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]:
+    "https://www.bungie.net/common/destiny2_content/icons/7a714dc1f8b669d8d5901c1543eb244b.png",
+  [ArmorPerkOrSlot.GearsetTechsec]:
+    "https://www.bungie.net/common/destiny2_content/icons/514be1a6a19e5f4b2e8e6aa4c8f3e58a.jpg",
+  [ArmorPerkOrSlot.GearsetBushido]:
+    "https://www.bungie.net/common/destiny2_content/icons/ac4ebb47f8268ba6f93cbae3413f147e.jpg",
+  [ArmorPerkOrSlot.GearsetAionRenewal]:
+    "https://www.bungie.net/common/destiny2_content/icons/eb51d5401d0856e771f7d46fd6e1ca1f.jpg",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]:
+    "https://www.bungie.net/common/destiny2_content/icons/9f2f06bc94326bc0282deacdc8848c24.jpg",
+  [ArmorPerkOrSlot.GearsetAionAdapter]:
+    "https://www.bungie.net/common/destiny2_content/icons/f77b2802da61b9eaf08adb8795a970e3.jpg",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]:
+    "https://www.bungie.net/common/destiny2_content/icons/e199fe652e70c67c3d838bdd4ebf6a8d.jpg",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]:
+    "https://www.bungie.net/common/destiny2_content/icons/04fb8637f82f72da8dfdb9b8ca3e7339.jpg",
 };
 
 // List of armorInventoryItem.sockets.socketEntries[n].singleInitialItemHash values for each type
@@ -198,7 +236,7 @@ export const ArmorPerkOrSlotIcons: EnumDictionary<ArmorPerkOrSlot, string> = {
 export const ArmorPerkSocketHashes: EnumDictionary<
   Exclude<
     ArmorPerkOrSlot,
-    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT
+    ArmorPerkOrSlot.GuardianGamesClassItem | ArmorPerkOrSlot.Any | ArmorPerkOrSlot.None
   >,
   number
 > = {
@@ -216,12 +254,33 @@ export const ArmorPerkSocketHashes: EnumDictionary<
   [ArmorPerkOrSlot.SlotSalvationsEdge]: 4059283783,
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 2352831367,
   [ArmorPerkOrSlot.SlotEidosApprentice]: 273417606,
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: 1128948126,
+  [ArmorPerkOrSlot.GearsetTechsec]: 239346083,
+  [ArmorPerkOrSlot.GearsetBushido]: 1083114430,
+  [ArmorPerkOrSlot.GearsetAionRenewal]: 1223381128,
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: 3252452908,
+  [ArmorPerkOrSlot.GearsetAionAdapter]: 894715166,
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: 3259216565,
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: 3259216566,
 };
 
-export const ArmorPerkOrSlotDIMText: EnumDictionary<
-  Exclude<ArmorPerkOrSlot, ArmorPerkOrSlot.None | ArmorPerkOrSlot.COUNT>,
-  string
-> = {
+// In the case that a perk has multiple possible hashes, we can use this to determine a mapping
+export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
+};
+
+export const MapAlternativeSocketTypeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
+  [1719555937]: ArmorPerkOrSlot.SlotArtifice,
+  [2770223926]: ArmorPerkOrSlot.SlotArtifice,
+  [2831858578]: ArmorPerkOrSlot.SlotArtifice,
+  [3136585661]: ArmorPerkOrSlot.SlotArtifice,
+  [3642670483]: ArmorPerkOrSlot.SlotArtifice,
+  [4096670123]: ArmorPerkOrSlot.SlotArtifice,
+};
+
+export const ArmorPerkOrSlotDIMText: EnumDictionary<ArmorPerkOrSlot, string> = {
+  [ArmorPerkOrSlot.Any]: "",
+  [ArmorPerkOrSlot.None]: "",
   [ArmorPerkOrSlot.SlotCrotasEnd]: "modslot:crotasend",
   [ArmorPerkOrSlot.SlotRootOfNightmares]: "modslot:rootofnightmares",
   [ArmorPerkOrSlot.SlotKingsFall]: "modslot:kingsfall",
@@ -237,6 +296,14 @@ export const ArmorPerkOrSlotDIMText: EnumDictionary<
   [ArmorPerkOrSlot.PerkEchoesOfGlory]: 'exactperk:"echoes of glory"',
   [ArmorPerkOrSlot.SlotSalvationsEdge]: "(source:salvationsedge is:armor)",
   [ArmorPerkOrSlot.SlotEidosApprentice]: 'perkname:"eido\'s apprentice"',
+  [ArmorPerkOrSlot.PerkOverflowingCorruption]: 'perkname:"overflowing corruption"',
+  [ArmorPerkOrSlot.GearsetTechsec]: "name:techsec",
+  [ArmorPerkOrSlot.GearsetBushido]: "name:bushido",
+  [ArmorPerkOrSlot.GearsetAionRenewal]: "name:'aion renewal'",
+  [ArmorPerkOrSlot.GearsetLastDiscipline]: "name:'last discipline'",
+  [ArmorPerkOrSlot.GearsetAionAdapter]: "name:'aion adapter'",
+  [ArmorPerkOrSlot.GearsetTwoFoldCrown]: "name:'two-fold crown'",
+  [ArmorPerkOrSlot.GearsetCollectivePsyche]: "name:'collective psyche'",
 };
 
 export const SubclassHashes: EnumDictionary<
@@ -268,3 +335,18 @@ export const SubclassHashes: EnumDictionary<
     [ModifierType.Prismatic]: 3893112950,
   },
 };
+
+// Mapping function to convert exotic perk hashes to ArmorPerkOrSlot values
+// This will be needed for proper exotic class item filtering
+export function mapExoticPerkHashToArmorPerk(perkHash: number): ArmorPerkOrSlot {
+  // TODO: Add actual mappings based on the exotic perk hash values
+  // This is a placeholder that needs to be populated with real data
+  const exoticPerkHashMap: Record<number, ArmorPerkOrSlot> = {
+    // Example mappings - these need to be filled with actual game data
+    // 123456789: ArmorPerkOrSlot.PerkOverflowingCorruption,
+    // 987654321: ArmorPerkOrSlot.PerkBane,
+    // Add more mappings as needed
+  };
+
+  return exoticPerkHashMap[perkHash] || ArmorPerkOrSlot.None;
+}

@@ -28,12 +28,12 @@ export function getDefaultStatDict(
   value: number
 ): EnumDictionary<ArmorStat, FixableSelection<number>> {
   return {
-    [ArmorStat.Mobility]: { fixed: false, value: value },
-    [ArmorStat.Resilience]: { fixed: false, value: value },
-    [ArmorStat.Recovery]: { fixed: false, value: value },
-    [ArmorStat.Discipline]: { fixed: false, value: value },
-    [ArmorStat.Intellect]: { fixed: false, value: value },
-    [ArmorStat.Strength]: { fixed: false, value: value },
+    [ArmorStat.StatWeapon]: { fixed: false, value: value },
+    [ArmorStat.StatHealth]: { fixed: false, value: value },
+    [ArmorStat.StatClass]: { fixed: false, value: value },
+    [ArmorStat.StatGrenade]: { fixed: false, value: value },
+    [ArmorStat.StatSuper]: { fixed: false, value: value },
+    [ArmorStat.StatMelee]: { fixed: false, value: value },
   };
 }
 
@@ -43,10 +43,10 @@ export interface FixableSelection<T> {
 }
 
 export class BuildConfiguration {
-  characterClass: DestinyClass = DestinyClass.Titan;
+  characterClass: DestinyClass = DestinyClass.Unknown;
 
   // Add constant +1 strength
-  addConstent1Resilience = false;
+  addConstent1Health = false;
 
   assumeClassItemIsArtifice = false;
   assumeEveryLegendaryIsArtifice = false;
@@ -55,19 +55,15 @@ export class BuildConfiguration {
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
 
-  // TODO: convert minimumStatTier -> minimumStatTiers for old configs
   minimumStatTiers: EnumDictionary<ArmorStat, FixableSelection<number>> = {
-    [ArmorStat.Mobility]: { fixed: false, value: 0 },
-    [ArmorStat.Resilience]: { fixed: false, value: 0 },
-    [ArmorStat.Recovery]: { fixed: false, value: 0 },
-    [ArmorStat.Discipline]: { fixed: false, value: 0 },
-    [ArmorStat.Intellect]: { fixed: false, value: 0 },
-    [ArmorStat.Strength]: { fixed: false, value: 0 },
+    [ArmorStat.StatWeapon]: { fixed: false, value: 0 },
+    [ArmorStat.StatHealth]: { fixed: false, value: 0 },
+    [ArmorStat.StatClass]: { fixed: false, value: 0 },
+    [ArmorStat.StatGrenade]: { fixed: false, value: 0 },
+    [ArmorStat.StatSuper]: { fixed: false, value: 0 },
+    [ArmorStat.StatMelee]: { fixed: false, value: 0 },
   };
   maximumStatMods: number = 5; // TODO: remove
-
-  // if set, then we can use the exact stats like 6x69. It will be stored as "fixed 6.9" in minimumStatTiers
-  allowExactStats = false;
 
   // Fixable, BUT the bool is not yet used. Maybe in a future update.
   maximumModSlots: EnumDictionary<ArmorSlot, FixableSelection<number>> = {
@@ -82,43 +78,44 @@ export class BuildConfiguration {
   putArtificeMods = true;
   useFotlArmor = true;
   allowBlueArmorPieces = true;
+  // Allow armor 2.0, which is the legacy armor system
+  allowLegacyLegendaryArmor = true;
+  allowLegacyExoticArmor = true;
+  enforceFeaturedLegendaryArmor = false;
+  enforceFeaturedExoticArmor = false;
+
   ignoreSunsetArmor = false;
   includeVendorRolls = false;
   includeCollectionRolls = false;
   assumeLegendariesMasterworked = true;
   assumeExoticsMasterworked = true;
-  assumeClassItemMasterworked = true;
   onlyUseMasterworkedExotics = false;
   onlyUseMasterworkedLegendaries = false;
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
-  showWastedStatsColumn = false;
-  showPotentialTierColumn = false;
 
   selectedModElement: ModifierType = ModifierType.Stasis;
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = [];
+  selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
   // mainly for the exotic class item
-  ignoreExistingExoticArtificeSlots = false;
 
   armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
-    [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.None },
-    [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.None },
+    [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.Any },
+    [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.Any },
   };
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
-      ignoreExistingExoticArtificeSlots: false,
-      allowExactStats: false,
       enabledMods: [],
       disabledItems: [],
-      addConstent1Resilience: false,
+      addConstent1Health: false,
       assumeEveryLegendaryIsArtifice: false,
       assumeEveryExoticIsArtifice: false,
       assumeClassItemIsArtifice: false,
@@ -130,19 +127,21 @@ export class BuildConfiguration {
       ignoreSunsetArmor: false,
       includeCollectionRolls: false,
       includeVendorRolls: false,
+      enforceFeaturedLegendaryArmor: false,
+      enforceFeaturedExoticArmor: false,
       allowBlueArmorPieces: true,
+      allowLegacyLegendaryArmor: true,
+      allowLegacyExoticArmor: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
-      assumeClassItemMasterworked: true,
       limitParsedResults: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
-      showWastedStatsColumn: false,
-      showPotentialTierColumn: false,
-      characterClass: DestinyClass.Titan,
-      selectedModElement: ModifierType.Stasis,
+      characterClass: DestinyClass.Unknown,
+      selectedModElement: ModifierType.Prismatic,
       selectedExotics: [],
+      selectedExoticPerks: [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any],
       maximumModSlots: {
         [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
         [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: 5 },
@@ -152,12 +151,12 @@ export class BuildConfiguration {
         [ArmorSlot.ArmorSlotNone]: { fixed: false, value: 5 },
       },
       armorPerks: {
-        [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.None },
-        [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.None },
+        [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotChest]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotLegs]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotClass]: { fixed: false, value: ArmorPerkOrSlot.Any },
+        [ArmorSlot.ArmorSlotNone]: { fixed: false, value: ArmorPerkOrSlot.Any },
       },
       minimumStatTiers: getDefaultStatDict(0),
     };

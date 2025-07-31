@@ -15,23 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { TheorizerPageComponent } from "./theorizer-page.component";
-import { RouterModule, Routes } from "@angular/router";
-import { CommonMaterialModule } from "../../../../modules/common-material/common-material.module";
+import { DestinyClass } from "bungie-api-ts/destiny2";
+import { EnumDictionary } from "../types/EnumDictionary";
 
-// router
-const routes: Routes = [
-  {
-    path: "",
-    component: TheorizerPageComponent,
-  },
-];
-
-@NgModule({
-  declarations: [TheorizerPageComponent],
-  exports: [TheorizerPageComponent],
-  imports: [CommonModule, CommonMaterialModule, RouterModule.forChild(routes)],
-})
-export class TheorizerPageModule {}
+export const DestinyClassNames: EnumDictionary<DestinyClass, string> = {
+  [DestinyClass.Titan]: "Titan",
+  [DestinyClass.Hunter]: "Hunter",
+  [DestinyClass.Warlock]: "Warlock",
+  [DestinyClass.Unknown]: "Unknown",
+};

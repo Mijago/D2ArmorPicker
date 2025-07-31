@@ -17,9 +17,11 @@
 
 import { Component, Input } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
-import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ARMORSTAT_ORDER, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 
 @Component({
   selector: "app-armor-tooltip-component",
@@ -29,6 +31,9 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 export class ArmorTooltipComponent {
   @Input() itemTooltip: ResultItem | undefined;
 
+  // Define the correct order of stats as used in the expanded-result-content component
+  armorStatIds = ARMORSTAT_ORDER;
+
   getSourceText() {
     if (!this.itemTooltip) {
       return "";
@@ -37,8 +42,8 @@ export class ArmorTooltipComponent {
     return InventoryArmorSourceNames[this.itemTooltip.source];
   }
 
-  getArmorStatName(i: number) {
-    return ArmorStatNames[i as ArmorStat];
+  getArmorStatName(statId: ArmorStat) {
+    return ArmorStatNames[statId];
   }
 
   getWidth(stat: number) {
@@ -47,6 +52,46 @@ export class ArmorTooltipComponent {
 
   getTotalStats() {
     return this.itemTooltip?.stats.reduce((a, b) => a + b, 0) || 0;
+  }
+
+  getMasterworkBonus(item: ResultItem) {
+    const bonus = [0, 0, 0, 0, 0, 0];
+
+    if (item.armorSystem == ArmorSystem.Armor2) {
+      // Armor 2.0
+      if (item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL) {
+        // Armor 2.0 Masterworked items give +2 to all stats
+        for (let i = 0; i < 6; i++) {
+          bonus[i] += 2;
+        }
+      }
+      return bonus;
+    } else if (item.armorSystem == ArmorSystem.Armor3) {
+      // Armor 3.0
+      let multiplier = item.masterworkLevel;
+
+      if (multiplier == 0) return bonus;
+
+      // For Armor 1.0, assume the first three stats are the archetype stats and don't get masterwork bonus
+      // The OTHER THREE stats (3, 4, 5) get +1 per multiplier level
+      for (let i = 0; i < 6; i++) {
+        if (item.archetypeStats.indexOf(i) === -1) {
+          bonus[i] += multiplier;
+        }
+      }
+
+      return bonus;
+    }
+
+    return bonus;
+  }
+
+  getStatWithMasterwork(statId: ArmorStat): number {
+    if (!this.itemTooltip) return 0;
+
+    const baseValue = this.itemTooltip.stats[statId];
+    const masterworkBonus = this.getMasterworkBonus(this.itemTooltip);
+    return baseValue + masterworkBonus[statId];
   }
 
   get isVendorItem() {

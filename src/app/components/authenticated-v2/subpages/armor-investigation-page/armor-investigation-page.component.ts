@@ -21,7 +21,7 @@ import { debounceTime, takeUntil } from "rxjs/operators";
 import { InventoryService } from "../../../../services/inventory.service";
 import { IInventoryArmor, InventoryArmorSource } from "../../../../data/types/IInventoryArmor";
 import { DatabaseService } from "../../../../services/database.service";
-import { IManifestArmor } from "../../../../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 
 type LocalArmorInfo = {
@@ -39,6 +39,7 @@ type LocalArmorInfo = {
   discipline: number[];
   resilience: number[];
   hash: number;
+  armorSystem: ArmorSystem;
 };
 
 @Component({
@@ -47,12 +48,12 @@ type LocalArmorInfo = {
   styleUrls: ["./armor-investigation-page.component.css"],
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
-  minMobility: number | null = 0;
-  minResilience: number | null = 0;
-  minRecovery: number | null = 0;
-  minDiscipline: number | null = 0;
-  minIntellect: number | null = 0;
-  minStrength: number | null = 0;
+  minWeapon: number | null = 0;
+  minHealth: number | null = 0;
+  minClass: number | null = 0;
+  minGrenade: number | null = 0;
+  minSuper: number | null = 0;
+  minMelee: number | null = 0;
   anyPlugWithN: number | null = 0;
   anyPlugBelowN: number | null = 17;
   allPlugsWithN: number | null = 0;
@@ -62,11 +63,16 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   armorHash: string | null = "";
   armorId: string | null = "";
 
+  armorSystemFilter: number = 0; // 0 = Any, 2 = Armor 2.0, 3 = Armor 3.0
+
   armorItemsPerSlot: Map<ArmorSlot, LocalArmorInfo[]> = new Map();
 
   plugData: { [p: string]: IManifestArmor } = {};
 
-  constructor(public inventory: InventoryService, private db: DatabaseService) {}
+  constructor(
+    public inventory: InventoryService,
+    private db: DatabaseService
+  ) {}
 
   ngOnInit(): void {
     this.inventory.inventory
@@ -78,6 +84,10 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   getPlugString(plugId: number) {
     var plugInfo = this.plugData[plugId];
+    if (!plugInfo) {
+      return "No Plug";
+    }
+
     let info = [0, 0, 0, 0, 0, 0];
     for (let stat of plugInfo.investmentStats) {
       switch (stat.statTypeHash) {
@@ -101,7 +111,13 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           break;
       }
     }
-    return "[" + info.join(" ") + "]";
+
+    let r = "[" + info.join(" ") + "]";
+    if (plugInfo.name) {
+      r += " " + plugInfo.name;
+    }
+
+    return r;
   }
 
   async updateItems() {
@@ -129,11 +145,16 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
           totalStats: [0, 0, 0, 0, 0, 0],
           totalSum: 0,
           slot: i.slot,
+          armorSystem: (i as any).armorSystem, // falls vorhanden
         } as LocalArmorInfo;
         // add stat plugs
         if (i.statPlugHashes)
           for (let p of i.statPlugHashes) {
+            if (p == undefined || p == null) continue; // skip undefined plugs
             var plugInfo = plugData[p as number];
+            if (!plugInfo) {
+              continue;
+            }
             for (let stat of plugInfo.investmentStats) {
               switch (stat.statTypeHash) {
                 case 2996146975:
@@ -201,6 +222,14 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
         return result;
       });
 
+    // Filter nach armorSystem
+    if (
+      this.armorSystemFilter === ArmorSystem.Armor2 ||
+      this.armorSystemFilter === ArmorSystem.Armor3
+    ) {
+      armorItems = armorItems.filter((i) => i.armorSystem === this.armorSystemFilter);
+    }
+
     armorItems = this.filterItems(armorItems);
 
     this.armorItemsPerSlot = armorItems.reduce((p, v) => {
@@ -237,6 +266,10 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   getPlugSum(plugId: number) {
     var plugInfo = this.plugData[plugId];
+    if (!plugInfo) {
+      console.warn(`Plug info not found for hash: ${plugId}`);
+      return 0;
+    }
     var total = 0;
     for (let stat of plugInfo.investmentStats) {
       switch (stat.statTypeHash) {
@@ -258,15 +291,16 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
     this.armorHash = "";
     this.armorId = "";
 
-    this.minMobility = 0;
-    this.minResilience = 0;
-    this.minRecovery = 0;
-    this.minDiscipline = 0;
-    this.minIntellect = 0;
-    this.minStrength = 0;
+    this.minWeapon = 0;
+    this.minHealth = 0;
+    this.minClass = 0;
+    this.minGrenade = 0;
+    this.minSuper = 0;
+    this.minMelee = 0;
 
     this.anyPlugWithN = 0;
     this.anyPlugBelowN = 17;
+    this.armorSystemFilter = 0;
   }
 
   private filterItems(armorItems: LocalArmorInfo[]) {
@@ -279,12 +313,12 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
         (i) => (i.itemInstanceId || 0).toString().indexOf(this.armorId!) > -1
       );
 
-    armorItems = armorItems.filter((i) => i.totalStats[0] >= (this.minMobility || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[1] >= (this.minResilience || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[2] >= (this.minRecovery || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[3] >= (this.minDiscipline || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[4] >= (this.minIntellect || 0));
-    armorItems = armorItems.filter((i) => i.totalStats[5] >= (this.minStrength || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[0] >= (this.minWeapon || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[1] >= (this.minHealth || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[2] >= (this.minClass || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[3] >= (this.minGrenade || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[4] >= (this.minSuper || 0));
+    armorItems = armorItems.filter((i) => i.totalStats[5] >= (this.minMelee || 0));
     if ((this.anyPlugWithN ?? 0) > 0)
       armorItems = armorItems.filter(
         (i) =>

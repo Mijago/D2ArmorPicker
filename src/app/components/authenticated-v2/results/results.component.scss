@@ -15,6 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.result-table {
+  --mat-table-header-container-height: 38px !important;
+  --mat-table-row-item-container-height: 32px !important;
+}
+.result-element-row > .cdk-cell {
+  padding-block: 5px;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0px;
+}
+
 #card-results {
   display: inline-block;
   vertical-align: top;
@@ -31,21 +44,26 @@
   position: absolute;
   height: 22px;
   margin-left: 2px;
-  top: 11px;
+  top: 8px;
 }
 
-.itemIcon {
+.itemDiv {
+  display: flex;
+  margin: auto;
   width: 32px;
   height: 32px;
-  margin-right: 3px;
+}
+.itemIcon {
+  width: inherit;
+  height: inherit;
+  position: absolute;
 }
 
 .itemIconWatermark {
-  width: 32px;
-  height: 32px;
-  margin-right: 3px;
-  margin-left: -35px;
+  width: inherit;
+  height: inherit;
   pointer-events: none;
+  position: relative;
 }
 
 .source-column {
@@ -64,17 +82,19 @@
   display: block;
 }
 
-tr.example-element-row td {
+tr.result-element-row td {
   border-bottom-width: 0;
 }
 
-tr.example-detail-row {
+tr.result-detail-row {
   height: 0 !important;
 }
 
-.example-element-detail {
+.result-element-detail {
   overflow: hidden;
   display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .report-problem-icon {
@@ -86,20 +106,70 @@ tr.example-detail-row {
   color: #d5d5d5;
 }
 
-:host ::ng-deep .info-box .mat-form-field-wrapper {
+:host .info-box .mat-form-field-wrapper {
   padding-bottom: 5px !important;
   cursor: default;
 }
 
-.hidden-input {
-  display: none;
+.config-summary-container {
+  margin: 12px 0;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  @media (max-width: 768px) {
+    margin: 8px 0;
+    padding: 6px 10px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 6px 8px;
+  }
 }
 
-.config-summary-box {
-  width: 100%;
+.config-summary-title {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+    margin: 0 0 6px 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    text-transform: none;
+    font-weight: 400;
+  }
 }
 
-.result-table tr.example-element-row {
+.config-summary-chips {
+  .mat-mdc-chip {
+    margin: 1px 4px 1px 0;
+    font-size: 12px;
+    min-height: 24px;
+
+    @media (max-width: 768px) {
+      font-size: 11px;
+      min-height: 22px;
+      margin: 1px 3px 1px 0;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 10px;
+      min-height: 20px;
+      margin: 1px 2px 1px 0;
+    }
+  }
+}
+
+.result-table tr.result-element-row {
   cursor: pointer;
 }
 
@@ -124,9 +194,234 @@ tr.example-detail-row {
 }
 
 .cdk-column-exotic {
-  min-width: 45px;
+  min-width: 65px;
 }
 
 .cdk-column-waste {
   padding-left: 5px;
+}
+
+// overwrite the default th padding
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0 4px 0 4px;
+}
+
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hint-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  mat-button-toggle-group {
+    flex-shrink: 0;
+  }
+}
+
+// Card view specific styles
+.card-view-mode {
+  .paginator-container,
+  .download-button,
+  mat-paginator {
+    display: none !important;
+  }
+
+  .cards-container {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+
+    // Hide scrollbar while maintaining scroll functionality
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome/Safari
+    }
+  }
+
+  .result-container {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+// Info stats container styles
+.info-stats-container {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+    margin: 8px 0;
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.info-stat-card {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  @media (max-width: 768px) {
+    min-width: 100px;
+    padding: 6px 10px;
+  }
+
+  @media (max-width: 480px) {
+    min-width: auto;
+    padding: 6px 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+}
+
+.info-stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    text-transform: none;
+    font-weight: 400;
+  }
+}
+
+.info-stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
+}
+
+.info-stat-value-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  @media (max-width: 768px) {
+    gap: 4px;
+  }
+
+  .report-problem-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+/* No results message */
+.no-results,
+.progress-bar-container,
+.cancelled-message,
+.initializing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--mdc-theme-on-surface);
+
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+
+    &.rotate {
+      animation: rotate-icon 2s linear infinite;
+    }
+
+    @keyframes rotate-icon {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
+
+  mat-progress-bar {
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 1rem;
+  }
+
+  #common-issues {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: left;
+    max-width: 600px;
+    width: 100%;
+
+    ul {
+      padding-left: 20px;
+      list-style-type: disc;
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
 }

@@ -33,10 +33,14 @@ export class ExoticPerkTooltipComponent implements OnInit {
   exoticPerk: IManifestArmor | undefined;
   exoticPerkNotThere: boolean = false;
 
-  constructor(public inv: InventoryService, public iconService: ItemIconServiceService) {}
+  constructor(
+    public inv: InventoryService,
+    public iconService: ItemIconServiceService
+  ) {}
 
   async ngOnInit() {
-    this.exoticPerk = await this.iconService.getItemCached(this.armor?.exoticPerkHash ?? 0);
-    this.exoticPerkNotThere = this.exoticPerk == null;
+    const perk = (this.armor?.exoticPerkHash ?? [])[0];
+    this.exoticPerk = !!perk ? await this.iconService.getItemCached(perk) : undefined;
+    this.exoticPerkNotThere = this.exoticPerk === undefined;
   }
 }

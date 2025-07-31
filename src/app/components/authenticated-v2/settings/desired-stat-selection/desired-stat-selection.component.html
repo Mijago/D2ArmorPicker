@@ -16,7 +16,7 @@
   -->
 
 <table>
-  <tr *ngFor="let enum of stats">
+  <tr *ngFor="let enum of stats; let i = index">
     <td>
       {{ enum.name }}
     </td>
@@ -24,13 +24,13 @@
     <td>
       <app-stat-tier-selection
         [stat]="enum.value"
-        [allowExactStats]="config_allowExactStats"
         [statsByMods]="statsByMods[enum.value]"
         [maximumAvailableTier]="maximumPossibleTiers[enum.value]"
         [selectedTier]="minimumStatTiers[enum.value].value"
         [locked]="minimumStatTiers[enum.value].fixed"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
-        (lockedChange)="setLockState(enum.value, $event)"></app-stat-tier-selection>
+        (lockedChange)="setLockState(enum.value, $event)"
+        [tabIndexOffset]="i * 10"></app-stat-tier-selection>
     </td>
   </tr>
 </table>
@@ -40,37 +40,6 @@
     <button mat-stroked-button color="warn" id="clearStatButton" (click)="clearStatSelection()"
       >Clear</button
     >
-  </span>
-  <span class="tierSelectButton">
-    <button
-      mat-stroked-button
-      class="selectStatDistributionButton"
-      [matMenuTriggerFor]="menu1"
-      aria-label="Select builds with three stats at tier 10."
-      [disabled]="_statCombo3x100.length === 0">
-      <mat-icon>expand_more</mat-icon>
-      Select 3x T10 Builds
-    </button>
-    <mat-menu #menu1="matMenu" menu>
-      <button mat-menu-item *ngFor="let d of _statCombo3x100" (click)="useStatPreset(d)">
-        <app-stat-icon *ngFor="let p of d" [stat]="p" class="dialogStatIcon"></app-stat-icon>
-      </button>
-    </mat-menu>
-  </span>
-  <span class="tierSelectButton">
-    <button
-      mat-stroked-button
-      [matMenuTriggerFor]="menu2"
-      aria-label="Select builds with four stats at tier 10."
-      [disabled]="_statCombo4x100.length === 0">
-      <mat-icon>expand_more</mat-icon>
-      Select 4x T10 Builds
-    </button>
-    <mat-menu #menu2="matMenu">
-      <button mat-menu-item *ngFor="let d of _statCombo4x100" (click)="useStatPreset(d)">
-        <app-stat-icon *ngFor="let p of d" [stat]="p" class="dialogStatIcon"></app-stat-icon>
-      </button>
-    </mat-menu>
   </span>
 </span>
 
@@ -96,14 +65,8 @@
     >
     <mat-button-toggle
       [value]="2"
-      matTooltip="Slower. Reduces the total cost of mods. This will result in less Intellect mods, for example."
+      matTooltip="Slower. Reduces the total cost of mods. This will result in less Super mods, for example."
       >Many mods, low cost (slow)</mat-button-toggle
     >
   </mat-button-toggle-group>
-</div>
-<br />
-<div>
-  <mat-slide-toggle color="primary" [checked]="config_reduce_waste" (change)="toggleReduceWaste()">
-    Add mods to reduce wasted stats (slower)
-  </mat-slide-toggle>
 </div>

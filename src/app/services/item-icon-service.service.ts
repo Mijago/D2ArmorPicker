@@ -41,7 +41,7 @@ export class ItemIconServiceService {
 
   async getExoticPerkDescription(exotic: IManifestArmor): Promise<IManifestArmor | null> {
     if (!exotic.exoticPerkHash) return null;
-    let perk = await this.getItemCached(exotic.exoticPerkHash);
+    let perk = await this.getItemCached(exotic.exoticPerkHash[0]);
     return perk ?? null;
   }
 }

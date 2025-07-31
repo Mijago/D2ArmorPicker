@@ -14,6 +14,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+.tSubclassFragments {
+  --mat-table-header-container-height: 32px !important;
+  --mat-table-row-item-container-height: 32px !important;
+  min-width: revert;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 5px;
+}
 
 .mat-slide-toggle.mat-disabled {
   opacity: 1;
@@ -33,14 +43,13 @@
   height: 30px;
 }
 
-.mat-column-mobility,
-.mat-column-resilience,
-.mat-column-recovery,
-.mat-column-discipline,
-.mat-column-intellect,
-.mat-column-strength,
+.mat-column-weapon,
+.mat-column-health,
+.mat-column-class,
+.mat-column-grenade,
+.mat-column-super,
+.mat-column-melee,
 .mat-column-cost {
-  min-width: 40px;
   text-align: center;
 }
 
@@ -48,9 +57,9 @@
   background-color: #494949;
 }
 
-.mat-column-mobility,
-.mat-column-recovery,
-.mat-column-intellect {
+.mat-column-weapon,
+.mat-column-class,
+.mat-column-super {
   background-color: #464646;
 }
 
@@ -112,9 +121,9 @@ td.mat-footer-cell:last-of-type {
 }
 
 .selected,
-.selected .mat-column-mobility,
-.selected .mat-column-recovery,
-.selected .mat-column-intellect {
+.selected .mat-column-weapon,
+.selected .mat-column-class,
+.selected .mat-column-super {
   background-color: rgba(137, 178, 255, 0.11);
 }
 
@@ -143,4 +152,10 @@ td.mat-footer-cell:last-of-type {
       left: -10px;
     }
   }
+}
+
+// overwrite the default th padding
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0 4px 0 4px;
 }

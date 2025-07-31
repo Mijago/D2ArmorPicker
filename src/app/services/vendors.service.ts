@@ -8,7 +8,7 @@ import {
 } from "bungie-api-ts/destiny2";
 import { MembershipService } from "./membership.service";
 import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
-import { IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -18,17 +18,15 @@ import {
 import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
 import { AuthService } from "./auth.service";
+import { intersection as _intersection } from "lodash";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
 interface VendorWithParent {
-  vendorHash: string;
-  parentHash: string;
+  vendorHash: number;
+  parentHash: number;
 }
 
-const VendorsWithParent: VendorWithParent[] = [
-  { vendorHash: "3751514131", parentHash: "2190858386" }, // Strange Gear Offers, Tower Xûr
-];
 @Injectable({
   providedIn: "root",
 })
@@ -55,7 +53,7 @@ export class VendorsService {
     items: IInventoryArmor[];
     nextRefreshDate: number;
   }> {
-    const vendorsResponse = await getVendors((d) => this.http.$http(d), {
+    const vendorsResponse = await getVendors((d) => this.http.$http(d, false), {
       components: [DestinyComponentType.Vendors, DestinyComponentType.VendorSales],
       characterId,
       membershipType: destinyMembership.membershipType,
@@ -66,21 +64,36 @@ export class VendorsService {
     const allVendors = Object.entries(vendorsResponse.Response.vendors.data!);
     const allVendorsMap = new Map(allVendors);
 
+    let vendorsWithParent: VendorWithParent[] = (
+      await Promise.all(
+        Object.entries(vendorsResponse.Response.sales.data!).map(async ([_vendorHash, sales]) => {
+          let items = Object.values(sales.saleItems).map((x) => x.itemHash);
+          let subscreenItem = (await this.db.vendorItemSubscreen.bulkGet(items)).filter(
+            (x) => x != undefined
+          );
+          let vendors = subscreenItem.map((item) => {
+            return { vendorHash: item!.vendorHash, parentHash: parseInt(_vendorHash) };
+          });
+          return vendors;
+        })
+      )
+    ).flat();
     const enabledVendors = allVendors
-      .filter(([_vendorHash, vendor]) => vendor.enabled)
+      .filter(([_vendorHash, vendor]) => vendor.enabled && vendor.canPurchase)
       .filter(([vendorHash, vendor]) => {
-        const parent = VendorsWithParent.find((v) => v.vendorHash == vendorHash)?.parentHash;
+        const parent = vendorsWithParent.find(
+          (v) => v.vendorHash.toString() == vendorHash
+        )?.parentHash;
         if (parent == undefined) return true;
-        console.debug(
-          `${vendorHash} has parent ${parent} with value ${allVendorsMap.get(parent)?.enabled}`
-        );
-        return allVendorsMap.get(parent)?.enabled ?? false;
+        return allVendorsMap.get(parent.toString())?.enabled ?? false;
       });
     const vendors = enabledVendors
       .filter(
         ([vendorHash, vendor]) =>
           Object.entries(vendorsResponse.Response.sales.data?.[vendorHash]?.saleItems ?? {}).find(
-            ([vendorItemIndex, saleItem]) => manifestItems[saleItem.itemHash]?.armor2 == true
+            ([vendorItemIndex, saleItem]) =>
+              manifestItems[saleItem.itemHash]?.armorSystem == ArmorSystem.Armor2 ||
+              manifestItems[saleItem.itemHash]?.armorSystem == ArmorSystem.Armor3
           ) !== undefined
       )
       .map(([vendorHash, vendor]) => ({
@@ -92,7 +105,7 @@ export class VendorsService {
     const nextRefreshDate = Math.min(...vendors.map((v) => v.refreshDate));
     const VendorPromises = vendors.map((vendor) => {
       let vendorHash = vendor.vendorHash;
-      return getVendor((d) => this.http.$http(d), {
+      return getVendor((d) => this.http.$http(d, false), {
         components: [DestinyComponentType.ItemStats],
         characterId,
         membershipType: destinyMembership.membershipType,
@@ -126,9 +139,20 @@ export class VendorsService {
               {} as Record<number, number>
             );
 
+            let lastVendor = vendorHash;
+            let parentVendor = vendorsWithParent
+              .find((v) => v.vendorHash.toString() == lastVendor)
+              ?.parentHash?.toString();
+            while (parentVendor != undefined && lastVendor != parentVendor) {
+              lastVendor = parentVendor;
+              parentVendor = vendorsWithParent
+                .find((v) => v.vendorHash.toString() == lastVendor)
+                ?.parentHash?.toString();
+            }
+            parentVendor = lastVendor;
             const r = createArmorItem(
               manifestItem,
-              `v${vendorHash}-${saleItem.itemHash}`,
+              `v-${parentVendor}-${saleItem.itemHash}`,
               InventoryArmorSource.Vendor
             );
             applyInvestmentStats(r, statsOverride);
@@ -164,11 +188,12 @@ export class VendorsService {
       return false;
     }
 
-    console.log("VENDOR C", {
-      nextVendorRefresh,
-      finite: isFinite(nextVendorRefresh.getTime()),
-      ok: nextVendorRefresh > new Date(),
-      now: new Date(),
+    console.debug("Vendor Cache", {
+      information: {
+        nextVendorRefresh,
+        now: new Date(),
+        shouldRefresh: nextVendorRefresh > new Date(),
+      },
     });
     return nextVendorRefresh > new Date();
   }
@@ -200,10 +225,13 @@ export class VendorsService {
     // This should contain a list of hashes for only the armor items which we are interested in
     const manifestItems = (await this.db.manifestArmor.toArray())
       .filter((a) => a.itemType == DestinyItemType.Armor)
-      .reduce((acc, item) => {
-        acc[item.hash] = item;
-        return acc;
-      }, {} as Record<number, IManifestArmor>);
+      .reduce(
+        (acc, item) => {
+          acc[item.hash] = item;
+          return acc;
+        },
+        {} as Record<number, IManifestArmor>
+      );
 
     try {
       const vendorArmorItems = await Promise.all(

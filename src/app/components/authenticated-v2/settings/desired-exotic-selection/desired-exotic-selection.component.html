@@ -18,49 +18,76 @@
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
-    src="https://www.bungie.net/common/destiny2_content/icons/763634b78eb22168ac707500588b7333.jpg"
+    src="assets/icons/exotic_helmet.jpg"
     matTooltip="Force to use ANY exotic (that is NOT a class item)"
     #tooltip="matTooltip"
-    (click)="selectExotic(-2, $event)" />
+    (click)="selectExotic([-2], $event)" />
   <img
     class="exoticIcon {{ selectedExotics.indexOf(-1) > -1 ? 'selected' : '' }}"
     *ngIf="i === 0"
-    src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+    src="assets/icons/empty_modslot.png"
     matTooltip="Force to use NO exotic at all"
     #tooltip="matTooltip"
-    (click)="selectExotic(-1, $event)" />
+    (click)="selectExotic([-1], $event)" />
   <span class="container" *ngFor="let exotic of itemGroup">
-    <img
-      class="exoticIcon {{ selectedExotics.indexOf(exotic.item.hash) > -1 ? 'selected' : '' }}"
-      src="https://www.bungie.net/{{ exotic.item.icon }}"
-      [exoticTooltip]="exotic.item"
+    <app-item-icon
+      [itemHash]="exotic.items[0].hash"
+      [ngClass]="{
+        exoticIcon: true,
+        selected: selectedExotics.indexOf(exotic.items[0].hash) > -1,
+        'vendor-item': !exotic.inInventory && includeVendorRolls && exotic.inVendor,
+        'collection-item': !exotic.inInventory && includeCollectionRolls && exotic.inCollection,
+        disabled: !(
+          exotic.inInventory ||
+          (includeCollectionRolls && exotic.inCollection) ||
+          (includeVendorRolls && exotic.inVendor)
+        ),
+      }"
+      [exoticTooltip]="exotic.items[0]"
       [exoticTooltipInVendor]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
       [exoticTooltipInCollection]="
         !exotic.inInventory && includeCollectionRolls && exotic.inCollection
       "
-      [class.vendor-item]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
-      [class.collection-item]="!exotic.inInventory && includeCollectionRolls && exotic.inCollection"
-      [class.disabled]="
-        !(
-          exotic.inInventory ||
-          (includeCollectionRolls && exotic.inCollection) ||
-          (includeVendorRolls && exotic.inVendor)
-        )
-      "
       (click)="
         (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
-          selectExotic(exotic.item.hash, $event)
-      " />
-    <img
-      class="watermarkIcon"
-      *ngIf="exotic.item.watermarkIcon"
-      src="https://www.bungie.net/{{ exotic.item.watermarkIcon }}" />
+          selectExotic(getHashesForExotic(exotic), $event)
+      "></app-item-icon>
     <div
       class="item-source-overlay"
       *ngIf="!exotic.inInventory"
       [class.vendor-item]="includeVendorRolls && exotic.inVendor"
       [class.collection-item]="includeCollectionRolls && exotic.inCollection"></div>
   </span>
+</div>
+
+<!-- Exotic Class Item Perk Selection -->
+<div *ngIf="hasSelectedExoticClassItem()" class="exotic-class-item-perks">
+  <h4>Exotic Class Item Perks</h4>
+  <div class="perk-selectors">
+    <mat-form-field appearance="outline">
+      <mat-label>First Perk</mat-label>
+      <mat-select
+        [value]="selectedExoticPerks[0]"
+        (selectionChange)="setExoticPerk(0, $event.value)">
+        <mat-option [value]="anyPerkValue">Any</mat-option>
+        <mat-option *ngFor="let perk of availableFirstPerks" [value]="perk.value">
+          {{ perk.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Second Perk</mat-label>
+      <mat-select
+        [value]="selectedExoticPerks[1]"
+        (selectionChange)="setExoticPerk(1, $event.value)">
+        <mat-option [value]="anyPerkValue">Any</mat-option>
+        <mat-option *ngFor="let perk of availableSecondPerks" [value]="perk.value">
+          {{ perk.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 </div>
 
 <div>
@@ -72,6 +99,40 @@
     Manually refresh manifest and inventory
   </button>
 </div>
+
+<div>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="importEquippedExoticInProgress"
+    (click)="importEquippedExotic()">
+    Import Equipped Exotic
+  </button>
+  <mat-spinner
+    *ngIf="importEquippedExoticInProgress"
+    diameter="20"
+    class="inline-spinner"></mat-spinner>
+</div>
+<br />
+<div>
+  <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedLegendaryArmor"
+    (change)="setEnforceFeaturedLegendaryArmor($event.checked)">
+    Enforce featured <span class="legendary-label">legendary</span> armor only
+  </mat-slide-toggle>
+</div>
+
+<div>
+  <mat-slide-toggle
+    color="warn"
+    [checked]="enforceFeaturedExoticArmor"
+    (change)="setEnforceFeaturedExoticArmor($event.checked)">
+    Enforce featured <span class="exotic-label">exotic</span> armor only
+  </mat-slide-toggle>
+</div>
+
+<div class="minispace"></div>
 
 <div>
   <mat-slide-toggle
@@ -89,6 +150,24 @@
     Include <u>legendary and exotic</u> vendor armor (slower)
   </mat-slide-toggle>
 </div>
+
+<div class="minispace"></div>
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="allowLegacyLegendaryArmor"
+    (change)="setAllowLegacyLegendaryArmor($event.checked)">
+    Include legacy (Armor 2.0) <span class="legendary-label">legendary</span> armor
+  </mat-slide-toggle>
+</div>
+<div>
+  <mat-slide-toggle
+    color="primary"
+    [checked]="allowLegacyExoticArmor"
+    (change)="setAllowLegacyExoticArmor($event.checked)">
+    Include legacy (Armor 2.0) <span class="exotic-label">exotic</span> armor
+  </mat-slide-toggle>
+</div>
 <div>
   <mat-slide-toggle
     color="primary"
@@ -103,13 +182,5 @@
     [checked]="!ignoreSunsetArmor"
     (change)="setIgnoreSunsetArmor(!$event.checked)">
     Include sunset armor
-  </mat-slide-toggle>
-</div>
-<div>
-  <mat-slide-toggle
-    color="warn"
-    [checked]="ignoreExistingExoticArtificeSlots"
-    (change)="setIgnoreExistingExoticArtificeSlots($event.checked)">
-    Ignore existing artifice slots on exotics (useful for the exotic class item)
   </mat-slide-toggle>
 </div>

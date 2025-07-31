@@ -30,3 +30,38 @@
 .report-problem-icon {
   color: lightcoral;
 }
+
+.dropdown-setting {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.dropdown-inline {
+  max-width: 150px;
+  min-width: 120px;
+  font-size: 13px;
+}
+
+.dropdown-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dropdown-label-always-on {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+mat-select {
+  max-width: 150px;
+  min-height: 32px;
+}

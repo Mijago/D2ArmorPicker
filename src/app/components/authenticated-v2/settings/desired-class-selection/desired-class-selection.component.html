@@ -46,13 +46,13 @@
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/9970631fe1052642c268132dfc30e16b.jpg"
       alt="Exotic Cipher" />
-    {{ storedMaterials["3467984096"] | number : "1.0-0" }}
+    {{ storedMaterials["3467984096"] | number: "1.0-0" }}
   </span>
   <span class="material-listing" matTooltip="Ascendant Shards: {{ storedMaterials['4257549985'] }}">
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/0271d214fc3ec91b3def799a4b286b46.jpg"
       alt="Ascendant Shard" />
-    {{ storedMaterials["4257549985"] | number : "1.0-0" }}
+    {{ storedMaterials["4257549985"] | number: "1.0-0" }}
   </span>
   <span
     class="material-listing"
@@ -60,7 +60,7 @@
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/dea2a35badf7466d4c2c2697ce6e8d87.jpg"
       alt="Enhancement Prism" />
-    {{ storedMaterials["4257549984"] | number : "1.0-0" }}
+    {{ storedMaterials["4257549984"] | number: "1.0-0" }}
   </span>
   <span
     class="material-listing"
@@ -68,24 +68,18 @@
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/0a4eb695ed55b4e720ddc401460cc0f9.jpg"
       alt="Enhancement Core" />
-    {{ storedMaterials["3853748946"] | number : "1.0-0" }}
+    {{ storedMaterials["3853748946"] | number: "1.0-0" }}
   </span>
   <span class="material-listing" matTooltip="Glimmer: {{ storedMaterials['3159615086'] }}">
     <img
       src="https://www.bungie.net/common/destiny2_content/icons/88993eaeedad32f42072df6f77f47311.png"
       alt="Glimmer" />
-    {{ storedMaterials["3159615086"] | number : "1.0-0" }}
+    {{ storedMaterials["3159615086"] | number: "1.0-0" }}
   </span>
 </div>
 
-<a
-  color="primary"
-  fxShow="false"
-  fxShow.lt-md="true"
-  mat-flat-button
-  routerLink="/help"
-  style="margin-left: 15px">
-  <mat-icon inline>help</mat-icon>
+<a color="primary" class="hide-gt-xs" mat-flat-button routerLink="/help" style="margin-left: 15px">
+  <mat-icon>help</mat-icon>
   Help and Information about D2ArmorPicker
 </a>
 
@@ -102,17 +96,4 @@
   <a color="accent" href="http://discord.d2armorpicker.com" target="_blank">
     join my dev Discord!
   </a>
-
-  <div>
-    Also check out my Discord-Bot
-    <div class="crayon_logo_container">
-      <img
-        class="crayon_logo"
-        alt=""
-        src="https://cdn.discordapp.com/emojis/917423317139480586.webp?size=96&quality=lossless" />
-    </div>
-
-    <a href="https://mijago.github.io/Crayon" target="_blank">Crayon</a>, for all your item
-    information needs!
-  </div>
 </div>

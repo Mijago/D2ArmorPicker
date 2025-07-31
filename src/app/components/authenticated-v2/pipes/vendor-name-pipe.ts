@@ -10,7 +10,13 @@ export class VendorNamePipe implements PipeTransform {
 
   async transform(value: number): Promise<string> {
     const vendor = await this.database.vendorNames.where("vendorId").equals(value).first();
-    return vendor?.vendorName ?? "Unknown Vendor";
+    if (vendor?.vendorName) {
+      return vendor.vendorName;
+    }
+    if (vendor?.vendorIdentifier) {
+      return vendor.vendorIdentifier;
+    }
+    return "Unknown Vendor";
   }
 }
 
@@ -22,8 +28,8 @@ export class VendorIdFromItemIdPipe implements PipeTransform {
   constructor() {}
 
   transform(value: string): number {
-    if (!value || !value.startsWith("v")) return -1;
-    const vendorId = parseInt(value.substring(1).split("-")[0]);
+    if (!value || !value.startsWith("v-")) return -1;
+    const vendorId = parseInt(value.substring(2).split("-")[0]);
     if (isNaN(vendorId)) return -1;
     return vendorId;
   }

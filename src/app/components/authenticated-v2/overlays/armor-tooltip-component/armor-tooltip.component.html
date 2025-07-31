@@ -34,19 +34,22 @@
       <tr>
         <td>Current stats:</td>
       </tr>
-      <tr *ngFor="let stat of itemTooltip?.stats; let i = index">
-        <td>{{ getArmorStatName(i) }}</td>
+      <tr *ngFor="let statId of armorStatIds">
+        <td>{{ getArmorStatName(statId) }}</td>
         <td>
-          <span *ngIf="!itemTooltip?.masterworked">{{ stat }}</span>
-          <span *ngIf="itemTooltip?.masterworked">{{ stat + 2 }}</span>
+          <span>{{ getStatWithMasterwork(statId) }}</span>
         </td>
         <td>
           <div class="stat-display">
-            <div class="stat-display-bar" [style.width]="getWidth(stat)">&nbsp;</div>
+            <div
+              class="stat-display-bar"
+              [style.width]="getWidth((itemTooltip?.stats || [])[statId] || 0)"
+              >&nbsp;</div
+            >
             <div
               class="stat-display-bar masterwork"
-              [style.width]="getWidth(2)"
-              *ngIf="itemTooltip?.masterworked"
+              [style.width]="getWidth(getMasterworkBonus(itemTooltip!)[statId])"
+              *ngIf="itemTooltip && getMasterworkBonus(itemTooltip)[statId] > 0"
               >&nbsp;</div
             >
           </div>

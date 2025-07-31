@@ -24,10 +24,362 @@ export enum ChangelogEntryType {
 export interface ChangelogEntry {
   type: ChangelogEntryType;
   text: string;
-  issues: string[] | undefined;
+  issues?: string[] | undefined;
 }
 
-export const CHANGELOG_DATA = [
+export const CHANGELOG_DATA: {
+  version: string;
+  date: string;
+  clearManifest?: boolean;
+  entries: ChangelogEntry[];
+}[] = [
+  {
+    version: "2.9.5",
+    date: "July 31, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new panel that shows the current status: initializing, calculating, or ready.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a 'Cancel Calculation' button to stop the calculation process.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Split the 'Enforce featured armor only' setting into two separate settings: one for legendary armor and one for exotic armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Split the 'Include legacy armor' setting into two separate settings: one for legendary armor and one for exotic armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted the visible order of the stats so that they reflect the current state of the game.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Completely reworked the detection of masterworks on items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "During calculation, the algorithm now combines the (exotic) class items with the same stats, no matter which perks they have. This reduces the calculation time drastically. Selecting perks will still enforce these (exotic) class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adjusted mod costs.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed armor perk filtering.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixing a value to a constant will now work correctly again.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Modified the 'Assume class item is artifice' check to only work on Armor 2.0 items.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.4",
+    date: "July 24, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Collective Psyche' armor perk to the available armor perks and updated related mappings.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Artifice assumptions now only affect legacy (armor 2.0) items. It will also be disabled when you choose not to allow legacy armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor perk seleciton now defaults to non-fixed. UI Rework follows in the future.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the status chip to correctly display when an exotic is selected.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved handling for cases where no class items are available. Yes, there was a guardian who deleted every legendary class item. Hehe.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted modslot costs for the new season. The costs are now 1 for minor and 3 for major mods.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.3",
+    date: "July 22, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new setting to enforce featured armor only. This will filter out all non-featured armor from the results.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Class item selection is now even more robust.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.2",
+    date: "July 18, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added the 'Gearset' armor to the Modslot selection. This allows you to buildcraft with them. I'll add a nicer UI later.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped subclass and fragments.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a filter to disable legacy armor.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a button to import the currently equipped exotic.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the vendor API to support the new gearset armor perk.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved visibility of the text input for the stats. It now has a border and is more visible.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Minor bugfixes and performance improvements.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.1c",
+    date: "July 16, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added a new Card-based view mode. You can switch between the Card view and the old Table view.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Perk filter for exotic class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the input to be a slider to allow for more precise input of the stats between tiers. Usability may be improved, feedback is welcome! You can click the text on the right to set the value manually.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The table now shows a 'Total' column instead of the 'Tiers' column.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Renamed the stats.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the Algorithm to select and utilize class items.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Reworked the result table to correctly display the selected class item.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the 'Move items to inventory' button. It still will only work when you have space in the inventory.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed 3x100 and 4x100 buttons. We do not need these anymore. Maybe I add another feature like this later when a use case arises.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the setting to assume that all legendary class items are masterworked. This is included in the other masterwork assumption settings.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the Wasted Stats column.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed now-invalid pages (Clustering, Theorizer, Investigator).",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed old features that were not updated for a long time and are not used anymore.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the feature 'Replace the tier selection with text fields for exact stat values', as this is now the default behavior.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.7.4",
+    date: "March 15, 2025",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed parent vendor logic. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed order of exotics in armor selection to be alphabetical. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Filter out vendor items that are reported by the API but can not be bought. (ciaran)",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.7.3",
+    date: "March 10, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added Overflowing Corruption as an armor perk option. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added None as an armor perk option. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: 'Removed "Ignore artifice slot in exotics, as None armor perk filter" as None perk covers the same function. (nznaza)',
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed exotic class item showing with incorrect armor perk. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed query when opening DIM to be more precise. (nznaza)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed class item was not showing Armor Perk. (nznaza) Thanks Mojo",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.7.2",
+    date: "February 5, 2025",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Hotfix for the invalid data the BungieAPI is returning after the most recent Update. Thanks nznaza for fixing it!",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.7.1",
+    date: "January 29, 2025",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Some users could not log in properly due to crossplay issues. Thanks nznaza for fixing it!",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.7.0",
+    date: "December 09, 2024",
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Some UI reworks. Please give us feedback whether you like it or not, so we can improve it further! Thanks nznaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated dependencies. Thanks nznaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added error tacking so that we can better identify and fix issues. Thanks nznaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixes for the exotic class items and duplicate entries. Thanks nznaza!",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Many - AND I REALLY MEAN MANY - internal code optimizations, both structural and logically. Thanks nznaza (this guardian deserves a medal)!",
+        issues: [],
+      },
+    ],
+  },
   {
     version: "2.6.6",
     date: "November 9, 2024",

@@ -18,12 +18,21 @@
 import { getSkillTier, getWaste, handlePermutation } from "./results-builder.worker";
 import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import {
+  ArmorPerkOrSlot,
+  ArmorStat,
+  ARMORSTAT_ORDER,
+  STAT_MOD_VALUES,
+  StatModifier,
+} from "../data/enum/armor-stat";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
+import {
+  ResultDefinition,
+  ResultItem,
+} from "../components/authenticated-v2/results/results.component";
 
 const plugs = [
   [1, 1, 10],
@@ -120,11 +129,11 @@ function buildTestItem(
   slot: ArmorSlot,
   isExotic: boolean,
   stats: number[],
-  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.None
+  perk: ArmorPerkOrSlot = ArmorPerkOrSlot.Any
 ): IInventoryArmor {
   return {
     name: "item_" + slot,
-    armor2: true,
+    armorSystem: 3,
     clazz: DestinyClass.Titan,
     source: InventoryArmorSource.Inventory,
     description: "",
@@ -199,8 +208,6 @@ function generateRandomBuild() {
 function buildRuntime() {
   return {
     maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-    statCombo3x100: new Set(),
-    statCombo4x100: new Set(),
   };
 }
 
@@ -219,46 +226,47 @@ describe("Results Worker", () => {
     ];
 
     const config = new BuildConfiguration();
-    config.minimumStatTiers[ArmorStat.Mobility].value = 2;
-    config.minimumStatTiers[ArmorStat.Resilience].value = 10;
-    config.minimumStatTiers[ArmorStat.Recovery].value = 8;
-    config.minimumStatTiers[ArmorStat.Discipline].value = 9;
-    config.minimumStatTiers[ArmorStat.Intellect].value = 5;
-    config.minimumStatTiers[ArmorStat.Strength].value = 2;
+    config.minimumStatTiers[ArmorStat.StatWeapon].value = 2;
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 10;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 8;
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 9;
+    config.minimumStatTiers[ArmorStat.StatSuper].value = 5;
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 2;
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 1, 1], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem,
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
     expect(result.mods.length).toEqual(5);
     expect(result.artifice.length).toEqual(1);
     expect(result.stats[0]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Mobility].value * 10
+      config.minimumStatTiers[ArmorStat.StatWeapon].value * 10
     );
     expect(result.stats[1]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Resilience].value * 10
+      config.minimumStatTiers[ArmorStat.StatHealth].value * 10
     );
     expect(result.stats[2]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Recovery].value * 10
+      config.minimumStatTiers[ArmorStat.StatClass].value * 10
     );
     expect(result.stats[3]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Discipline].value * 10
+      config.minimumStatTiers[ArmorStat.StatGrenade].value * 10
     );
     expect(result.stats[4]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Intellect].value * 10
+      config.minimumStatTiers[ArmorStat.StatSuper].value * 10
     );
     expect(result.stats[5]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Strength].value * 10
+      config.minimumStatTiers[ArmorStat.StatMelee].value * 10
     );
   });
   it("should swap 3x artifice mods around to replace old mods", () => {
@@ -290,44 +298,45 @@ describe("Results Worker", () => {
     ];
 
     const config = new BuildConfiguration();
-    config.minimumStatTiers[ArmorStat.Mobility].value = 6;
-    config.minimumStatTiers[ArmorStat.Resilience].value = 6;
-    config.minimumStatTiers[ArmorStat.Recovery].value = 10;
-    config.minimumStatTiers[ArmorStat.Discipline].value = 10;
-    config.minimumStatTiers[ArmorStat.Intellect].value = 0;
-    config.minimumStatTiers[ArmorStat.Strength].value = 0;
+    config.minimumStatTiers[ArmorStat.StatWeapon].value = 6;
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 6;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 10;
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 10;
+    config.minimumStatTiers[ArmorStat.StatSuper].value = 0;
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 0;
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
     expect(result.stats[0]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Mobility].value * 10
+      config.minimumStatTiers[ArmorStat.StatWeapon].value * 10
     );
     expect(result.stats[1]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Resilience].value * 10
+      config.minimumStatTiers[ArmorStat.StatHealth].value * 10
     );
     expect(result.stats[2]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Recovery].value * 10
+      config.minimumStatTiers[ArmorStat.StatClass].value * 10
     );
     expect(result.stats[3]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Discipline].value * 10
+      config.minimumStatTiers[ArmorStat.StatGrenade].value * 10
     );
     expect(result.stats[4]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Intellect].value * 10
+      config.minimumStatTiers[ArmorStat.StatSuper].value * 10
     );
     expect(result.stats[5]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Strength].value * 10
+      config.minimumStatTiers[ArmorStat.StatMelee].value * 10
     );
   });
   it("should swap 3x artifice mods around to replace old mods v2", () => {
@@ -359,46 +368,47 @@ describe("Results Worker", () => {
     ];
 
     const config = new BuildConfiguration();
-    config.minimumStatTiers[ArmorStat.Mobility].value = 9;
-    config.minimumStatTiers[ArmorStat.Resilience].value = 10;
-    config.minimumStatTiers[ArmorStat.Recovery].value = 0;
-    config.minimumStatTiers[ArmorStat.Discipline].value = 10;
-    config.minimumStatTiers[ArmorStat.Intellect].value = 0;
-    config.minimumStatTiers[ArmorStat.Strength].value = 0;
+    config.minimumStatTiers[ArmorStat.StatWeapon].value = 9;
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 10;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 0;
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 10;
+    config.minimumStatTiers[ArmorStat.StatSuper].value = 0;
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 0;
 
     const constantBonus = [-10, 0, 10, 0, 0, -10];
     let presult = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
     console.log(result);
     expect(result.stats[0]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Mobility].value * 10
+      config.minimumStatTiers[ArmorStat.StatWeapon].value * 10
     );
     expect(result.stats[1]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Resilience].value * 10
+      config.minimumStatTiers[ArmorStat.StatHealth].value * 10
     );
     expect(result.stats[2]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Recovery].value * 10
+      config.minimumStatTiers[ArmorStat.StatClass].value * 10
     );
     expect(result.stats[3]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Discipline].value * 10
+      config.minimumStatTiers[ArmorStat.StatGrenade].value * 10
     );
     expect(result.stats[4]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Intellect].value * 10
+      config.minimumStatTiers[ArmorStat.StatSuper].value * 10
     );
     expect(result.stats[5]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Strength].value * 10
+      config.minimumStatTiers[ArmorStat.StatMelee].value * 10
     );
 
     for (let n = 0; n < 6; n++) {
@@ -432,15 +442,16 @@ describe("Results Worker", () => {
 
     let result = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     );
     expect(result).toBeDefined();
     expect(result).not.toBeNull();
@@ -483,15 +494,16 @@ describe("Results Worker", () => {
 
     let presult = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       [0, 0, 0, 0, 0, 0], // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
@@ -521,40 +533,41 @@ describe("Results Worker", () => {
         Math.floor(Math.random() * 6),
       ];
       availableModCost = [5, 5, 5, 5, 5];
-      let result = handlePermutation(
+      handlePermutation(
         runtime,
         config,
-        mockItems[0] as unknown as IPermutatorArmor,
-        mockItems[1] as unknown as IPermutatorArmor,
-        mockItems[2] as unknown as IPermutatorArmor,
-        mockItems[3] as unknown as IPermutatorArmor,
+        mockItems[0] as IPermutatorArmor,
+        mockItems[1] as IPermutatorArmor,
+        mockItems[2] as IPermutatorArmor,
+        mockItems[3] as IPermutatorArmor,
         constantBonus1,
         availableModCost,
         false,
-        true
+        true, // hasArtificeClassItem
+        true // and masterwoked class item
       );
 
       // grab the runtime.maximumPossibleTiers and iterate over them to see if it correctly fills them
       // first, pick a random order
-      const order = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+      const order = ARMORSTAT_ORDER.sort(() => Math.random() - 0.5);
 
       for (let statId of order) {
-        config.minimumStatTiers[statId as ArmorStat].value = Math.floor(
-          runtime.maximumPossibleTiers[statId] / 10
-        );
+        config.minimumStatTiers[statId as ArmorStat].value =
+          runtime.maximumPossibleTiers[statId] / 10;
 
         runtime = buildRuntime();
         let presult = handlePermutation(
           runtime,
           config,
-          mockItems[0] as unknown as IPermutatorArmor,
-          mockItems[1] as unknown as IPermutatorArmor,
-          mockItems[2] as unknown as IPermutatorArmor,
-          mockItems[3] as unknown as IPermutatorArmor,
+          mockItems[0] as IPermutatorArmor,
+          mockItems[1] as IPermutatorArmor,
+          mockItems[2] as IPermutatorArmor,
+          mockItems[3] as IPermutatorArmor,
           constantBonus1,
           availableModCost,
           false,
-          true
+          true, // hasArtificeClassItem
+          true // and masterwoked class item
         ) as IPermutatorArmorSet;
         let result = CreateResultDefinition(presult, mockItems);
         expect(result).toBeDefined();
@@ -597,12 +610,12 @@ describe("Results Worker", () => {
               mockItems[3].strength,
           ]);
           console.log("target stats", [
-            config.minimumStatTiers[ArmorStat.Mobility].value * 10,
-            config.minimumStatTiers[ArmorStat.Resilience].value * 10,
-            config.minimumStatTiers[ArmorStat.Recovery].value * 10,
-            config.minimumStatTiers[ArmorStat.Discipline].value * 10,
-            config.minimumStatTiers[ArmorStat.Intellect].value * 10,
-            config.minimumStatTiers[ArmorStat.Strength].value * 10,
+            config.minimumStatTiers[ArmorStat.StatWeapon].value * 10,
+            config.minimumStatTiers[ArmorStat.StatHealth].value * 10,
+            config.minimumStatTiers[ArmorStat.StatClass].value * 10,
+            config.minimumStatTiers[ArmorStat.StatGrenade].value * 10,
+            config.minimumStatTiers[ArmorStat.StatSuper].value * 10,
+            config.minimumStatTiers[ArmorStat.StatMelee].value * 10,
           ]);
           console.log(
             "Available artifice mods",
@@ -633,13 +646,12 @@ describe("Results Worker", () => {
     const config = new BuildConfiguration();
     config.assumeLegendariesMasterworked = true;
     config.assumeExoticsMasterworked = true;
-    config.assumeClassItemMasterworked = true;
-    config.minimumStatTiers[ArmorStat.Mobility].value = 0;
-    config.minimumStatTiers[ArmorStat.Resilience].value = 9;
-    config.minimumStatTiers[ArmorStat.Recovery].value = 6;
-    config.minimumStatTiers[ArmorStat.Discipline].value = 7;
-    config.minimumStatTiers[ArmorStat.Intellect].value = 0;
-    config.minimumStatTiers[ArmorStat.Strength].value = 0;
+    config.minimumStatTiers[ArmorStat.StatWeapon].value = 0;
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 9;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 6;
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 7;
+    config.minimumStatTiers[ArmorStat.StatSuper].value = 0;
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 0;
 
     // calculate the stat sum of mockItems
     const statSum = [
@@ -665,37 +677,38 @@ describe("Results Worker", () => {
     const constantBonus = [0, 0, 0, 0, 0, 0];
     let presult = handlePermutation(
       runtime,
-      config, // todo config
-      mockItems[0] as unknown as IPermutatorArmor,
-      mockItems[1] as unknown as IPermutatorArmor,
-      mockItems[2] as unknown as IPermutatorArmor,
-      mockItems[3] as unknown as IPermutatorArmor,
+      config,
+      mockItems[0] as IPermutatorArmor,
+      mockItems[1] as IPermutatorArmor,
+      mockItems[2] as IPermutatorArmor,
+      mockItems[3] as IPermutatorArmor,
       constantBonus, // constant bonus
       [5, 5, 5, 5, 5], // availableModCost
       false, // doNotOutput
-      true // hasArtificeClassItem
+      true, // hasArtificeClassItem
+      true // and masterwoked class item
     ) as IPermutatorArmorSet;
     let result = CreateResultDefinition(presult, mockItems);
     expect(result).toBeDefined();
     console.log(result);
     expect(result.mods.length).toBeLessThanOrEqual(5);
     expect(result.stats[0]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Mobility].value * 10
+      config.minimumStatTiers[ArmorStat.StatWeapon].value * 10
     );
     expect(result.stats[1]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Resilience].value * 10
+      config.minimumStatTiers[ArmorStat.StatHealth].value * 10
     );
     expect(result.stats[2]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Recovery].value * 10
+      config.minimumStatTiers[ArmorStat.StatClass].value * 10
     );
     expect(result.stats[3]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Discipline].value * 10
+      config.minimumStatTiers[ArmorStat.StatGrenade].value * 10
     );
     expect(result.stats[4]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Intellect].value * 10
+      config.minimumStatTiers[ArmorStat.StatSuper].value * 10
     );
     expect(result.stats[5]).toBeGreaterThanOrEqual(
-      config.minimumStatTiers[ArmorStat.Strength].value * 10
+      config.minimumStatTiers[ArmorStat.StatMelee].value * 10
     );
 
     for (let n = 0; n < 6; n++) {
@@ -719,18 +732,21 @@ function CreateResultDefinition(
   items: IInventoryArmor[]
 ): ResultDefinition {
   let exotic = items.find((x) => x.isExotic);
+
+  if (armorSet == null) {
+    console.error("ArmorSet is null", items);
+  }
+
   return {
     exotic:
       exotic == null
-        ? []
-        : [
-            {
-              icon: exotic?.icon,
-              watermark: exotic?.watermarkIcon,
-              name: exotic?.name,
-              hash: exotic?.hash,
-            },
-          ],
+        ? undefined
+        : {
+            icon: exotic?.icon,
+            watermark: exotic?.watermarkIcon,
+            name: exotic?.name,
+            hash: exotic?.hash,
+          },
     artifice: armorSet.usedArtifice,
     modCount: armorSet.usedMods.length,
     modCost: armorSet.usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
@@ -739,35 +755,30 @@ function CreateResultDefinition(
     statsNoMods: armorSet.statsWithoutMods,
     tiers: getSkillTier(armorSet.statsWithMods),
     waste: getWaste(armorSet.statsWithMods),
-    items: items.reduce(
-      (p: any[], instance) => {
-        p[instance.slot - 1].push({
-          energyLevel: instance.energyLevel,
-          hash: instance.hash,
-          itemInstanceId: instance.itemInstanceId,
-          name: instance.name,
-          exotic: !!instance.isExotic,
-          masterworked: instance.masterworked,
-          mayBeBugged: instance.mayBeBugged,
-          slot: instance.slot,
-          perk: instance.perk,
-          transferState: 0, // TRANSFER_NONE
-          stats: [
-            instance.mobility,
-            instance.resilience,
-            instance.recovery,
-            instance.discipline,
-            instance.intellect,
-            instance.strength,
-          ],
-          source: instance.source,
-        });
-        return p;
-      },
-      [[], [], [], []]
+    items: items.map(
+      (instance): ResultItem => ({
+        energyLevel: instance.energyLevel,
+        hash: instance.hash,
+        itemInstanceId: instance.itemInstanceId,
+        name: instance.name,
+        exotic: !!instance.isExotic,
+        masterworked: instance.masterworked,
+        slot: instance.slot,
+        perk: instance.perk,
+        transferState: 0, // TRANSFER_NONE
+        stats: [
+          instance.mobility,
+          instance.resilience,
+          instance.recovery,
+          instance.discipline,
+          instance.intellect,
+          instance.strength,
+        ],
+        source: instance.source,
+        statsNoMods: [],
+      })
     ),
-    classItem: armorSet.classItemPerk,
     usesCollectionRoll: items.some((v) => v.source === InventoryArmorSource.Collections),
     usesVendorRoll: items.some((v) => v.source === InventoryArmorSource.Vendor),
-  } as unknown as ResultDefinition;
+  } as ResultDefinition;
 }

@@ -18,7 +18,7 @@
 <span *ngFor="let d of data; let idx = index">
   <ng-container *ngIf="idx === 0">
     <br />
-    <mat-button-toggle-group [value]="selectedElement">
+    <mat-button-toggle-group [value]="selectedElement" class="mat-primary">
       <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
         Arc
       </mat-button-toggle>
@@ -46,7 +46,7 @@
     <span *ngIf="d.data.length === 0"
       >There are no fragments configured yet. Please be patient.</span
     >
-    <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0">
+    <table [dataSource]="d.data" mat-table *ngIf="d.data.length > 0" class="tSubclassFragments">
       <!-- Position Column -->
       <ng-container matColumnDef="name">
         <th *matHeaderCellDef mat-header-cell>Name</th>
@@ -54,89 +54,35 @@
           <mat-slide-toggle
             [checked]="selectedMods.indexOf(element.id) > -1"
             color="primary"
-            disabled
-            style="cursor: pointer !important">
+            style="cursor: pointer !important; user-select: none">
             <app-item-icon [itemHash]="element.hash"></app-item-icon>
             {{ element.name }}
           </mat-slide-toggle>
         </td>
       </ng-container>
 
-      <!-- Position Column -->
-      <ng-container matColumnDef="mobility">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="0"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 0) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-      <!-- Position Column -->
-      <ng-container matColumnDef="resilience">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="1"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 1) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="recovery">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="2"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 2) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="discipline">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="3"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 3) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="intellect">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="4"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 4) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
-      </ng-container>
-
-      <!-- Position Column -->
-      <ng-container matColumnDef="strength">
-        <th *matHeaderCellDef mat-header-cell>
-          <app-stat-icon [stat]="5"></app-stat-icon>
-        </th>
-        <td *matCellDef="let element" mat-cell>
-          <span *ngVar="getModifierTextForValue(element.bonus, 5) as value">
-            <span *ngIf="value > 0" class="stat-positive">+{{ value }}</span>
-            <span *ngIf="value < 0" class="stat-negative">{{ value }}</span>
-          </span>
-        </td>
+      <ng-container *ngFor="let stat of ARMORSTAT_ORDER; let i = index">
+        <ng-container [matColumnDef]="ArmorStatNames[stat]">
+          <th *matHeaderCellDef mat-header-cell [matTooltip]="ArmorStatNames[stat]">
+            <app-stat-icon [stat]="stat"></app-stat-icon>
+          </th>
+          <td *matCellDef="let element" mat-cell>
+            <span *ngVar="getModifierTextForValue(element.bonus, stat) as value">
+              <span
+                *ngIf="value > 0"
+                class="stat-positive"
+                [matTooltip]="'+' + value + ' ' + ArmorStatNames[stat]"
+                >+{{ value }}</span
+              >
+              <span
+                *ngIf="value < 0"
+                class="stat-negative"
+                [matTooltip]="value + ' ' + ArmorStatNames[stat]"
+                >{{ value }}</span
+              >
+            </span>
+          </td>
+        </ng-container>
       </ng-container>
 
       <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
@@ -150,5 +96,20 @@
 </span>
 
 <div id="clear-container">
-  <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>
+  <button
+    (click)="importEquippedSubclass()"
+    [disabled]="isLoadingSubclass"
+    color="primary"
+    mat-raised-button
+    style="margin-right: 10px">
+    Import equipped Subclass & Fragments
+  </button>
+
+  <mat-spinner
+    *ngIf="isLoadingSubclass"
+    diameter="20"
+    style="margin-right: 8px; display: inline-block"></mat-spinner>
+  <button (click)="clear()" [disabled]="isLoadingSubclass" color="warn" mat-stroked-button>
+    Clear the whole selection
+  </button>
 </div>

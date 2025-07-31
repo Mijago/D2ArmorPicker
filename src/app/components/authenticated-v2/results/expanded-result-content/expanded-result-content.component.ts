@@ -20,18 +20,13 @@
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import {
-  ArmorPerkOrSlot,
-  ArmorPerkOrSlotDIMText,
   ArmorStat,
-  ArmorStatHashes,
   ArmorStatIconUrls,
   ArmorStatNames,
   SpecialArmorStat,
-  STAT_MOD_VALUES,
   StatModifier,
-  SubclassHashes,
 } from "src/app/data/enum/armor-stat";
-import { ResultDefinition, ResultItem, ResultItemMoveState } from "../results.component";
+import { ResultDefinition, ResultItem } from "../results.component";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierValue } from "../../../../data/modifier";
@@ -40,17 +35,12 @@ import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ModifierType } from "../../../../data/enum/modifierType";
-import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
-import { MASTERWORK_COST_EXOTIC, MASTERWORK_COST_LEGENDARY } from "../../../../data/masterworkCost";
-import {
-  AssumeArmorMasterwork,
-  Loadout,
-  LoadoutParameters,
-} from "@destinyitemmanager/dim-api-types";
-import { MembershipService } from "src/app/services/membership.service";
-import { ArmorSlot } from "src/app/data/enum/armor-slot";
+import { getMasterworkCostList } from "../../../../data/masterworkCost";
+import { DimService } from "../../../../services/dim.service";
+import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 
 @Component({
   selector: "app-expanded-result-content",
@@ -58,61 +48,41 @@ import { ArmorSlot } from "src/app/data/enum/armor-slot";
   styleUrls: ["./expanded-result-content.component.scss"],
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
-  public showGenericClassItemRow = false;
-  public armorStatIds: ArmorStat[] = [0, 1, 2, 3, 4, 5];
+  public MAXIMUM_MASTERWORK_LEVEL = MAXIMUM_MASTERWORK_LEVEL;
   public ModifierType = ModifierType;
   public ModInformation = ModInformation;
   public ArmorStatNames = ArmorStatNames;
   public ArmorStatIconUrls = ArmorStatIconUrls;
   public ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
-  public config_characterClass = DestinyClass.Titan;
+  public config_characterClass = DestinyClass.Unknown;
   public config_assumeLegendariesMasterworked = false;
   public config_assumeExoticsMasterworked = false;
-  public config_assumeClassItemMasterworked = false;
   public config_enabledMods: ModOrAbility[] = [];
   public DIMUrl: string = "";
   configValues: [number, number, number, number, number, number] = [0, 0, 0, 0, 0, 0];
 
   @Input()
   element: ResultDefinition | null = null;
+  ArmorItems: ResultItem[] | null = null;
+  ExoticArmorItem: ResultItem | null = null;
 
   constructor(
     private config: ConfigurationService,
     private _snackBar: MatSnackBar,
     private bungieApi: BungieApiService,
-    private membership: MembershipService
+    private dimService: DimService
   ) {}
 
-  public buildItemIdString(element: ResultDefinition | null) {
-    if (!element) return "";
-    let result = element.items
-      .flat()
-      .filter((d) => d.slot != ArmorSlot.ArmorSlotClass)
-      .map((d) => `id:'${d.itemInstanceId}'`)
-      .join(" or ");
+  public async CopyDIMQuery() {
+    if (!this.element) return;
 
-    let classItemFilters = ["is:classitem"];
-    // Exotic class item
-    let classItems = element.items
-      .flat()
-      .filter((d) => d.slot == ArmorSlot.ArmorSlotClass)
-      .map((d) => `exactname:'${d.name}'`)
-      .join(" or ");
-
-    if (classItems.length > 0) {
-      classItemFilters = [classItems];
+    const success = await this.dimService.copyDIMQuery(this.element);
+    if (success) {
+      this.openSnackBar("Copied the DIM search query to your clipboard.");
+    } else {
+      this.openSnackBar("Failed to copy to clipboard.");
     }
-    if (
-      element.classItem.perk != ArmorPerkOrSlot.None &&
-      element.classItem.perk != ArmorPerkOrSlot.COUNT
-    ) {
-      classItemFilters.push(ArmorPerkOrSlotDIMText[element.classItem.perk || 0]);
-    }
-
-    if (classItemFilters.length > 1) result += ` or (${classItemFilters.join(" ")})`;
-
-    return result;
   }
 
   openSnackBar(message: string) {
@@ -124,14 +94,13 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // set this.showGenericClassItemRow to true if the number of non-empty elements in this.element.items is <= 4
-    this.showGenericClassItemRow =
-      (this.element?.items.filter((i) => i.length > 0).length || 0) <= 4;
+    this.ArmorItems = this.element?.items || null; //.filter((x) => x.slot != ArmorSlot.ArmorSlotClass) || null;
+    this.ExoticArmorItem = this.element?.items.filter((x) => x.exotic)[0] || null;
 
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
-      this.config_characterClass = c.characterClass as unknown as DestinyClass;
+      this.config_characterClass = c.characterClass;
       this.config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
       this.config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this.config_assumeClassItemMasterworked = c.assumeClassItemMasterworked;
       this.config_enabledMods = c.enabledMods;
       this.configValues = c.enabledMods
         .reduce((p, v) => {
@@ -148,7 +117,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           [0, 0, 0, 0, 0, 0]
         );
 
-      this.DIMUrl = this.generateDIMLink(c);
+      this.DIMUrl = this.element ? this.dimService.generateDIMLink(this.element) : "";
     });
   }
 
@@ -165,56 +134,23 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  get mayAnyItemBeBugged() {
-    return (this.element?.items.flat().filter((d: ResultItem) => d.mayBeBugged).length || 0) > 0;
-  }
-
-  async getCharacterId() {
-    // get character Id
-    let characters = await this.membership.getCharacters();
-    characters = characters.filter((c) => c.clazz == this.config_characterClass);
-    if (characters.length == 0) {
-      this.openSnackBar("Error: Could not find a character to move the items to.");
-      return null;
-    }
-    return characters[0].characterId;
-  }
-
   async moveItems(equip = false) {
-    for (let item of (this.element?.items || []).flat()) {
-      item.transferState = ResultItemMoveState.WAITING_FOR_TRANSFER;
+    if (!this.element) return;
+
+    const result = await this.bungieApi.moveResultItems(this.element, equip);
+
+    if (!result.success) {
+      this.openSnackBar("Error: Could not find a character to move the items to.");
+      return;
     }
 
-    let characterId = await this.getCharacterId();
-    if (!characterId) return;
-
-    let allSuccessful = true;
-    let items = (this.element?.items || []).flat().sort((i) => (i.exotic ? 1 : -1));
-    for (let item of items) {
-      item.transferState = ResultItemMoveState.TRANSFERRING;
-      let success = await this.bungieApi.transferItem(item.itemInstanceId, characterId, equip);
-      item.transferState = success
-        ? ResultItemMoveState.TRANSFERRED
-        : ResultItemMoveState.ERROR_DURING_TRANSFER;
-      if (!success) allSuccessful = false;
-    }
-    if (allSuccessful) {
+    if (result.allSuccessful) {
       this.openSnackBar("Success! Moved all the items.");
     } else {
       this.openSnackBar(
         "Some of the items could not be moved. Make sure that there is enough space in the specific slot. This tool will not move items out of your inventory."
       );
     }
-  }
-
-  getItemsThatMustBeMasterworked(): ResultItem[] | undefined {
-    return this.element?.items.flat().filter((item) => {
-      if (item.masterworked) return false;
-      if (item.exotic && !this.config_assumeExoticsMasterworked) return false;
-      if (!item.exotic && !this.config_assumeLegendariesMasterworked) return false;
-
-      return true;
-    });
   }
 
   calculateRequiredMasterworkCost() {
@@ -234,7 +170,11 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
           (!i.exotic && this.config_assumeLegendariesMasterworked))
     );
     for (let item of items) {
-      let costList = item.exotic ? MASTERWORK_COST_EXOTIC : MASTERWORK_COST_LEGENDARY;
+      let costList = getMasterworkCostList(item.exotic, item.tier);
+      if (!costList) {
+        console.warn("No cost list found for item", item);
+        continue;
+      }
       for (let n = item.energyLevel; n < 10; n++)
         for (let entryName in costList[n + 1]) {
           cost[entryName] += costList[n + 1][entryName];
@@ -244,109 +184,10 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     return cost;
   }
 
-  generateDIMLink(c: BuildConfiguration): string {
-    const mods: number[] = [];
-    const fragments: number[] = [];
-
-    // add selected mods
-    for (let mod of this.config_enabledMods) {
-      const modInfo = ModInformation[mod];
-      if (modInfo.type === ModifierType.CombatStyleMod) {
-        mods.push(modInfo.hash);
-      } else {
-        fragments.push(modInfo.hash);
-      }
-    }
-
-    // add stat mods
-    if (this.element) {
-      for (let mod of this.element?.mods || []) {
-        mods.push(STAT_MOD_VALUES[mod as StatModifier][3]);
-      }
-      // add artifice mods
-      for (let artificemod of this.element?.artifice || []) {
-        mods.push(STAT_MOD_VALUES[artificemod as StatModifier][3]);
-      }
-    }
-
-    var data: LoadoutParameters = {
-      statConstraints: [],
-      mods,
-      assumeArmorMasterwork: c.assumeLegendariesMasterworked
-        ? c.assumeExoticsMasterworked
-          ? AssumeArmorMasterwork.All
-          : AssumeArmorMasterwork.Legendary
-        : AssumeArmorMasterwork.None,
-    };
-
-    // iterate over ArmorStat enum
-    for (let stat of this.armorStatIds) {
-      data.statConstraints.push({
-        statHash: ArmorStatHashes[stat],
-        minTier: c.minimumStatTiers[stat].value,
-        maxTier: c.minimumStatTiers[stat].fixed ? c.minimumStatTiers[stat].value : 10,
-      });
-    }
-
-    if (c.selectedExotics.length == 1) {
-      data.exoticArmorHash = c.selectedExotics[0];
-    } else {
-      var exos = this.element?.exotic;
-      if (exos && exos.length == 1) {
-        var exoticHash = exos[0].hash;
-        if (!!exoticHash) data.exoticArmorHash = parseInt(exoticHash, 10);
-      }
-    }
-
-    const loadout: Loadout = {
-      id: "d2ap", // this doesn't matter and will be replaced
-      name: "D2ArmorPicker Loadout",
-      classType: c.characterClass as number,
-      parameters: data,
-      equipped: (this.element?.items || [])
-        .filter((i) => i.length > 0)
-        .map(([i]) => ({
-          id: i.itemInstanceId,
-          hash: i.hash,
-        })),
-      unequipped: [],
-      clearSpace: false,
-    };
-
-    // Configure subclass
-    if (fragments.length) {
-      const socketOverrides = fragments.reduce<{
-        [socketIndex: number]: number;
-      }>((m, hash, i) => {
-        m[i + 7] = hash;
-        return m;
-      }, {});
-
-      if (
-        c.characterClass != DestinyClass.Unknown &&
-        c.selectedModElement != ModifierType.CombatStyleMod
-      ) {
-        const cl = SubclassHashes[c.characterClass];
-        const subclassHash = cl[c.selectedModElement];
-        if (subclassHash) {
-          loadout.equipped.push({
-            id: "12345", // This shouldn't need to be specified but right now it does. The value doesn't matter
-            hash: subclassHash,
-            socketOverrides,
-          });
-        }
-      }
-    }
-
-    var url =
-      "https://app.destinyitemmanager.com/loadouts?loadout=" +
-      encodeURIComponent(JSON.stringify(loadout));
-
-    return url;
-  }
-
   goToDIM() {
-    window.open(this.DIMUrl, "blank");
+    if (this.element) {
+      this.dimService.openInDIM(this.element);
+    }
   }
 
   getTiersForStat(statId: number) {
@@ -383,11 +224,53 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
       (
         this.element?.items.filter(
           (i) =>
-            (!i[0].masterworked && !i[0].exotic && this.config_assumeLegendariesMasterworked) ||
-            (i[0].exotic && this.config_assumeExoticsMasterworked)
+            (!i.masterworked && !i.exotic && this.config_assumeLegendariesMasterworked) ||
+            (i.exotic && this.config_assumeExoticsMasterworked)
         ) || []
       ).length * 2
     );
+  }
+
+  getMasterworkBonus(item: ResultItem) {
+    const bonus = [0, 0, 0, 0, 0, 0];
+
+    if (item.armorSystem == ArmorSystem.Armor2) {
+      // Armor 2.0
+      if (
+        item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL ||
+        (item.exotic && this.config_assumeExoticsMasterworked) ||
+        (!item.exotic && this.config_assumeLegendariesMasterworked)
+      ) {
+        // Armor 2.0 Masterworked items give +2 to all stats
+        for (let i = 0; i < 6; i++) {
+          bonus[i] += 2;
+        }
+      }
+      return bonus;
+    } else if (item.armorSystem == ArmorSystem.Armor3) {
+      // Armor 3.0
+      let multiplier = item.masterworkLevel;
+      if (
+        (item.exotic && this.config_assumeExoticsMasterworked) ||
+        (!item.exotic && this.config_assumeLegendariesMasterworked)
+      ) {
+        multiplier = 5;
+      }
+
+      if (multiplier == 0) return bonus;
+
+      // For Armor 1.0, assume the first three stats are the archetype stats and don't get masterwork bonus
+      // The OTHER THREE stats (3, 4, 5) get +1 per multiplier level
+      for (let i = 0; i < 6; i++) {
+        if (item.archetypeStats.indexOf(i) === -1) {
+          bonus[i] += multiplier;
+        }
+      }
+
+      return bonus;
+    }
+
+    return bonus;
   }
 
   private ngUnsubscribe = new Subject();
