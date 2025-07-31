@@ -15,23 +15,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+:host {
+  width: 350px;
+}
 
-import { ConfigurationService } from "../../../../services/configuration.service";
+.tooltip-container {
+  border: 1px solid gray;
+  padding: 1px 5px 4px 5px;
+  background: linear-gradient(#484848 0px, #2c2c2c 100%);
+}
 
-@Component({
-  selector: "app-desired-mod-selection",
-  templateUrl: "./desired-mod-limit-selection.component.html",
-  styleUrls: ["./desired-mod-limit-selection.component.scss"],
-})
-export class DesiredModLimitSelectionComponent {
-  constructor(public config: ConfigurationService) {}
+.perk-icon {
+  width: 50px;
+  height: 50px;
+}
+.perk-icon-col {
+  width: 55px;
+}
 
-  // New clear for statModLimits
-  clear() {
-    this.config.modifyConfiguration((c) => {
-      c.statModLimits = { maxMods: 5, maxMajorMods: 5 };
-      c.armorRequirements = [];
-    });
-  }
+.exotic-name {
+  color: #eedb9e;
+}
+
+
+.collection-roll-info {
+  color: #5cc3ec;
+  font-size: 12px;
+  margin-top: 5px;
 }

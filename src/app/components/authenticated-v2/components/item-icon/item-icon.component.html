@@ -22,6 +22,15 @@
     *ngIf="item.icon"
     #tooltip="matTooltip"
     matTooltip="{{ item.name }}" />
+
+  <ng-container *ngIf="SpecialItemIconUrls[item.hash]">
+    <img
+      class="item-icon-overlay"
+      [src]="SpecialItemIconUrls[item.hash]"
+      [matTooltip]="item.name"
+      #tooltip="matTooltip" />
+  </ng-container>
+
   <img
     class="item-icon-overlay"
     src="https://bungie.net/{{ item.watermarkIcon }}"

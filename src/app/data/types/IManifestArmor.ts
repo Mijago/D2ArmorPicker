@@ -41,6 +41,7 @@ export interface IDisplayManifestArmor {
   rarity: TierType;
   armorSystem: ArmorSystem;
   isFeatured: boolean;
+  gearSetHash: number | null;
 }
 export interface IManifestArmor extends IDisplayManifestArmor {
   watermarkIcon: string;

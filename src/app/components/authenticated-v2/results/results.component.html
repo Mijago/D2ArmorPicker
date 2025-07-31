@@ -97,13 +97,6 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_maximumStatMods === 0"
-            disableRipple
-            matTooltip="You enforced that no stat mods are used."
-            >No stat mods
-          </mat-chip-option>
-          <mat-chip-option
-            #tooltip="matTooltip"
             *ngIf="_config_tryLimitWastedStats"
             disableRipple
             matTooltip="The tool will add minor stat mods to reduce wasted stats."
@@ -111,14 +104,14 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_modslotLimitation.length > 0"
+            *ngIf="_config_modslotLimitation"
             disableRipple
             matTooltip="This setting limits available stat mod types, like major Super or Class."
             >Stat Mod Limitation
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_armorPerkLimitation.length > 0"
+            *ngIf="_config_armorPerkLimitation"
             disableRipple
             matTooltip="This setting enforces an specific armor perk or modslot for a specific armor slot.">
             Armor Perk or Slot
@@ -133,24 +126,15 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="_config_assumeEveryLegendaryIsArtifice && _config_legacyArmor"
+            *ngIf="
+              (_config_assumeEveryLegendaryIsArtifice && _config_legacyArmor) ||
+              _config_assumeEveryExoticIsArtifice
+            "
             disableRipple
-            matTooltip="EVERY legacy legendary is assumed to be artifice."
-            selected
+            matTooltip="Some legacy items are assumed to have an artifice slot."
             color="warn">
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
-            &nbsp;Assume legendaries are artifice&nbsp;
-            <mat-icon inline style="height: 100%">report_problem</mat-icon>
-          </mat-chip-option>
-          <mat-chip-option
-            #tooltip="matTooltip"
-            *ngIf="_config_assumeEveryExoticIsArtifice"
-            disableRipple
-            matTooltip="EVERY legacy (Armor 2.0) exotic is assumed to be artifice."
-            selected
-            color="warn">
-            <mat-icon inline style="height: 100%">report_problem</mat-icon>
-            &nbsp;Assume legacy exotics are artifice&nbsp;
+            &nbsp;Legacy Artifice Assumptions&nbsp;
             <mat-icon inline style="height: 100%">report_problem</mat-icon>
           </mat-chip-option>
 

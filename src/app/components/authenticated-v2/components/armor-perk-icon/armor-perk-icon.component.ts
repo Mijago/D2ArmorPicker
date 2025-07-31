@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, OnChanges } from "@angular/core";
 import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
@@ -27,7 +27,7 @@ import {
   templateUrl: "./armor-perk-icon.component.html",
   styleUrls: ["./armor-perk-icon.component.scss"],
 })
-export class ArmorPerkIconComponent {
+export class ArmorPerkIconComponent implements OnChanges {
   ArmorPerkOrSlot = ArmorPerkOrSlot;
 
   customIconMods = [
@@ -43,11 +43,11 @@ export class ArmorPerkIconComponent {
 
   constructor() {}
 
-  get name() {
-    return ArmorPerkOrSlotNames[this.perk];
-  }
+  name: string = "";
+  url: string = "";
 
-  get url() {
-    return ArmorPerkOrSlotIcons[this.perk];
+  ngOnChanges() {
+    this.name = ArmorPerkOrSlotNames[this.perk];
+    this.url = ArmorPerkOrSlotIcons[this.perk];
   }
 }

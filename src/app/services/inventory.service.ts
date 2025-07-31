@@ -22,7 +22,7 @@ import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorPerkOrSlot, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
@@ -372,21 +372,7 @@ export class InventoryService {
             item.rarity == TierType.Superior
         )
         // sunset armor
-        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset)
-        // armor perks
-        .filter((item) => {
-          return (
-            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
-            !config.armorPerks[item.slot].fixed ||
-            (config.armorPerks[item.slot].fixed &&
-              config.armorPerks[item.slot].value == item.perk) ||
-            (config.armorPerks[item.slot].value === ArmorPerkOrSlot.SlotArtifice &&
-              item.armorSystem === ArmorSystem.Armor2 &&
-              ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-                (config.assumeEveryExoticIsArtifice && item.isExotic)))
-          );
-        });
+        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset);
       // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
@@ -421,6 +407,8 @@ export class InventoryService {
           strength: armor.strength,
           source: armor.source,
           exoticPerkHash: armor.exoticPerkHash,
+
+          gearSetHash: armor.gearSetHash ?? null,
 
           icon: armor.icon,
           watermarkIcon: armor.watermarkIcon,

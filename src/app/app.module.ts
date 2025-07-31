@@ -48,7 +48,6 @@ import { HelpPageComponent } from "./components/authenticated-v2/subpages/help-p
 import { ArmorPickerPageComponent } from "./components/authenticated-v2/subpages/armor-picker-page/armor-picker-page.component";
 import { ArmorClusterPageComponent } from "./components/authenticated-v2/subpages/armor-cluster-page/armor-cluster-page.component";
 import { TableModDisplayComponent } from "./components/authenticated-v2/results/table-mod-display/table-mod-display.component";
-import { SlotLimitationSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-selection/slot-limitation-selection.component";
 import { ArmorTooltipComponent } from "./components/authenticated-v2/overlays/armor-tooltip-component/armor-tooltip.component";
 import { ItemTooltipRendererDirective } from "./components/authenticated-v2/overlays/armor-tooltip-component/item-tooltip-renderer.directive";
 import { ItemIconComponent } from "./components/authenticated-v2/components/item-icon/item-icon.component";
@@ -76,6 +75,9 @@ import {
 import { environment } from "../environments/environment";
 import { H } from "highlight.run";
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
+import { GearsetSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/gearset-selection/gearset-selection.component";
+import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
+import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
 if (!!environment.highlight_project_id) {
   H.init(environment.highlight_project_id, {
@@ -99,6 +101,9 @@ if (!!environment.highlight_project_id) {
     },
   });
 }
+
+import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
+import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
 
 const routes: Routes = [
   {
@@ -150,6 +155,8 @@ const routes: Routes = [
     StatIconComponent,
     DesiredModsSelectionComponent,
     VarDirectiveDirective,
+    GearsetTooltipDirective,
+    GearsetTooltipComponent,
     AdvancedSettingsComponent,
     LoadAndSaveSettingsComponent,
     ConfirmDialogComponent,
@@ -162,7 +169,6 @@ const routes: Routes = [
     ArmorPickerPageComponent,
     ArmorClusterPageComponent,
     TableModDisplayComponent,
-    SlotLimitationSelectionComponent,
     ArmorTooltipComponent,
     ItemTooltipRendererDirective,
     ItemIconComponent,
@@ -181,6 +187,9 @@ const routes: Routes = [
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
     ResultsCardViewComponent,
+    GearsetSelectionComponent,
+    ModslotVisualizationComponent,
+    ModLimitSegmentedComponent,
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,25 @@
+<div class="mod-limit-segmented">
+  <div class="segmented-group">
+    <label>Stat mods to be placed:</label>
+    <mat-button-toggle-group
+      [value]="total"
+      (change)="onTotalChange($event.source.value)"
+      exclusive>
+      <mat-button-toggle *ngFor="let n of [0, 1, 2, 3, 4, 5]" [value]="n">{{
+        n
+      }}</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  <div class="segmented-group">
+    <label>Maxmimum amount of Major Mods:</label>
+    <mat-button-toggle-group
+      [value]="major"
+      (change)="onMajorChange($event.source.value)"
+      exclusive>
+      <mat-button-toggle *ngFor="let n of [0, 1, 2, 3, 4, 5]" [value]="n" [disabled]="n > total">{{
+        n
+      }}</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  <div *ngIf="major > total" class="error">Major mods cannot exceed total mods.</div>
+</div>

@@ -24,7 +24,7 @@ import { CompressionOptions, DecompressionOptions } from "lzutf8";
 import { environment } from "../../environments/environment";
 import { EnumDictionary } from "../data/types/EnumDictionary";
 import { ArmorStat } from "../data/enum/armor-stat";
-import { ArmorSlot } from "../data/enum/armor-slot";
+// import { ArmorSlot } from "../data/enum/armor-slot";
 import { ModInformation } from "../data/ModInformation";
 import { isEqual as _isEqual } from "lodash";
 
@@ -129,12 +129,6 @@ export class ConfigurationService {
     if (c.configuration.hasOwnProperty("selectedExoticHash")) {
       c.configuration.selectedExotics = [(c.configuration as any).selectedExoticHash];
       delete (c.configuration as any).selectedExoticHash;
-    }
-    if (c.configuration.hasOwnProperty("maximumStatMods")) {
-      let maxMods = (c.configuration as any).maximumStatMods as number;
-      for (let n = maxMods; n < 5; n++)
-        c.configuration.maximumModSlots[(1 + n) as ArmorSlot].value = 0;
-      delete (c.configuration as any).maximumStatMods;
     }
 
     // remove mods that no longer exist

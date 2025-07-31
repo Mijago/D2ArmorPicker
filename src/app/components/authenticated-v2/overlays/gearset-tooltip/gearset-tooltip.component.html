@@ -15,22 +15,27 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div class="container">
-  <div class="section-spacing">
-    <!-- Gearset Selection -->
-    <app-gearset-selection></app-gearset-selection>
-  </div>
-  <div class="section-spacing">
-    <!-- Modslot Visualization -->
-    <app-modslot-visualization></app-modslot-visualization>
-  </div>
-  <div class="section-spacing">
-    <!-- Mod Limit Selection -->
-    <app-mod-limit-segmented></app-mod-limit-segmented>
+<div>
+  <div class="tooltip-container">
+    <table>
+      <tr *ngIf="gearset">
+        <td class="perk-icon-col" rowspan="2">
+          <img
+            alt="{{ gearset.displayProperties.name }}"
+            class="perk-icon"
+            src="https://bungie.net/{{ gearset.displayProperties.icon }}" />
+        </td>
+      </tr>
+      <tr *ngIf="gearset">
+        <td>
+          <span>{{ gearset.displayProperties.name }}</span>
+        </td>
+      </tr>
+      <tr *ngIf="gearset">
+        <td colspan="2">
+          {{ gearset.displayProperties.description }}
+        </td>
+      </tr>
+    </table>
   </div>
 </div>
-
-<div id="clear-container">
-  <button (click)="clear()" color="warn" mat-stroked-button>Clear the whole selection</button>
-</div>
-<div class="minispace"></div>

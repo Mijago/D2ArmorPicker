@@ -19,6 +19,7 @@ import { AfterViewInit, Component, Input } from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { SpecialItemIconUrls } from "src/app/data/enum/armor-stat";
 
 @Component({
   selector: "app-item-icon",
@@ -26,6 +27,7 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
   styleUrls: ["./item-icon.component.scss"],
 })
 export class ItemIconComponent implements AfterViewInit {
+  SpecialItemIconUrls = SpecialItemIconUrls;
   @Input()
   itemHash: number = 0;
 
