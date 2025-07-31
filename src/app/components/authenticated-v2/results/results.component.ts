@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, OnDestroy, ViewChild } from "@angular/core";
 import { InventoryService } from "../../../services/inventory.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { ConfigurationService } from "../../../services/configuration.service";
@@ -94,7 +94,7 @@ export interface ResultItem {
     ]),
   ],
 })
-export class ResultsComponent implements OnInit, OnDestroy {
+export class ResultsComponent implements AfterViewInit, OnDestroy {
   ArmorStat = ArmorStat;
   public StatModifier = StatModifier;
 
@@ -157,7 +157,37 @@ export class ResultsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit(): void {
+    this.tableDataSource.paginator = this.paginator;
+    this.tableDataSource.sort = this.sort;
+    this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
+      switch (sortHeaderId) {
+        case "Weapon":
+          return data.stats[ArmorStat.StatWeapon];
+        case "Health":
+          return data.stats[ArmorStat.StatHealth];
+        case "Class":
+          return data.stats[ArmorStat.StatClass];
+        case "Grenade":
+          return data.stats[ArmorStat.StatGrenade];
+        case "Super":
+          return data.stats[ArmorStat.StatSuper];
+        case "Melee":
+          return data.stats[ArmorStat.StatMelee];
+        case "Tiers":
+          return data.tiers;
+        case "Total":
+          return data.stats.reduce((sum, stat) => sum + stat, 0);
+        case "Mods":
+          return (
+            +100 * data.modCount +
+            //+ 40 * data.artifice.length
+            data.modCost
+          );
+      }
+      return 0;
+    };
+
     this.status.status.pipe(takeUntil(this.ngUnsubscribe)).subscribe((s) => {
       this.isCalculatingPermutations = s.calculatingPermutations || s.calculatingResults;
 
@@ -210,6 +240,9 @@ export class ResultsComponent implements OnInit, OnDestroy {
       });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (value) => {
+      if (value.results.length > 0 && this.initializing) {
+        this.initializing = false;
+      }
       this._results = value.results;
       this.itemCount = value.itemCount;
       this.totalTime = value.totalTime;
@@ -220,36 +253,6 @@ export class ResultsComponent implements OnInit, OnDestroy {
       await this.updateData();
       this.status.modifyStatus((s) => (s.updatingResultsTable = false));
     });
-
-    this.tableDataSource.paginator = this.paginator;
-    this.tableDataSource.sort = this.sort;
-    this.tableDataSource.sortingDataAccessor = (data, sortHeaderId) => {
-      switch (sortHeaderId) {
-        case "Weapon":
-          return data.stats[ArmorStat.StatWeapon];
-        case "Health":
-          return data.stats[ArmorStat.StatHealth];
-        case "Class":
-          return data.stats[ArmorStat.StatClass];
-        case "Grenade":
-          return data.stats[ArmorStat.StatGrenade];
-        case "Super":
-          return data.stats[ArmorStat.StatSuper];
-        case "Melee":
-          return data.stats[ArmorStat.StatMelee];
-        case "Tiers":
-          return data.tiers;
-        case "Total":
-          return data.stats.reduce((sum, stat) => sum + stat, 0);
-        case "Mods":
-          return (
-            +100 * data.modCount +
-            //+ 40 * data.artifice.length
-            data.modCost
-          );
-      }
-      return 0;
-    };
   }
 
   cancelCalculation() {
