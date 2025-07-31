@@ -48,7 +48,6 @@ export class ModslotVisualizationComponent implements OnInit, OnDestroy {
   ngOnInit() {
     for (const k in [
       ArmorPerkOrSlot.SlotArtifice,
-      ArmorPerkOrSlot.GuardianGamesClassItem,
       ArmorPerkOrSlot.PerkOverflowingCorruption,
       ArmorPerkOrSlot.SlotEidosApprentice,
       ArmorPerkOrSlot.SlotSalvationsEdge,
@@ -64,10 +63,15 @@ export class ModslotVisualizationComponent implements OnInit, OnDestroy {
       ArmorPerkOrSlot.PerkIronBanner,
       ArmorPerkOrSlot.SlotNightmare,
     ]) {
-      if (Object.prototype.hasOwnProperty.call(ArmorPerkOrSlot, k)) {
+      if (Object.prototype.hasOwnProperty.call(ArmorPerkSocketHashes, k)) {
         this.availablePerks.push((ArmorPerkSocketHashes as any)[k]);
       }
     }
+    this.availablePerks.sort((a, b) => {
+      const nameA = this.getPerkName(a);
+      const nameB = this.getPerkName(b);
+      return nameA.localeCompare(nameB);
+    });
 
     this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((config) => {
       const isExoticSelectionEnabled =
