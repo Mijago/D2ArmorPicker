@@ -34,7 +34,7 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
-    version: "2.5.6",
+    version: "2.9.6",
     date: "July 31, 2025",
     clearManifest: true,
     entries: [
