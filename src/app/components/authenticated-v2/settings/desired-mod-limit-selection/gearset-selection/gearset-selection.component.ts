@@ -79,15 +79,18 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     const currentClass = this.config.readonlyConfigurationSnapshot.characterClass;
 
     for (const gearSet of this.gearSets) {
-      const amount = await this.db.inventoryArmor
+      // Get all inventory items for this class and gear set
+      const items = await this.db.inventoryArmor
         .where({
           clazz: currentClass,
           gearSetHash: gearSet.hash,
         })
-        .count();
+        .toArray();
 
-      gearSet.twoPieceBonus.available = amount >= 2;
-      gearSet.fourPieceBonus.available = amount >= 4;
+      // Count how many unique slots are represented by these items
+      const uniqueSlots = new Set(items.map((item) => item.slot));
+      gearSet.twoPieceBonus.available = uniqueSlots.size >= 2;
+      gearSet.fourPieceBonus.available = uniqueSlots.size >= 4;
 
       if (!gearSet.twoPieceBonus.available) gearSet.twoPieceBonus.enabled = false;
       if (!gearSet.fourPieceBonus.available) gearSet.fourPieceBonus.enabled = false;
