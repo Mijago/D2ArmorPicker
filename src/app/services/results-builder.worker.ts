@@ -455,17 +455,16 @@ addEventListener("message", async ({ data }) => {
     );
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
-    if (result != null) {
+    if (isIPermutatorArmorSet(result)) {
       totalResults++;
-      if (isIPermutatorArmorSet(result)) {
-        results.push(result);
-        resultsLength++;
-        listedResults++;
-        doNotOutput =
-          doNotOutput ||
-          (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
-          listedResults >= 1e6 / threadSplit.count;
-      }
+
+      results.push(result);
+      resultsLength++;
+      listedResults++;
+      doNotOutput =
+        doNotOutput ||
+        (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
+        listedResults >= 1e6 / threadSplit.count;
     }
 
     if (totalResults % 5000 == 0 && lastProgressReportTime + progressBarDelay < Date.now()) {
