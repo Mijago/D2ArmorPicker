@@ -774,6 +774,7 @@ export class BungieApiService {
         return;
       }
     }
+    console.info("BungieApiService", "updateManifest", "Requesting manifest");
 
     if (destinyManifest == null) {
       destinyManifest = await getDestinyManifest((d) => this.http.$httpWithoutBearerToken(d));

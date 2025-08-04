@@ -131,10 +131,13 @@ export class InventoryService {
     // TODO: This gives a race condition on some parts.
     router.events.pipe(debounceTime(5)).subscribe(async (val) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
-        //await this.auth.logout();
-        //return;
+        console.warn("Refresh token expired, we should probably log the user out");
+        this.status.setAuthError();
       }
-      if (!auth.isAuthenticated()) return;
+      if (!auth.isAuthenticated()) {
+        console.warn("User is not authenticated, skipping router event handling");
+        return;
+      }
 
       if (val instanceof NavigationEnd) {
         this.killWorkers();
@@ -147,10 +150,15 @@ export class InventoryService {
 
     this.config.configuration.pipe(debounceTime(500)).subscribe(async (c) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
+        console.warn("Refresh token expired, we should probably log the user out");
+        this.status.setAuthError();
         //await this.auth.logout();
         //return;
       }
-      if (!auth.isAuthenticated()) return;
+      if (!auth.isAuthenticated()) {
+        console.warn("User is not authenticated, skipping config change handling");
+        return;
+      }
 
       if (_isEqual(c, this._config)) return;
       console.debug("Build configuration changed", getDifferences(this._config, c));
@@ -179,11 +187,19 @@ export class InventoryService {
   private refreshing: boolean = false;
 
   async refreshAll(forceArmor: boolean = false, forceManifest = false) {
-    if (this.refreshing) return;
-    console.info("Refreshing User information");
+    if (this.refreshing) {
+      console.warn(
+        "Inventory Service",
+        "refreshAll",
+        "Refresh already in progress, skipping new refresh request"
+      );
+      return;
+    }
+    console.debug("Inventory Service", "refreshAll", "Refreshing inventory and manifest");
     try {
       this.refreshing = true;
       if (this.auth.refreshTokenExpired && !(await this.auth.autoRegenerateTokens())) {
+        this.refreshing = false;
         this.status.setAuthError(); // Better way to logout the user?
         if (!this.status.getStatus().apiError) await this.auth.logout();
         return;
@@ -234,7 +250,7 @@ export class InventoryService {
   }
 
   private killWorkers() {
-    console.debug("Terminating workers");
+    console.debug("InventoryService", "killWorkers", "Terminating all workers");
     this.workers.forEach((w) => {
       w.terminate();
     });
@@ -266,7 +282,7 @@ export class InventoryService {
   }
 
   cancelCalculation() {
-    console.info("Cancelling calculation");
+    console.info("InventoryService", "cancelCalculation", "Cancelling calculation");
     this.killWorkers();
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this.status.modifyStatus((s) => (s.cancelledCalculation = true));
@@ -277,7 +293,9 @@ export class InventoryService {
 
   async updateResults(nthreads: number = 3) {
     let config = this._config;
-    console.debug("Using config for Workers", { configuration: config });
+    console.debug("InventoryService", "updateResults", "Using config for Workers", {
+      configuration: config,
+    });
     this.clearResults();
     this.killWorkers();
 
@@ -420,8 +438,7 @@ export class InventoryService {
       });
 
       nthreads = this.estimateRequiredThreads();
-
-      console.info("Threads for calculation", nthreads);
+      console.info(InventoryService.name, "updateResults", "Estimated threads:", nthreads);
 
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
