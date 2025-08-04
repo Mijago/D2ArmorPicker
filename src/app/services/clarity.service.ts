@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { HttpClient } from "@angular/common/http";
 import { Observable, BehaviorSubject } from "rxjs";
 
@@ -49,7 +50,11 @@ export class ClarityService {
   public readonly characterStats: Observable<CharacterStats | null> =
     this._characterStats.asObservable();
 
-  constructor(private http: HttpClient, private inv: InventoryService) {
+  constructor(
+    private http: HttpClient,
+    private inv: InventoryService,
+    private logger: NGXLogger
+  ) {
     // trigger a clarity reload on manifest change
     this.inv.manifest.subscribe((_) => this.load());
   }
@@ -58,7 +63,7 @@ export class ClarityService {
     try {
       await this.loadCharacterStats();
     } catch (err) {
-      console.warn("Error loading Clarity data", err);
+      this.logger.warn("Error loading Clarity data", err);
     }
   }
 
@@ -80,7 +85,10 @@ export class ClarityService {
     // There’s new data available
     if (liveVersion && liveVersion.lastUpdate > storedVersion) {
       if (liveVersion.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
-        console.warn("Unsupported live character stats schema version", liveVersion.schemaVersion);
+        this.logger.warn(
+          "Unsupported live character stats schema version",
+          liveVersion.schemaVersion
+        );
       } else if (liveVersion && liveVersion.lastUpdate !== undefined) {
         await this.fetchLiveCharacterStats().then((data) => {
           localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));

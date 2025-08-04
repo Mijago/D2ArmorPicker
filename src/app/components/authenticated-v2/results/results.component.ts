@@ -16,6 +16,7 @@
  */
 
 import { AfterViewInit, Component, OnDestroy, ViewChild } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { InventoryService } from "../../../services/inventory.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { ConfigurationService } from "../../../services/configuration.service";
@@ -148,7 +149,8 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   constructor(
     private inventory: InventoryService,
     public configService: ConfigurationService,
-    public status: StatusProviderService
+    public status: StatusProviderService,
+    private logger: NGXLogger
   ) {
     // Load saved view mode from localStorage
     const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
@@ -260,8 +262,12 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   }
 
   async updateData() {
-    console.info("Table total results:", this._results.length);
-    console.time("Update Table Data");
+    this.logger.info(
+      "ResultsComponent",
+      "updateData",
+      "Table total results: " + this._results.length
+    );
+    const start = performance.now();
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
@@ -273,7 +279,8 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
       }, 50);
     }
 
-    console.timeEnd("Update Table Data");
+    const end = performance.now();
+    this.logger.info("ResultsComponent", "updateData", `Update Table Data took ${end - start} ms`);
   }
 
   getTotalStats(element: ResultDefinition): number {

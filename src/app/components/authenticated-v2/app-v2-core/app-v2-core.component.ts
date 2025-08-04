@@ -16,6 +16,7 @@
  */
 
 import { Component, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { StatusProviderService } from "../../../services/status-provider.service";
 import { Observable } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
@@ -58,7 +59,8 @@ export class AppV2CoreComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
     private characterStats: CharacterStatsService,
-    public changelog: ChangelogService
+    public changelog: ChangelogService,
+    private logger: NGXLogger
   ) {}
 
   isHandset$: Observable<boolean> = this.breakpointObserver
@@ -88,7 +90,7 @@ export class AppV2CoreComponent implements OnInit {
   }
 
   async refreshAll(b: boolean) {
-    console.debug("Trigger refreshAll due to button press");
+    this.logger.debug("AppV2CoreComponent", "refreshAll", "Trigger refreshAll due to button press");
     await this.inv.refreshAll(b);
   }
 

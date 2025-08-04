@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ModOrAbility } from "../data/enum/modOrAbility";
@@ -60,7 +61,7 @@ export class ConfigurationService {
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
 
-  constructor() {
+  constructor(private logger: NGXLogger) {
     this.__configuration = this.loadCurrentConfiguration();
     this.__LastConfiguration = this.loadCurrentConfiguration();
 
@@ -178,7 +179,7 @@ export class ConfigurationService {
   }
 
   saveCurrentConfiguration(configuration: BuildConfiguration) {
-    console.debug("Writing configuration", { configuration: configuration });
+    this.logger.debug("Writing configuration", { configuration: configuration });
     // deep copy it
     this.__configuration = Object.assign(
       BuildConfiguration.buildEmptyConfiguration(),

@@ -17,7 +17,6 @@
 
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
-
 import { AppComponent } from "./app.component";
 import { LoginComponent } from "./components/login/login.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -67,6 +66,7 @@ import { StatCooldownTooltipDirective } from "./components/authenticated-v2/over
 import { SlotLimitationTitleComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component";
 import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 import { CommonModule } from "@angular/common";
+import { LoggerModule, NgxLoggerLevel } from "ngx-logger";
 import {
   VendorIdFromItemIdPipe,
   VendorNamePipe,
@@ -201,6 +201,11 @@ const routes: Routes = [
     RouterModule.forRoot(routes, { useHash: true }),
     ClipboardModule,
     LayoutModule,
+    LoggerModule.forRoot({
+      serverLoggingUrl: "/api/logs",
+      level: environment.production ? NgxLoggerLevel.ERROR : NgxLoggerLevel.DEBUG,
+      serverLogLevel: NgxLoggerLevel.ERROR,
+    }),
   ],
   providers: [],
   bootstrap: [AppComponent],

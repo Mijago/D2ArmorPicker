@@ -10,6 +10,7 @@ import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
 import { HttpClientService } from "./http-client.service";
 import { StatusProviderService } from "./status-provider.service";
+import { NGXLogger } from "ngx-logger";
 import { H } from "highlight.run";
 
 @Injectable({
@@ -19,7 +20,8 @@ export class MembershipService {
   constructor(
     private http: HttpClientService,
     private status: StatusProviderService,
-    private auth: AuthService
+    private auth: AuthService,
+    private logger: NGXLogger
   ) {
     this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
   }
@@ -46,17 +48,29 @@ export class MembershipService {
       return membershipData;
     }
 
-    console.info("BungieApiService", "getMembershipDataForCurrentUser");
+    this.logger.info(
+      "MembershipService",
+      "getMembershipDataForCurrentUser",
+      "Fetching membership data for current user"
+    );
     let response = await getMembershipDataForCurrentUser((d) => this.http.$http(d, true));
     let memberships = response?.Response.destinyMemberships;
-    console.info("Memberships:", memberships);
+    this.logger.info(
+      "MembershipService",
+      "getMembershipDataForCurrentUser",
+      `Memberships: ${JSON.stringify(memberships)}`
+    );
     memberships = memberships.filter(
       (m) =>
         (m.crossSaveOverride == 0 &&
           m.membershipType != BungieMembershipType.TigerStadia) /*stadia is dead, ignore it*/ ||
         m.crossSaveOverride == m.membershipType
     );
-    console.info("Filtered Memberships:", memberships);
+    this.logger.info(
+      "MembershipService",
+      "getMembershipDataForCurrentUser",
+      `Filtered Memberships: ${JSON.stringify(memberships)}`
+    );
 
     let result = null;
     if (memberships?.length == 1) {
@@ -85,13 +99,18 @@ export class MembershipService {
         }
       }
       if (lastLoggedInProfileIndex < 0) {
-        console.error("PrimaryMembershipId was not found");
+        this.logger.error(
+          "MembershipService",
+          "getMembershipDataForCurrentUser",
+          "PrimaryMembershipId was not found"
+        );
         lastLoggedInProfileIndex = 0;
         this.status.setAuthError();
         //this.authService.logout();
       }
       result = memberships?.[lastLoggedInProfileIndex];
-      console.info(
+      this.logger.info(
+        "MembershipService",
         "getMembershipDataForCurrentUser",
         "Selected membership data for the last logged in membership."
       );
@@ -113,7 +132,7 @@ export class MembershipService {
   async getCharacters() {
     let destinyMembership = await this.getMembershipDataForCurrentUser();
     if (!destinyMembership) {
-      if (!this.status.getStatus().apiError) this.status.setAuthError();
+      if (!this.status.getStatus().apiError) this.status.setApiError();
       return [];
     }
     this.status.clearAuthError();

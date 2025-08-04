@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment";
 import { Router } from "@angular/router";
@@ -32,7 +33,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private status: StatusProviderService
+    private status: StatusProviderService,
+    private logger: NGXLogger
   ) {
     this._logoutEvent = new ReplaySubject(1);
     this.logoutEvent = this._logoutEvent.asObservable();
@@ -44,14 +46,18 @@ export class AuthService {
 
   async autoRegenerateTokens() {
     const timing = 1000 * 3600 * 0.5; // Refresh every half hour
-    console.debug("Refresh Token", {
-      tokenInfo: {
-        /*refreshToken: this.refreshToken,*/
-        refreshTokenExpiringAt: this.refreshTokenExpiringAt,
-        lastRefresh: this.lastRefresh,
-        dateNow: Date.now(),
-      },
-    });
+    this.logger.debug(
+      "AuthService",
+      "autoRegenerateTokens",
+      JSON.stringify({
+        tokenInfo: {
+          /*refreshToken: this.refreshToken,*/
+          refreshTokenExpiringAt: this.refreshTokenExpiringAt,
+          lastRefresh: this.lastRefresh,
+          dateNow: Date.now(),
+        },
+      })
+    );
 
     if (
       this.refreshToken &&
@@ -73,7 +79,11 @@ export class AuthService {
   }
 
   async generateTokens(refresh = false): Promise<boolean> {
-    console.info("Generate auth tokens", "refresh based on refresh_token:", refresh);
+    this.logger.info(
+      "AuthService",
+      "generateTokens",
+      `Generate auth tokens, refresh based on refresh_token: ${refresh}`
+    );
     const CLIENT_ID = environment.clientId;
     const CLIENT_SECRET = environment.client_secret;
     const grant_type = "authorization_code";
@@ -93,7 +103,11 @@ export class AuthService {
       })
       .toPromise()
       .then((value) => {
-        console.log("generateTokens", value);
+        this.logger.info(
+          "AuthService",
+          "generateTokens",
+          `generateTokens: ${JSON.stringify(value)}`
+        );
         this.accessToken = value.access_token;
         this.refreshToken = value.refresh_token;
         this.refreshTokenExpiringAt = Date.now() + value.refresh_expires_in * 1000 - 10 * 1000;
@@ -102,7 +116,7 @@ export class AuthService {
         return true;
       })
       .catch(async (err) => {
-        console.log({ err });
+        this.logger.error("AuthService", "generateTokens", JSON.stringify({ err }));
         this.status.modifyStatus((s) => (s.authError = true));
         return false;
       });
@@ -118,10 +132,10 @@ export class AuthService {
 
   set authCode(newCode: string | null) {
     if (!newCode) {
-      console.info("Clearing auth code");
+      this.logger.info("AuthService", "authCode", "Clearing auth code");
       localStorage.removeItem("code");
     } else {
-      console.info("Setting new auth code");
+      this.logger.info("AuthService", "authCode", "Setting new auth code");
       localStorage.setItem("code", "" + newCode);
     }
   }
@@ -132,10 +146,10 @@ export class AuthService {
 
   set accessToken(newCode: string | null) {
     if (!newCode) {
-      console.info("Clearing access token");
+      this.logger.info("AuthService", "accessToken", "Clearing access token");
       localStorage.removeItem("accessToken");
     } else {
-      console.info("Setting new access token");
+      this.logger.info("AuthService", "accessToken", "Setting new access token");
       localStorage.setItem("accessToken", "" + newCode);
     }
   }
@@ -146,10 +160,10 @@ export class AuthService {
 
   set refreshToken(newCode: string | null) {
     if (!newCode) {
-      console.info("Clearing refresh token");
+      this.logger.info("AuthService", "refreshToken", "Clearing refresh token");
       localStorage.removeItem("refreshToken");
     } else {
-      console.info("Setting new refresh token");
+      this.logger.info("AuthService", "refreshToken", "Setting new refresh token");
       localStorage.setItem("refreshToken", "" + newCode);
     }
   }
@@ -161,10 +175,10 @@ export class AuthService {
 
   set refreshTokenExpiringAt(newCode: number | null) {
     if (!newCode) {
-      console.info("Clearing refresh token");
+      this.logger.info("AuthService", "refreshTokenExpiringAt", "Clearing refresh token");
       localStorage.removeItem("refreshTokenExpiringAt");
     } else {
-      console.info("Setting new refresh token");
+      this.logger.info("AuthService", "refreshTokenExpiringAt", "Setting new refresh token");
       localStorage.setItem("refreshTokenExpiringAt", "" + newCode);
     }
   }
@@ -194,7 +208,7 @@ export class AuthService {
 
   async logout() {
     if (environment.offlineMode) {
-      console.debug("Offline mode, skipping logout");
+      this.logger.debug("AuthService", "logout", "Offline mode, skipping logout");
       return;
     }
     try {

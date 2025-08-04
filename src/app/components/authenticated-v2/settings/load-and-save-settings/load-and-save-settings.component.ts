@@ -16,6 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import {
   ConfigurationService,
   StoredConfiguration,
@@ -60,7 +61,8 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
     private formBuilder: UntypedFormBuilder,
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    private logger: NGXLogger
   ) {
     this.settingsNameForm = this.formBuilder.group({ name: [null] });
     this.importTextForm = this.formBuilder.group({ content: [null] });
@@ -140,7 +142,11 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       let jsonData = JSON.parse(jsonText);
       if (!isArray) jsonData = [jsonData];
 
-      console.log("Incoming json:", jsonData);
+      this.logger.debug(
+        "LoadAndSaveSettingsComponent",
+        "runImport",
+        "Incoming json: " + JSON.stringify(jsonData)
+      );
       for (let jsonDatum of jsonData) {
         this.config.checkAndFixOldSavedConfigurations(jsonDatum);
         if (jsonDatum.hasOwnProperty("name")) {
@@ -154,7 +160,7 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       this.importTextForm.get("content")?.reset();
     } catch (e) {
       this.openSnackBar("Invalid input.");
-      console.error(e);
+      this.logger.error("LoadAndSaveSettingsComponent", "runImport", "Error: " + e);
     }
   }
 

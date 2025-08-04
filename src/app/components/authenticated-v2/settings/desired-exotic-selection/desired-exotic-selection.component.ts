@@ -16,6 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
@@ -69,7 +70,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   constructor(
     public inventory: InventoryService,
     public config: ConfigurationService,
-    private bungieApi: BungieApiService
+    private bungieApi: BungieApiService,
+    private logger: NGXLogger
   ) {}
 
   ngOnInit(): void {
@@ -155,8 +157,16 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    console.debug("Available first perks:", this.availableFirstPerks);
-    console.debug("Available second perks:", this.availableSecondPerks);
+    this.logger.debug(
+      "DesiredExoticSelectionComponent",
+      "updateAvailableExoticClassItemPerks",
+      "Available first perks: " + JSON.stringify(this.availableFirstPerks)
+    );
+    this.logger.debug(
+      "DesiredExoticSelectionComponent",
+      "updateAvailableExoticClassItemPerks",
+      "Available second perks: " + JSON.stringify(this.availableSecondPerks)
+    );
   }
 
   hasSelectedExoticClassItem(): boolean {
@@ -257,7 +267,11 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     try {
       await this.bungieApi.importCurrentlyEquippedExotic();
     } catch (error) {
-      console.error("Error importing equipped exotic:", error);
+      this.logger.error(
+        "DesiredExoticSelectionComponent",
+        "importEquippedExotic",
+        "Error importing equipped exotic: " + error
+      );
     } finally {
       this.importEquippedExoticInProgress = false;
     }

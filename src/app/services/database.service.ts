@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { AuthService } from "./auth.service";
 import { Database } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
@@ -28,12 +29,13 @@ import { ChangelogService } from "./changelog.service";
 export class DatabaseService extends Database {
   constructor(
     private auth: AuthService,
-    private changelog: ChangelogService
+    private changelog: ChangelogService,
+    private logger: NGXLogger
   ) {
     super();
 
     if (this.changelog.wipeManifest) {
-      console.log("Wiping manifest due to changelog request");
+      this.logger.log("Wiping manifest due to changelog request");
       this.auth.clearManifestInfo();
     }
 

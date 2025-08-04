@@ -386,12 +386,9 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.info(`Estimated calculations for Thread#${threadSplit.current}`, estimatedCalculations);
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
-
-  console.debug("DEBUG", "constantModslotRequirement", constantModslotRequirement);
 
   for (let [helmet, gauntlet, chest, leg] of generateArmorCombinations(
     helmets,

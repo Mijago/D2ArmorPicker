@@ -32,6 +32,7 @@ import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
+import { NGXLogger } from "ngx-logger";
 
 @Component({
   selector: "app-desired-mods-selection",
@@ -63,7 +64,8 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     private config: ConfigurationService,
-    private bungieApi: BungieApiService
+    private bungieApi: BungieApiService,
+    private logger: NGXLogger
   ) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -180,12 +182,24 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     try {
       const success = await this.bungieApi.importCurrentlyEquippedSubclass();
       if (success) {
-        console.log("Successfully imported equipped subclass and fragments");
+        this.logger.info(
+          "DesiredModsSelectionComponent",
+          "importEquippedSubclass",
+          "Successfully imported equipped subclass and fragments"
+        );
       } else {
-        console.log("No subclass found or no changes were made");
+        this.logger.info(
+          "DesiredModsSelectionComponent",
+          "importEquippedSubclass",
+          "No subclass found or no changes were made"
+        );
       }
     } catch (error) {
-      console.error("Failed to import equipped subclass:", error);
+      this.logger.error(
+        "DesiredModsSelectionComponent",
+        "importEquippedSubclass",
+        "Failed to import equipped subclass: " + error
+      );
     } finally {
       this.isLoadingSubclass = false;
     }

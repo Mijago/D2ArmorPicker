@@ -26,6 +26,7 @@ import {
   SUPPORTED_SCHEMA_VERSION,
   UpdateData,
 } from "./clarity.service";
+import { NGXLogger } from "ngx-logger";
 import { MatDialogModule } from "@angular/material/dialog";
 
 describe("ClarityService", () => {
@@ -36,6 +37,7 @@ describe("ClarityService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MatDialogModule],
+      providers: [NGXLogger],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -104,9 +106,10 @@ describe("ClarityService", () => {
   it("should not fetch live data the schema does not match our supported version", (done) => {
     setCachedDataWithVersion(1);
 
-    spyOn(console, "warn");
+    const logger = TestBed.inject(NGXLogger);
+    spyOn(logger, "warn");
     service.load().then(() => {
-      expect(console.warn).toHaveBeenCalledWith(
+      expect(logger.warn).toHaveBeenCalledWith(
         "Unsupported live character stats schema version",
         "300.5"
       );
@@ -118,24 +121,26 @@ describe("ClarityService", () => {
   });
 
   it("should fail gracefully if version fetch fails", (done) => {
-    spyOn(console, "warn");
+    const logger = TestBed.inject(NGXLogger);
+    spyOn(logger, "warn");
     service
       .load()
       .then(() => {
-        expect(console.warn).toHaveBeenCalledWith(
+        expect(logger.warn).toHaveBeenCalledWith(
           "Error loading Clarity data",
           jasmine.any(HttpErrorResponse)
         );
         done();
       })
-      .catch((err) => console.warn(err));
+      .catch((err) => logger.warn("Error loading Clarity data", err));
 
     // Network error from version fetch
     httpTestingController.expectOne(UPDATES_URL).error(new ProgressEvent("error"));
   });
 
   it("should fail gracefully if stats fetch fails", (done) => {
-    spyOn(console, "warn");
+    const logger = TestBed.inject(NGXLogger);
+    spyOn(logger, "warn");
 
     setTimeout(() => {
       // Network error from stats fetch
@@ -145,13 +150,13 @@ describe("ClarityService", () => {
     service
       .load()
       .then(() => {
-        expect(console.warn).toHaveBeenCalledWith(
+        expect(logger.warn).toHaveBeenCalledWith(
           "Error loading Clarity data",
           jasmine.any(HttpErrorResponse)
         );
         done();
       })
-      .catch((err) => console.warn(err));
+      .catch((err) => logger.warn("Error loading Clarity data", err));
 
     // Network error from version fetch
     expectVersionFetch(2);

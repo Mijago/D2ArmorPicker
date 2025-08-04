@@ -27,6 +27,7 @@ import {
   ElementRef,
   AfterViewChecked,
 } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -56,7 +57,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
 
-  constructor() {}
+  constructor(private logger: NGXLogger) {}
 
   ngOnInit(): void {
     // Generate values from 0 to 200
@@ -90,7 +91,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
 
   setValue(newValue: number) {
     if (newValue <= this.maximumAvailableTier) {
-      console.log("Setting value to: " + newValue);
+      this.logger.debug("StatTierSelectionComponent", "setValue", "Setting value to: " + newValue);
       this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
     }

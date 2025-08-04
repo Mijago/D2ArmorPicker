@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { HttpClientConfig } from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
 import { HttpClient } from "@angular/common/http";
@@ -13,7 +14,8 @@ export class HttpClientService {
   constructor(
     private authService: AuthService,
     private http: HttpClient,
-    private status: StatusProviderService
+    private status: StatusProviderService,
+    private logger: NGXLogger
   ) {}
 
   async $httpWithoutBearerToken(config: HttpClientConfig) {
@@ -35,7 +37,7 @@ export class HttpClientService {
       .pipe(retry(2))
       .toPromise()
       .catch(async (err) => {
-        console.error(err);
+        this.logger.error("HttpClientService", "$httpPost", err);
       });
   }
 
@@ -64,25 +66,29 @@ export class HttpClientService {
         return res;
       })
       .catch(async (err) => {
-        console.error(err);
+        this.logger.error("HttpClientService", "$http", err);
         if (environment.offlineMode) {
-          console.debug("Offline mode, ignoring API error");
+          this.logger.debug("HttpClientService", "$http", "Offline mode, ignoring API error");
           return;
         }
         if (err.error?.ErrorStatus == "SystemDisabled") {
-          console.info("System is disabled. Revoking auth, must re-login");
+          this.logger.info(
+            "HttpClientService",
+            "$http",
+            "System is disabled. Revoking auth, must re-login"
+          );
           this.status.setApiError();
         }
         // if error 500, log out
         else if (err.status == 500) {
-          console.info("Auth Error, probably expired token");
+          this.logger.info("HttpClientService", "$http", "Auth Error, probably expired token");
           if (logoutOnFailure) {
             this.status.setAuthError();
             this.authService.logout();
           }
         }
         if (err.ErrorStatus != "Internal Server Error") {
-          console.info("API-Error");
+          this.logger.info("HttpClientService", "$http", "API-Error");
           //this.status.setApiError();
         }
       });

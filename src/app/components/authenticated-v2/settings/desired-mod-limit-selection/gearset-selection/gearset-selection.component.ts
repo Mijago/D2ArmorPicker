@@ -16,6 +16,7 @@
  */
 
 import { Component, OnInit, OnDestroy } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { Subject } from "rxjs";
 import { distinctUntilChanged, takeUntil } from "rxjs/operators";
@@ -48,7 +49,8 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
   constructor(
     private inventoryService: InventoryService,
     private db: DatabaseService,
-    private config: ConfigurationService
+    private config: ConfigurationService,
+    private logger: NGXLogger
   ) {}
   ngOnInit(): void {
     this.inventoryService.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async () => {
@@ -70,7 +72,11 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
   }
 
   async refreshGearsetAvailability(): Promise<void> {
-    console.log("Refreshing gear set availability");
+    this.logger.debug(
+      "GearsetSelectionComponent",
+      "refreshGearsetAvailability",
+      "Refreshing gear set availability"
+    );
     if (this.gearSets.length === 0) {
       return;
     }
