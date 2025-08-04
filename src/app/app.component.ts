@@ -15,20 +15,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { AfterViewInit, Component } from "@angular/core";
 import { environment } from "../environments/environment";
+import { InventoryService } from "./services/inventory.service";
+import { NGXLogger } from "ngx-logger";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   title = "D2ArmorPicker";
   is_beta = environment.beta;
   is_canary = environment.canary;
 
-  constructor() {
-    console.log("PRODUCTION?", environment.production);
+  constructor(
+    private inventoryService: InventoryService,
+    private logger: NGXLogger
+  ) {}
+  ngAfterViewInit(): void {
+    // Check if InventoryService is initialized after 2 seconds
+    // if not, forcefully trigger an initial refreshAll
+    setTimeout(() => {
+      if (!this.inventoryService.isInitialized) {
+        this.logger.warn(
+          "AppComponent",
+          "ngAfterViewInit",
+          "InventoryService is not initialized after 2 seconds, triggering initial refreshAll."
+        );
+        this.inventoryService.refreshAll(true, true).catch((err) => {
+          this.logger.error(
+            "AppComponent",
+            "ngAfterViewInit",
+            "Error during initial refreshAll:",
+            err
+          );
+        });
+      }
+    }, 2000);
   }
 }

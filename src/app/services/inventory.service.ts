@@ -77,6 +77,7 @@ export class InventoryService {
    */
   private allArmorResults: ResultDefinition[] = [];
   private currentClass: DestinyClass = DestinyClass.Unknown;
+  private initialized: boolean = false;
 
   private _manifest: ReplaySubject<null>;
   public readonly manifest: Observable<null>;
@@ -150,6 +151,10 @@ export class InventoryService {
       }
 
       if (val instanceof NavigationEnd) {
+        if (this._config == null) {
+          this._config = structuredClone(this.config.readonlyConfigurationSnapshot);
+        }
+
         this.killWorkers();
         this.clearResults();
         this.logger.debug(
@@ -157,6 +162,7 @@ export class InventoryService {
           "router.events",
           "Trigger refreshAll due to router.events"
         );
+        this.initialized = true;
         await this.refreshAll(!dataAlreadyFetched);
         dataAlreadyFetched = true;
       }
@@ -190,6 +196,7 @@ export class InventoryService {
       );
 
       this._config = structuredClone(c);
+      this.initialized = true;
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
     });
@@ -779,5 +786,9 @@ export class InventoryService {
       //return await this.updateInventoryItems(true, errorLoop++);
       return false;
     }
+  }
+
+  get isInitialized(): boolean {
+    return this.initialized;
   }
 }
