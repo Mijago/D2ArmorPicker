@@ -122,10 +122,10 @@
           <div class="card-header">
             <div class="exotic-section">
               <div class="exotic-icon">
-                <img
+                <app-item-icon
+                  [itemHash]="$any(result.exotic.hash)"
                   *ngIf="result.exotic"
-                  [src]="'https://bungie.net/' + result.exotic.icon"
-                  [alt]="result.exotic.name"
+                  [matTooltip]="result.exotic.name"
                   class="exotic-img" />
                 <img
                   *ngIf="!result.exotic"
@@ -189,11 +189,12 @@
             <!-- Left Side: Summary -->
             <div class="left-summary">
               <div class="exotic-section-expanded">
-                <img
+                <app-item-icon
+                  [itemHash]="$any(result.exotic.hash)"
                   *ngIf="result.exotic"
-                  [src]="'https://bungie.net/' + result.exotic.icon"
-                  [alt]="result.exotic.name"
+                  [matTooltip]="result.exotic.name"
                   class="exotic-img-large" />
+
                 <div class="exotic-info">
                   <h3>{{ result.exotic?.name || "No Exotic" }}</h3>
                   <div class="total-stats-large">{{ getTotalStats(result) }} Total</div>
