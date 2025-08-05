@@ -19,17 +19,19 @@ import { Injectable } from "@angular/core";
 import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
+import { BehaviorSubject } from "rxjs";
 
 export interface ItemIconData {
   icon: string | undefined;
   watermark: string | undefined;
 }
+type AsyncLookupResult<T> = BehaviorSubject<T | undefined> | undefined;
 
 @Injectable({
   providedIn: "root",
 })
 export class ItemIconServiceService {
-  private itemLookup = new Map<number, IManifestArmor | undefined>();
+  private itemLookup = new Map<number, AsyncLookupResult<IManifestArmor>>();
 
   private sandboxperkIconLookup = new Map<number, DestinySandboxPerkDefinition | undefined>();
   private gearsetIconLookup = new Map<string, DestinySandboxPerkDefinition | undefined>();
@@ -37,9 +39,25 @@ export class ItemIconServiceService {
   constructor(private db: DatabaseService) {}
 
   async getItemCached(hash: number): Promise<IManifestArmor | undefined> {
-    if (this.itemLookup.has(hash)) return this.itemLookup.get(hash) || undefined;
+    if (this.itemLookup.has(hash))
+      return new Promise<IManifestArmor | undefined>((resolve) => {
+        this.itemLookup
+          .get(hash)!
+          .asObservable()
+          .subscribe((item) => {
+            if (item) {
+              resolve(item);
+              return;
+            }
+          });
+      });
+
+    const newSubject = new BehaviorSubject<IManifestArmor | undefined>(undefined);
+    this.itemLookup.set(hash, newSubject);
+
     const item = await this.db.manifestArmor.where("hash").equals(hash).first();
-    this.itemLookup.set(hash, item);
+    newSubject.next(item);
+
     return item;
   }
 
