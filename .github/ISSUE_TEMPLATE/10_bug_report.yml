@@ -1,8 +1,11 @@
 name: Bug Report
 description: File a bug report.
 title: "[Bug]: "
-labels: ["bug", "triage"]
-projects: ["d2armorpicker/1"]
+labels:
+  - bug
+  - triage
+projects:
+  - d2armorpicker/1
 assignees:
   - mijago
 body:
@@ -15,7 +18,7 @@ body:
     attributes:
       label: Contact Details
       description: How can we get in touch with you if we need more info?
-      placeholder: ex. "email@example.com" or "Discord: @username"
+      placeholder: "ex. 'email@example.com' or 'Discord: @username'"
     validations:
       required: false
   - type: textarea
@@ -29,16 +32,12 @@ body:
       value: "A bug happened while using D2ArmorPicker!"
     validations:
       required: true
-  - type: dropdown
+  - type: input
     id: version
     attributes:
       label: D2ArmorPicker Version
-      description: Which version of D2ArmorPicker are you using?
-      options:
-        - 1.0.2 (Default)
-        - 1.0.3 (Edge)
-        - Other (please specify in details)
-      default: 0
+      description: Please enter the version of D2ArmorPicker you are using (see the top of the app).
+      placeholder: e.g. 6.9.1, 6.9.2, or commit hash
     validations:
       required: true
 
