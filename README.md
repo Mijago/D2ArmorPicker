@@ -9,6 +9,17 @@
 D2ArmorPicker is a small tool to min-max your armor stats with only a few clicks.
 Visit the page here: https://d2armorpicker.com
 
+## About this project
+
+D2ArmorPicker is a powerful web-based tool designed for Destiny 2 players who want to optimize their armor sets for maximum efficiency and performance. Whether you're a casual player or a hardcore speedrunner, D2ArmorPicker helps you find the best possible combinations of armor pieces, mods, and stat distributions to suit your playstyle and goals.
+
+**Key Features:**
+
+- **Utilises Bungie API:** Connects to your Destiny 2 account via the Bungie API to automatically load your available armor pieces.
+- **Stat Optimization:** Calculates and suggests the best armor combinations to maximize your desired stats (Resilience, Recovery, Discipline, etc.).
+- **Mod & Artifice Support:** Allows you to include stat mods (minor, major, artifice) in the optimization process for even more precise builds.
+- **Highly Detailed User Preferences:** Customize your stat priorities, lock specific armor pieces, and filter by perks or other criteria.
+
 ## Contribution
 
 ### Development
