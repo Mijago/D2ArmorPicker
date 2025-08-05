@@ -1,0 +1,47 @@
+name: Feature Request
+description: Suggest a new feature or improvement for D2ArmorPicker.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+projects: ["d2armorpicker/1"]
+assignees:
+  - mijago
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: "ex. 'email@example.com' or 'Discord: @username'"
+    validations:
+      required: false
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: What is your feature request?
+      description: |
+        Please describe the feature or improvement you would like to see. What problem does it solve or what value does it add for you or other users?
+        Include the desired functionality, any specific requirements, and how it would enhance the user experience.
+      placeholder: Describe your idea, the problem it solves, and any context or examples.
+      value: "I would like to see..."
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this feature important to you?
+      description: Explain why this feature would be useful or how it would improve your experience with D2ArmorPicker.
+      placeholder: Tell us why this matters to you or the community.
+    validations:
+      required: false
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Mijago/D2ArmorPicker/blob/master/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
