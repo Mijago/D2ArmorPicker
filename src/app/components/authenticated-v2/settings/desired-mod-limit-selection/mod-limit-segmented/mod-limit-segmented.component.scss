@@ -1,0 +1,18 @@
+.mod-limit-segmented {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 0 auto;
+  width: fit-content;
+}
+.segmented-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.error {
+  color: #e57373;
+  font-size: 0.9em;
+}

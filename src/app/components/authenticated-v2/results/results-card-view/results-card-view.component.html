@@ -122,10 +122,10 @@
           <div class="card-header">
             <div class="exotic-section">
               <div class="exotic-icon">
-                <img
+                <app-item-icon
+                  [itemHash]="$any(result.exotic.hash)"
                   *ngIf="result.exotic"
-                  [src]="'https://bungie.net/' + result.exotic.icon"
-                  [alt]="result.exotic.name"
+                  [matTooltip]="result.exotic.name"
                   class="exotic-img" />
                 <img
                   *ngIf="!result.exotic"
@@ -189,11 +189,12 @@
             <!-- Left Side: Summary -->
             <div class="left-summary">
               <div class="exotic-section-expanded">
-                <img
+                <app-item-icon
+                  [itemHash]="$any(result.exotic.hash)"
                   *ngIf="result.exotic"
-                  [src]="'https://bungie.net/' + result.exotic.icon"
-                  [alt]="result.exotic.name"
+                  [matTooltip]="result.exotic.name"
                   class="exotic-img-large" />
+
                 <div class="exotic-info">
                   <h3>{{ result.exotic?.name || "No Exotic" }}</h3>
                   <div class="total-stats-large">{{ getTotalStats(result) }} Total</div>
@@ -301,9 +302,9 @@
                           </div>
                         </div>
                       </td>
-                      <td *ngFor="let stat of STAT_ORDER">{{
-                        getItemStatWithMasterwork(item, stat)
-                      }}</td>
+                      <td *ngFor="let stat of STAT_ORDER">
+                        {{ getItemStatWithMasterwork(item, stat) }}
+                      </td>
                     </tr>
 
                     <!-- Total armor stats row -->
@@ -324,20 +325,23 @@
                         <strong>Total (armor)</strong>
                       </td>
                       <td *ngFor="let stat of STAT_ORDER">
-                        <strong>{{ result.statsNoMods[stat] }}</strong>
+                        <span class="stat-summary-cell">
+                          <app-stat-icon [stat]="stat" class="stat-icon-table"></app-stat-icon>
+                          <strong>{{ result.statsNoMods[stat] }}</strong>
+                        </span>
                       </td>
                     </tr>
 
                     <!-- Configuration bonus row -->
                     <tr class="config-row" *ngIf="hasConfigBonus() && isBreakdownExpanded(i)">
                       <td class="config-label">Configuration</td>
-                      <td *ngFor="let stat of STAT_ORDER"
-                        ><span
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span
                           *ngIf="getConfigValue(stat) !== 0"
                           [class]="getConfigValue(stat) > 0 ? 'positive' : 'negative'"
                           >{{ getConfigValue(stat) > 0 ? "+" : "" }}{{ getConfigValue(stat) }}</span
-                        ></td
-                      >
+                        >
+                      </td>
                     </tr>
 
                     <!-- Minor mods row -->
@@ -345,11 +349,11 @@
                       class="minor-mods-row"
                       *ngIf="hasMinorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Minor Mods</td>
-                      <td *ngFor="let stat of STAT_ORDER"
-                        ><span *ngIf="getMinorModCount(result, stat) > 0" class="positive"
-                          >{{ getMinorModCount(result, stat) }}×5</span
-                        ></td
-                      >
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span *ngIf="getMinorModCount(result, stat) > 0" class="positive">
+                          {{ getMinorModCount(result, stat) }}×5
+                        </span>
+                      </td>
                     </tr>
 
                     <!-- Major mods row -->
@@ -357,11 +361,11 @@
                       class="major-mods-row"
                       *ngIf="hasMajorMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Major Mods</td>
-                      <td *ngFor="let stat of STAT_ORDER"
-                        ><span *ngIf="getMajorModCount(result, stat) > 0" class="positive"
-                          >{{ getMajorModCount(result, stat) }}×10</span
-                        ></td
-                      >
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span *ngIf="getMajorModCount(result, stat) > 0" class="positive">
+                          {{ getMajorModCount(result, stat) }}×10
+                        </span>
+                      </td>
                     </tr>
 
                     <!-- Artifice mods row -->
@@ -369,11 +373,11 @@
                       class="artifice-mods-row"
                       *ngIf="hasArtificeMods(result) && isBreakdownExpanded(i)">
                       <td class="mods-label">Artifice Mods</td>
-                      <td *ngFor="let stat of STAT_ORDER"
-                        ><span *ngIf="getArtificeModCount(result, stat) > 0" class="positive"
-                          >{{ getArtificeModCount(result, stat) }}×3</span
-                        ></td
-                      >
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span *ngIf="getArtificeModCount(result, stat) > 0" class="positive">
+                          {{ getArtificeModCount(result, stat) }}×3
+                        </span>
+                      </td>
                     </tr>
 
                     <!-- Final total row -->
@@ -381,9 +385,12 @@
                       <td class="total-label" style="text-align: left"
                         ><strong>Total (with Mods)</strong></td
                       >
-                      <td *ngFor="let stat of STAT_ORDER"
-                        ><strong>{{ result.stats[stat] }}</strong></td
-                      >
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span class="stat-summary-cell">
+                          <app-stat-icon [stat]="stat" class="stat-icon-table"></app-stat-icon>
+                          <strong>{{ result.stats[stat] }}</strong>
+                        </span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>

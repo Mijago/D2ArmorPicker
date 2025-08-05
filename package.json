@@ -1,6 +1,6 @@
 {
   "name": "d2-armor-picker",
-  "version": "2.9.5",
+  "version": "2.9.6",
   "scripts": {
     "ng": "ng",
     "config": "ts-node set-env.ts",
@@ -38,6 +38,7 @@
     "highlight.run": "^9.7.1",
     "lodash": "^4.17.21",
     "lzutf8": "^0.6.3",
+    "ngx-logger": "^5.0.12",
     "rxjs": "^6.6.7",
     "tslib": "^2.6.2",
     "zone.js": "^0.13.0"

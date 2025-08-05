@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ModOrAbility } from "../data/enum/modOrAbility";
@@ -24,7 +25,7 @@ import { CompressionOptions, DecompressionOptions } from "lzutf8";
 import { environment } from "../../environments/environment";
 import { EnumDictionary } from "../data/types/EnumDictionary";
 import { ArmorStat } from "../data/enum/armor-stat";
-import { ArmorSlot } from "../data/enum/armor-slot";
+// import { ArmorSlot } from "../data/enum/armor-slot";
 import { ModInformation } from "../data/ModInformation";
 import { isEqual as _isEqual } from "lodash";
 
@@ -60,7 +61,7 @@ export class ConfigurationService {
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
 
-  constructor() {
+  constructor(private logger: NGXLogger) {
     this.__configuration = this.loadCurrentConfiguration();
     this.__LastConfiguration = this.loadCurrentConfiguration();
 
@@ -130,15 +131,13 @@ export class ConfigurationService {
       c.configuration.selectedExotics = [(c.configuration as any).selectedExoticHash];
       delete (c.configuration as any).selectedExoticHash;
     }
-    if (c.configuration.hasOwnProperty("maximumStatMods")) {
-      let maxMods = (c.configuration as any).maximumStatMods as number;
-      for (let n = maxMods; n < 5; n++)
-        c.configuration.maximumModSlots[(1 + n) as ArmorSlot].value = 0;
-      delete (c.configuration as any).maximumStatMods;
-    }
 
     // remove mods that no longer exist
-    c.configuration.enabledMods = c.configuration.enabledMods.filter((v) => !!ModInformation[v]);
+    if (c.configuration.hasOwnProperty("enabledMods")) {
+      c.configuration.enabledMods = (c.configuration as any).enabledMods.filter(
+        (v: ModOrAbility) => !!ModInformation[v]
+      );
+    }
 
     // Always reset risky mods on reload
     c.configuration.limitParsedResults = true;
@@ -184,7 +183,7 @@ export class ConfigurationService {
   }
 
   saveCurrentConfiguration(configuration: BuildConfiguration) {
-    console.debug("Writing configuration", { configuration: configuration });
+    this.logger.debug("Writing configuration", { configuration: configuration });
     // deep copy it
     this.__configuration = Object.assign(
       BuildConfiguration.buildEmptyConfiguration(),
@@ -204,21 +203,31 @@ export class ConfigurationService {
   }
 
   loadCurrentConfiguration() {
-    let config;
     try {
-      config = localStorage.getItem("currentConfig") || "{}";
-      if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
-    } catch (e) {
-      config = {};
-    }
+      let config;
+      try {
+        config = localStorage.getItem("currentConfig") || "{}";
+        if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
+      } catch (e) {
+        config = {};
+      }
 
-    var dummy: StoredConfiguration = {
-      name: "dummy",
-      version: "1",
-      configuration: JSON.parse(config),
-    };
-    this.checkAndFixOldSavedConfigurations(dummy);
-    return dummy.configuration;
+      var dummy: StoredConfiguration = {
+        name: "dummy",
+        version: "1",
+        configuration: JSON.parse(config),
+      };
+      this.checkAndFixOldSavedConfigurations(dummy);
+      return dummy.configuration;
+    } catch (e) {
+      this.logger.error(
+        "ConfigurationService",
+        "loadCurrentConfiguration",
+        "Error while checking and fixing old saved configurations",
+        e
+      );
+      return BuildConfiguration.buildEmptyConfiguration();
+    }
   }
 
   getCurrentConfigBase64Compressed(): string {

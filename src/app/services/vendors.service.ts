@@ -19,6 +19,7 @@ import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
 import { AuthService } from "./auth.service";
 import { intersection as _intersection } from "lodash";
+import { NGXLogger } from "ngx-logger";
 
 const VENDOR_NEXT_REFRESH_KEY = "vendor-next-refresh-time";
 
@@ -35,7 +36,8 @@ export class VendorsService {
     private membership: MembershipService,
     private http: HttpClientService,
     private db: DatabaseService,
-    private auth: AuthService
+    private auth: AuthService,
+    private logger: NGXLogger
   ) {
     this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
   }
@@ -160,14 +162,20 @@ export class VendorsService {
           }
         },
         (reason) => {
-          console.error(`Failed to get vendor: ${reason}`);
+          this.logger.error(
+            "VendorsService",
+            "getVendorArmorItemsForCharacter",
+            `Failed to get vendor: ${reason}`
+          );
         }
       );
     });
 
     //const vendorArmorItems = vendorItems.flatMap(({ items }) => items);
     await Promise.all(VendorPromises);
-    console.log(
+    this.logger.info(
+      "VendorsService",
+      "getVendorArmorItemsForCharacter",
       `Collected ${vendorArmorItems.length} vendor armor items for character ${characterId}`
     );
 
@@ -188,21 +196,19 @@ export class VendorsService {
       return false;
     }
 
-    console.debug("Vendor Cache", {
-      information: {
-        nextVendorRefresh,
-        now: new Date(),
-        shouldRefresh: nextVendorRefresh > new Date(),
-      },
-    });
+    this.logger.debug(
+      "VendorsService",
+      "isVendorCacheValid",
+      `Vendor Cache: nextVendorRefresh=${nextVendorRefresh}, now=${new Date()}, shouldRefresh=${nextVendorRefresh > new Date()}`
+    );
     return nextVendorRefresh > new Date();
   }
 
   private async writeVendorCache(items: IInventoryArmor[], nextRefreshDate: Date) {
-    console.log(
-      `Writing new vendor cache (${
-        items.length
-      } items), valid until ${nextRefreshDate.toISOString()}`
+    this.logger.info(
+      "VendorsService",
+      "writeVendorCache",
+      `Writing new vendor cache (${items.length} items), valid until ${nextRefreshDate.toISOString()}`
     );
     await this.db.inventoryArmor.where({ source: InventoryArmorSource.Vendor }).delete();
     await this.db.inventoryArmor.bulkPut(items);
@@ -215,7 +221,7 @@ export class VendorsService {
    */
   async updateVendorArmorItemsCache() {
     if (this.isVendorCacheValid()) {
-      console.log("Using vendor items cache");
+      this.logger.info("VendorsService", "updateVendorArmorItemsCache", "Using vendor items cache");
       return false;
     }
 
@@ -248,7 +254,11 @@ export class VendorsService {
       this.writeVendorCache(allItems, new Date(nextRefreshDate));
       return true;
     } catch (e) {
-      console.error("Failed to update vendor armor items cache", e);
+      this.logger.error(
+        "VendorsService",
+        "updateVendorArmorItemsCache",
+        `Failed to update vendor armor items cache: ${e}`
+      );
       // refresh sooner if we failed to update the cache
       const nextRefreshDate = new Date();
       nextRefreshDate.setMinutes(nextRefreshDate.getMinutes() + 5);

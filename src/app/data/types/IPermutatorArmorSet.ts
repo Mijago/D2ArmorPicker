@@ -33,6 +33,7 @@ export function createArmorSet(
 
 export function isIPermutatorArmorSet(obj: any): obj is IPermutatorArmorSet {
   return (
+    obj != null &&
     Object.prototype.hasOwnProperty.call(obj, "armor") &&
     Object.prototype.hasOwnProperty.call(obj, "useExoticClassItem") &&
     Object.prototype.hasOwnProperty.call(obj, "usedArtifice") &&

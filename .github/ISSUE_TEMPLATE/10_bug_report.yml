@@ -1,0 +1,83 @@
+name: Bug Report
+description: File a bug report.
+title: "[Bug]: "
+labels:
+  - bug
+  - triage
+projects:
+  - d2armorpicker/1
+assignees:
+  - mijago
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more info?
+      placeholder: "ex. 'email@example.com' or 'Discord: @username'"
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: |
+        Please describe the bug in detail. What did you do, what did you expect to happen, and what actually happened?
+        (e.g., "I tried to optimize a gearset, but the stats calculation was incorrect.")
+      placeholder: Describe the bug, steps to reproduce, and what you expected to see.
+      value: "A bug happened while using D2ArmorPicker!"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: D2ArmorPicker Version
+      description: Please enter the version of D2ArmorPicker you are using (see the top of the app).
+      placeholder: e.g. 6.9.1, 6.9.2, or commit hash
+    validations:
+      required: true
+
+  - type: dropdown
+    id: branch
+    validations:
+      required: true
+    attributes:
+      label: Branch
+      description: On which branch(es) did you encounter this issue?
+      multiple: true
+      options:
+        - main (d2armorpicker.com)
+        - beta (beta.d2armorpicker.com)
+        - canary (canary.d2armorpicker.com, usage not recommended unless asked by a developer)
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Browser(s)
+      description: Which browser(s) did you use when you encountered the bug?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output (optional)
+      description: |
+        Please copy and paste any relevant log output or error messages. This will be automatically formatted as code, so no need for backticks.
+        
+        You can usually get this information from your browser's developer console, which can be opened with **Ctrl+Shift+J** (or **Cmd+Option+J** on Mac).
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/Mijago/D2ArmorPicker/blob/master/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

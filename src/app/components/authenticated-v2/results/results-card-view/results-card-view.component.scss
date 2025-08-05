@@ -762,3 +762,11 @@
 .hidden {
   display: none !important;
 }
+
+// Center stat icon and value in summary rows
+.stat-summary-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}

@@ -16,6 +16,7 @@
  */
 
 import { Component, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { ActivatedRoute, Router } from "@angular/router";
 import { AuthService } from "../../services/auth.service";
 
@@ -28,7 +29,8 @@ export class HandleBungieLoginComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private loginService: AuthService
+    private loginService: AuthService,
+    private logger: NGXLogger
   ) {}
 
   ngOnInit(): void {
@@ -38,14 +40,22 @@ export class HandleBungieLoginComponent implements OnInit {
 
       if (!code) return;
 
-      console.info({ code });
+      this.logger.info(
+        "HandleBungieLoginComponent",
+        "ngOnInit",
+        "Code: " + JSON.stringify({ code })
+      );
 
       this.loginService.authCode = code;
 
-      console.info("Generate tokens with the new code");
+      this.logger.info(
+        "HandleBungieLoginComponent",
+        "ngOnInit",
+        "Generate tokens with the new code"
+      );
       await this.loginService.generateTokens();
 
-      console.info("Now navigate to /");
+      this.logger.info("HandleBungieLoginComponent", "ngOnInit", "Now navigate to /");
       await this.router.navigate(["/"]);
     });
   }

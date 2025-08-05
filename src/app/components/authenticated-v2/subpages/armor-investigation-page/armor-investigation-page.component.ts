@@ -16,6 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { InventoryService } from "../../../../services/inventory.service";
@@ -71,7 +72,8 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
 
   constructor(
     public inventory: InventoryService,
-    private db: DatabaseService
+    private db: DatabaseService,
+    private logger: NGXLogger
   ) {}
 
   ngOnInit(): void {
@@ -267,7 +269,11 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   getPlugSum(plugId: number) {
     var plugInfo = this.plugData[plugId];
     if (!plugInfo) {
-      console.warn(`Plug info not found for hash: ${plugId}`);
+      this.logger.warn(
+        "ArmorInvestigationPageComponent",
+        "getPlugSum",
+        `Plug info not found for hash: ${plugId}`
+      );
       return 0;
     }
     var total = 0;

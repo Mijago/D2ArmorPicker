@@ -1,0 +1,64 @@
+<div class="gearset-selection-container">
+  <table class="gearset-table">
+    <thead>
+      <tr>
+        <th class="gear-set-name">Gear Set</th>
+        <th class="two-piece-bonuses">2 Piece Bonuses</th>
+        <th class="four-piece-bonuses">4 Piece Bonuses</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let gearSet of gearSets; let i = index">
+        <td class="gear-set-name">
+          {{ gearSet.name }}
+        </td>
+        <td class="two-piece-bonuses">
+          <div
+            class="bonus-toggle"
+            *ngVar="gearSet.twoPieceBonus as bonus"
+            (click)="onTwoPieceBonusChange(i)"
+            [class.disabled]="!bonus.available"
+            [gearsetTooltip]="bonus.perk">
+            <mat-slide-toggle
+              color="primary"
+              [id]="'two-piece-' + i"
+              [checked]="bonus.enabled"
+              [disabled]="(selectedTwoPieceCount >= 2 && !bonus.enabled) || !bonus.available">
+            </mat-slide-toggle>
+            <span class="bonus-icon">
+              <img
+                *ngIf="bonus.perk.displayProperties.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                alt="{{ bonus.perk.displayProperties.name }} icon"
+                class="bonus-icon-image" />
+            </span>
+            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+          </div>
+        </td>
+        <td class="four-piece-bonuses">
+          <div
+            class="bonus-toggle"
+            *ngVar="gearSet.fourPieceBonus as bonus"
+            (click)="onFourPieceBonusChange(i)"
+            [class.disabled]="!bonus.available"
+            [gearsetTooltip]="bonus.perk">
+            <mat-slide-toggle
+              color="primary"
+              [id]="'four-piece-' + i"
+              [checked]="bonus.enabled"
+              [disabled]="!bonus.available">
+            </mat-slide-toggle>
+            <span class="bonus-icon">
+              <img
+                *ngIf="bonus.perk.displayProperties.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                alt="{{ bonus.perk.displayProperties.name }} icon"
+                class="bonus-icon-image" />
+            </span>
+            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -16,6 +16,7 @@
  */
 
 import { AfterViewInit, Component, OnDestroy, ViewChild } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { InventoryService } from "../../../services/inventory.service";
 import { MatTableDataSource } from "@angular/material/table";
 import { ConfigurationService } from "../../../services/configuration.service";
@@ -26,10 +27,11 @@ import { StatusProviderService } from "../../../services/status-provider.service
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../../../data/enum/armor-slot";
-import { FixableSelection } from "../../../data/buildConfiguration";
+import { BuildConfiguration } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
+import { MAXIMUM_STAT_MOD_AMOUNT } from "src/app/data/constants";
 
 export interface ResultDefinition {
   exotic:
@@ -101,7 +103,6 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   _config_assumeLegendariesMasterworked: Boolean = false;
   _config_assumeExoticsMasterworked: Boolean = false;
 
-  _config_maximumStatMods: number = 5;
   _config_selectedExotics: number[] = [];
   _config_tryLimitWastedStats: boolean = false;
   _config_onlyUseMasterworkedExotics: Boolean = false;
@@ -112,8 +113,8 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   _config_assumeEveryLegendaryIsArtifice: Boolean = false;
   _config_assumeEveryExoticIsArtifice: Boolean = false;
   _config_enforceFeaturedArmor: Boolean = false;
-  _config_modslotLimitation: FixableSelection<number>[] = [];
-  _config_armorPerkLimitation: FixableSelection<ArmorPerkOrSlot>[] = [];
+  _config_modslotLimitation: boolean = false;
+  _config_armorPerkLimitation: boolean = false;
 
   tableDataSource = new MatTableDataSource<ResultDefinition>();
   @ViewChild(MatPaginator) paginator: MatPaginator | null = null;
@@ -148,7 +149,8 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   constructor(
     private inventory: InventoryService,
     public configService: ConfigurationService,
-    public status: StatusProviderService
+    public status: StatusProviderService,
+    private logger: NGXLogger
   ) {
     // Load saved view mode from localStorage
     const savedViewMode = localStorage.getItem("d2ap-view-mode") as "table" | "cards";
@@ -201,45 +203,43 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
       this.computationProgress = progress;
     });
     //
-    this.configService.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c: any) => {
-      this.selectedClass = c.characterClass;
-      this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
-      this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
-      this._config_tryLimitWastedStats = c.tryLimitWastedStats;
+    this.configService.configuration
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((c: BuildConfiguration) => {
+        this.selectedClass = c.characterClass;
+        this._config_assumeLegendariesMasterworked = c.assumeLegendariesMasterworked;
+        this._config_assumeExoticsMasterworked = c.assumeExoticsMasterworked;
+        this._config_tryLimitWastedStats = c.tryLimitWastedStats;
 
-      this._config_maximumStatMods = c.maximumStatMods;
-      this._config_legacyArmor = c.allowLegacyArmor;
-      this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
-      this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
-      this._config_includeCollectionRolls = c.includeCollectionRolls;
-      this._config_includeVendorRolls = c.includeVendorRolls;
-      this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
-      this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
-      this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
-      this._config_enforceFeaturedArmor = c.enforceFeaturedArmor;
-      this._config_selectedExotics = c.selectedExotics;
-      this._config_armorPerkLimitation = Object.entries(c.armorPerks)
-        .filter((v: any) => v[1].value != ArmorPerkOrSlot.Any)
-        .map((k: any) => k[1]);
-      this._config_modslotLimitation = Object.entries(c.maximumModSlots)
-        .filter((v: any) => v[1].value < 5)
-        .map((k: any) => k[1]);
+        this._config_legacyArmor = c.allowLegacyLegendaryArmor || c.allowLegacyExoticArmor;
+        this._config_onlyUseMasterworkedExotics = c.onlyUseMasterworkedExotics;
+        this._config_onlyUseMasterworkedLegendaries = c.onlyUseMasterworkedLegendaries;
+        this._config_includeCollectionRolls = c.includeCollectionRolls;
+        this._config_includeVendorRolls = c.includeVendorRolls;
+        this._config_onlyShowResultsWithNoWastedStats = c.onlyShowResultsWithNoWastedStats;
+        this._config_assumeEveryLegendaryIsArtifice = c.assumeEveryLegendaryIsArtifice;
+        this._config_assumeEveryExoticIsArtifice = c.assumeEveryExoticIsArtifice;
+        this._config_enforceFeaturedArmor =
+          c.enforceFeaturedLegendaryArmor || c.enforceFeaturedExoticArmor;
+        this._config_selectedExotics = c.selectedExotics;
+        this._config_armorPerkLimitation = c.armorRequirements.length > 0;
+        this._config_modslotLimitation = c.statModLimits.maxMajorMods < MAXIMUM_STAT_MOD_AMOUNT;
 
-      let columns = [
-        "exotic",
-        "health",
-        "melee",
-        "grenade",
-        "super",
-        "class",
-        "weapon",
-        "total",
-        "mods",
-      ];
-      if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
-      columns.push("dropdown");
-      this.shownColumns = columns;
-    });
+        let columns = [
+          "exotic",
+          "health",
+          "melee",
+          "grenade",
+          "super",
+          "class",
+          "weapon",
+          "total",
+          "mods",
+        ];
+        if (c.includeVendorRolls || c.includeCollectionRolls) columns.push("source");
+        columns.push("dropdown");
+        this.shownColumns = columns;
+      });
 
     this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (value) => {
       if (value.results.length > 0 && this.initializing) {
@@ -262,8 +262,12 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
   }
 
   async updateData() {
-    console.info("Table total results:", this._results.length);
-    console.time("Update Table Data");
+    this.logger.info(
+      "ResultsComponent",
+      "updateData",
+      "Table total results: " + this._results.length
+    );
+    const start = performance.now();
     this.tableDataSource.paginator = this.paginator;
     this.tableDataSource.sort = this.sort;
     this.tableDataSource.data = this._results;
@@ -275,7 +279,8 @@ export class ResultsComponent implements AfterViewInit, OnDestroy {
       }, 50);
     }
 
-    console.timeEnd("Update Table Data");
+    const end = performance.now();
+    this.logger.info("ResultsComponent", "updateData", `Update Table Data took ${end - start} ms`);
   }
 
   getTotalStats(element: ResultDefinition): number {

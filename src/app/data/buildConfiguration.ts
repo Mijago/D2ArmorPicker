@@ -1,3 +1,7 @@
+export interface StatModLimits {
+  maxMods: number; // total mods allowed (0–5)
+  maxMajorMods: number; // major mods allowed (0–maxMods)
+}
 /*
  * Copyright (c) 2023 D2ArmorPicker by Mijago.
  *
@@ -18,8 +22,7 @@
 import { ArmorPerkOrSlot, ArmorStat } from "./enum/armor-stat";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
-import { MAXIMUM_STAT_MOD_AMOUNT } from "./constants";
-import { ArmorSlot } from "./enum/armor-slot";
+// import { ArmorSlot } from "./enum/armor-slot";
 import { ModifierType } from "./enum/modifierType";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
@@ -42,6 +45,14 @@ export interface FixableSelection<T> {
   fixed: boolean;
 }
 
+export interface ArmorRequirementGearSet {
+  gearSetHash: number;
+}
+export interface ArmorRequirementPerk {
+  perk: ArmorPerkOrSlot;
+}
+export type ArmorRequirement = ArmorRequirementGearSet | ArmorRequirementPerk;
+
 export class BuildConfiguration {
   characterClass: DestinyClass = DestinyClass.Unknown;
 
@@ -63,17 +74,9 @@ export class BuildConfiguration {
     [ArmorStat.StatSuper]: { fixed: false, value: 0 },
     [ArmorStat.StatMelee]: { fixed: false, value: 0 },
   };
-  maximumStatMods: number = 5; // TODO: remove
 
-  // Fixable, BUT the bool is not yet used. Maybe in a future update.
-  maximumModSlots: EnumDictionary<ArmorSlot, FixableSelection<number>> = {
-    [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
-    [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: 5 },
-    [ArmorSlot.ArmorSlotChest]: { fixed: false, value: 5 },
-    [ArmorSlot.ArmorSlotLegs]: { fixed: false, value: 5 },
-    [ArmorSlot.ArmorSlotClass]: { fixed: false, value: 5 },
-    [ArmorSlot.ArmorSlotNone]: { fixed: false, value: 5 },
-  };
+  // New compact stat mod limits (global, not per-slot)
+  statModLimits: StatModLimits = { maxMods: 5, maxMajorMods: 5 };
 
   putArtificeMods = true;
   useFotlArmor = true;
@@ -97,22 +100,15 @@ export class BuildConfiguration {
   onlyShowResultsWithNoWastedStats = false;
 
   selectedModElement: ModifierType = ModifierType.Stasis;
+
+  armorRequirements: ArmorRequirement[] = [];
   enabledMods: ModOrAbility[] = [];
   selectedExotics: number[] = [];
   selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
-  // mainly for the exotic class item
-
-  armorPerks: EnumDictionary<ArmorSlot, FixableSelection<ArmorPerkOrSlot>> = {
-    [ArmorSlot.ArmorSlotHelmet]: { fixed: true, value: ArmorPerkOrSlot.Any },
-    [ArmorSlot.ArmorSlotGauntlet]: { fixed: true, value: ArmorPerkOrSlot.Any },
-    [ArmorSlot.ArmorSlotChest]: { fixed: true, value: ArmorPerkOrSlot.Any },
-    [ArmorSlot.ArmorSlotLegs]: { fixed: true, value: ArmorPerkOrSlot.Any },
-    [ArmorSlot.ArmorSlotClass]: { fixed: true, value: ArmorPerkOrSlot.Any },
-    [ArmorSlot.ArmorSlotNone]: { fixed: true, value: ArmorPerkOrSlot.Any },
-  };
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      armorRequirements: [],
       enabledMods: [],
       disabledItems: [],
       addConstent1Health: false,
@@ -121,7 +117,6 @@ export class BuildConfiguration {
       assumeClassItemIsArtifice: false,
       putArtificeMods: true,
       useFotlArmor: false,
-      maximumStatMods: MAXIMUM_STAT_MOD_AMOUNT,
       onlyUseMasterworkedExotics: false,
       onlyUseMasterworkedLegendaries: false,
       ignoreSunsetArmor: false,
@@ -142,22 +137,7 @@ export class BuildConfiguration {
       selectedModElement: ModifierType.Prismatic,
       selectedExotics: [],
       selectedExoticPerks: [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any],
-      maximumModSlots: {
-        [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: 5 },
-        [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: 5 },
-        [ArmorSlot.ArmorSlotChest]: { fixed: false, value: 5 },
-        [ArmorSlot.ArmorSlotLegs]: { fixed: false, value: 5 },
-        [ArmorSlot.ArmorSlotClass]: { fixed: false, value: 5 },
-        [ArmorSlot.ArmorSlotNone]: { fixed: false, value: 5 },
-      },
-      armorPerks: {
-        [ArmorSlot.ArmorSlotHelmet]: { fixed: false, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotGauntlet]: { fixed: false, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotChest]: { fixed: false, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotLegs]: { fixed: false, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotClass]: { fixed: false, value: ArmorPerkOrSlot.Any },
-        [ArmorSlot.ArmorSlotNone]: { fixed: false, value: ArmorPerkOrSlot.Any },
-      },
+      statModLimits: { maxMods: 5, maxMajorMods: 5 },
       minimumStatTiers: getDefaultStatDict(0),
     };
   }

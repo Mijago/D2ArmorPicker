@@ -23,7 +23,7 @@ import { FORCE_USE_ANY_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constant
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
-  ArmorPerkOrSlotNames,
+  ArmorPerkSocketHashes,
   ArmorStat,
   SpecialArmorStat,
   STAT_MOD_VALUES,
@@ -47,7 +47,7 @@ import { ArmorSystem } from "../data/types/IManifestArmor";
 // region Validation and Preparation Functions
 function checkSlots(
   config: BuildConfiguration,
-  constantModslotRequirement: Map<ArmorPerkOrSlot, number>,
+  constantModslotRequirement: Map<number, number>,
   availableClassItemTypes: Set<ArmorPerkOrSlot>,
   helmet: IPermutatorArmor,
   gauntlet: IPermutatorArmor,
@@ -62,33 +62,27 @@ function checkSlots(
     { slot: ArmorSlot.ArmorSlotLegs, item: leg },
   ];
 
-  for (const { slot, item } of slots) {
-    const statIsFixed = config.armorPerks[slot].fixed;
-    const value = config.armorPerks[slot].value;
-    const assumingArtifice =
-      (item.isExotic &&
-        config.assumeEveryExoticIsArtifice &&
-        item.armorSystem == ArmorSystem.Armor2) ||
-      (!item.isExotic &&
-        config.assumeEveryLegendaryIsArtifice &&
-        item.armorSystem == ArmorSystem.Armor2);
-
-    if (!assumingArtifice && statIsFixed && value != ArmorPerkOrSlot.Any && value != item.perk) {
-      return { valid: false };
+  for (let { item } of slots) {
+    if (item.armorSystem === ArmorSystem.Armor2) {
+      if (
+        (item.isExotic && config.assumeEveryLegendaryIsArtifice) ||
+        (!item.isExotic && config.assumeEveryLegendaryIsArtifice) ||
+        (!item.isExotic &&
+          item.slot == ArmorSlot.ArmorSlotClass &&
+          config.assumeClassItemIsArtifice)
+      ) {
+        requirements.set(
+          ArmorPerkOrSlot.SlotArtifice,
+          (requirements.get(ArmorPerkOrSlot.SlotArtifice) ?? 0) - 1
+        );
+        continue;
+      }
     }
-  }
-  // also return if we can not find the correct class item.
-  if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any &&
-    !availableClassItemTypes.has(config.armorPerks[ArmorSlot.ArmorSlotClass].value)
-  )
-    return { valid: false };
 
-  requirements.set(helmet.perk, (requirements.get(helmet.perk) ?? 0) - 1);
-  requirements.set(gauntlet.perk, (requirements.get(gauntlet.perk) ?? 0) - 1);
-  requirements.set(chest.perk, (requirements.get(chest.perk) ?? 0) - 1);
-  requirements.set(leg.perk, (requirements.get(leg.perk) ?? 0) - 1);
+    requirements.set(item.perk, (requirements.get(item.perk) ?? 0) - 1);
+    if (item.gearSetHash != null)
+      requirements.set(item.gearSetHash, (requirements.get(item.gearSetHash) ?? 0) - 1);
+  }
 
   let SlotRequirements = 0;
   for (let [key] of requirements) {
@@ -97,34 +91,14 @@ function checkSlots(
   }
 
   if (SlotRequirements > 1) return { valid: false };
+  if (SlotRequirements == 0) return { valid: true, requiredClassItemType: ArmorPerkOrSlot.Any };
 
-  let requiredClassItemType = config.armorPerks[ArmorSlot.ArmorSlotClass].value;
-  const isClassItemFixed = config.armorPerks[ArmorSlot.ArmorSlotClass].fixed;
-
-  if (SlotRequirements > 0) {
-    if (requiredClassItemType != ArmorPerkOrSlot.Any && isClassItemFixed) {
-      // Class item is fixed to a specific perk - check if we need to reduce slot requirements
-      if (
-        requirements.has(requiredClassItemType) &&
-        (requirements.get(requiredClassItemType) ?? 0) > 0
-      ) {
-        SlotRequirements--;
-      }
-    } else {
-      for (let [key, value] of requirements) {
-        if (key == ArmorPerkOrSlot.None) continue;
-        if (value <= 0) continue;
-        if (availableClassItemTypes.has(key)) {
-          requiredClassItemType = key;
-          SlotRequirements--;
-          break;
-        }
-      }
-    }
-  }
-
-  // if (config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.None && !config.armorPerks[ArmorSlot.ArmorSlotClass].fixed) bad--;
-  return { valid: SlotRequirements <= 0, requiredClassItemType };
+  const requiredClassItemPerk = [...requirements.entries()].find((c) => c[1] > 0)?.[0];
+  if (!requiredClassItemPerk) return { valid: false, requiredClassItemType: ArmorPerkOrSlot.Any };
+  return {
+    valid: availableClassItemTypes.has(requiredClassItemPerk),
+    requiredClassItemType: requiredClassItemPerk,
+  };
 }
 
 function prepareConstantStatBonus(config: BuildConfiguration) {
@@ -150,31 +124,25 @@ function prepareConstantModslotRequirement(config: BuildConfiguration) {
     constantPerkRequirement.set(key, 0);
   }
 
-  for (const slot of [
-    ArmorSlot.ArmorSlotHelmet,
-    ArmorSlot.ArmorSlotChest,
-    ArmorSlot.ArmorSlotGauntlet,
-    ArmorSlot.ArmorSlotLegs,
-    ArmorSlot.ArmorSlotClass,
-  ]) {
-    const perkValue = config.armorPerks[slot].value;
-    if (perkValue != ArmorPerkOrSlot.Any) {
-      constantPerkRequirement.set(perkValue, (constantPerkRequirement.get(perkValue) ?? 0) + 1);
+  for (const req of config.armorRequirements) {
+    if ("perk" in req) {
+      let perk = req.perk;
+
+      const e = Object.entries(ArmorPerkSocketHashes).find(([, value]) => value == perk);
+      if (e) perk = Number.parseInt(e[0]) as any as ArmorPerkOrSlot;
+
+      if (perk != ArmorPerkOrSlot.Any && perk != ArmorPerkOrSlot.None) {
+        constantPerkRequirement.set(perk, (constantPerkRequirement.get(perk) ?? 0) + 1);
+      }
+    } else if ("gearSetHash" in req) {
+      // Gear set requirement
+      constantPerkRequirement.set(
+        req.gearSetHash,
+        (constantPerkRequirement.get(req.gearSetHash) ?? 0) + 1
+      );
     }
   }
-
   return constantPerkRequirement;
-}
-
-function prepareConstantAvailableModslots(config: BuildConfiguration) {
-  var availableModCost: number[] = [];
-
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotChest].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value);
-  availableModCost.push(config.maximumModSlots[ArmorSlot.ArmorSlotClass].value);
-  return availableModCost.filter((d) => d > 0).sort((a, b) => b - a);
 }
 
 function* generateArmorCombinations(
@@ -249,11 +217,10 @@ addEventListener("message", async ({ data }) => {
   config.onlyShowResultsWithNoWastedStats =
     environment.featureFlags.enableZeroWaste && config.onlyShowResultsWithNoWastedStats;
   if (!environment.featureFlags.enableModslotLimitation) {
-    config.maximumModSlots[ArmorSlot.ArmorSlotHelmet].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotGauntlet].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotChest].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotLegs].value = 5;
-    config.maximumModSlots[ArmorSlot.ArmorSlotClass].value = 5;
+    config.statModLimits = {
+      maxMods: 5, // M: total mods allowed (0–5)
+      maxMajorMods: 5, // N: major mods allowed (0–maxMods)
+    };
   }
 
   let helmets = items
@@ -338,23 +305,8 @@ addEventListener("message", async ({ data }) => {
     });
   }
 
-  // If the config says that we need a fixed class item, filter the class items accordingly
-  if (
-    config.armorPerks[ArmorSlot.ArmorSlotClass].fixed &&
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value != ArmorPerkOrSlot.Any
-  )
-    classItems = classItems.filter(
-      (d) => d.perk == config.armorPerks[ArmorSlot.ArmorSlotClass].value
-    );
-
   // true if any armorPerks is not "any"
-  const doesNotRequireArmorPerks = ![
-    config.armorPerks[ArmorSlot.ArmorSlotHelmet].value,
-    config.armorPerks[ArmorSlot.ArmorSlotGauntlet].value,
-    config.armorPerks[ArmorSlot.ArmorSlotChest].value,
-    config.armorPerks[ArmorSlot.ArmorSlotLegs].value,
-    config.armorPerks[ArmorSlot.ArmorSlotClass].value,
-  ].every((v) => v === ArmorPerkOrSlot.Any);
+  const doesNotRequireArmorPerks = config.armorRequirements.length == 0;
 
   classItems = classItems.filter(
     (item, index, self) =>
@@ -385,7 +337,8 @@ addEventListener("message", async ({ data }) => {
   const exoticClassItemIsEnforced = exoticClassItems.some(
     (item) => config.selectedExotics.indexOf(item.hash) > -1
   );
-  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.perk));
+  let availableClassItemPerkTypes = new Set(classItems.map((d) => d.gearSetHash || d.perk));
+  // let availableClassItemPerkTypes1 = new Set(classItems.map((d) => d.gearSetHash));
 
   // runtime variables
   const runtime = {
@@ -419,7 +372,6 @@ addEventListener("message", async ({ data }) => {
 
   const constantBonus = prepareConstantStatBonus(config);
   const constantModslotRequirement = prepareConstantModslotRequirement(config);
-  const constantAvailableModslots = prepareConstantAvailableModslots(config);
 
   const requiresAtLeastOneExotic = config.selectedExotics.indexOf(FORCE_USE_ANY_EXOTIC) > -1;
 
@@ -434,19 +386,6 @@ addEventListener("message", async ({ data }) => {
   let estimatedCalculations = estimateCombinationsToBeChecked(helmets, gauntlets, chests, legs);
   let checkedCalculations = 0;
   let lastProgressReportTime = 0;
-  console.info(`Estimated calculations for Thread#${threadSplit.current}`, estimatedCalculations);
-  console.debug(
-    `Thread#${threadSplit.current} items`,
-    JSON.stringify({
-      helmets: helmets.length,
-      gauntlets: gauntlets.length,
-      chests: chests.length,
-      legs: legs.length,
-      availableClassItemTypes: Array.from(availableClassItemPerkTypes).map(
-        (x) => ArmorPerkOrSlotNames[x]
-      ),
-    })
-  );
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 125ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 125 : 75;
@@ -490,7 +429,9 @@ addEventListener("message", async ({ data }) => {
     }
     if (slotCheckResult.requiredClassItemType != ArmorPerkOrSlot.Any) {
       classItemsToUse = classItems.filter(
-        (item) => item.perk == slotCheckResult.requiredClassItemType
+        (item) =>
+          item.perk == slotCheckResult.requiredClassItemType ||
+          item.gearSetHash == slotCheckResult.requiredClassItemType
       );
     }
     if (classItemsToUse.length == 0) {
@@ -507,22 +448,20 @@ addEventListener("message", async ({ data }) => {
       leg,
       classItemsToUse,
       constantBonus,
-      constantAvailableModslots,
       doNotOutput
     );
     // Only add 50k to the list if the setting is activated.
     // We will still calculate the rest so that we get accurate results for the runtime values
-    if (result != null) {
+    if (isIPermutatorArmorSet(result)) {
       totalResults++;
-      if (isIPermutatorArmorSet(result)) {
-        results.push(result);
-        resultsLength++;
-        listedResults++;
-        doNotOutput =
-          doNotOutput ||
-          (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
-          listedResults >= 1e6 / threadSplit.count;
-      }
+
+      results.push(result);
+      resultsLength++;
+      listedResults++;
+      doNotOutput =
+        doNotOutput ||
+        (config.limitParsedResults && listedResults >= 3e4 / threadSplit.count) ||
+        listedResults >= 1e6 / threadSplit.count;
     }
 
     if (totalResults % 5000 == 0 && lastProgressReportTime + progressBarDelay < Date.now()) {
@@ -615,7 +554,6 @@ export function handlePermutation(
   leg: IPermutatorArmor,
   classItems: IPermutatorArmor[],
   constantBonus: number[],
-  availableModCost: number[],
   doNotOutput = false
 ): never[] | IPermutatorArmorSet | null {
   const items = [helmet, gauntlet, chest, leg];
@@ -804,7 +742,6 @@ export function handlePermutation(
         newDistances,
         newOptionalDistances,
         tmpArtificeCount,
-        availableModCost,
         config.modOptimizationStrategy
       );
 
@@ -815,8 +752,7 @@ export function handlePermutation(
         config,
         adjustedStats,
         newDistances,
-        tmpArtificeCount,
-        availableModCost
+        tmpArtificeCount
       );
 
       // This may lead to issues later.
@@ -836,7 +772,6 @@ export function handlePermutation(
           adjustedStatsWithoutMods,
           newDistances,
           tmpArtificeCount,
-          availableModCost,
           doNotOutput
         );
       }
@@ -852,8 +787,7 @@ function performTierAvailabilityTesting(
   config: BuildConfiguration,
   stats: number[],
   distances: number[],
-  availableArtificeCount: number,
-  availableModCost: number[]
+  availableArtificeCount: number
 ): void {
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
@@ -889,7 +823,6 @@ function performTierAvailabilityTesting(
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        availableModCost,
         ModOptimizationStrategy.None
       );
 
@@ -913,7 +846,6 @@ function performTierAvailabilityTesting(
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        availableModCost,
         ModOptimizationStrategy.None
       );
       if (mods != null) {
@@ -936,7 +868,6 @@ function tryCreateArmorSetWithClassItem(
   statsWithoutMods: number[],
   newDistances: number[],
   availableArtificeCount: number,
-  availableModCost: number[],
   doNotOutput: boolean
 ): IPermutatorArmorSet | never[] {
   if (doNotOutput) return [];
@@ -973,13 +904,17 @@ function get_mods_precalc(
   distances: number[],
   optionalDistances: number[],
   availableArtificeCount: number,
-  availableModCost: number[],
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
   // check distances <= 65
   const totalDistance =
     distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   if (totalDistance > 65) return null;
+
+  if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
+    // no mods needed, return empty array
+    return [];
+  }
 
   const modCombinations = config.onlyShowResultsWithNoWastedStats
     ? precalculatedZeroWasteModCombinations
@@ -1020,28 +955,21 @@ function get_mods_precalc(
       }
     }
   }
+
+  for (let i = 0; i < 6; i++) {
+    precalculatedMods[i] = precalculatedMods[i].filter(
+      (d) =>
+        d[2] <= config.statModLimits.maxMajorMods && d[1] + d[2] <= config.statModLimits.maxMods
+    );
+
+    if (precalculatedMods[i] == null || precalculatedMods[i].length == 0) {
+      // if there are no mods for this distance, we can not calculate anything
+      return null;
+    }
+  }
+
   let bestMods: any = null;
   let bestScore = 1000;
-
-  const availableModCostLen = availableModCost.length;
-  const minAvailableModCost = availableModCost[availableModCostLen - 1];
-
-  // const maxAvailableModCost = availableModCost[0];
-
-  function validateMods(usedModCost: number[]): boolean {
-    let usedModCount = usedModCost.length;
-    if (usedModCount == 0) return true;
-    if (usedModCount > availableModCostLen) return false;
-    // sort usedMods ascending
-    usedModCost.sort((a, b) => b - a);
-    // check if the usedMods are valid
-    // substract the usedMods from the availableMods, start at the highest cost
-    for (let i = 0; i < availableModCost.length && i < usedModCount; i++) {
-      if (availableModCost[i] < usedModCost[i]) return false;
-    }
-
-    return true;
-  }
 
   function score(entries: [number, number, number, number][]) {
     if (optimize == ModOptimizationStrategy.ReduceUsedModSockets) {
@@ -1053,10 +981,7 @@ function get_mods_precalc(
     return entries.reduce((a, b) => a + b[3], 0);
   }
 
-  function validate(
-    entries: [number, number, number, number][],
-    alsoValidateMods = false
-  ): boolean {
+  function validate(entries: [number, number, number, number][]): boolean {
     // sum up the stats
     const sum = entries.reduce(
       (a, b, i) => [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3] - distances[i]],
@@ -1065,26 +990,9 @@ function get_mods_precalc(
 
     if (score(entries) > bestScore) return false;
     if (sum[0] > availableArtificeCount) return false;
-    if (sum[1] + sum[2] > availableModCostLen) return false;
+    if (sum[1] + sum[2] > config.statModLimits.maxMods) return false;
+    if (sum[2] > config.statModLimits.maxMajorMods) return false;
     if (sum[3] < 0) return false;
-
-    // test availableModCosts
-    // the used mods translate as follows:
-    // entries[0], entries[3] and entries[5]: minor 1, major 3
-    // entries[1], entries[2] and entries[4]: minor 2, major 4
-
-    if (!alsoValidateMods || minAvailableModCost == 5) return true;
-
-    let usedModCost: number[] = [];
-    for (let statIdx = 0; statIdx < entries.length; statIdx++) {
-      const entry = entries[statIdx];
-
-      for (let minor = 0; minor < entry[1]; minor++) usedModCost.push(1);
-      for (let major = 0; major < entry[2]; major++) usedModCost.push(3);
-    }
-
-    if (usedModCost.length == 0) return true;
-    if (!validateMods(usedModCost)) return false;
 
     return true;
   }
@@ -1115,7 +1023,7 @@ function get_mods_precalc(
             inner: for (let strength of precalculatedMods[5]) {
               let mods = [mobility, resilience, recovery, discipline, intellect, strength];
 
-              if (!validate(mods, true)) continue;
+              if (!validate(mods)) continue;
 
               // Fill optional distances
               for (let m = 0; m < 6; m++)

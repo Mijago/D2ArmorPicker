@@ -16,13 +16,14 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { DatabaseService } from "./database.service";
 import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorPerkOrSlot, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
@@ -76,6 +77,7 @@ export class InventoryService {
    */
   private allArmorResults: ResultDefinition[] = [];
   private currentClass: DestinyClass = DestinyClass.Unknown;
+  private initialized: boolean = false;
 
   private _manifest: ReplaySubject<null>;
   public readonly manifest: Observable<null>;
@@ -110,7 +112,8 @@ export class InventoryService {
     private api: BungieApiService,
     private auth: AuthService,
     private router: Router,
-    private vendors: VendorsService
+    private vendors: VendorsService,
+    private logger: NGXLogger
   ) {
     this._inventory = new ReplaySubject(1);
     this.inventory = this._inventory.asObservable();
@@ -131,15 +134,35 @@ export class InventoryService {
     // TODO: This gives a race condition on some parts.
     router.events.pipe(debounceTime(5)).subscribe(async (val) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
-        //await this.auth.logout();
-        //return;
+        this.logger.warn(
+          "InventoryService",
+          "router.events",
+          "Refresh token expired, we should probably log the user out"
+        );
+        this.status.setAuthError();
       }
-      if (!auth.isAuthenticated()) return;
+      if (!auth.isAuthenticated()) {
+        this.logger.warn(
+          "InventoryService",
+          "router.events",
+          "User is not authenticated, skipping router event handling"
+        );
+        return;
+      }
 
       if (val instanceof NavigationEnd) {
+        if (this._config == null) {
+          this._config = structuredClone(this.config.readonlyConfigurationSnapshot);
+        }
+
         this.killWorkers();
         this.clearResults();
-        console.debug("Trigger refreshAll due to router.events");
+        this.logger.debug(
+          "InventoryService",
+          "router.events",
+          "Trigger refreshAll due to router.events"
+        );
+        this.initialized = true;
         await this.refreshAll(!dataAlreadyFetched);
         dataAlreadyFetched = true;
       }
@@ -147,15 +170,33 @@ export class InventoryService {
 
     this.config.configuration.pipe(debounceTime(500)).subscribe(async (c) => {
       if (this.auth.refreshTokenExpired || !(await this.auth.autoRegenerateTokens())) {
+        this.logger.warn(
+          "InventoryService",
+          "config.configuration",
+          "Refresh token expired, we should probably log the user out"
+        );
+        this.status.setAuthError();
         //await this.auth.logout();
         //return;
       }
-      if (!auth.isAuthenticated()) return;
+      if (!auth.isAuthenticated()) {
+        this.logger.warn(
+          "InventoryService",
+          "config.configuration",
+          "User is not authenticated, skipping config change handling"
+        );
+        return;
+      }
 
       if (_isEqual(c, this._config)) return;
-      console.debug("Build configuration changed", getDifferences(this._config, c));
+      this.logger.debug(
+        "InventoryService",
+        "config.configuration",
+        "Build configuration changed: " + JSON.stringify(getDifferences(this._config, c))
+      );
 
       this._config = structuredClone(c);
+      this.initialized = true;
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
     });
@@ -179,11 +220,19 @@ export class InventoryService {
   private refreshing: boolean = false;
 
   async refreshAll(forceArmor: boolean = false, forceManifest = false) {
-    if (this.refreshing) return;
-    console.info("Refreshing User information");
+    if (this.refreshing) {
+      this.logger.warn(
+        "InventoryService",
+        "refreshAll",
+        "Refresh already in progress, skipping new refresh request"
+      );
+      return;
+    }
+    this.logger.debug("InventoryService", "refreshAll", "Refreshing inventory and manifest");
     try {
       this.refreshing = true;
       if (this.auth.refreshTokenExpired && !(await this.auth.autoRegenerateTokens())) {
+        this.refreshing = false;
         this.status.setAuthError(); // Better way to logout the user?
         if (!this.status.getStatus().apiError) await this.auth.logout();
         return;
@@ -194,7 +243,7 @@ export class InventoryService {
         armorUpdated = await this.updateInventoryItems(manifestUpdated || forceArmor);
         this.updateVendorsAsync();
       } catch (e) {
-        console.error(e);
+        this.logger.error("InventoryService", "refreshAll", "Error: " + e);
       }
 
       await this.triggerArmorUpdateAndUpdateResults(armorUpdated);
@@ -234,7 +283,7 @@ export class InventoryService {
   }
 
   private killWorkers() {
-    console.debug("Terminating workers");
+    this.logger.debug("InventoryService", "killWorkers", "Terminating all workers");
     this.workers.forEach((w) => {
       w.terminate();
     });
@@ -266,7 +315,7 @@ export class InventoryService {
   }
 
   cancelCalculation() {
-    console.info("Cancelling calculation");
+    this.logger.info("InventoryService", "cancelCalculation", "Cancelling calculation");
     this.killWorkers();
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this.status.modifyStatus((s) => (s.cancelledCalculation = true));
@@ -277,12 +326,16 @@ export class InventoryService {
 
   async updateResults(nthreads: number = 3) {
     let config = this._config;
-    console.debug("Using config for Workers", { configuration: config });
+    this.logger.debug(
+      "InventoryService",
+      "updateResults",
+      "Using config for Workers: " + JSON.stringify({ configuration: config })
+    );
     this.clearResults();
     this.killWorkers();
 
     try {
-      console.time("updateResults with WebWorker");
+      const updateResultsStart = performance.now();
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       this.status.modifyStatus((s) => (s.cancelledCalculation = false));
       let doneWorkerCount = 0;
@@ -372,22 +425,8 @@ export class InventoryService {
             item.rarity == TierType.Superior
         )
         // sunset armor
-        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset)
-        // armor perks
-        .filter((item) => {
-          return (
-            (item.isExotic && item.perk == config.armorPerks[item.slot].value) ||
-            config.armorPerks[item.slot].value == ArmorPerkOrSlot.Any ||
-            !config.armorPerks[item.slot].fixed ||
-            (config.armorPerks[item.slot].fixed &&
-              config.armorPerks[item.slot].value == item.perk) ||
-            (config.armorPerks[item.slot].value === ArmorPerkOrSlot.SlotArtifice &&
-              item.armorSystem === ArmorSystem.Armor2 &&
-              ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-                (config.assumeEveryExoticIsArtifice && item.isExotic)))
-          );
-        });
-      // console.log(items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
+        .filter((item) => !config.ignoreSunsetArmor || !item.isSunset);
+      // this.logger.debug("InventoryService", "updateResults", items.map(d => "id:'"+d.itemInstanceId+"'").join(" or "))
 
       // Remove collection items if they are in inventory
       this.inventoryArmorItems = this.inventoryArmorItems.filter((item) => {
@@ -422,6 +461,8 @@ export class InventoryService {
           source: armor.source,
           exoticPerkHash: armor.exoticPerkHash,
 
+          gearSetHash: armor.gearSetHash ?? null,
+
           icon: armor.icon,
           watermarkIcon: armor.watermarkIcon,
           name: armor.name,
@@ -432,8 +473,7 @@ export class InventoryService {
       });
 
       nthreads = this.estimateRequiredThreads();
-
-      console.info("Threads for calculation", nthreads);
+      this.logger.info("InventoryService", "updateResults", "Estimated threads: " + nthreads);
 
       // Values to calculate ETA
       const threadCalculationAmountArr = [...Array(nthreads).keys()].map(() => 0);
@@ -572,7 +612,12 @@ export class InventoryService {
                 )
                 .map((k) => Math.min(200, k) / 10),
             });
-            console.timeEnd("updateResults with WebWorker");
+            const updateResultsEnd = performance.now();
+            this.logger.info(
+              "InventoryService",
+              "updateResults",
+              `updateResults with WebWorker took ${updateResultsEnd - updateResultsStart} ms`
+            );
             this.workers[n].terminate();
           } else if (data.done == true && doneWorkerCount != nthreads) this.workers[n].terminate();
         };
@@ -700,7 +745,11 @@ export class InventoryService {
 
   async updateManifest(force: boolean = false): Promise<boolean> {
     if (this.status.getStatus().updatingManifest) {
-      console.error("Already updating the manifest - abort");
+      this.logger.error(
+        "InventoryService",
+        "updateManifest",
+        "Already updating the manifest - abort"
+      );
       return false;
     }
     this.status.modifyStatus((s) => (s.updatingManifest = true));
@@ -729,7 +778,7 @@ export class InventoryService {
       }
 
       this.status.modifyStatus((s) => (s.updatingInventory = false));
-      console.error(e);
+      this.logger.error("InventoryService", "updateInventoryItems", "Error: " + e);
 
       await this.status.setApiError();
 
@@ -737,5 +786,9 @@ export class InventoryService {
       //return await this.updateInventoryItems(true, errorLoop++);
       return false;
     }
+  }
+
+  get isInitialized(): boolean {
+    return this.initialized;
   }
 }

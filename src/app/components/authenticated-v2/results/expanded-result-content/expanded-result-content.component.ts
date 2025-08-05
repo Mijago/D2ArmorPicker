@@ -19,6 +19,7 @@
  */
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import {
   ArmorStat,
   ArmorStatIconUrls,
@@ -71,7 +72,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private config: ConfigurationService,
     private _snackBar: MatSnackBar,
     private bungieApi: BungieApiService,
-    private dimService: DimService
+    private dimService: DimService,
+    private logger: NGXLogger
   ) {}
 
   public async CopyDIMQuery() {
@@ -172,7 +174,11 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     for (let item of items) {
       let costList = getMasterworkCostList(item.exotic, item.tier);
       if (!costList) {
-        console.warn("No cost list found for item", item);
+        this.logger.warn(
+          "ExpandedResultContentComponent",
+          "calculateRequiredMasterworkCost",
+          "No cost list found for item: " + JSON.stringify(item)
+        );
         continue;
       }
       for (let n = item.energyLevel; n < 10; n++)

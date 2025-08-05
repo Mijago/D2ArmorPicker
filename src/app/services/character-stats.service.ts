@@ -300,6 +300,5 @@ function applyExoticArmorOverride(originalEntry: CooldownEntry, override: Overri
     };
   }
 
-  console.log("Unhandled override", override);
   return originalEntry;
 }

@@ -16,6 +16,7 @@
  */
 
 import { Injectable } from "@angular/core";
+import { NGXLogger } from "ngx-logger";
 import { BehaviorSubject, Observable } from "rxjs";
 import { isEqual as _isEqual } from "lodash";
 import { getDifferences } from "../data/commonFunctions";
@@ -55,7 +56,7 @@ export class StatusProviderService {
   private _status: BehaviorSubject<Status>;
   public readonly status: Observable<Status>;
 
-  constructor() {
+  constructor(private logger: NGXLogger) {
     this._status = new BehaviorSubject<Status>(this.__status);
     this.status = this._status.asObservable();
   }
@@ -66,8 +67,13 @@ export class StatusProviderService {
 
   modifyStatus(cb: (status: Status) => void) {
     cb(this.__status);
-    if (!_isEqual(this.__last_Status, this.__status))
-      console.debug("Status changed", getDifferences(this.__last_Status, this.__status));
+    if (!_isEqual(this.__last_Status, this.__status)) {
+      this.logger.debug(
+        "StatusProviderService",
+        "modifyStatus",
+        `Status changed: ${JSON.stringify(getDifferences(this.__last_Status, this.__status))}`
+      );
+    }
     this.__last_Status = structuredClone(this.__status);
     this._status.next(this.__status);
   }

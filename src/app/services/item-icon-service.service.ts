@@ -18,24 +18,46 @@
 import { Injectable } from "@angular/core";
 import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
+import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
+import { BehaviorSubject } from "rxjs";
 
 export interface ItemIconData {
   icon: string | undefined;
   watermark: string | undefined;
 }
+type AsyncLookupResult<T> = BehaviorSubject<T | undefined> | undefined;
 
 @Injectable({
   providedIn: "root",
 })
 export class ItemIconServiceService {
-  private itemLookup = new Map<number, IManifestArmor | undefined>();
+  private itemLookup = new Map<number, AsyncLookupResult<IManifestArmor>>();
+
+  private sandboxperkIconLookup = new Map<number, DestinySandboxPerkDefinition | undefined>();
+  private gearsetIconLookup = new Map<string, DestinySandboxPerkDefinition | undefined>();
 
   constructor(private db: DatabaseService) {}
 
   async getItemCached(hash: number): Promise<IManifestArmor | undefined> {
-    if (this.itemLookup.has(hash)) return this.itemLookup.get(hash) || undefined;
+    if (this.itemLookup.has(hash))
+      return new Promise<IManifestArmor | undefined>((resolve) => {
+        this.itemLookup
+          .get(hash)!
+          .asObservable()
+          .subscribe((item) => {
+            if (item) {
+              resolve(item);
+              return;
+            }
+          });
+      });
+
+    const newSubject = new BehaviorSubject<IManifestArmor | undefined>(undefined);
+    this.itemLookup.set(hash, newSubject);
+
     const item = await this.db.manifestArmor.where("hash").equals(hash).first();
-    this.itemLookup.set(hash, item);
+    newSubject.next(item);
+
     return item;
   }
 
@@ -43,5 +65,47 @@ export class ItemIconServiceService {
     if (!exotic.exoticPerkHash) return null;
     let perk = await this.getItemCached(exotic.exoticPerkHash[0]);
     return perk ?? null;
+  }
+  /**
+   * Returns the icon for a gearset (equipable set) by its gearSetHash, using a cache for performance.
+   * Finds the first armor item with the given gearSetHash and returns its icon.
+   */
+  async getSandboxPerkIconCached(hash: number): Promise<DestinySandboxPerkDefinition | undefined> {
+    if (this.sandboxperkIconLookup.has(hash)) {
+      return this.sandboxperkIconLookup.get(hash);
+    }
+    // Find the first armor item with this gearSetHash
+    const perk = await this.db.sandboxPerkDefinition.where("hash").equals(hash).first();
+    this.sandboxperkIconLookup.set(hash, perk);
+    return perk;
+  }
+
+  /**
+   * Returns the icon for a gearset (equipable set) by its gearSetHash, using a cache for performance.
+   * Finds the first armor item with the given gearSetHash and returns its icon.
+   */
+  async getGearsetPerkCached(
+    hash: number,
+    amount: number
+  ): Promise<DestinySandboxPerkDefinition | undefined> {
+    if (amount <= 2) amount = 2;
+    else if (amount < 4) amount = 4;
+
+    const key = `${hash}-${amount}`;
+    if (this.gearsetIconLookup.has(key)) {
+      return this.gearsetIconLookup.get(key);
+    }
+
+    const equipableSet = await this.db.equipableItemSetDefinition
+      .where("hash")
+      .equals(hash)
+      .first();
+    const perk = equipableSet?.setPerks.find((p) => p.requiredSetCount === amount);
+    if (perk) {
+      const perkIcon = await this.getSandboxPerkIconCached(perk.sandboxPerkHash);
+      this.gearsetIconLookup.set(key, perkIcon);
+      return perkIcon;
+    }
+    return undefined;
   }
 }
