@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: D2ArmorPicker Discord
+    url: http://discord.d2armorpicker.com
+    about: Join our Discord for help, questions, or to chat with the community.
+issue_label_defaults:
+  - bug
+  - triage
