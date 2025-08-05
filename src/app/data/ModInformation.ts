@@ -39,7 +39,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
     id: ModOrAbility.WhisperOfChains,
     name: "Whisper of Chains",
     description:
-      "While you are near frozen targets or a friendly Stasis crystal, you take reduced damage from targets.",
+      "Defeating targets while you have Frost Armor has a chance to create a Stasis shard.",
     type: ModifierType.Stasis,
     bonus: [{ stat: ArmorStat.StatClass, value: 10 }],
     cost: 1,
@@ -82,7 +82,7 @@ export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   [ModOrAbility.WhisperOfFractures]: {
     id: ModOrAbility.WhisperOfFractures,
     name: "Whisper of Fractures",
-    description: "Your melee energy recharges faster when you are near two or more targets.",
+    description: "Shattering a Frozen Enemy with a melee attack grants you a Stack of Frost Armor.",
     type: ModifierType.Stasis,
     bonus: [{ stat: ArmorStat.StatGrenade, value: -10 }],
     cost: 1,
