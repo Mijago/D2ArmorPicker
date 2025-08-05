@@ -133,7 +133,11 @@ export class ConfigurationService {
     }
 
     // remove mods that no longer exist
-    c.configuration.enabledMods = c.configuration.enabledMods.filter((v) => !!ModInformation[v]);
+    if (c.configuration.hasOwnProperty("enabledMods")) {
+      c.configuration.enabledMods = (c.configuration as any).enabledMods.filter(
+        (v: ModOrAbility) => !!ModInformation[v]
+      );
+    }
 
     // Always reset risky mods on reload
     c.configuration.limitParsedResults = true;
@@ -199,21 +203,31 @@ export class ConfigurationService {
   }
 
   loadCurrentConfiguration() {
-    let config;
     try {
-      config = localStorage.getItem("currentConfig") || "{}";
-      if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
-    } catch (e) {
-      config = {};
-    }
+      let config;
+      try {
+        config = localStorage.getItem("currentConfig") || "{}";
+        if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
+      } catch (e) {
+        config = {};
+      }
 
-    var dummy: StoredConfiguration = {
-      name: "dummy",
-      version: "1",
-      configuration: JSON.parse(config),
-    };
-    this.checkAndFixOldSavedConfigurations(dummy);
-    return dummy.configuration;
+      var dummy: StoredConfiguration = {
+        name: "dummy",
+        version: "1",
+        configuration: JSON.parse(config),
+      };
+      this.checkAndFixOldSavedConfigurations(dummy);
+      return dummy.configuration;
+    } catch (e) {
+      this.logger.error(
+        "ConfigurationService",
+        "loadCurrentConfiguration",
+        "Error while checking and fixing old saved configurations",
+        e
+      );
+      return BuildConfiguration.buildEmptyConfiguration();
+    }
   }
 
   getCurrentConfigBase64Compressed(): string {
