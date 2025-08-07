@@ -24,7 +24,8 @@ export function createArmorSet(
   usedArtifice: StatModifier[],
   usedMods: StatModifier[],
   statsWithMods: number[],
-  statsWithoutMods: number[]
+  statsWithoutMods: number[],
+  tuning: Tuning | undefined = undefined
 ): IPermutatorArmorSet {
   return {
     armor: [helmet.id, gauntlet.id, chest.id, leg.id, classItem.id],
@@ -33,6 +34,7 @@ export function createArmorSet(
     usedMods,
     statsWithMods,
     statsWithoutMods,
+    tuning,
   };
 }
 

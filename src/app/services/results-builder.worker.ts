@@ -771,7 +771,7 @@ export function handlePermutation(
       performTierAvailabilityTesting(
         runtime,
         config,
-        adjustedStats,
+        tierTestingStats,
         newDistances,
         tmpArtificeCount,
         tierTestingTunings
@@ -925,7 +925,8 @@ function tryCreateArmorSetWithClassItem(
     usedArtifice,
     usedMods,
     finalStats,
-    statsWithoutMods
+    statsWithoutMods,
+    tuning
   );
 }
 
@@ -971,7 +972,7 @@ function get_mods_precalc_with_tuning(
         if (j == archetypeStats[0]) continue; // Skip the archetype stat, we want to boost it
         const t5Boost = [0, 0, 0, 0, 0, 0];
         t5Boost[archetypeStats[0]] += 5;
-        t5Boost[archetypeStats[j]] -= 5;
+        t5Boost[j] -= 5;
         newBoosts.push({ stats: t5Boost, improvements: [archetypeStats] });
       }
       selectedT5Improvements.push(newBoosts);

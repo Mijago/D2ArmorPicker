@@ -32,6 +32,7 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "src/app/data/constants";
+import { Tuning } from "src/app/data/types/IPermutatorArmorSet";
 
 export interface ResultDefinition {
   exotic:
@@ -53,6 +54,7 @@ export interface ResultDefinition {
   loaded: boolean;
   usesCollectionRoll?: boolean;
   usesVendorRoll?: boolean;
+  tuning?: Tuning;
 }
 
 export enum ResultItemMoveState {
