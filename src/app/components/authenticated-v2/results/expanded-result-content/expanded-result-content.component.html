@@ -272,6 +272,7 @@
         <span *ngIf="count > 0" class="positive">{{ count }}×10</span>
       </td>
     </tr>
+    <!-- Artifice Mods -->
     <ng-container *ngVar="element?.artifice as mods">
       <tr>
         <td>Artifice Mods</td>
@@ -292,6 +293,21 @@
         </td>
         <td *ngVar="mods | count: StatModifier.ARTIFICE_WEAPON as count">
           <span *ngIf="count > 0" class="positive">{{ count }}×3</span>
+        </td>
+      </tr>
+    </ng-container>
+
+    <!-- Tuning Mods -->
+    <ng-container *ngIf="element && element?.tuning && (element?.tuning)!.improvements.length > 0">
+      <tr>
+        <td>Tuning</td>
+        <td *ngFor="let stat of ArmorStatOrder; let i = index">
+          <span *ngIf="element!.tuning!.stats[stat] > 0" class="positive">{{
+            element!.tuning!.stats[stat]
+          }}</span>
+          <span *ngIf="element!.tuning!.stats[stat] < 0" class="negative">{{
+            element!.tuning!.stats[stat]
+          }}</span>
         </td>
       </tr>
     </ng-container>

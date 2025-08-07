@@ -558,6 +558,7 @@ export class InventoryService {
                   (p, d: StatModifier) => p + STAT_MOD_VALUES[d][2],
                   0
                 ),
+                tuning: armorSet.tuning,
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
                 statsNoMods: armorSet.statsWithoutMods,

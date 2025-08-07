@@ -586,8 +586,8 @@ export function handlePermutation(
 
   for (let n: ArmorStat = 0; n < 6; n++) {
     // Abort here if we are already above the limit, in case of fixed stat tiers
-    if (config.minimumStatTiers[n].fixed) {
-      if (stats[n] > config.minimumStatTiers[n].value * 10) return null;
+    if (config.minimumStatTiers[n].fixed && stats[n] > config.minimumStatTiers[n].value * 10) {
+      if (possibleT5Improvements.length == 0) return null;
     }
   }
 
@@ -692,7 +692,8 @@ export function handlePermutation(
     for (let n: ArmorStat = 0; n < 6; n++) {
       // Abort here if we are already above the limit, in case of fixed stat tiers
       if (config.minimumStatTiers[n].fixed) {
-        if (adjustedStats[n] > config.minimumStatTiers[n].value * 10) return null;
+        if (adjustedStats[n] > config.minimumStatTiers[n].value * 10)
+          if (possibleT5Improvements.length == 0) return null;
       }
     }
 
@@ -778,7 +779,7 @@ export function handlePermutation(
       performTierAvailabilityTesting(
         runtime,
         config,
-        adjustedStats,
+        tierTestingStats,
         newDistances,
         tmpArtificeCount,
         tierTestingTunings
@@ -932,7 +933,8 @@ function tryCreateArmorSetWithClassItem(
     usedArtifice,
     usedMods,
     finalStats,
-    statsWithoutMods
+    statsWithoutMods,
+    tuning
   );
 }
 
@@ -1036,11 +1038,19 @@ function get_mods_precalc_with_tuning(
     return sumB - sumA;
   });
 
-  for (const tuning of allPossibleT5Improvements) {
+  tuningPicking: for (const tuning of allPossibleT5Improvements) {
     const newDistances = [...distances];
     for (let i = 0; i < 6; i++) {
       if (tuning.stats[i] > 0) {
         newDistances[i] = Math.max(0, newDistances[i] - tuning.stats[i]);
+        if (config.minimumStatTiers[i as ArmorStat].fixed) {
+          if (
+            currentStats[i] + tuning.stats[i] >
+            config.minimumStatTiers[i as ArmorStat].value * 10
+          ) {
+            continue tuningPicking;
+          }
+        }
       } else if (tuning.stats[i] < 0) {
         const newDistance =
           config.minimumStatTiers[i as ArmorStat].value * 10 - (currentStats[i] + tuning.stats[i]);
