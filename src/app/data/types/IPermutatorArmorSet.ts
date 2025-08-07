@@ -1,6 +1,10 @@
 import { StatModifier } from "../enum/armor-stat";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
+export interface Tuning {
+  stats: number[];
+  improvements: number[][];
+}
 export interface IPermutatorArmorSet {
   armor: number[];
   useExoticClassItem: boolean;
@@ -8,6 +12,7 @@ export interface IPermutatorArmorSet {
   usedMods: StatModifier[];
   statsWithMods: number[];
   statsWithoutMods: number[];
+  tuning?: Tuning;
 }
 
 export function createArmorSet(
