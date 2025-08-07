@@ -968,7 +968,7 @@ function get_mods_precalc_with_tuning(
       newBoosts.push({ stats: t5Boost, improvements: [archetypeStats] });
       // TypeA) Add +5 to the specified stat - but applies -5 to one other stat.
       for (let j = 0; j < 6; j++) {
-        if (archetypeStats.includes(j)) continue; // Skip the archetype stat, we want to boost it
+        if (j == archetypeStats[0]) continue; // Skip the archetype stat, we want to boost it
         const t5Boost = [0, 0, 0, 0, 0, 0];
         t5Boost[archetypeStats[0]] += 5;
         t5Boost[archetypeStats[j]] -= 5;
