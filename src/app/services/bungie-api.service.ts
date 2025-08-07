@@ -320,6 +320,7 @@ export class BungieApiService {
         DestinyComponentType.ItemPerks,
         DestinyComponentType.ItemSockets,
         DestinyComponentType.ItemPlugStates,
+        DestinyComponentType.ItemReusablePlugs,
         DestinyComponentType.Collectibles,
       ],
       membershipType: destinyMembership.membershipType,
@@ -410,6 +411,28 @@ export class BungieApiService {
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
+
+          // Grab the tuning stat from the reusable plugs
+          try {
+            const plugs =
+              profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
+            if (plugs) {
+              // TODO: remove the hardcoding of 11 and 2
+              const modCheck = plugs[11][2].plugItemHash;
+              plugs[11][2].plugItemHash;
+              // Find the index of the first investment stat with value > 0
+              const tuningStat = modsMap[modCheck].investmentStats.find(
+                (p) => p.value > 0
+              )?.statTypeHash;
+              armorItem.tuningStatHash = tuningStat;
+            }
+          } catch (e) {
+            this.logger.error(
+              "BungieApiService",
+              "updateArmorItems",
+              `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
+            );
+          }
         } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
           armorItem.armorSystem = ArmorSystem.Armor3;
         } else {

@@ -462,6 +462,7 @@ export class InventoryService {
           exoticPerkHash: armor.exoticPerkHash,
 
           gearSetHash: armor.gearSetHash ?? null,
+          tuningStatHash: armor.tuningStatHash,
 
           icon: armor.icon,
           watermarkIcon: armor.watermarkIcon,

@@ -63,6 +63,7 @@ export interface IInventoryArmor
     ITimestampedEntry {
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
+  tuningStatHash?: number; // for armor 3.0, this is the tuning stat hash
   // exoticPerkHash is now inherited as number[] from IManifestArmor
 }
 
