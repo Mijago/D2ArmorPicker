@@ -408,6 +408,7 @@ export class BungieApiService {
         // 3.0
         // TODO replace the (as any) once DIM Api is updated
 
+        armorItem.tuningStatHash = 1;
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
@@ -417,14 +418,17 @@ export class BungieApiService {
             const plugs =
               profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
             if (plugs) {
-              // TODO: remove the hardcoding of 11 and 2
-              const modCheck = plugs[11][2].plugItemHash;
-              plugs[11][2].plugItemHash;
-              // Find the index of the first investment stat with value > 0
-              const tuningStat = modsMap[modCheck].investmentStats.find(
-                (p) => p.value > 0
-              )?.statTypeHash;
-              armorItem.tuningStatHash = tuningStat;
+              const idx = Object.values(plugs).findIndex((value) => {
+                return value.length > 1 && value[0].plugItemHash == 3122197216; // 3122197216 is the balanced tuning stat
+              });
+              if (idx >= 0) {
+                const modCheck = plugs[idx][2].plugItemHash;
+                // Find the index of the first investment stat with value > 0
+                const tuningStat = modsMap[modCheck].investmentStats.find(
+                  (p) => p.value > 0
+                )?.statTypeHash;
+                armorItem.tuningStatHash = tuningStat;
+              }
             }
           } catch (e) {
             this.logger.error(
