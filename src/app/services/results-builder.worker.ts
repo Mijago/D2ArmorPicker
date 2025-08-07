@@ -41,6 +41,7 @@ import {
   IPermutatorArmorSet,
   createArmorSet,
   isIPermutatorArmorSet,
+  PossibleTuningInformation,
 } from "../data/types/IPermutatorArmorSet";
 import { ArmorSystem } from "../data/types/IManifestArmor";
 // endregion Import
@@ -568,9 +569,12 @@ export function handlePermutation(
 
   for (let item of items) applyMasterworkStats(item, config, stats);
 
-  const possibleT5Improvements: ArmorStat[][] = items
+  const possibleT5Improvements: PossibleTuningInformation[] = items
     .filter((i) => i.armorSystem == ArmorSystem.Armor3 && i.tier == 5)
-    .map((i) => i.archetypeStats);
+    .map((i) => ({
+      tuningStatHash: i.tuningStatHash ?? 0,
+      archetypeStats: i.archetypeStats || [],
+    }));
 
   const statsWithoutMods = [stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]];
   stats[0] += constantBonus[0];
@@ -760,8 +764,11 @@ export function handlePermutation(
         }
 
         for (let tuning of result.tunings.improvements) {
-          const index = tierTestingTunings.findIndex((improvement) =>
-            improvement.every((val, idx) => val === tuning[idx])
+          const index = tierTestingTunings.findIndex(
+            (possibleTuning) =>
+              possibleTuning.archetypeStats.every(
+                (val, idx) => val === tuning.archetypeStats[idx]
+              ) && possibleTuning.tuningStatHash === tuning.tuningStatHash
           );
           if (index !== -1) {
             tierTestingTunings.splice(index, 1);
@@ -809,7 +816,7 @@ function performTierAvailabilityTesting(
   stats: number[],
   distances: number[],
   availableArtificeCount: number,
-  possibleT5Improvements: ArmorStat[][]
+  possibleT5Improvements: PossibleTuningInformation[]
 ): void {
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
@@ -936,7 +943,7 @@ function get_mods_precalc_with_tuning(
   distances: number[],
   optionalDistances: number[],
   availableArtificeCount: number,
-  possibleT5Improvements: ArmorStat[][],
+  possibleT5Improvements: PossibleTuningInformation[],
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModCalculationResult | null {
   // check distances <= 65
@@ -952,27 +959,27 @@ function get_mods_precalc_with_tuning(
   let selectedT5Improvements: Tuning[][] = [];
   if (possibleT5Improvements.length > 0) {
     possibleT5Improvements = possibleT5Improvements.filter(
-      (archetypeStats) => distances[archetypeStats[0]] > 0
+      (possibleTuning) => distances[possibleTuning.tuningStatHash] > 0
     );
     for (let i = 0; i < possibleT5Improvements.length; i++) {
       const newBoosts: Tuning[] = [];
-      const archetypeStats = possibleT5Improvements[i];
+      const possibleTuning = possibleT5Improvements[i];
       // TypeB) Add +1 to the three stats that are not in the archetypeStats (that also receive the +5 masterwork bonus)
       // We can only use this if the distance is > 0, otherwise we would not need any mods
       const t5Boost = [0, 0, 0, 0, 0, 0];
       for (let j = 0; j < 6; j++) {
-        if (!archetypeStats.includes(j)) {
+        if (!possibleTuning.archetypeStats.includes(j)) {
           t5Boost[j] += 1;
         }
       }
-      newBoosts.push({ stats: t5Boost, improvements: [archetypeStats] });
+      newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
       // TypeA) Add +5 to the specified stat - but applies -5 to one other stat.
       for (let j = 0; j < 6; j++) {
-        if (archetypeStats.includes(j)) continue; // Skip the archetype stat, we want to boost it
+        if (j == possibleTuning.tuningStatHash) continue; // Skip the archetype stat, we want to boost it
         const t5Boost = [0, 0, 0, 0, 0, 0];
-        t5Boost[archetypeStats[0]] += 5;
-        t5Boost[archetypeStats[j]] -= 5;
-        newBoosts.push({ stats: t5Boost, improvements: [archetypeStats] });
+        t5Boost[possibleTuning.tuningStatHash] += 5;
+        t5Boost[j] -= 5;
+        newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
       }
       selectedT5Improvements.push(newBoosts);
     }
