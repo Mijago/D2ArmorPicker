@@ -566,6 +566,7 @@ export class InventoryService {
                 waste: getWaste(armorSet.statsWithMods),
                 items: items.map(
                   (instance): ResultItem => ({
+                    tuningStat: instance.tuningStat,
                     energyLevel: instance.energyLevel,
                     hash: instance.hash,
                     itemInstanceId: instance.itemInstanceId,

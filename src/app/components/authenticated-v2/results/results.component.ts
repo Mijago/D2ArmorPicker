@@ -72,6 +72,7 @@ export interface ResultItem {
   tier: number; // 0 = exotic, 1-5 = legendary
   name: string;
   exotic: boolean;
+  tuningStat?: ArmorStat; // 0 = none, 1-6 = element affinity
   masterworked: boolean;
   armorSystem: number; // 2 = Armor 2.0, 3 = Armor 3.0
   masterworkLevel: number; // 0-5, 5 = full masterwork

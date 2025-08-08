@@ -102,6 +102,14 @@
             <span *ngIf="i.masterworkLevel !== undefined">{{ i.masterworkLevel }}</span>
           </ng-template>
         </td>
+
+        <!-- Tuning Affinity-->
+        <td>
+          <span class="tuning-affinity" *ngIf="i.tuningStat !== undefined">
+            <app-stat-icon [stat]="i.tuningStat"></app-stat-icon>
+          </span>
+        </td>
+
         <!-- Disable -->
         <td class="icon-column">
           <button
