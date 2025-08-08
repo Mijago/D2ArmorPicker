@@ -827,14 +827,18 @@ function performTierAvailabilityTesting(
   availableArtificeCount: number,
   possibleT5Improvements: PossibleTuningInformation[]
 ): void {
+  const stepSize = config.onlyShowResultsWithNoWastedStats ? 10 : 1;
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
-      runtime.maximumPossibleTiers[stat] = stats[stat];
+      if (!config.onlyShowResultsWithNoWastedStats || stats[stat] % 10 == 0)
+        runtime.maximumPossibleTiers[stat] = stats[stat];
     }
 
     if (stats[stat] >= 200) continue; // Already at max value, no need to test
 
-    const minTier = config.minimumStatTiers[stat as ArmorStat].value * 10;
+    const minTier = config.onlyShowResultsWithNoWastedStats
+      ? Math.floor(config.minimumStatTiers[stat as ArmorStat].value) * 10
+      : config.minimumStatTiers[stat as ArmorStat].value * 10;
 
     // Binary search to find maximum possible value
     let low = Math.max(runtime.maximumPossibleTiers[stat], minTier);
@@ -842,11 +846,14 @@ function performTierAvailabilityTesting(
 
     while (low < high) {
       // Try middle value, rounded to nearest 10 for tier optimization
-      const mid = Math.min(200, Math.ceil((low + high) / 2));
+      let mid = Math.min(200, Math.ceil((low + high) / 2));
+      if (config.onlyShowResultsWithNoWastedStats) {
+        mid = Math.ceil(mid / stepSize) * stepSize; // Round to nearest step size
+      }
 
       if (stats[stat] >= mid) {
         // We can already reach this value naturally
-        low = mid + 1;
+        low = mid + stepSize;
         continue;
       }
 
@@ -869,11 +876,11 @@ function performTierAvailabilityTesting(
 
       if (mods != null) {
         // This value is achievable, try higher
-        low = mid + 1;
+        low = mid + stepSize;
         runtime.maximumPossibleTiers[stat] = mid;
       } else {
         // This value is not achievable, try lower
-        high = mid - 1;
+        high = mid - stepSize;
       }
     }
 
