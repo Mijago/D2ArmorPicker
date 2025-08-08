@@ -975,9 +975,8 @@ function get_mods_precalc_with_tuning(
 
   let selectedT5Improvements: Tuning[][] = [];
   if (possibleT5Improvements.length > 0) {
-    const tmpPossibleT5Improvements = possibleT5Improvements.filter(
-      (possibleTuning) => distances[possibleTuning.tuningStat] > 0
-    );
+    const tmpPossibleT5Improvements = possibleT5Improvements;
+    //possibleT5Improvements.filter((possibleTuning) => distances[possibleTuning.tuningStat] > 0);
     for (let i = 0; i < tmpPossibleT5Improvements.length; i++) {
       const newBoosts: Tuning[] = [];
       const possibleTuning = tmpPossibleT5Improvements[i];
@@ -1053,6 +1052,27 @@ function get_mods_precalc_with_tuning(
     return sumB - sumA;
   });
 
+  // drop duplicates
+  allPossibleT5Improvements = allPossibleT5Improvements.filter(
+    (value, index, self) =>
+      index ===
+      self.findIndex(
+        (tuning) =>
+          tuning.stats[0] === value.stats[0] &&
+          tuning.stats[1] === value.stats[1] &&
+          tuning.stats[2] === value.stats[2] &&
+          tuning.stats[3] === value.stats[3] &&
+          tuning.stats[4] === value.stats[4] &&
+          tuning.stats[5] === value.stats[5]
+      )
+  );
+
+  // apply smart filtering
+  allPossibleT5Improvements = allPossibleT5Improvements.filter(
+    (tuning) =>
+      tuning.stats.some((stat) => stat > 0) || // At least one stat is boosted
+      tuning.stats.every((stat) => stat == 0) // or all stats are zero (this is the case for the empty tuning)
+  );
   const usableTunings = [];
   tuningPicking: for (const tuning of allPossibleT5Improvements) {
     const newDistances = [...distances];
@@ -1068,11 +1088,36 @@ function get_mods_precalc_with_tuning(
           }
         }
       } else if (tuning.stats[i] < 0) {
-        if (
-          currentStats[i] + newDistances[i] + tuning.stats[i] <
-          config.minimumStatTiers[i as ArmorStat].value * 10
+        const absValue = Math.abs(tuning.stats[i]);
+        // I have 59
+        // I want 60
+        // Distance is 1 -> just add  the 5 to the distance
+        if (newDistances[i] > 0) {
+          newDistances[i] = Math.max(0, newDistances[i] + absValue);
+        } else if (
+          newDistances[i] == 0 &&
+          config.minimumStatTiers[i as ArmorStat].value * 10 == currentStats[i]
         ) {
-          newDistances[i] = Math.max(0, Math.abs(tuning.stats[i]));
+          // I have 60
+          // I want 60
+          // Distance is 0 -> just add the 5 to the distance
+          newDistances[i] = Math.max(0, absValue);
+        } else if (
+          newDistances[i] == 0 &&
+          config.minimumStatTiers[i as ArmorStat].value * 10 < currentStats[i]
+        ) {
+          const subDist = currentStats[i] - config.minimumStatTiers[i as ArmorStat].value * 10;
+          if (subDist >= absValue) {
+            // I have 65
+            // I want 60
+            // Distance is 0 and subdist >= 5 -> no not add the 5 to the distance
+            newDistances[i] = 0;
+          } else {
+            // I have 63
+            // I want 60
+            // Distance is 0 and subdist < 5  -> add the 2 to the distance
+            newDistances[i] = Math.max(0, absValue - subDist);
+          }
         }
       }
     }
