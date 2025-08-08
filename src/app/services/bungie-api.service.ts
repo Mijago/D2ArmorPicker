@@ -408,7 +408,6 @@ export class BungieApiService {
         // 3.0
         // TODO replace the (as any) once DIM Api is updated
 
-        armorItem.tuningStatHash = 1;
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
@@ -418,16 +417,19 @@ export class BungieApiService {
             const plugs =
               profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
             if (plugs) {
-              const idx = Object.values(plugs).findIndex((value) => {
-                return value.length > 1 && value[0].plugItemHash == 3122197216; // 3122197216 is the balanced tuning stat
+              const availablePlugs = Object.values(plugs).find((value) => {
+                return value.length > 1 && value.some((p) => p.plugItemHash == 3122197216); // 3122197216 is the balanced tuning stat
               });
-              if (idx >= 0) {
-                const modCheck = plugs[idx][2].plugItemHash;
-                // Find the index of the first investment stat with value > 0
-                const tuningStat = modsMap[modCheck].investmentStats.find(
-                  (p) => p.value > 0
-                )?.statTypeHash;
-                armorItem.tuningStatHash = tuningStat;
+
+              if (availablePlugs && availablePlugs.length > 1) {
+                const pickedPlug = availablePlugs.find((p) => p.plugItemHash != 3122197216);
+                if (pickedPlug) {
+                  const statCheckHash = pickedPlug.plugItemHash;
+                  const mod = modsMap[statCheckHash];
+                  armorItem.tuningStatHash = mod?.investmentStats.find(
+                    (p) => p.value > 0
+                  )?.statTypeHash;
+                }
               }
             }
           } catch (e) {
