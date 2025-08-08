@@ -681,6 +681,18 @@ export function handlePermutation(
     const tmpArtificeCount =
       availableArtificeCount + (classItem.perk == ArmorPerkOrSlot.SlotArtifice ? 1 : 0);
 
+    const tmpTunings = [...possibleT5Improvements];
+    if (
+      classItem.armorSystem == ArmorSystem.Armor3 &&
+      classItem.tuningStat != undefined &&
+      classItem.tier == 5
+    ) {
+      tmpTunings.push({
+        tuningStat: classItem.tuningStat,
+        archetypeStats: classItem.archetypeStats || [],
+      });
+    }
+
     adjustedStats[0] += classItem.mobility;
     adjustedStats[1] += classItem.resilience;
     adjustedStats[2] += classItem.recovery;
@@ -693,7 +705,7 @@ export function handlePermutation(
       // Abort here if we are already above the limit, in case of fixed stat tiers
       if (config.minimumStatTiers[n].fixed) {
         if (adjustedStats[n] > config.minimumStatTiers[n].value * 10)
-          if (possibleT5Improvements.length == 0) return null;
+          if (tmpTunings.length == 0) return null;
       }
     }
 
@@ -750,7 +762,7 @@ export function handlePermutation(
         newDistances,
         newOptionalDistances,
         tmpArtificeCount,
-        possibleT5Improvements,
+        tmpTunings,
         config.modOptimizationStrategy,
         true
       );
@@ -759,7 +771,7 @@ export function handlePermutation(
       for (let rsst of result) {
         // Perform Tier Availability Testing with this class item
         const tierTestingStats = [...adjustedStats];
-        const tierTestingTunings = [...possibleT5Improvements];
+        const tierTestingTunings = [...tmpTunings];
         //*
         // Add tuning
         if (rsst.tunings) {
