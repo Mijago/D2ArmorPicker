@@ -2,7 +2,7 @@ import { ArmorStat, StatModifier } from "../enum/armor-stat";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
 export type PossibleTuningInformation = {
-  tuningStatHash: number;
+  tuningStat: ArmorStat;
   archetypeStats: ArmorStat[];
 };
 export interface Tuning {

@@ -570,11 +570,9 @@ export function handlePermutation(
   for (let item of items) applyMasterworkStats(item, config, stats);
 
   const possibleT5Improvements: PossibleTuningInformation[] = items
-    .filter(
-      (i) => i.armorSystem == ArmorSystem.Armor3 && i.tuningStatHash != undefined && i.tier == 5
-    )
+    .filter((i) => i.armorSystem == ArmorSystem.Armor3 && i.tuningStat != undefined && i.tier == 5)
     .map((i) => ({
-      tuningStatHash: i.tuningStatHash!,
+      tuningStat: i.tuningStat!,
       archetypeStats: i.archetypeStats || [],
     }));
 
@@ -774,7 +772,7 @@ export function handlePermutation(
               (possibleTuning) =>
                 possibleTuning.archetypeStats.every(
                   (val, idx) => val === tuning.archetypeStats[idx]
-                ) && possibleTuning.tuningStatHash === tuning.tuningStatHash
+                ) && possibleTuning.tuningStat === tuning.tuningStat
             );
             if (index !== -1) {
               tierTestingTunings.splice(index, 1);
@@ -978,7 +976,7 @@ function get_mods_precalc_with_tuning(
   let selectedT5Improvements: Tuning[][] = [];
   if (possibleT5Improvements.length > 0) {
     const tmpPossibleT5Improvements = possibleT5Improvements.filter(
-      (possibleTuning) => distances[possibleTuning.tuningStatHash] > 0
+      (possibleTuning) => distances[possibleTuning.tuningStat] > 0
     );
     for (let i = 0; i < tmpPossibleT5Improvements.length; i++) {
       const newBoosts: Tuning[] = [];
@@ -994,9 +992,9 @@ function get_mods_precalc_with_tuning(
       newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
       // TypeA) Add +5 to the specified stat - but applies -5 to one other stat.
       for (let j = 0; j < 6; j++) {
-        if (j == possibleTuning.tuningStatHash) continue; // Skip the archetype stat, we want to boost it
+        if (j == possibleTuning.tuningStat) continue; // Skip the archetype stat, we want to boost it
         const t5Boost = [0, 0, 0, 0, 0, 0];
-        t5Boost[possibleTuning.tuningStatHash] += 5;
+        t5Boost[possibleTuning.tuningStat] += 5;
         t5Boost[j] -= 5;
         newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
       }

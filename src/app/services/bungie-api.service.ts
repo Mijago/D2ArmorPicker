@@ -51,6 +51,7 @@ import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
   ArmorStat,
+  ArmorStatFromHash,
   ArmorStatHashes,
   MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
@@ -426,9 +427,10 @@ export class BungieApiService {
                 if (pickedPlug) {
                   const statCheckHash = pickedPlug.plugItemHash;
                   const mod = modsMap[statCheckHash];
-                  armorItem.tuningStatHash = mod?.investmentStats.find(
+                  const tuningStatHash = mod?.investmentStats.find(
                     (p) => p.value > 0
                   )?.statTypeHash;
+                  if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
                 }
               }
             }
