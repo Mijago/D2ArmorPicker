@@ -764,44 +764,18 @@ export function handlePermutation(
         tmpArtificeCount,
         tmpTunings,
         config.modOptimizationStrategy,
-        true
+        false
       );
 
     if (result !== null) {
-      for (let rsst of result) {
-        // Perform Tier Availability Testing with this class item
-        const tierTestingStats = [...adjustedStats];
-        const tierTestingTunings = [...tmpTunings];
-        //*
-        // Add tuning
-        if (rsst.tunings) {
-          for (let n = 0; n < 6; n++) {
-            tierTestingStats[n] += rsst.tunings.stats[n];
-          }
-
-          for (let tuning of rsst.tunings.improvements) {
-            const index = tierTestingTunings.findIndex(
-              (possibleTuning) =>
-                possibleTuning.archetypeStats.every(
-                  (val, idx) => val === tuning.archetypeStats[idx]
-                ) && possibleTuning.tuningStat === tuning.tuningStat
-            );
-            if (index !== -1) {
-              tierTestingTunings.splice(index, 1);
-            }
-          }
-        }
-        //*/
-        performTierAvailabilityTesting(
-          runtime,
-          config,
-          tierTestingStats,
-          newDistances,
-          tmpArtificeCount,
-          tierTestingTunings
-        );
-        //*/
-      }
+      performTierAvailabilityTesting(
+        runtime,
+        config,
+        adjustedStats,
+        newDistances,
+        tmpArtificeCount,
+        tmpTunings
+      );
 
       // This may lead to issues later.
       // The performTierAvailabilityTesting must be executed for each class item.
