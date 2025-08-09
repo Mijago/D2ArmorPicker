@@ -462,6 +462,7 @@ export class InventoryService {
           exoticPerkHash: armor.exoticPerkHash,
 
           gearSetHash: armor.gearSetHash ?? null,
+          tuningStat: armor.tuningStat,
 
           icon: armor.icon,
           watermarkIcon: armor.watermarkIcon,
@@ -557,6 +558,7 @@ export class InventoryService {
                   (p, d: StatModifier) => p + STAT_MOD_VALUES[d][2],
                   0
                 ),
+                tuning: armorSet.tuning,
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
                 statsNoMods: armorSet.statsWithoutMods,
@@ -564,6 +566,7 @@ export class InventoryService {
                 waste: getWaste(armorSet.statsWithMods),
                 items: items.map(
                   (instance): ResultItem => ({
+                    tuningStat: instance.tuningStat,
                     energyLevel: instance.energyLevel,
                     hash: instance.hash,
                     itemInstanceId: instance.itemInstanceId,

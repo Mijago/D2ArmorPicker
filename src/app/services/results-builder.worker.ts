@@ -37,12 +37,19 @@ import { precalculatedModCombinations } from "../data/generated/precalculatedMod
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import {
+  Tuning,
   IPermutatorArmorSet,
   createArmorSet,
   isIPermutatorArmorSet,
+  PossibleTuningInformation,
 } from "../data/types/IPermutatorArmorSet";
 import { ArmorSystem } from "../data/types/IManifestArmor";
-// endregion Imports
+// endregion Import
+
+interface StatModCalculationResult {
+  statMods: StatModifier[];
+  tunings?: Tuning;
+}
 
 // region Validation and Preparation Functions
 function checkSlots(
@@ -562,6 +569,13 @@ export function handlePermutation(
 
   for (let item of items) applyMasterworkStats(item, config, stats);
 
+  const possibleT5Improvements: PossibleTuningInformation[] = items
+    .filter((i) => i.armorSystem == ArmorSystem.Armor3 && i.tuningStat != undefined && i.tier == 5)
+    .map((i) => ({
+      tuningStat: i.tuningStat!,
+      archetypeStats: i.archetypeStats || [],
+    }));
+
   const statsWithoutMods = [stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]];
   stats[0] += constantBonus[0];
   stats[1] += constantBonus[1];
@@ -572,8 +586,8 @@ export function handlePermutation(
 
   for (let n: ArmorStat = 0; n < 6; n++) {
     // Abort here if we are already above the limit, in case of fixed stat tiers
-    if (config.minimumStatTiers[n].fixed) {
-      if (stats[n] > config.minimumStatTiers[n].value * 10) return null;
+    if (config.minimumStatTiers[n].fixed && stats[n] > config.minimumStatTiers[n].value * 10) {
+      if (possibleT5Improvements.length == 0) return null;
     }
   }
 
@@ -667,6 +681,18 @@ export function handlePermutation(
     const tmpArtificeCount =
       availableArtificeCount + (classItem.perk == ArmorPerkOrSlot.SlotArtifice ? 1 : 0);
 
+    const tmpTunings = [...possibleT5Improvements];
+    if (
+      classItem.armorSystem == ArmorSystem.Armor3 &&
+      classItem.tuningStat != undefined &&
+      classItem.tier == 5
+    ) {
+      tmpTunings.push({
+        tuningStat: classItem.tuningStat,
+        archetypeStats: classItem.archetypeStats || [],
+      });
+    }
+
     adjustedStats[0] += classItem.mobility;
     adjustedStats[1] += classItem.resilience;
     adjustedStats[2] += classItem.recovery;
@@ -678,7 +704,8 @@ export function handlePermutation(
     for (let n: ArmorStat = 0; n < 6; n++) {
       // Abort here if we are already above the limit, in case of fixed stat tiers
       if (config.minimumStatTiers[n].fixed) {
-        if (adjustedStats[n] > config.minimumStatTiers[n].value * 10) return null;
+        if (adjustedStats[n] > config.minimumStatTiers[n].value * 10)
+          if (tmpTunings.length == 0) return null;
       }
     }
 
@@ -723,36 +750,31 @@ export function handlePermutation(
         }
       }
 
-    const newDistanceSum =
-      newDistances[0] +
-      newDistances[1] +
-      newDistances[2] +
-      newDistances[3] +
-      newDistances[4] +
-      newDistances[5];
+    const newDistanceSum = newDistances.reduce((a, b) => a + b, 0);
     const newTotalOptionalDistances = newOptionalDistances.reduce((a, b) => a + b, 0);
 
-    if (newDistanceSum > 10 * 5 + 3 * tmpArtificeCount) continue;
-
-    let result: StatModifier[] | null;
-    if (newDistanceSum == 0 && newTotalOptionalDistances == 0) result = [];
+    let result: StatModCalculationResult[] | null;
+    if (newDistanceSum == 0 && newTotalOptionalDistances == 0) result = [{ statMods: [] }];
     else
-      result = get_mods_precalc(
+      result = get_mods_precalc_with_tuning(
         config,
+        adjustedStats,
         newDistances,
         newOptionalDistances,
         tmpArtificeCount,
-        config.modOptimizationStrategy
+        tmpTunings,
+        config.modOptimizationStrategy,
+        false
       );
 
     if (result !== null) {
-      // Perform Tier Availability Testing with this class item
       performTierAvailabilityTesting(
         runtime,
         config,
         adjustedStats,
         newDistances,
-        tmpArtificeCount
+        tmpArtificeCount,
+        tmpTunings
       );
 
       // This may lead to issues later.
@@ -767,12 +789,11 @@ export function handlePermutation(
           chest,
           leg,
           classItem,
-          result,
+          result[0].statMods,
           adjustedStats,
           adjustedStatsWithoutMods,
-          newDistances,
-          tmpArtificeCount,
-          doNotOutput
+          doNotOutput,
+          result[0].tunings
         );
       }
     }
@@ -787,16 +808,21 @@ function performTierAvailabilityTesting(
   config: BuildConfiguration,
   stats: number[],
   distances: number[],
-  availableArtificeCount: number
+  availableArtificeCount: number,
+  possibleT5Improvements: PossibleTuningInformation[]
 ): void {
+  const stepSize = config.onlyShowResultsWithNoWastedStats ? 10 : 1;
   for (let stat = 0; stat < 6; stat++) {
     if (runtime.maximumPossibleTiers[stat] < stats[stat]) {
-      runtime.maximumPossibleTiers[stat] = stats[stat];
+      if (!config.onlyShowResultsWithNoWastedStats || stats[stat] % 10 == 0)
+        runtime.maximumPossibleTiers[stat] = stats[stat];
     }
 
     if (stats[stat] >= 200) continue; // Already at max value, no need to test
 
-    const minTier = config.minimumStatTiers[stat as ArmorStat].value * 10;
+    const minTier = config.onlyShowResultsWithNoWastedStats
+      ? Math.floor(config.minimumStatTiers[stat as ArmorStat].value) * 10
+      : config.minimumStatTiers[stat as ArmorStat].value * 10;
 
     // Binary search to find maximum possible value
     let low = Math.max(runtime.maximumPossibleTiers[stat], minTier);
@@ -804,11 +830,14 @@ function performTierAvailabilityTesting(
 
     while (low < high) {
       // Try middle value, rounded to nearest 10 for tier optimization
-      const mid = Math.min(200, Math.ceil((low + high) / 2));
+      let mid = Math.min(200, Math.ceil((low + high) / 2));
+      if (config.onlyShowResultsWithNoWastedStats) {
+        mid = Math.ceil(mid / stepSize) * stepSize; // Round to nearest step size
+      }
 
       if (stats[stat] >= mid) {
         // We can already reach this value naturally
-        low = mid + 1;
+        low = mid + stepSize;
         continue;
       }
 
@@ -818,21 +847,24 @@ function performTierAvailabilityTesting(
       testDistances[stat] = Math.max(v < 10 ? v : 0, mid - stats[stat]);
 
       // Check if this value is achievable with mods
-      const mods = get_mods_precalc(
+      const mods = get_mods_precalc_with_tuning(
         config,
+        stats,
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        ModOptimizationStrategy.None
+        possibleT5Improvements,
+        ModOptimizationStrategy.None,
+        false
       );
 
       if (mods != null) {
         // This value is achievable, try higher
-        low = mid + 1;
+        low = mid + stepSize;
         runtime.maximumPossibleTiers[stat] = mid;
       } else {
         // This value is not achievable, try lower
-        high = mid - 1;
+        high = mid - stepSize;
       }
     }
 
@@ -841,12 +873,15 @@ function performTierAvailabilityTesting(
       const v = 10 - (stats[stat] % 10);
       const testDistances = [...distances];
       testDistances[stat] = Math.max(v < 10 ? v : 0, low - stats[stat]);
-      const mods = get_mods_precalc(
+      const mods = get_mods_precalc_with_tuning(
         config,
+        stats,
         testDistances,
         [0, 0, 0, 0, 0, 0],
         availableArtificeCount,
-        ModOptimizationStrategy.None
+        possibleT5Improvements,
+        ModOptimizationStrategy.None,
+        false
       );
       if (mods != null) {
         runtime.maximumPossibleTiers[stat] = low;
@@ -866,9 +901,8 @@ function tryCreateArmorSetWithClassItem(
   result: StatModifier[],
   adjustedStats: number[],
   statsWithoutMods: number[],
-  newDistances: number[],
-  availableArtificeCount: number,
-  doNotOutput: boolean
+  doNotOutput: boolean,
+  tuning: Tuning | undefined
 ): IPermutatorArmorSet | never[] {
   if (doNotOutput) return [];
 
@@ -882,9 +916,15 @@ function tryCreateArmorSetWithClassItem(
     finalStats[stat] += STAT_MOD_VALUES[statModifier][1];
   }
 
+  if (tuning)
+    for (let n = 0; n < 6; n++) {
+      finalStats[n] += tuning.stats[n];
+    }
+
   const waste1 = getWaste(finalStats);
   if (config.onlyShowResultsWithNoWastedStats && waste1 > 0) return [];
 
+  // TODO: Add tuning
   return createArmorSet(
     helmet,
     gauntlet,
@@ -894,11 +934,204 @@ function tryCreateArmorSetWithClassItem(
     usedArtifice,
     usedMods,
     finalStats,
-    statsWithoutMods
+    statsWithoutMods,
+    tuning
   );
 }
 
 // region Mod Calculation Functions
+function get_mods_precalc_with_tuning(
+  config: BuildConfiguration,
+  currentStats: number[],
+  distances: number[],
+  optionalDistances: number[],
+  availableArtificeCount: number,
+  possibleT5Improvements: PossibleTuningInformation[],
+  optimize: ModOptimizationStrategy = ModOptimizationStrategy.None,
+  checkAllTunings = false
+): StatModCalculationResult[] | null {
+  const totalDistance =
+    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
+  if (totalDistance > 65 + 5 * possibleT5Improvements.length) return null;
+
+  if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
+    // no mods needed, return empty array
+    return [{ statMods: [] }];
+  }
+
+  let selectedT5Improvements: Tuning[][] = [];
+  if (possibleT5Improvements.length > 0) {
+    const tmpPossibleT5Improvements = possibleT5Improvements;
+    //possibleT5Improvements.filter((possibleTuning) => distances[possibleTuning.tuningStat] > 0);
+    for (let i = 0; i < tmpPossibleT5Improvements.length; i++) {
+      const newBoosts: Tuning[] = [];
+      const possibleTuning = tmpPossibleT5Improvements[i];
+      // TypeB) Add +1 to the three stats that are not in the archetypeStats (that also receive the +5 masterwork bonus)
+      // We can only use this if the distance is > 0, otherwise we would not need any mods
+      const t5Boost = [0, 0, 0, 0, 0, 0];
+      for (let j = 0; j < 6; j++) {
+        if (!possibleTuning.archetypeStats.includes(j)) {
+          t5Boost[j] += 1;
+        }
+      }
+      newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
+      // TypeA) Add +5 to the specified stat - but applies -5 to one other stat.
+      for (let j = 0; j < 6; j++) {
+        if (j == possibleTuning.tuningStat) continue; // Skip the archetype stat, we want to boost it
+        const t5Boost = [0, 0, 0, 0, 0, 0];
+        t5Boost[possibleTuning.tuningStat] += 5;
+        t5Boost[j] -= 5;
+        newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
+      }
+      selectedT5Improvements.push(newBoosts);
+    }
+  }
+
+  function* buildIterationsRecursive(
+    allImprovements: Tuning[][],
+    currentIndex: number,
+    currentValue?: Tuning
+  ): Generator<Tuning> {
+    if (currentValue === undefined) {
+      currentValue = {
+        stats: [0, 0, 0, 0, 0, 0],
+        improvements: [],
+      };
+    }
+    // We have N possible picks with multiple possible improvements per pick (only one of these can be used)
+    // I want to iterate over every possible combination of these improvements
+    // This function will yield the total change of the six stats for each combination
+    if (currentIndex >= allImprovements.length) {
+      yield currentValue;
+      return;
+    }
+
+    for (let i = 0; i < allImprovements[currentIndex].length; i++) {
+      const newValue = [...currentValue.stats];
+      for (let j = 0; j < 6; j++) {
+        newValue[j] += allImprovements[currentIndex][i].stats[j];
+      }
+      yield* buildIterationsRecursive(allImprovements, currentIndex + 1, {
+        stats: newValue,
+        improvements: [
+          ...currentValue.improvements,
+          ...allImprovements[currentIndex][i].improvements,
+        ],
+      });
+    }
+  }
+
+  let allPossibleT5Improvements = Array.from(buildIterationsRecursive(selectedT5Improvements, 0));
+  // Sort allPossibleT5Improvements descending by total points (sum of all values)
+  // Negative points are worse, so higher sum is better
+  // Special case: [0,0,0,0,0,0] should always be first
+  allPossibleT5Improvements.sort((_a, _b) => {
+    const a = _a.stats;
+    const b = _b.stats;
+    const isAZero = a.every((v) => v === 0);
+    const isBZero = b.every((v) => v === 0);
+    if (isAZero && !isBZero) return -1;
+    if (!isAZero && isBZero) return 1;
+    // Descending by sum
+    const sumA = a.reduce((acc, v) => acc + v, 0);
+    const sumB = b.reduce((acc, v) => acc + v, 0);
+    return sumB - sumA;
+  });
+
+  // drop duplicates
+  allPossibleT5Improvements = allPossibleT5Improvements.filter(
+    (value, index, self) =>
+      index ===
+      self.findIndex(
+        (tuning) =>
+          tuning.stats[0] === value.stats[0] &&
+          tuning.stats[1] === value.stats[1] &&
+          tuning.stats[2] === value.stats[2] &&
+          tuning.stats[3] === value.stats[3] &&
+          tuning.stats[4] === value.stats[4] &&
+          tuning.stats[5] === value.stats[5]
+      )
+  );
+
+  // apply smart filtering
+  allPossibleT5Improvements = allPossibleT5Improvements.filter(
+    (tuning) =>
+      tuning.stats.some((stat) => stat > 0) || // At least one stat is boosted
+      tuning.stats.every((stat) => stat == 0) // or all stats are zero (this is the case for the empty tuning)
+  );
+  const usableTunings = [];
+  tuningPicking: for (const tuning of allPossibleT5Improvements) {
+    const newDistances = [...distances];
+    for (let i = 0; i < 6; i++) {
+      if (tuning.stats[i] > 0) {
+        newDistances[i] = Math.max(0, newDistances[i] - tuning.stats[i]);
+        if (config.minimumStatTiers[i as ArmorStat].fixed) {
+          if (
+            currentStats[i] + tuning.stats[i] >
+            config.minimumStatTiers[i as ArmorStat].value * 10
+          ) {
+            continue tuningPicking;
+          }
+        }
+      } else if (tuning.stats[i] < 0) {
+        const absValue = Math.abs(tuning.stats[i]);
+        // I have 59
+        // I want 60
+        // Distance is 1 -> just add  the 5 to the distance
+        if (newDistances[i] > 0) {
+          newDistances[i] = Math.max(0, newDistances[i] + absValue);
+        } else if (
+          newDistances[i] == 0 &&
+          config.minimumStatTiers[i as ArmorStat].value * 10 == currentStats[i]
+        ) {
+          // I have 60
+          // I want 60
+          // Distance is 0 -> just add the 5 to the distance
+          newDistances[i] = Math.max(0, absValue);
+        } else if (
+          newDistances[i] == 0 &&
+          config.minimumStatTiers[i as ArmorStat].value * 10 < currentStats[i]
+        ) {
+          const subDist = currentStats[i] - config.minimumStatTiers[i as ArmorStat].value * 10;
+          if (subDist >= absValue) {
+            // I have 65
+            // I want 60
+            // Distance is 0 and subdist >= 5 -> no not add the 5 to the distance
+            newDistances[i] = 0;
+          } else {
+            // I have 63
+            // I want 60
+            // Distance is 0 and subdist < 5  -> add the 2 to the distance
+            newDistances[i] = Math.max(0, absValue - subDist);
+          }
+        }
+      }
+    }
+    const result = get_mods_precalc(
+      config,
+      newDistances,
+      optionalDistances,
+      availableArtificeCount,
+      optimize
+    );
+    if (result != null) {
+      usableTunings.push({
+        statMods: result,
+        tunings: tuning,
+      });
+      if (!checkAllTunings) {
+        // If we only want to check one tuning, we can stop here
+        break tuningPicking;
+      }
+    }
+  }
+  if (usableTunings.length == 0) {
+    // No usable tunings found, return null
+    return null;
+  }
+  return usableTunings;
+}
+
 function get_mods_precalc(
   config: BuildConfiguration,
   distances: number[],
@@ -906,16 +1139,6 @@ function get_mods_precalc(
   availableArtificeCount: number,
   optimize: ModOptimizationStrategy = ModOptimizationStrategy.None
 ): StatModifier[] | null {
-  // check distances <= 65
-  const totalDistance =
-    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-  if (totalDistance > 65) return null;
-
-  if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
-    // no mods needed, return empty array
-    return [];
-  }
-
   const modCombinations = config.onlyShowResultsWithNoWastedStats
     ? precalculatedZeroWasteModCombinations
     : precalculatedModCombinations;
@@ -929,7 +1152,6 @@ function get_mods_precalc(
     modCombinations[distances[4]] || [[0, 0, 0, 0]], // intellect
     modCombinations[distances[5]] || [[0, 0, 0, 0]], // strength
   ];
-
   // we handle locked exact stats as zero-waste in terms  of the mod selection
   for (let i = 0; i < 6; i++) {
     if (config.minimumStatTiers[i as ArmorStat].fixed && distances[i] > 0) {
@@ -997,6 +1219,8 @@ function get_mods_precalc(
     return true;
   }
 
+  const totalDistance =
+    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
   const mustExecuteOptimization = totalDistance > 0 && optimize != ModOptimizationStrategy.None;
   root: for (let mobility of precalculatedMods[0]) {
     if (!validate([mobility])) continue;

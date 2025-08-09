@@ -100,6 +100,15 @@ export const ArmorStatHashes: EnumDictionary<ArmorStat, number> = {
   [ArmorStat.StatMelee]: 4244567218,
 };
 
+export const ArmorStatFromHash: EnumDictionary<number, ArmorStat> = {
+  [ArmorStatHashes[ArmorStat.StatWeapon]]: ArmorStat.StatWeapon,
+  [ArmorStatHashes[ArmorStat.StatHealth]]: ArmorStat.StatHealth,
+  [ArmorStatHashes[ArmorStat.StatClass]]: ArmorStat.StatClass,
+  [ArmorStatHashes[ArmorStat.StatGrenade]]: ArmorStat.StatGrenade,
+  [ArmorStatHashes[ArmorStat.StatSuper]]: ArmorStat.StatSuper,
+  [ArmorStatHashes[ArmorStat.StatMelee]]: ArmorStat.StatMelee,
+};
+
 export const ArmorStatIconUrls: EnumDictionary<ArmorStat, string> = {
   [ArmorStat.StatWeapon]:
     "https://www.bungie.net/common/destiny2_content/icons/bc69675acdae9e6b9a68a02fb4d62e07.png",
