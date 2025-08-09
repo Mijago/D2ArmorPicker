@@ -23,7 +23,7 @@ import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { BehaviorSubject, Observable, ReplaySubject, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { ArmorStatHashes, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
@@ -104,6 +104,7 @@ export class InventoryService {
   private inventoryArmorItems: IInventoryArmor[] = [];
   private permutatorArmorItems: IPermutatorArmor[] = [];
   private endResults: ResultDefinition[] = [];
+  private modDefinitions: IManifestArmor[] = [];
 
   constructor(
     private db: DatabaseService,
@@ -199,6 +200,13 @@ export class InventoryService {
       this.initialized = true;
       await this.refreshAll(!dataAlreadyFetched);
       dataAlreadyFetched = true;
+    });
+
+    this.manifest.subscribe(async () => {
+      this.modDefinitions = (
+        await this.db.manifestArmor.where("itemType").equals(19).toArray()
+      ).filter((mod) => mod.investmentStats.length > 0);
+      this.tuningModCache.clear();
     });
   }
 
@@ -536,12 +544,13 @@ export class InventoryService {
             this._calculationProgress.next(0);
 
             this.endResults = [];
-
             for (let armorSet of this.results) {
               let items = armorSet.armor.map((x) =>
                 this.inventoryArmorItems.find((y) => y.id == x)
               ) as IInventoryArmor[];
               let exotic = items.find((x) => x.isExotic);
+
+              const tuningHashPlacement = this.getTuningPlacement(armorSet, items);
               let v: ResultDefinition = {
                 exotic:
                   exotic == null
@@ -559,6 +568,7 @@ export class InventoryService {
                   0
                 ),
                 tuning: armorSet.tuning,
+                tuningHashPlacement: tuningHashPlacement,
                 mods: armorSet.usedMods,
                 stats: armorSet.statsWithMods,
                 statsNoMods: armorSet.statsWithoutMods,
@@ -642,6 +652,52 @@ export class InventoryService {
       }
     } finally {
     }
+  }
+
+  private tuningModCache = new Map<string, number | undefined>();
+  getTuningPlacement(armorSet: IPermutatorArmorSet, items: IInventoryArmor[]) {
+    // map tunings to items;
+    // for this, we look at the tunings and map them to T5 armor with corresponding archetypeStats, tuningAffinity
+    const tuningHashPlacement: Array<number | null> = [null, null, null, null, null];
+    if (armorSet.tuning) {
+      armorSet.tuning.improvements = armorSet.tuning.improvements.sort((a, b) => {
+        // if reducedStat is not set, put it at the end
+        if (a.reducedStat == null && b.reducedStat == null) return 0;
+        if (a.reducedStat == null) return 1;
+        if (b.reducedStat == null) return -1;
+        return 0;
+      });
+
+      for (let pickedTuning of armorSet.tuning.improvements) {
+        const itemIndex = items.findIndex(
+          (armor, i) =>
+            tuningHashPlacement[i] == null &&
+            armor.tuningStat == pickedTuning.tuningStat &&
+            _isEqual(armor.archetypeStats, pickedTuning.archetypeStats)
+        );
+        if (itemIndex > -1 && pickedTuning.reducedStat !== null) {
+          const key = `${pickedTuning.tuningStat}-${pickedTuning.reducedStat}`;
+          let modHash = this.tuningModCache.get(key);
+          if (!modHash) {
+            const modDefinition = this.modDefinitions.find((mod) => {
+              const h1 = mod.investmentStats.find((stat) => stat.value > 0)?.statTypeHash;
+              const h2 = mod.investmentStats.find((stat) => stat.value < 0)?.statTypeHash;
+              return (
+                h1 == ArmorStatHashes[pickedTuning.tuningStat] &&
+                h2 == ArmorStatHashes[pickedTuning.reducedStat!]
+              );
+            });
+            modHash = modDefinition?.hash;
+            this.tuningModCache.set(key, modHash);
+          }
+          tuningHashPlacement[itemIndex] = modHash ?? null;
+        } else if (itemIndex > -1 && pickedTuning.reducedStat === null) {
+          // If the tuning does not reduce a stat, we can just use the tuning stat
+          tuningHashPlacement[itemIndex] = 3122197216; // 1/1/1 mod
+        }
+      }
+    }
+    return tuningHashPlacement;
   }
 
   estimateRequiredThreads(): number {

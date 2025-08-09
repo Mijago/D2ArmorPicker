@@ -974,14 +974,17 @@ function get_mods_precalc_with_tuning(
           t5Boost[j] += 1;
         }
       }
-      newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
+      newBoosts.push({ stats: t5Boost, improvements: [{ ...possibleTuning, reducedStat: null }] });
       // TypeA) Add +5 to the specified stat - but applies -5 to one other stat.
       for (let j = 0; j < 6; j++) {
         if (j == possibleTuning.tuningStat) continue; // Skip the archetype stat, we want to boost it
         const t5Boost = [0, 0, 0, 0, 0, 0];
         t5Boost[possibleTuning.tuningStat] += 5;
         t5Boost[j] -= 5;
-        newBoosts.push({ stats: t5Boost, improvements: [possibleTuning] });
+        newBoosts.push({
+          stats: t5Boost,
+          improvements: [{ ...possibleTuning, reducedStat: j as ArmorStat }],
+        });
       }
       selectedT5Improvements.push(newBoosts);
     }

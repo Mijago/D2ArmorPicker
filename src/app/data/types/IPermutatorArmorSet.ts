@@ -1,14 +1,21 @@
 import { ArmorStat, StatModifier } from "../enum/armor-stat";
 import { IPermutatorArmor } from "./IPermutatorArmor";
 
-export type PossibleTuningInformation = {
+export interface PossibleTuningInformation {
   tuningStat: ArmorStat;
   archetypeStats: ArmorStat[];
-};
+}
+
+export interface SelectedTuning extends PossibleTuningInformation {
+  // describes the stat that is reduced by the tuning; If it is null, no stat is but the 1/1/1 tuning is applied
+  reducedStat: ArmorStat | null;
+}
+
 export interface Tuning {
   stats: number[];
-  improvements: PossibleTuningInformation[];
+  improvements: SelectedTuning[];
 }
+
 export interface IPermutatorArmorSet {
   armor: number[];
   useExoticClassItem: boolean;

@@ -55,6 +55,7 @@ export interface ResultDefinition {
   usesCollectionRoll?: boolean;
   usesVendorRoll?: boolean;
   tuning?: Tuning;
+  tuningHashPlacement: Array<number | null>; // Array of hashes or nulls for tuning stat placements
 }
 
 export enum ResultItemMoveState {
