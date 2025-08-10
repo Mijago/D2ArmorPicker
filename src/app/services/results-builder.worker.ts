@@ -552,6 +552,16 @@ function applyMasterworkStats(
   }
 }
 
+function getDistances(config: BuildConfiguration, stats: number[]): number[] {
+  const result = [];
+  for (let n = 0; n < 6; n++) {
+    if (config.minimumStatTiers[n as ArmorStat].value * 10 > 0)
+      result.push(Math.max(0, config.minimumStatTiers[n as ArmorStat].value * 10 - stats[n]));
+    else result.push(0);
+  }
+  return result;
+}
+
 export function handlePermutation(
   runtime: any,
   config: BuildConfiguration,
@@ -601,14 +611,7 @@ export function handlePermutation(
   ).length;
 
   // get distance
-  const distances = [
-    Math.max(0, config.minimumStatTiers[0].value * 10 - stats[0]),
-    Math.max(0, config.minimumStatTiers[1].value * 10 - stats[1]),
-    Math.max(0, config.minimumStatTiers[2].value * 10 - stats[2]),
-    Math.max(0, config.minimumStatTiers[3].value * 10 - stats[3]),
-    Math.max(0, config.minimumStatTiers[4].value * 10 - stats[4]),
-    Math.max(0, config.minimumStatTiers[5].value * 10 - stats[5]),
-  ];
+  const distances = getDistances(config, stats);
 
   if (config.onlyShowResultsWithNoWastedStats) {
     for (let stat: ArmorStat = 0; stat < 6; stat++) {
@@ -720,14 +723,7 @@ export function handlePermutation(
     applyMasterworkStats(classItem, config, adjustedStatsWithoutMods);
 
     // Recalculate distances with class item included
-    const newDistances = [
-      Math.max(0, config.minimumStatTiers[0].value * 10 - adjustedStats[0]),
-      Math.max(0, config.minimumStatTiers[1].value * 10 - adjustedStats[1]),
-      Math.max(0, config.minimumStatTiers[2].value * 10 - adjustedStats[2]),
-      Math.max(0, config.minimumStatTiers[3].value * 10 - adjustedStats[3]),
-      Math.max(0, config.minimumStatTiers[4].value * 10 - adjustedStats[4]),
-      Math.max(0, config.minimumStatTiers[5].value * 10 - adjustedStats[5]),
-    ];
+    const newDistances = getDistances(config, adjustedStats);
 
     if (config.onlyShowResultsWithNoWastedStats) {
       for (let stat: ArmorStat = 0; stat < 6; stat++) {
