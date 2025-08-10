@@ -51,6 +51,7 @@ import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
   ArmorStat,
+  ArmorStatFromHash,
   ArmorStatHashes,
   MapAlternativeSocketTypeToArmorPerkOrSlot,
   MapAlternativeToArmorPerkOrSlot,
@@ -320,6 +321,7 @@ export class BungieApiService {
         DestinyComponentType.ItemPerks,
         DestinyComponentType.ItemSockets,
         DestinyComponentType.ItemPlugStates,
+        DestinyComponentType.ItemReusablePlugs,
         DestinyComponentType.Collectibles,
       ],
       membershipType: destinyMembership.membershipType,
@@ -410,6 +412,35 @@ export class BungieApiService {
         if (!!(instance as any).gearTier) {
           armorItem.armorSystem = ArmorSystem.Armor3;
           armorItem.tier = (instance as any).gearTier;
+
+          // Grab the tuning stat from the reusable plugs
+          try {
+            const plugs =
+              profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
+            if (plugs) {
+              const availablePlugs = Object.values(plugs).find((value) => {
+                return value.length > 1 && value.some((p) => p.plugItemHash == 3122197216); // 3122197216 is the balanced tuning stat
+              });
+
+              if (availablePlugs && availablePlugs.length > 1) {
+                const pickedPlug = availablePlugs.find((p) => p.plugItemHash != 3122197216);
+                if (pickedPlug) {
+                  const statCheckHash = pickedPlug.plugItemHash;
+                  const mod = modsMap[statCheckHash];
+                  const tuningStatHash = mod?.investmentStats.find(
+                    (p) => p.value > 0
+                  )?.statTypeHash;
+                  if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
+                }
+              }
+            }
+          } catch (e) {
+            this.logger.error(
+              "BungieApiService",
+              "updateArmorItems",
+              `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
+            );
+          }
         } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
           armorItem.armorSystem = ArmorSystem.Armor3;
         } else {
@@ -469,7 +500,6 @@ export class BungieApiService {
             );
 
             const investmentStat = getInvestmentStats(armorItem);
-            // TODO: This must be tiered
             investmentStat[thirdHighestStatHash] += 13;
             applyInvestmentStats(armorItem, investmentStat);
           }
@@ -498,12 +528,13 @@ export class BungieApiService {
           let perks = (statData[d.itemInstanceId || ""] || {})["perks"] || [];
           const hasPerk = perks.filter((p) => p.perkHash == 229248542).length > 0;
           if (!hasPerk) armorItem.perk = ArmorPerkOrSlot.None;
-        } else if (armorItem.isExotic && armorItem.slot !== ArmorSlot.ArmorSlotClass) {
-          // 720825311 is "UNLOCKED exotic artifice slot"
-          // 1656746282 is "LOCKED exotic artifice slot"
-          const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
-          if (hasPerk) {
-            armorItem.perk = ArmorPerkOrSlot.SlotArtifice;
+          if (armorItem.isExotic && armorItem.slot !== ArmorSlot.ArmorSlotClass) {
+            // 720825311 is "UNLOCKED exotic artifice slot"
+            // 1656746282 is "LOCKED exotic artifice slot"
+            const hasPerk = socketsList.filter((d) => d == 720825311).length > 0;
+            if (hasPerk) {
+              armorItem.perk = ArmorPerkOrSlot.SlotArtifice;
+            }
           }
         }
 

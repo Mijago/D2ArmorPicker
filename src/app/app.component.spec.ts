@@ -18,12 +18,20 @@
 import { TestBed } from "@angular/core/testing";
 import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { HttpClientModule } from "@angular/common/http";
+import { LoggerTestingModule } from "ngx-logger/testing";
+import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 
 describe("AppComponent", () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
-      imports: [BrowserAnimationsModule],
+      imports: [
+        BrowserAnimationsModule,
+        HttpClientModule,
+        LoggerTestingModule,
+        CommonMaterialModule,
+      ],
     }).compileComponents();
   });
 

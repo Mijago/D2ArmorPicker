@@ -28,6 +28,7 @@ import {
 } from "./clarity.service";
 import { NGXLogger } from "ngx-logger";
 import { MatDialogModule } from "@angular/material/dialog";
+import { LoggerTestingModule } from "ngx-logger/testing";
 
 describe("ClarityService", () => {
   let service: ClarityService;
@@ -36,8 +37,7 @@ describe("ClarityService", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatDialogModule],
-      providers: [NGXLogger],
+      imports: [HttpClientTestingModule, MatDialogModule, LoggerTestingModule],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);

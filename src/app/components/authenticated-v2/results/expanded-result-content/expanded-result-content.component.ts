@@ -22,6 +22,7 @@ import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { NGXLogger } from "ngx-logger";
 import {
   ArmorStat,
+  ARMORSTAT_ORDER,
   ArmorStatIconUrls,
   ArmorStatNames,
   SpecialArmorStat,
@@ -55,6 +56,8 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public ArmorStatNames = ArmorStatNames;
   public ArmorStatIconUrls = ArmorStatIconUrls;
   public ArmorStat = ArmorStat;
+  public ArmorStatOrder = ARMORSTAT_ORDER;
+
   public StatModifier = StatModifier;
   public config_characterClass = DestinyClass.Unknown;
   public config_assumeLegendariesMasterworked = false;

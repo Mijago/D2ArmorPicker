@@ -34,13 +34,32 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.7",
+    date: "August 9, 2025",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Introduced T5 Tuning: allows tuning of Tier 5 armor with (1/1/1) and (+5/-5) stat modifications for advanced optimization.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added UI and calculation logic to support T5 tuning, including new tuning options in the results and settings.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated the core logic to handle tuning scenarios and stat tradeoffs.",
+      },
+    ],
+  },
+  {
     version: "2.9.6",
     date: "July 31, 2025",
     clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.ADD,
-        text: "Added gearset selection feature, allowing users to easily select and combine gearsets.",
+        text: "Added the gearset selection feature, allowing users to easily select and combine gearsets.",
         issues: [],
       },
       {
