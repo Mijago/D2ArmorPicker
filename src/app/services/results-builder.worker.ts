@@ -338,6 +338,26 @@ addEventListener("message", async ({ data }) => {
   let legs = items.filter((i) => i.slot == ArmorSlot.ArmorSlotLegs);
   let classItems = items.filter((i) => i.slot == ArmorSlot.ArmorSlotClass);
 
+  // Sort armor pieces by tuningStat quantity for better deduplication performance
+  // This groups armor with identical tuning stats together, improving pruning efficiency
+  const sortByTuningStat = (a: IPermutatorArmor, b: IPermutatorArmor) => {
+    // First sort by tuningStat (nulls last)
+    if (a.tuningStat === null && b.tuningStat !== null) return 1;
+    if (a.tuningStat !== null && b.tuningStat === null) return -1;
+    if (a.tuningStat !== b.tuningStat) return (a.tuningStat ?? 0) - (b.tuningStat ?? 0);
+
+    // Then by tier (T5 first for tuning optimization)
+    if (a.tier !== b.tier) return (b.tier ?? 0) - (a.tier ?? 0);
+
+    // Then by masterwork level
+    return (b.masterworkLevel ?? 0) - (a.masterworkLevel ?? 0);
+  };
+
+  helmets.sort(sortByTuningStat);
+  gauntlets.sort(sortByTuningStat);
+  chests.sort(sortByTuningStat);
+  legs.sort(sortByTuningStat);
+
   // Sort by Masterwork, descending
   classItems = classItems.sort(
     (a, b) => (b.tier ?? 0) - (a.tier ?? 0) || (b.masterworkLevel ?? 0) - (a.masterworkLevel ?? 0)
@@ -723,11 +743,15 @@ function generate_tunings(possibleImprovements: t5Improvement[]): Tuning[] {
   if (impValues.length === 0) {
     addUniqueTuning([0, 0, 0, 0, 0, 0]);
   } else {
-    function recurse(idx: number, acc: number[]) {
+    function recurse(idx: number, acc: number[], currentSeen: Set<string>) {
       if (idx === impValues.length) {
         addUniqueTuning(acc as Tuning);
         return;
       }
+
+      // Deduplicate at each layer to reduce recursive calls
+      const layerSeen = new Set<string>();
+
       for (const v of impValues[idx]) {
         const next = [
           acc[0] + v[0],
@@ -737,10 +761,24 @@ function generate_tunings(possibleImprovements: t5Improvement[]): Tuning[] {
           acc[4] + v[4],
           acc[5] + v[5],
         ];
-        recurse(idx + 1, next);
+
+        const nextKey = next.join(",");
+
+        // Skip if we've already processed this combination at this layer
+        if (layerSeen.has(nextKey)) {
+          continue;
+        }
+        layerSeen.add(nextKey);
+
+        // Also skip if we've seen this globally (early termination)
+        if (seen.has(nextKey)) {
+          continue;
+        }
+
+        recurse(idx + 1, next, currentSeen);
       }
     }
-    recurse(0, [0, 0, 0, 0, 0, 0]);
+    recurse(0, [0, 0, 0, 0, 0, 0], seen);
   }
 
   return tunings;
