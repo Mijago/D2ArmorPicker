@@ -19,409 +19,11 @@ import { AfterViewInit, Component } from "@angular/core";
 import { IInventoryArmor, InventoryArmorSource } from "../../../../data/types/IInventoryArmor";
 import { DatabaseService } from "../../../../services/database.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { InventoryService } from "../../../../services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 import { debounceTime } from "rxjs/operators";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
-import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
-
-var clusterData = [
-  {
-    id: 0,
-    size: 214,
-    centroids: [
-      5.242990654205609, 3.4392523364485994, 23.074766355140188, 4.52336448598131,
-      17.99532710280374, 8.074766355140188,
-    ],
-    std: [
-      3.262185500658884, 3.137958193527344, 2.0745611905196912, 3.223158380401712,
-      2.6478649185881147, 3.356022774004607, 3.3823650213485315,
-    ],
-    mean: [
-      62.350467289719624, 5.242990654205608, 3.439252336448598, 23.074766355140188,
-      4.5233644859813085, 17.99532710280374, 8.074766355140186,
-    ],
-  },
-  {
-    id: 1,
-    size: 264,
-    centroids: [
-      13.613636363636365, 3.060606060606063, 14.431818181818182, 6.731060606060606,
-      12.575757575757574, 10.575757575757576,
-    ],
-    std: [
-      4.915624932359143, 2.735897756946947, 1.897597343200423, 3.036390647550984,
-      3.2253188618447473, 3.0097969617389406, 3.1372197425220545,
-    ],
-    mean: [
-      60.98863636363637, 13.613636363636363, 3.0606060606060606, 14.431818181818182,
-      6.731060606060606, 12.575757575757576, 10.575757575757576,
-    ],
-  },
-  {
-    id: 2,
-    size: 220,
-    centroids: [
-      5.209090909090909, 15.586363636363636, 10.936363636363636, 13.281818181818181,
-      13.604545454545452, 3.8818181818181836,
-    ],
-    std: [
-      3.3631090204013643, 2.931782865076046, 2.9200605883727038, 3.289049973803757,
-      2.6349662061268395, 2.6591750828428204, 2.395703224398619,
-    ],
-    mean: [
-      62.5, 5.209090909090909, 15.586363636363636, 10.936363636363636, 13.281818181818181,
-      13.604545454545455, 3.881818181818182,
-    ],
-  },
-  {
-    id: 3,
-    size: 230,
-    centroids: [
-      8.6, 15.330434782608698, 6.943478260869563, 6.408695652173913, 5.578260869565216,
-      18.26086956521739,
-    ],
-    std: [
-      4.27370926113142, 3.855014315301441, 3.2487061290912984, 3.5081098914433078,
-      3.559587955581114, 3.1761194803539676, 3.596667444705349,
-    ],
-    mean: [
-      61.12173913043478, 8.6, 15.330434782608696, 6.943478260869565, 6.408695652173913,
-      5.578260869565217, 18.26086956521739,
-    ],
-  },
-  {
-    id: 4,
-    size: 261,
-    centroids: [
-      11.74712643678161, 5.655172413793104, 13.873563218390803, 11.022988505747126,
-      16.57088122605364, 3.0038314176245224,
-    ],
-    std: [
-      3.5878146263573103, 2.8197860971981994, 2.9890605143791737, 2.9825309245974925,
-      2.7497287061744258, 2.8324620286123516, 1.8428616632651005,
-    ],
-    mean: [
-      61.87356321839081, 11.74712643678161, 5.655172413793103, 13.873563218390805,
-      11.022988505747126, 16.57088122605364, 3.003831417624521,
-    ],
-  },
-  {
-    id: 5,
-    size: 249,
-    centroids: [
-      6.598393574297189, 7.2289156626506035, 7.674698795180722, 6.831325301204822,
-      5.995983935742974, 7.425702811244981,
-    ],
-    std: [
-      12.188382924990831, 3.7780346472852226, 3.7855581933977014, 3.9659084518463055,
-      3.2508780840166134, 2.4288222155150856, 3.23718036285365,
-    ],
-    mean: [
-      41.75502008032129, 6.598393574297189, 7.228915662650603, 7.674698795180723, 6.831325301204819,
-      5.995983935742972, 7.42570281124498,
-    ],
-  },
-  {
-    id: 6,
-    size: 241,
-    centroids: [
-      4.580912863070541, 10.62655601659751, 15.72199170124481, 20.186721991701248,
-      5.7634854771784205, 4.8672199170124495,
-    ],
-    std: [
-      4.0360666526825675, 2.5776864620318327, 2.726712032141287, 2.7236414380869185,
-      3.4135743182998106, 3.164594939982558, 2.8952195061747896,
-    ],
-    mean: [
-      61.74688796680498, 4.580912863070539, 10.62655601659751, 15.721991701244812,
-      20.186721991701244, 5.763485477178423, 4.867219917012448,
-    ],
-  },
-  {
-    id: 7,
-    size: 352,
-    centroids: [
-      4.96875, 10.849431818181818, 15.676136363636362, 5.085227272727275, 13.079545454545453,
-      12.113636363636365,
-    ],
-    std: [
-      3.864447558701623, 2.876694966732471, 2.825917840642513, 2.8500410080793133,
-      2.604753041986593, 2.753797030174534, 3.084495990290069,
-    ],
-    mean: [
-      61.77272727272727, 4.96875, 10.849431818181818, 15.676136363636363, 5.0852272727272725,
-      13.079545454545455, 12.113636363636363,
-    ],
-  },
-  {
-    id: 8,
-    size: 219,
-    centroids: [
-      21.401826484018265, 4.529680365296804, 4.954337899543379, 14.022831050228312,
-      7.168949771689496, 6.8036529680365305,
-    ],
-    std: [
-      7.654498360234386, 3.856746305047457, 3.0774088630224354, 3.486239910130717,
-      4.509361233853425, 3.691515724130434, 3.433882092856456,
-    ],
-    mean: [
-      58.881278538812786, 21.401826484018265, 4.529680365296803, 4.954337899543379,
-      14.02283105022831, 7.168949771689498, 6.80365296803653,
-    ],
-  },
-  {
-    id: 9,
-    size: 183,
-    centroids: [
-      4.448087431693989, 22.114754098360656, 4.868852459016392, 7.459016393442623,
-      11.240437158469945, 9.765027322404372,
-    ],
-    std: [
-      7.900837110469869, 3.265921971202623, 3.896032191192026, 3.424902708986657,
-      3.3556927380910535, 3.7206143627650876, 3.9564220813839577,
-    ],
-    mean: [
-      59.89617486338798, 4.448087431693989, 22.114754098360656, 4.868852459016393,
-      7.459016393442623, 11.240437158469945, 9.765027322404372,
-    ],
-  },
-  {
-    id: 10,
-    size: 197,
-    centroids: [
-      13.563451776649746, 10.761421319796954, 6.527918781725887, 20.654822335025383,
-      4.934010152284262, 5.18274111675127,
-    ],
-    std: [
-      4.239153654030002, 3.3077343290831713, 2.8924486501981233, 2.9338771160608355,
-      3.5098461495889413, 3.192898794854312, 2.920215710334156,
-    ],
-    mean: [
-      61.6243654822335, 13.563451776649746, 10.761421319796954, 6.527918781725888,
-      20.65482233502538, 4.934010152284264, 5.182741116751269,
-    ],
-  },
-  {
-    id: 11,
-    size: 176,
-    centroids: [
-      8.255681818181818, 16.181818181818183, 7.11931818181818, 4.619318181818182, 21.0625,
-      5.505681818181819,
-    ],
-    std: [
-      3.349621998445128, 3.4620343467651815, 3.3296776490755446, 2.945693532873097,
-      2.7583580190103967, 3.126214049887545, 3.078027492852078,
-    ],
-    mean: [
-      62.74431818181818, 8.255681818181818, 16.181818181818183, 7.119318181818182,
-      4.619318181818182, 21.0625, 5.505681818181818,
-    ],
-  },
-  {
-    id: 12,
-    size: 194,
-    centroids: [
-      3.5670103092783503, 14.773195876288659, 13.036082474226804, 13.185567010309278,
-      4.979381443298967, 12.144329896907218,
-    ],
-    std: [
-      3.89886364980042, 2.255251632823776, 2.5893570716174388, 3.248552824613239,
-      3.1004926799108317, 2.8845824993776903, 2.8864151735009584,
-    ],
-    mean: [
-      61.68556701030928, 3.5670103092783507, 14.77319587628866, 13.036082474226804,
-      13.185567010309278, 4.979381443298969, 12.144329896907216,
-    ],
-  },
-  {
-    id: 13,
-    size: 302,
-    centroids: [
-      5.311258278145695, 4.4701986754966905, 21.897350993377486, 10.688741721854305,
-      6.834437086092715, 12.605960264900663,
-    ],
-    std: [
-      5.1142628152416245, 2.9920946350614983, 2.6882491851253567, 3.071581172564087,
-      2.99431450280505, 3.116626644660552, 2.58548804104293,
-    ],
-    mean: [
-      61.80794701986755, 5.311258278145695, 4.470198675496689, 21.897350993377483,
-      10.688741721854305, 6.8344370860927155, 12.605960264900663,
-    ],
-  },
-  {
-    id: 14,
-    size: 364,
-    centroids: [
-      12.263736263736265, 11.32967032967033, 5.936813186813188, 8.524725274725274,
-      12.07142857142857, 7.782967032967034,
-    ],
-    std: [
-      6.666392881793753, 2.8942239993391565, 2.947866371540881, 3.041289192757803,
-      3.0876888182534996, 2.4540644069260296, 2.6803305558675676,
-    ],
-    mean: [
-      57.90934065934066, 12.263736263736265, 11.32967032967033, 5.936813186813187,
-      8.524725274725276, 12.071428571428571, 7.782967032967033,
-    ],
-  },
-  {
-    id: 15,
-    size: 219,
-    centroids: [
-      6.981735159817351, 5.9908675799086755, 18.127853881278536, 4.97716894977169,
-      5.182648401826483, 20.89041095890411,
-    ],
-    std: [
-      4.3335830659244685, 3.5503759593138464, 3.5270785628911785, 4.123339305032141,
-      2.7998081886699646, 3.283747903424203, 2.8311584355558064,
-    ],
-    mean: [
-      62.15068493150685, 6.981735159817352, 5.9908675799086755, 18.12785388127854,
-      4.9771689497716896, 5.1826484018264845, 20.89041095890411,
-    ],
-  },
-  {
-    id: 16,
-    size: 147,
-    centroids: [
-      6.285714285714285, 20.836734693877553, 4.8639455782312915, 17.510204081632654,
-      5.897959183673469, 7.394557823129253,
-    ],
-    std: [
-      3.358145469360083, 3.4877476344546254, 3.2245649941865486, 3.0557367019327,
-      4.0937094190209065, 3.1136788219952605, 3.842013283457479,
-    ],
-    mean: [
-      62.7891156462585, 6.285714285714286, 20.836734693877553, 4.863945578231292,
-      17.510204081632654, 5.8979591836734695, 7.394557823129252,
-    ],
-  },
-  {
-    id: 17,
-    size: 202,
-    centroids: [
-      18.425742574257423, 6.871287128712871, 6.678217821782177, 5.06930693069307, 20.40594059405941,
-      5.876237623762377,
-    ],
-    std: [
-      3.0226636827682554, 3.292828132097339, 3.518715749263091, 3.4627255810748356,
-      3.075363266145594, 3.5804283293104753, 3.315804113390658,
-    ],
-    mean: [
-      63.32673267326733, 18.425742574257427, 6.871287128712871, 6.678217821782178,
-      5.069306930693069, 20.405940594059405, 5.876237623762377,
-    ],
-  },
-  {
-    id: 18,
-    size: 286,
-    centroids: [
-      11.22027972027972, 7.073426573426573, 12.65034965034965, 12.594405594405593,
-      4.209790209790211, 13.220279720279722,
-    ],
-    std: [
-      4.720510224882134, 2.8685361372318168, 2.6005789112305338, 3.052197922484291,
-      2.451602446915686, 2.7244266014541174, 2.7638787756329526,
-    ],
-    mean: [
-      60.96853146853147, 11.22027972027972, 7.073426573426573, 12.65034965034965,
-      12.594405594405595, 4.20979020979021, 13.22027972027972,
-    ],
-  },
-  {
-    id: 19,
-    size: 197,
-    centroids: [
-      6.263959390862944, 8.568527918781726, 16.80710659898477, 4.000000000000003,
-      22.593908629441625, 4.883248730964468,
-    ],
-    std: [
-      2.7333118141791917, 3.3626657547151964, 3.4540163497542435, 2.646397291854302,
-      2.565469285152567, 3.018237668617547, 2.8287109641017594,
-    ],
-    mean: [
-      63.11675126903553, 6.2639593908629445, 8.568527918781726, 16.80710659898477, 4.0,
-      22.593908629441625, 4.883248730964467,
-    ],
-  },
-  {
-    id: 20,
-    size: 279,
-    centroids: [
-      18.025089605734767, 6.150537634408602, 6.161290322580646, 5.767025089605736,
-      7.999999999999998, 15.602150537634408,
-    ],
-    std: [
-      6.590788110639117, 3.6436721401086296, 3.165505073725202, 3.13700467469825,
-      2.7769973891540207, 3.4672154149710614, 4.017425492621824,
-    ],
-    mean: [
-      59.70609318996416, 18.025089605734767, 6.150537634408602, 6.161290322580645,
-      5.767025089605735, 8.0, 15.602150537634408,
-    ],
-  },
-  {
-    id: 21,
-    size: 78,
-    centroids: [
-      15.96153846153846, 16.85897435897436, 16.807692307692307, 3.552713678800501e-15,
-      5.329070518200751e-15, -5.329070518200751e-15,
-    ],
-    std: [2.095815090231219, 7.438828122504502, 7.482836393563639, 8.12413063050432, 0.0, 0.0, 0.0],
-    mean: [
-      49.62820512820513, 15.961538461538462, 16.858974358974358, 16.807692307692307, 0.0, 0.0, 0.0,
-    ],
-  },
-  {
-    id: 22,
-    size: 137,
-    centroids: [
-      4.525547445255475, 3.583941605839417, 23.532846715328468, 19.948905109489054,
-      4.3576642335766405, 6.248175182481752,
-    ],
-    std: [
-      2.9351806639916567, 2.7575572416084317, 2.2707939003224227, 2.908029186302962,
-      3.3306093063017315, 2.6644092885703916, 3.4848010785869454,
-    ],
-    mean: [
-      62.197080291970806, 4.525547445255475, 3.5839416058394162, 23.532846715328468,
-      19.94890510948905, 4.357664233576642, 6.248175182481752,
-    ],
-  },
-  {
-    id: 23,
-    size: 194,
-    centroids: [
-      13.242268041237114, 3.5103092783505163, 14.675257731958762, 19.55154639175258,
-      6.139175257731957, 5.092783505154641,
-    ],
-    std: [
-      3.810494814771566, 2.886105181640385, 2.0818477512276696, 2.6197152448917316,
-      3.409818599464837, 3.0311357231629183, 2.9733966349516936,
-    ],
-    mean: [
-      62.21134020618557, 13.242268041237113, 3.5103092783505154, 14.675257731958762,
-      19.551546391752577, 6.139175257731959, 5.092783505154639,
-    ],
-  },
-  {
-    id: 24,
-    size: 239,
-    centroids: [
-      5.569037656903766, 5.401673640167365, 20.92468619246862, 13.09205020920502,
-      13.497907949790793, 4.096234309623432,
-    ],
-    std: [
-      3.8502204432228733, 3.071015816571908, 3.081143061480697, 2.79904271710946, 2.169280265760518,
-      2.62802363192924, 2.3450167178621983,
-    ],
-    mean: [
-      62.58158995815899, 5.569037656903766, 5.401673640167364, 20.92468619246862,
-      13.092050209205022, 13.497907949790795, 4.096234309623431,
-    ],
-  },
-];
+import { ArmorSystem } from "src/app/data/types/IManifestArmor";
+import { ARMORSTAT_ORDER, ArmorStatNames } from "src/app/data/enum/armor-stat";
 
 @Component({
   selector: "app-armor-cluster-page",
@@ -429,23 +31,25 @@ var clusterData = [
   styleUrls: ["./armor-cluster-page.component.css"],
 })
 export class ArmorClusterPageComponent implements AfterViewInit {
-  clusterInformation = clusterData;
+  clusterInformation: any[] = [];
   items: Array<IInventoryArmor> = [];
   clusters: IInventoryArmor[][] = [];
 
-  exoticFilter: number = 0;
-  masterworkFilter: number = 0;
-  classFilter: number = -1;
+  exoticFilter: number | undefined = undefined;
+  classFilter: number | undefined = undefined;
+  armorSystemFilter: ArmorSystem | undefined = undefined;
+  clusterCount: number = 10;
+
+  public ARMORSTAT_ORDER = ARMORSTAT_ORDER;
+  public ArmorStatNames = ArmorStatNames;
 
   constructor(
     private db: DatabaseService,
     private _snackBar: MatSnackBar,
-    private inventory: InventoryService
-  ) {
-    this.clusterInformation = clusterData.sort((a, b) => {
-      return b.mean[3] - a.mean[3];
-    });
-  }
+    private inventory: UserInformationService
+  ) {}
+
+  // No longer needed: clusterCount is updated via ngModel on the slider thumb
 
   async ngAfterViewInit(): Promise<void> {
     this.inventory.inventory.pipe(debounceTime(200)).subscribe(async () => {
@@ -455,29 +59,139 @@ export class ArmorClusterPageComponent implements AfterViewInit {
   }
 
   public async Update() {
-    var items = (await this.db.inventoryArmor.toArray()).filter(
-      (item) => item.source === InventoryArmorSource.Inventory
+    // Filter items by inventory and user options
+    console.log("classFilter", this.exoticFilter !== -1);
+    const items = (await this.db.inventoryArmor.toArray()).filter(
+      (item) =>
+        item.source === InventoryArmorSource.Inventory &&
+        item.slot !== ArmorSlot.ArmorSlotClass &&
+        item.slot !== ArmorSlot.ArmorSlotNone &&
+        (this.classFilter === undefined || item.clazz === this.classFilter) &&
+        (this.exoticFilter !== -1 || !item.isExotic) &&
+        (this.exoticFilter !== 1 || item.isExotic) &&
+        (this.armorSystemFilter === undefined || item.armorSystem === this.armorSystemFilter)
     );
+    this.items = items;
 
-    var clusters: IInventoryArmor[][] = [];
-    for (let i = 0; i < this.clusterInformation.length; i++) {
-      clusters.push([]);
+    // Prepare stat vectors for clustering
+    const statVectors = items.map((item) => [
+      item.mobility,
+      item.resilience,
+      item.recovery,
+      item.discipline,
+      item.intellect,
+      item.strength,
+      //item.mobility +        item.resilience +        item.recovery +        item.discipline +        item.intellect +        item.strength,
+    ]);
+
+    // Run k-means clustering with deterministic seed
+    const k = Math.min(this.clusterCount, items.length);
+    const seed = 42;
+    const { assignments, centroids } = this.kmeans(statVectors, k, 20, seed);
+
+    // Group items by cluster
+    const clusters: IInventoryArmor[][] = Array.from({ length: k }, () => []);
+    items.forEach((item, idx) => {
+      const clusterId = assignments[idx];
+      if (clusterId !== undefined && clusterId >= 0) clusters[clusterId].push(item);
+    });
+    // Calculate clusterInformation (mean for each cluster)
+    let clusterInformation = centroids.map((centroid, i) => {
+      // Calculate mean for each stat in the cluster
+      const clusterItems = clusters[i];
+      if (clusterItems.length === 0) return { mean: centroid, size: 0 };
+      const mean = Array(6).fill(0);
+      clusterItems.forEach((item) => {
+        mean[0] += item.mobility;
+        mean[1] += item.resilience;
+        mean[2] += item.recovery;
+        mean[3] += item.discipline;
+        mean[4] += item.intellect;
+        mean[5] += item.strength;
+        //mean[6] +=item.mobility +          item.resilience +          item.recovery +          item.discipline +          item.intellect +          item.strength;
+      });
+      for (let j = 0; j < 7; j++) mean[j] /= clusterItems.length;
+      return { mean, size: clusterItems.length };
+    });
+
+    // Pair clusters and info, sort descending by size, then unpack
+    const paired = clusters.map((c, i) => ({ cluster: c, info: clusterInformation[i] }));
+    paired.sort((a, b) => b.cluster.length - a.cluster.length);
+    this.clusters = paired.map((p) => p.cluster);
+    this.clusterInformation = paired.map((p) => p.info);
+  }
+
+  // Simple k-means implementation for stat vectors, deterministic with seed
+  private kmeans(
+    data: number[][],
+    k: number,
+    maxIter = 20,
+    seed = 42
+  ): { assignments: number[]; centroids: number[][] } {
+    if (data.length === 0 || k === 0) return { assignments: [], centroids: [] };
+
+    // Deterministic PRNG (Mulberry32)
+    function mulberry32(a: number) {
+      return function () {
+        var t = (a += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
     }
+    const rand = mulberry32(seed);
 
-    for (let item of items) {
-      if (item.slot == ArmorSlot.ArmorSlotClass) continue;
-      if (item.slot == ArmorSlot.ArmorSlotNone) continue; // ignores stasis and halloween masks.
-
-      if (this.classFilter != -1 && item.clazz != this.classFilter) continue;
-      if (this.exoticFilter == -1 && item.isExotic) continue;
-      if (this.exoticFilter == 1 && !item.isExotic) continue;
-      if (this.masterworkFilter == -1 && item.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL) continue;
-      if (this.masterworkFilter == 1 && item.masterworkLevel != MAXIMUM_MASTERWORK_LEVEL) continue;
-
-      var clusterId = this.getClusterid(item);
-      clusters[clusterId].push(item);
+    // Randomly initialize centroids using deterministic PRNG
+    let centroids = data.slice(0, k).map((vec) => vec.slice());
+    if (data.length > k) {
+      const used = new Set<number>();
+      centroids = [];
+      while (centroids.length < k) {
+        const idx = Math.floor(rand() * data.length);
+        if (!used.has(idx)) {
+          centroids.push(data[idx].slice());
+          used.add(idx);
+        }
+      }
     }
-    this.clusters = clusters;
+    let assignments = new Array(data.length).fill(0);
+    for (let iter = 0; iter < maxIter; iter++) {
+      // Assign
+      assignments = data.map((vec) => {
+        let minDist = Infinity,
+          minIdx = 0;
+        for (let i = 0; i < centroids.length; i++) {
+          const dist = this.vectorDistance(vec, centroids[i]);
+          if (dist < minDist) {
+            minDist = dist;
+            minIdx = i;
+          }
+        }
+        return minIdx;
+      });
+      // Update centroids
+      const newCentroids = Array.from({ length: k }, () => Array(data[0].length).fill(0));
+      const counts = Array(k).fill(0);
+      data.forEach((vec, idx) => {
+        const cluster = assignments[idx];
+        counts[cluster]++;
+        for (let j = 0; j < vec.length; j++) {
+          newCentroids[cluster][j] += vec[j];
+        }
+      });
+      for (let i = 0; i < k; i++) {
+        if (counts[i] > 0) {
+          for (let j = 0; j < newCentroids[i].length; j++) {
+            newCentroids[i][j] /= counts[i];
+          }
+        } else {
+          // Reinitialize empty cluster deterministically
+          newCentroids[i] = data[Math.floor(rand() * data.length)].slice();
+        }
+      }
+      centroids = newCentroids;
+    }
+    return { assignments, centroids };
   }
 
   openSnackBar(message: string) {

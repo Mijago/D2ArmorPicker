@@ -24,6 +24,7 @@
             *ngIf="exoticPerk"
             alt="{{ exoticPerk.name }}"
             class="perk-icon"
+            loading="lazy"
             src="https://bungie.net/{{ exoticPerk.icon }}" />
         </td>
         <td class="exotic-name">{{ armor?.name }}</td>

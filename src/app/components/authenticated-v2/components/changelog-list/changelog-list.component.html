@@ -15,26 +15,56 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<mat-list>
-  <ng-container *ngFor="let log of changelog.changelogData">
-    <span matSubheader class="title">{{ log.version }}, released on {{ log.date }}</span>
-    <mat-list-item *ngFor="let entry of log.entries">
-      <mat-icon
-        *ngIf="entry.type === 0"
-        matTooltip="A new function has been added."
-        matListItemIcon>
-        add_circle_outline
-      </mat-icon>
-      <mat-icon *ngIf="entry.type === 1" matTooltip="A function has been removed." matListItemIcon>
-        remove_circle_outline
-      </mat-icon>
-      <mat-icon *ngIf="entry.type === 2" matTooltip="Something has been modified." matListItemIcon>
-        change_history
-      </mat-icon>
-      <span class="e">
-        <p>{{ entry.text }}</p>
-      </span>
-    </mat-list-item>
-    <mat-divider></mat-divider>
+<div class="changelog-container">
+  <ng-container
+    *ngFor="let log of displayedChangelogData; trackBy: trackByVersion; let isFirst = first">
+    <mat-card class="version-card" [class.latest-version]="isFirst">
+      <mat-card-header class="version-header">
+        <div class="version-info">
+          <mat-card-title class="version-title">
+            <mat-icon class="version-icon">new_releases</mat-icon>
+            <span class="version-number">v{{ log.version }}</span>
+            <mat-chip class="latest-badge" *ngIf="isFirst" color="accent">Latest</mat-chip>
+          </mat-card-title>
+          <mat-card-subtitle class="release-date">
+            <mat-icon class="date-icon">schedule</mat-icon>
+            Released {{ log.date }}
+          </mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content class="changelog-content">
+        <mat-list class="entries-list" dense>
+          <ng-container *ngFor="let entry of log.entries; trackBy: trackByEntry">
+            <mat-list-item class="changelog-entry" [class]="getEntryClass(entry.type)">
+              <mat-icon
+                matListItemIcon
+                class="entry-icon"
+                [class]="getIconClass(entry.type)"
+                [matTooltip]="getTooltipText(entry.type)"
+                [attr.aria-label]="getTooltipText(entry.type)">
+                {{ getEntryIcon(entry.type) }}
+              </mat-icon>
+
+              <div matListItemTitle class="entry-content">
+                <div class="entry-text">{{ entry.text }}</div>
+                <div class="entry-issues" *ngIf="entry.issues && entry.issues.length > 0">
+                  <mat-chip-listbox class="issues-list" aria-label="Related Issues">
+                    <mat-chip-option
+                      *ngFor="let issue of entry.issues"
+                      class="issue-chip"
+                      [selectable]="false"
+                      [value]="issue">
+                      <mat-icon class="issue-icon">bug_report</mat-icon>
+                      {{ issue }}
+                    </mat-chip-option>
+                  </mat-chip-listbox>
+                </div>
+              </div>
+            </mat-list-item>
+          </ng-container>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
   </ng-container>
-</mat-list>
+</div>

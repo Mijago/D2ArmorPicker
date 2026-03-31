@@ -34,3 +34,69 @@ mat-card {
 .btn-download {
   margin-right: 10px;
 }
+
+/* Debugging section styles */
+.debug-section {
+  margin-bottom: 24px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.debug-section:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.debug-section-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.debug-section-description {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+.danger-text {
+  color: #ff5252 !important;
+}
+
+.debug-button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.debug-btn {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  text-transform: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.debug-btn-filename {
+  font-size: 12px;
+  opacity: 0.7;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .debug-button-group {
+    flex-direction: column;
+  }
+  
+  .debug-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

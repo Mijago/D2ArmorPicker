@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import {
   ConfigurationService,
   StoredConfiguration,
@@ -62,7 +62,7 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
     private clipboard: Clipboard,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.settingsNameForm = this.formBuilder.group({ name: [null] });
     this.importTextForm = this.formBuilder.group({ content: [null] });

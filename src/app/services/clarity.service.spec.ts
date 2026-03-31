@@ -26,7 +26,7 @@ import {
   SUPPORTED_SCHEMA_VERSION,
   UpdateData,
 } from "./clarity.service";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { MatDialogModule } from "@angular/material/dialog";
 
 describe("ClarityService", () => {
@@ -37,7 +37,7 @@ describe("ClarityService", () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MatDialogModule],
-      providers: [NGXLogger],
+      providers: [LoggingProxyService],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -106,7 +106,7 @@ describe("ClarityService", () => {
   it("should not fetch live data the schema does not match our supported version", (done) => {
     setCachedDataWithVersion(1);
 
-    const logger = TestBed.inject(NGXLogger);
+    const logger = TestBed.inject(LoggingProxyService);
     spyOn(logger, "warn");
     service.load().then(() => {
       expect(logger.warn).toHaveBeenCalledWith(
@@ -121,7 +121,7 @@ describe("ClarityService", () => {
   });
 
   it("should fail gracefully if version fetch fails", (done) => {
-    const logger = TestBed.inject(NGXLogger);
+    const logger = TestBed.inject(LoggingProxyService);
     spyOn(logger, "warn");
     service
       .load()
@@ -139,7 +139,7 @@ describe("ClarityService", () => {
   });
 
   it("should fail gracefully if stats fetch fails", (done) => {
-    const logger = TestBed.inject(NGXLogger);
+    const logger = TestBed.inject(LoggingProxyService);
     spyOn(logger, "warn");
 
     setTimeout(() => {

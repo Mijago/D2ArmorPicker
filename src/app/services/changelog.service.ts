@@ -15,33 +15,56 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { CHANGELOG_DATA } from "../data/changelog";
 import { ChangelogDialogComponent } from "../components/authenticated-v2/components/changelog-dialog/changelog-dialog.component";
 import { MatDialog } from "@angular/material/dialog";
+import { LoggingProxyService } from "./logging-proxy.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class ChangelogService {
-  constructor(public dialog: MatDialog) {}
+export class ChangelogService implements OnDestroy {
+  private hasCheckedForChangelog = false;
+
+  constructor(
+    public dialog: MatDialog,
+    private logger: LoggingProxyService
+  ) {
+    this.logger.debug("ChangelogService", "constructor", "Initializing ChangelogService");
+  }
+
+  ngOnDestroy(): void {
+    this.logger.debug("ChangelogService", "ngOnDestroy", "Destroying ChangelogService");
+  }
 
   setChangelogSeenFlag() {
-    return localStorage.setItem("last-changelog-version", this.changelogData[0].version);
+    return localStorage.setItem("d2ap-changelogVersion-lastRead", this.changelogData[0].version);
+  }
+
+  setlastWipeManifestVersion() {
+    return localStorage.setItem(
+      "d2ap-changelogVersion-lastWipeManifest",
+      this.changelogData[0].version
+    );
+  }
+
+  get lastWipeManifestVersion() {
+    return localStorage.getItem("d2ap-changelogVersion-lastWipeManifest");
   }
 
   get lastViewedChangelog() {
-    return localStorage.getItem("last-changelog-version");
+    return localStorage.getItem("d2ap-changelogVersion-lastRead");
   }
 
   get mustShowChangelog() {
     return this.changelogData[0].version !== this.lastViewedChangelog;
   }
 
-  get wipeManifest() {
+  get shouldWipeManifest() {
     return (
-      this.changelogData[0].version !== this.lastViewedChangelog &&
-      (this.changelogData[0].clearManifest ?? false)
+      (this.changelogData[0].clearManifest ?? false) &&
+      this.changelogData[0].version !== this.lastWipeManifestVersion
     );
   }
 
@@ -54,5 +77,16 @@ export class ChangelogService {
     dialogRef.afterClosed().subscribe((result) => {
       this.setChangelogSeenFlag();
     });
+  }
+
+  /**
+   * Automatically shows the changelog dialog if needed.
+   * Should be called once during app initialization.
+   */
+  checkAndShowChangelog() {
+    if (!this.hasCheckedForChangelog && this.mustShowChangelog) {
+      this.hasCheckedForChangelog = true;
+      this.openChangelogDialog();
+    }
   }
 }

@@ -16,9 +16,10 @@
  */
 
 import { Component, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../services/logging-proxy.service";
 import { ActivatedRoute, Router } from "@angular/router";
-import { AuthService } from "../../services/auth.service";
+import { HttpClientService } from "../../services/http-client.service";
+import { UserInformationService } from "../../services/user-information.service";
 
 @Component({
   selector: "app-handle-bungie-login",
@@ -29,8 +30,9 @@ export class HandleBungieLoginComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private loginService: AuthService,
-    private logger: NGXLogger
+    private httpClient: HttpClientService,
+    private userInfo: UserInformationService,
+    private logger: LoggingProxyService
   ) {}
 
   ngOnInit(): void {
@@ -38,25 +40,65 @@ export class HandleBungieLoginComponent implements OnInit {
       let code = params["code"];
       if (window.location.search.indexOf("?code=") > -1) code = window.location.search.substr(6);
 
-      if (!code) return;
+      if (!code) {
+        this.logger.warn(
+          "HandleBungieLoginComponent",
+          "ngAfterViewInit",
+          "No OAuth code found, redirecting to login"
+        );
+        await this.router.navigate(["/login"]);
+        return;
+      }
 
       this.logger.info(
         "HandleBungieLoginComponent",
-        "ngOnInit",
-        "Code: " + JSON.stringify({ code })
+        "ngAfterViewInit",
+        // replace code with asterisks to avoid leaking it in logs
+        "Code: " + code.replace(/./g, "*")
       );
 
-      this.loginService.authCode = code;
+      this.httpClient.authCode = code;
 
       this.logger.info(
         "HandleBungieLoginComponent",
-        "ngOnInit",
+        "ngAfterViewInit",
         "Generate tokens with the new code"
       );
-      await this.loginService.generateTokens();
 
-      this.logger.info("HandleBungieLoginComponent", "ngOnInit", "Now navigate to /");
-      await this.router.navigate(["/"]);
+      try {
+        const tokenGenerationSuccess = await this.httpClient.generateTokens();
+
+        if (tokenGenerationSuccess && this.httpClient.isAuthenticated()) {
+          this.logger.info(
+            "HandleBungieLoginComponent",
+            "ngAfterViewInit",
+            "Authentication successful, initializing user data"
+          );
+
+          // Initialize user information service for authenticated user
+          this.userInfo.initializeForAuthenticatedUser();
+
+          // Clear the auth code from localStorage after successful token generation
+          this.httpClient.authCode = null;
+          // Use Angular router navigation with replaceUrl to clean up the URL history
+          await this.router.navigate(["/"], { replaceUrl: true });
+        } else {
+          this.logger.error(
+            "HandleBungieLoginComponent",
+            "ngAfterViewInit",
+            "Token generation failed, navigating to login"
+          );
+          await this.router.navigate(["/login"]);
+        }
+      } catch (error) {
+        this.logger.error(
+          "HandleBungieLoginComponent",
+          "ngAfterViewInit",
+          "Error during token generation",
+          error
+        );
+        await this.router.navigate(["/login"]);
+      }
     });
   }
 }

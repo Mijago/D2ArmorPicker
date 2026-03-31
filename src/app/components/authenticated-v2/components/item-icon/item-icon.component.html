@@ -19,6 +19,7 @@
   <img
     class="item-icon"
     src="https://bungie.net/{{ item.icon }}"
+    loading="lazy"
     *ngIf="item.icon"
     #tooltip="matTooltip"
     matTooltip="{{ item.name }}" />
@@ -34,6 +35,7 @@
   <img
     class="item-icon-overlay"
     src="https://bungie.net/{{ item.watermarkIcon }}"
+    loading="lazy"
     *ngIf="item.watermarkIcon" />
   <div
     class="item-source-overlay"

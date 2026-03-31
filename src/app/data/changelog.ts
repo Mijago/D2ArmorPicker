@@ -34,6 +34,141 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.12",
+    date: "February, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated worker spawn logic of armor calculator, to be more readable and for potential future optimizations.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added more logging to the armor calculator worker, to help with debugging if it crashes.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed progress bar for armor calculation, it should now reflect the actual progress of the calculation process.",
+      },
+    ],
+  },
+  {
+    version: "2.9.11",
+    date: "February 19, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the logic for manifest download to use sqlite (if WASM fails, fallback to old JSON method), reduces calls to the API, and memory usage, fixing crashes and performance issues, primarily for iOS users.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Better view for tablet users? Please give feedback on this, screen sizes varies a lot, share your device model/characteristics.",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.10",
+    date: "February 15, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Add a privacy notice, this is due to the session replay added, to help with user experience and debugging. :)",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Add toggle for T5 tuning calculations.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed session replay solution.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Refactored the logic for validating the manifest and inventory to reduce calls and time validating with the BungieAPI.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added advanced setting 'High Speed Mode' that will skip calculations in certain places. May result in missing results, though.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Clustering is updated and re-enabled.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Add toggle for T5 tuning calculations.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed session replay solution.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Refactored the logic for validating the manifest and inventory to reduce calls and time validating with the BungieAPI.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Consolidated the armor initialization logic",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Refactored and consolidated the API token calls",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Moved calculator logic to its own service, to improve code structure and have better handling of when to recalculate",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Implemented a delay for loading the full changelog for iOS users, to help with crashes",
+        issues: [],
+      },
+    ],
+  },
+  {
+    version: "2.9.7",
+    date: "August 27, 2025",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed logic for Manifest and Armor Initialization to avoid race conditions.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed logic to validate Manifest cache, to reduce calls and time validating with the BungieAPI.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Only retrigger armor calculation when vendor data is updated if the vendor data is going to be used",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Adapted the algorithm so that it allows negative stat values.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.6",
     date: "July 31, 2025",
     clearManifest: true,

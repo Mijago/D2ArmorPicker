@@ -16,10 +16,10 @@
   -->
 
 <div class="character-container">
-  <div *ngIf="userdata.characters.length === 0" class="character-entry"> Loading characters.. </div>
+  <div *ngIf="characters.length === 0" class="character-entry"> Loading characters.. </div>
   <div
     (click)="selectClass(char.clazz)"
-    *ngFor="let char of userdata.characters; let idx = index"
+    *ngFor="let char of characters; let idx = index"
     [class.selected]="selectedClass === char.clazz"
     [style.background-image]="'url(https://bungie.net/' + char.emblemUrl + ')'"
     class="character-entry"

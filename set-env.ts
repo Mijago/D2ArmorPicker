@@ -17,48 +17,95 @@
 
 const writeFile = require("fs").writeFile;
 
-const production = process.env["PRODUCTION"] === "1";
-const beta_branch = process.env["BETA"] === "1";
-const canary_branch = process.env["CANARY"] === "1";
+// RELEASE can be one of: 'PROD', 'BETA', 'CANARY'. Defaults to 'CANARY' if missing/invalid
+const releaseRaw = (process.env["RELEASE"] || "").toUpperCase();
+const release = ["PROD", "BETA", "CANARY", "DEV"].includes(releaseRaw) ? releaseRaw : "DEV";
 
-const version = "2.9.6";
+const is_production = release === "PROD";
+const is_beta = release === "BETA";
+const is_canary = release === "CANARY";
+const is_dev = release === "DEV";
+
+const version = "2.9.10";
 
 // Configure Angular `environment.ts` file path
-const targetPath = production
+const targetPath = "./src/environments/environment.ts";
+
+const copyPath = is_production
   ? "./src/environments/environment.prod.ts"
-  : beta_branch || canary_branch
-    ? "./src/environments/environment.prod.ts"
-    : "./src/environments/environment.ts";
+  : is_beta
+    ? "./src/environments/environment.beta.ts"
+    : is_canary
+      ? "./src/environments/environment.canary.ts"
+      : "./src/environments/environment.dev.ts";
 // Load node modules
 
-const dotenvfile = production
+const dotenvfile = is_production
   ? ".env"
-  : beta_branch
+  : is_beta
     ? ".env_beta"
-    : canary_branch
+    : is_canary
       ? ".env_canary"
       : ".env_dev";
 
-require("dotenv").config({ path: dotenvfile });
+// Only load from .env if key variables are not already present in the environment
+const requiredEnvKeys = [
+  "D2AP_BUNGIE_API_KEY",
+  "D2AP_BUNGIE_CLIENT_ID",
+  "D2AP_BUNGIE_CLIENT_SECRET",
+  "D2AP_OPEN_REPLAY_PROJECT_KEY",
+  "D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION",
+  "D2AP_FEATURE_ENABLE_ZERO_WASTE",
+  "D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES",
+  "D2AP_SHOW_LOGS",
+  // Feature flags are optional; they default to disabled when not set
+];
+
+const optionalEnvKeys = ["D2AP_SENTRY_DSN"];
+
+const hasAllRequiredEnv = requiredEnvKeys.every((k) => {
+  const val = process.env[k] ?? "";
+  return val.length > 0;
+});
+
+if (!hasAllRequiredEnv) {
+  const dotenv = require("dotenv");
+  const result = dotenv.config({ path: dotenvfile });
+  if (result.error) {
+    throw new Error(`Failed to load env file at ${dotenvfile}: ${result.error}`);
+  }
+  // After attempting to load, warn for any missing keys
+  const missingKeys = requiredEnvKeys.filter((k) => !process.env[k]);
+  if (missingKeys.length > 0) {
+    throw new Error(
+      `Missing required environment variables after loading ${dotenvfile}: ${missingKeys.join(", ")}`
+    );
+  }
+} else {
+  console.log("Environment variables already set; skipping .env file load.");
+}
 
 const revision = require("child_process").execSync("git rev-parse --short HEAD").toString().trim();
 
-var version_tag = production ? "" : beta_branch ? "-beta-" + revision : "-dev-" + revision;
+var version_tag = is_production ? "" : is_beta ? "-beta-" + revision : "-dev-" + revision;
 
-console.log(`Reading ${dotenvfile} version ${version + version_tag}`);
+console.log(`Reading ${dotenvfile} version ${version + version_tag} (RELEASE=${release})`);
 
 const data = {
   version: version + version_tag,
   revision: revision,
-  production: production,
-  beta: beta_branch,
-  canary: canary_branch,
+  production: is_production,
+  beta: is_beta,
+  canary: is_canary,
   apiKey: process.env["D2AP_BUNGIE_API_KEY"],
   clientId: process.env["D2AP_BUNGIE_CLIENT_ID"],
   client_secret: process.env["D2AP_BUNGIE_CLIENT_SECRET"],
   nodeEnv: process.env["NODE_ENV"],
   offlineMode: false,
-  highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
+  // highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
+  open_replay_project_key: process.env["D2AP_OPEN_REPLAY_PROJECT_KEY"],
+  sentryDsn: process.env["D2AP_SENTRY_DSN"],
+  showLogs: process.env["D2AP_SHOW_LOGS"] == "1",
   featureFlags: {
     enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
     enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",
@@ -72,6 +119,14 @@ writeFile(targetPath, envConfigFile, (err: NodeJS.ErrnoException | null) => {
   if (err) {
     throw console.error(err);
   } else {
-    console.log(`Angular environment.ts file generated correctly at ${targetPath} \n`);
+    console.log(`Angular environment.ts file generated correctly\n`);
+
+    writeFile(copyPath, envConfigFile, (err2: NodeJS.ErrnoException | null) => {
+      if (err2) {
+        throw console.error(err2);
+      } else {
+        console.log(`Active Angular environment copied to ${copyPath}`);
+      }
+    });
   }
 });

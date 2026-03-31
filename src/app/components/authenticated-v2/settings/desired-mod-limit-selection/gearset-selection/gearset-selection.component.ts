@@ -16,14 +16,14 @@
  */
 
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { Subject } from "rxjs";
 import { distinctUntilChanged, takeUntil } from "rxjs/operators";
 import { FORCE_USE_NO_EXOTIC } from "src/app/data/constants";
 import { ConfigurationService } from "src/app/services/configuration.service";
 import { DatabaseService } from "src/app/services/database.service";
-import { InventoryService } from "src/app/services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 
 interface GearSetBonus {
   perk: DestinySandboxPerkDefinition | undefined;
@@ -47,10 +47,10 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
   private refreshingGearsets = false;
   public gearSets: GearSet[] = [];
   constructor(
-    private inventoryService: InventoryService,
+    private inventoryService: UserInformationService,
     private db: DatabaseService,
     private config: ConfigurationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
   ngOnInit(): void {
     this.inventoryService.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async () => {

@@ -1,0 +1,108 @@
+/*
+ * Copyright (c) 2023 D2ArmorPicker by Mijago.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.result-table {
+  --mat-table-header-container-height: 38px !important;
+  --mat-table-row-item-container-height: 32px !important;
+}
+
+.result-element-row > .cdk-cell {
+  padding-block: 5px;
+}
+
+.mdc-data-table__cell,
+.mdc-data-table__header-cell {
+  padding: 0px;
+}
+
+.statColumn {
+  position: relative;
+}
+
+.statIcon {
+  position: absolute;
+  height: 22px;
+  margin-left: 2px;
+  top: 8px;
+}
+
+.itemDiv {
+  display: flex;
+  margin: auto;
+  width: 32px;
+  height: 32px;
+}
+
+.itemIcon {
+  width: inherit;
+  height: inherit;
+  position: absolute;
+}
+
+.itemIconWatermark {
+  width: inherit;
+  height: inherit;
+  pointer-events: none;
+  position: relative;
+}
+
+.source-column {
+  float: left;
+
+  img:nth-of-type(2) {
+    margin-top: 5px;
+    margin-bottom: -3px;
+  }
+}
+
+.collectionIcon,
+.vendorIcon {
+  width: 32px;
+  margin-left: 3px;
+  display: block;
+}
+
+tr.result-element-row td {
+  border-bottom-width: 0;
+}
+
+tr.result-detail-row {
+  height: 0 !important;
+}
+
+.result-element-detail {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.result-table tr.result-element-row {
+  cursor: pointer;
+}
+
+.mat-row:nth-child(4n + 3) {
+  background-color: rgba(116, 116, 116, 0.1);
+}
+
+.cdk-column-exotic {
+  min-width: 65px;
+}
+
+.cdk-column-waste {
+  padding-left: 5px;
+}

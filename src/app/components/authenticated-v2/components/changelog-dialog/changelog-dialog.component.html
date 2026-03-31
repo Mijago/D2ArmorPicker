@@ -18,13 +18,18 @@
 <h2 mat-dialog-title class="title"
   >D2ArmorPicker Changelog for Version {{ changelog.changelogData[0].version }}</h2
 >
-<mat-dialog-content class="mat-typography">
+<mat-dialog-content class="mat-typography" style="display: flex; flex-direction: column">
   <div>
     Hi! There has been a new version of D2ArmorPicker! The following list shows all the relevant
     changes. Note that you can always look at the changelogs in the Help tab.
   </div>
 
-  <app-changelog-list></app-changelog-list>
+  <app-changelog-list
+    *ngIf="showChangelogList"
+    [itemsToShow]="changelogItemsToShow"></app-changelog-list>
+  <div *ngIf="!showChangelogList" style="display: flex; justify-content: center; padding: 20px">
+    Loading changelog...
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button [mat-dialog-close]="true" cdkFocusInitial color="primary" mat-raised-button

@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from "@angular/core";
+import { APP_INITIALIZER, ErrorHandler, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
+import * as Sentry from "@sentry/angular";
 import { AppComponent } from "./app.component";
 import { LoginComponent } from "./components/login/login.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientModule } from "@angular/common/http";
-import { RouterModule, Routes } from "@angular/router";
+import { Router, RouterModule, Routes } from "@angular/router";
 import { HandleBungieLoginComponent } from "./components/handle-bungie-login/handle-bungie-login.component";
 import { AuthenticatedGuard } from "./guards/authenticated.guard";
 import { NotAuthenticatedGuard } from "./guards/not-authenticated.guard";
@@ -52,7 +53,6 @@ import { ItemTooltipRendererDirective } from "./components/authenticated-v2/over
 import { ItemIconComponent } from "./components/authenticated-v2/components/item-icon/item-icon.component";
 import { ArmorInvestigationPageComponent } from "./components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component";
 import { ChangelogDialogComponent } from "./components/authenticated-v2/components/changelog-dialog/changelog-dialog.component";
-import { ChangelogDialogControllerComponent } from "./components/authenticated-v2/components/changelog-dialog-controller/changelog-dialog-controller.component";
 import { ChangelogListComponent } from "./components/authenticated-v2/components/changelog-list/changelog-list.component";
 import { LayoutModule } from "@angular/cdk/layout";
 import { ArmorPerkIconComponent } from "./components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component";
@@ -71,39 +71,116 @@ import {
   VendorIdFromItemIdPipe,
   VendorNamePipe,
 } from "./components/authenticated-v2/pipes/vendor-name-pipe";
+import { LogLevelPipe } from "./components/authenticated-v2/pipes/log-level.pipe";
 
 import { environment } from "../environments/environment";
-import { H } from "highlight.run";
+// import { H } from "highlight.run";
+import Tracker from "@openreplay/tracker";
+import trackerAssist from "@openreplay/tracker-assist";
+
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
+import { ResultsTableViewComponent } from "./components/authenticated-v2/results/results-table-view/results-table-view.component";
 import { GearsetSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/gearset-selection/gearset-selection.component";
 import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
 import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
-if (!!environment.highlight_project_id) {
-  H.init(environment.highlight_project_id, {
-    environment: environment.production
-      ? "production"
-      : environment.beta
-        ? "beta"
-        : environment.canary
-          ? "canary"
-          : "dev",
-    tracingOrigins: true,
-    inlineImages: false,
-    version: environment.version,
-    networkRecording: {
-      enabled: true,
-      recordHeadersAndBody: false,
-      urlBlocklist: [
-        "https://bungie.net/common/destiny2_content/icons/",
-        "https://www.bungie.net/img/",
-      ],
-    },
-  });
+let openReplayTracker: Tracker;
+
+export function identifyUserWithTracker(membershipData: GroupUserInfoCard | null) {
+  try {
+    openReplayTracker.setMetadata("version", `${environment.version}`);
+
+    if (!membershipData) return;
+    const identifier = `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`;
+
+    openReplayTracker.identify(identifier);
+    openReplayTracker.setMetadata(
+      "bungieGlobalDisplayName",
+      membershipData.bungieGlobalDisplayName
+    );
+    openReplayTracker.setMetadata(
+      "bungieGlobalDisplayNameCode",
+      (membershipData.bungieGlobalDisplayNameCode ?? -1).toString()
+    );
+    openReplayTracker.setMetadata("membershipType", membershipData.membershipType.toString());
+    openReplayTracker.setMetadata(
+      "applicableMembershipTypes",
+      JSON.stringify(membershipData.applicableMembershipTypes)
+    );
+
+    // Identify user with Sentry
+    Sentry.setUser({
+      id: identifier,
+      username: membershipData.displayName,
+      email: membershipData.bungieGlobalDisplayName,
+      extra: {
+        membershipId: membershipData.membershipId,
+        membershipType: membershipData.membershipType,
+        bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
+        applicableMembershipTypes: membershipData.applicableMembershipTypes,
+        iconPath: membershipData.iconPath,
+      },
+    });
+    // H.identify(identifier, {
+    //   highlightDisplayName: `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`,
+    //   avatar: `https://bungie.net${membershipData.iconPath}`,
+    //   bungieGlobalDisplayName: membershipData.bungieGlobalDisplayName,
+    //   bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
+    //   membershipType: membershipData.membershipType,
+    //   applicableMembershipTypes: JSON.stringify(membershipData.applicableMembershipTypes),
+    // });
+  } catch (err) {
+    console.error("Error identifying user with tracker", err);
+  }
 }
+
+try {
+  openReplayTracker = new Tracker({
+    projectKey: environment.open_replay_project_key,
+  });
+
+  openReplayTracker.start();
+  const options = {};
+  openReplayTracker.use(trackerAssist(options)); // check the list of available options below
+
+  let membershipInfo: GroupUserInfoCard | null = JSON.parse(
+    localStorage.getItem("user-membershipInfo") || "null"
+  );
+  if (membershipInfo) {
+    console.log("Found cached membership info, using it to identify user in OpenReplay");
+  }
+  identifyUserWithTracker(membershipInfo);
+} catch (e) {
+  console.error("Failed to initialize OpenReplay tracker", e);
+}
+
+// if (!!environment.highlight_project_id) {
+//   H.init(environment.highlight_project_id, {
+//     environment: environment.production
+//       ? "production"
+//       : environment.beta
+//         ? "beta"
+//         : environment.canary
+//           ? "canary"
+//           : "dev",
+//     tracingOrigins: true,
+//     inlineImages: false,
+//     version: environment.version,
+//     networkRecording: {
+//       enabled: true,
+//       recordHeadersAndBody: false,
+//       urlBlocklist: [
+//         "https://bungie.net/common/destiny2_content/icons/",
+//         "https://www.bungie.net/img/",
+//       ],
+//     },
+//   });
+// }
 
 import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
 import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
+import { PrivacyPolicyComponent } from "./components/privacy-policy/privacy-policy.component";
+import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 
 const routes: Routes = [
   {
@@ -134,8 +211,9 @@ const routes: Routes = [
     ],
   },
   //{path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
+  { path: "privacy-policy", component: PrivacyPolicyComponent },
   { path: "login", component: LoginComponent, canActivate: [NotAuthenticatedGuard] },
-  { path: "login-bungie", component: HandleBungieLoginComponent },
+  { path: "authenticate", component: HandleBungieLoginComponent },
   { path: "**", redirectTo: "/" },
 ];
 
@@ -164,6 +242,7 @@ const routes: Routes = [
     CountElementInListPipe,
     VendorIdFromItemIdPipe,
     VendorNamePipe,
+    LogLevelPipe,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
@@ -174,7 +253,6 @@ const routes: Routes = [
     ItemIconComponent,
     ArmorInvestigationPageComponent,
     ChangelogDialogComponent,
-    ChangelogDialogControllerComponent,
     ChangelogListComponent,
     ArmorPerkIconComponent,
     ExoticPerkTooltipComponent,
@@ -187,9 +265,11 @@ const routes: Routes = [
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
     ResultsCardViewComponent,
+    ResultsTableViewComponent,
     GearsetSelectionComponent,
     ModslotVisualizationComponent,
     ModLimitSegmentedComponent,
+    PrivacyPolicyComponent,
   ],
   imports: [
     CommonModule,
@@ -198,16 +278,38 @@ const routes: Routes = [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    RouterModule.forRoot(routes, { useHash: true }),
+    RouterModule.forRoot(routes, { useHash: false }),
     ClipboardModule,
     LayoutModule,
     LoggerModule.forRoot({
-      serverLoggingUrl: "/api/logs",
+      // serverLoggingUrl: "/api/logs",
       level: environment.production ? NgxLoggerLevel.ERROR : NgxLoggerLevel.DEBUG,
       serverLogLevel: NgxLoggerLevel.ERROR,
     }),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler({
+        showDialog: false,
+      }),
+    },
+
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler(),
+    },
+    {
+      provide: Sentry.TraceService,
+      deps: [Router],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => () => {},
+      deps: [Sentry.TraceService],
+      multi: true,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

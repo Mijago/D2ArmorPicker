@@ -15,44 +15,99 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component } from "@angular/core";
+import { AfterViewInit, Component, OnInit } from "@angular/core";
 import { environment } from "../environments/environment";
-import { InventoryService } from "./services/inventory.service";
-import { NGXLogger } from "ngx-logger";
+import { UserInformationService } from "src/app/services/user-information.service";
+import { LoggingProxyService, LogEntry } from "./services/logging-proxy.service";
+import { AuthService } from "./services/auth.service";
+import { Observable } from "rxjs";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnInit {
   title = "D2ArmorPicker";
   is_beta = environment.beta;
   is_canary = environment.canary;
+  showLogs = environment.showLogs;
+  recentLogs$: Observable<LogEntry[]>;
 
   constructor(
-    private inventoryService: InventoryService,
-    private logger: NGXLogger
-  ) {}
+    private userInformationService: UserInformationService,
+    private logger: LoggingProxyService,
+    public authService: AuthService
+  ) {
+    this.recentLogs$ = this.logger.getRecentLogs();
+  }
+
+  ngOnInit() {
+    this.logger.debug("AppComponent", "ngOnInit", "Application initialized");
+    window.addEventListener("unhandledrejection", (event) => {
+      this.logger.error("AppV2CoreComponent", "Unhandled Promise Rejection", JSON.stringify(event));
+    });
+    window.onerror = (errorMsg, url, lineNumber) => {
+      this.logger.error(
+        "AppV2CoreComponent",
+        "Unhandled Error",
+        JSON.stringify({ errorMsg, url, lineNumber })
+      );
+      return false;
+    };
+  }
+
   ngAfterViewInit(): void {
-    // Check if InventoryService is initialized after 2 seconds
+    // Check if UserInformationService is initialized after 10 seconds
     // if not, forcefully trigger an initial refreshAll
     setTimeout(() => {
-      if (!this.inventoryService.isInitialized) {
+      if (
+        !this.userInformationService.isInitialized &&
+        !this.userInformationService.isFetchingManifest
+      ) {
         this.logger.warn(
           "AppComponent",
           "ngAfterViewInit",
-          "InventoryService is not initialized after 2 seconds, triggering initial refreshAll."
+          "UserInformationService is not initialized after 10 seconds, triggering initial refreshManifestAndArmor."
         );
-        this.inventoryService.refreshAll(true, true).catch((err) => {
+        this.userInformationService.refreshManifestAndInventory(true, true).catch((err) => {
           this.logger.error(
             "AppComponent",
             "ngAfterViewInit",
-            "Error during initial refreshAll:",
+            "Error during initial refreshManifestAndArmor:",
             err
           );
         });
       }
-    }, 2000);
+    }, 10 * 1000);
+  }
+
+  /**
+   * Get CSS class for log level
+   */
+  getLogLevelClass(level: number): string {
+    switch (level) {
+      case 0: // TRACE
+        return "log-trace";
+      case 1: // DEBUG
+        return "log-debug";
+      case 2: // INFO
+        return "log-info";
+      case 3: // WARN
+        return "log-warn";
+      case 4: // ERROR
+        return "log-error";
+      case 5: // FATAL
+        return "log-fatal";
+      default:
+        return "log-info";
+    }
+  }
+
+  /**
+   * Clear recent logs
+   */
+  clearLogs(): void {
+    this.logger.clearRecentLogs();
   }
 }

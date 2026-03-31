@@ -17,7 +17,7 @@
 
 import { Component, Input, OnInit } from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
-import { InventoryService } from "../../../../services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 
 @Component({
@@ -34,7 +34,7 @@ export class ExoticPerkTooltipComponent implements OnInit {
   exoticPerkNotThere: boolean = false;
 
   constructor(
-    public inv: InventoryService,
+    public inv: UserInformationService,
     public iconService: ItemIconServiceService
   ) {}
 

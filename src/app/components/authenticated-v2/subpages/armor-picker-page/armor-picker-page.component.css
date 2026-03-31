@@ -19,4 +19,8 @@
   width: fit-content;
   margin-right: 3px;
   white-space: nowrap;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }

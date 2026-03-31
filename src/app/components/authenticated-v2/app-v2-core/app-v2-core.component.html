@@ -29,67 +29,18 @@
     </mat-toolbar>
   </div>
 
-  <mat-sidenav-container>
-    <mat-sidenav
-      #drawer
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [opened]="false"
-      class="sidenav"
-      fixedInViewport
-      mode="over">
-      <mat-sidenav-content>
-        <mat-toolbar>
-          <button
-            (click)="drawer.toggle()"
-            aria-label="Toggle sidenav"
-            mat-stroked-button
-            type="button">
-            <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-            Close Menu
-          </button>
-        </mat-toolbar>
-        <hr />
-        <mat-nav-list>
-          <a
-            (click)="drawer.toggle()"
-            *ngFor="let link of navLinks; let idx = index"
-            [class.active]="activeLinkIndex === idx"
-            [routerLink]="link.link"
-            mat-list-item>
-            {{ link.name }}
-          </a>
-          <hr />
-          <a href="https://ko-fi.com/mijago" mat-list-item>
-            <a
-              color="primary"
-              mat-raised-button
-              matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
-              target="_blank">
-              <mat-icon inline>attach_money</mat-icon>
-              Buy me a coffee!
-            </a>
-          </a>
-          <a (click)="changelog.openChangelogDialog()" mat-list-item>
-            <a mat-raised-button> Open changelog </a>
-          </a>
-          <hr />
-        </mat-nav-list>
-      </mat-sidenav-content>
-    </mat-sidenav>
-  </mat-sidenav-container>
-
   <mat-toolbar id="header" role="heading">
-    <!-- Toggle Button for Sidenav -->
+    <!-- Mobile Menu Toggle -->
     <button
-      (click)="drawer.toggle()"
       *ngIf="isHandset$ | async"
+      (click)="drawer.toggle()"
       aria-label="Toggle sidenav"
       mat-icon-button
       type="button">
       <mat-icon>menu</mat-icon>
     </button>
 
-    <!-- Header Title with Links -->
+    <!-- App Title and Social Links -->
     <span>
       D2ArmorPicker <small>by Mijago</small>
       <a
@@ -115,10 +66,9 @@
       </a>
     </span>
 
-    <!-- Spacer for Flex Layout -->
     <span class="header-spacer"></span>
 
-    <!-- Navigation Links (Hidden on Small Screens) -->
+    <!-- Desktop Navigation -->
     <div class="hide-sm">
       <nav id="navbar" mat-tab-nav-bar [tabPanel]="tabPanel">
         <a
@@ -132,18 +82,17 @@
       <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
     </div>
 
-    <!-- Another Spacer -->
     <span class="header-spacer"></span>
 
-    <!-- Buttons on the Right -->
+    <!-- Header Action Buttons -->
     <div id="buttonContainer">
       <a
         (click)="changelog.openChangelogDialog()"
         style="color: white"
         class="changelogText hide-sm"
-        matTooltip="View the changelog dialog."
-        >v{{ version }}</a
-      >
+        matTooltip="View the changelog dialog.">
+        v{{ version }}
+      </a>
 
       <a
         color="accent"
@@ -178,8 +127,6 @@
     </div>
   </mat-toolbar>
 
-  <router-outlet></router-outlet>
-
   <span *ngVar="status.status | async as stat">
     <mat-progress-bar
       *ngIf="
@@ -193,6 +140,8 @@
       id="loading"
       mode="indeterminate"></mat-progress-bar>
   </span>
+
+  <router-outlet></router-outlet>
 
   <div *ngVar="status.status | async as stat" class="info-container">
     <mat-card appearance="outlined" *ngIf="stat.updatingVendors" class="info info-updating-vendor">
@@ -233,5 +182,60 @@
       <mat-card-content>Please wait:<br />Updating the result display table. </mat-card-content>
     </mat-card>
   </div>
-  <app-changelog-dialog-controller></app-changelog-dialog-controller>
+
+  <!-- Mobile Navigation Drawer -->
+  <mat-sidenav-container>
+    <mat-sidenav
+      #drawer
+      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+      [opened]="false"
+      class="sidenav"
+      fixedInViewport
+      mode="over">
+      <mat-sidenav-content>
+        <mat-toolbar>
+          <button
+            (click)="drawer.toggle()"
+            aria-label="Toggle sidenav"
+            mat-stroked-button
+            type="button">
+            <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            Close Menu
+          </button>
+        </mat-toolbar>
+
+        <hr />
+
+        <mat-nav-list>
+          <a
+            *ngFor="let link of navLinks; let idx = index"
+            (click)="drawer.toggle()"
+            [class.active]="activeLinkIndex === idx"
+            [routerLink]="link.link"
+            mat-list-item>
+            {{ link.name }}
+          </a>
+
+          <hr />
+
+          <a href="https://ko-fi.com/mijago" mat-list-item>
+            <a
+              color="primary"
+              mat-raised-button
+              matTooltip="You like my work? This leads you to ko-fi.com, where you can easily support me!"
+              target="_blank">
+              <mat-icon inline>attach_money</mat-icon>
+              Buy me a coffee!
+            </a>
+          </a>
+
+          <a (click)="changelog.openChangelogDialog()" mat-list-item>
+            <a mat-raised-button>Open changelog</a>
+          </a>
+
+          <hr />
+        </mat-nav-list>
+      </mat-sidenav-content>
+    </mat-sidenav>
+  </mat-sidenav-container>
 </div>

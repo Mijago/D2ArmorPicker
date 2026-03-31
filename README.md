@@ -39,8 +39,8 @@ D2ArmorPicker is a powerful web-based tool designed for Destiny 2 players who wa
 ### Building Production and Beta packages
 
 - Copy `.env_dev` to `.env` and/or `.env_beta`.
-- To build a production package, set the environment flag `PRODUCTION=1`.
-- To build a beta package, set the environment flag `BETA=1`.
+- To build a production package, set the environment flag `RELEASE=PROD`.
+- To build a beta package, set the environment flag `RELEASE=BETA`.
 
 Then you can use `npm run build`.
 
@@ -48,7 +48,7 @@ Then you can use `npm run build`.
 
 You can also deploy the page to a "github pages" page. Please note that I strongly discourage hosting alternative D2AP installations, let's make this one as awesome as possible.
 
-1. Set the environment flag `BETA=1` or `PRODUCTION=1`.
+1. Set the environment flag `RELEASE` to one of the posible values `PROD`, `BETA`, `CANARY`, `DEV`.
 1. Modify the `deploy` script in `package.json` and remove`--base-href=/ --cname=d2armorpicker.com`. The same for the beta command. If you deploy to `yourname.github.io/fancyrepo`, then you may have to set `--base-href=/fancyrepo`.
 1. `npm run deploy` (given you forked the repository first).
 

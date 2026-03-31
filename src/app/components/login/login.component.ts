@@ -51,6 +51,26 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.startAutoScroll();
+    // remove extraneous data from localStorage
+    const openReplayUuid = localStorage.getItem("__openreplay_uuid");
+    const clarityCharacterStats = localStorage.getItem("clarity-character-stats");
+    const clarityCharacterStatsVersion = localStorage.getItem("clarity-character-stats-version");
+    const d2apChangelogVersionLastRead = localStorage.getItem("d2ap-changelogVersion-lastRead");
+    const d2apDbLastName = localStorage.getItem("d2ap-db-lastName");
+    const d2apManifestLastDate = localStorage.getItem("d2ap-manifest-lastDate");
+    const d2apManifestLastVersion = localStorage.getItem("d2ap-manifest-lastVersion");
+    localStorage.clear();
+    if (openReplayUuid) localStorage.setItem("__openreplay_uuid", openReplayUuid);
+    if (clarityCharacterStats)
+      localStorage.setItem("clarity-character-stats", clarityCharacterStats);
+    if (clarityCharacterStatsVersion)
+      localStorage.setItem("clarity-character-stats-version", clarityCharacterStatsVersion);
+    if (d2apChangelogVersionLastRead)
+      localStorage.setItem("d2ap-changelogVersion-lastRead", d2apChangelogVersionLastRead);
+    if (d2apDbLastName) localStorage.setItem("d2ap-db-lastName", d2apDbLastName);
+    if (d2apManifestLastDate) localStorage.setItem("d2ap-manifest-lastDate", d2apManifestLastDate);
+    if (d2apManifestLastVersion)
+      localStorage.setItem("d2ap-manifest-lastVersion", d2apManifestLastVersion);
   }
 
   ngOnDestroy() {

@@ -145,6 +145,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         ],
         "Performance Optimization": [
           {
+            name: "Use Tier 5 tuning for armor pieces.",
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.calculateTierFiveTuning = v)),
+            value: c.calculateTierFiveTuning,
+            disabled: false,
+            impactsResultCount: true,
+            help: "Calculate the Tier 5 tuning for armor pieces. This may lead to longer calculation times.",
+          },
+          {
             name: "Use security features to prevent app crashes (resets on reload).",
             type: "boolean",
             onToggle: (v: boolean) =>
@@ -153,6 +163,16 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: "Only parse the first 30,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled.",
+          },
+          {
+            name: "High-Speed mode: Only check one class item for each permutation",
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.earlyAbortClassItems = v)),
+            value: c.earlyAbortClassItems,
+            disabled: false,
+            impactsResultCount: true,
+            help: "This will speed up the calculation by aborting early if no valid class item is found for a permutation.",
           },
         ],
         "Wasted Stats": [

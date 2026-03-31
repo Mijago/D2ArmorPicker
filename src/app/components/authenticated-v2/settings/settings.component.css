@@ -23,6 +23,10 @@
   margin-bottom: 20px;
   margin-left: 3px;
   margin-right: 3px;
+
+  @media (min-width: 1360px) {
+    max-width: 49vw;
+  }
 }
 
 #card-config > mat-card {

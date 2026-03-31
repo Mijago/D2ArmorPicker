@@ -27,7 +27,7 @@ import {
   ElementRef,
   AfterViewChecked,
 } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -57,7 +57,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
 
-  constructor(private logger: NGXLogger) {}
+  constructor(private logger: LoggingProxyService) {}
 
   ngOnInit(): void {
     // Generate values from 0 to 200

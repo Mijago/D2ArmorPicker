@@ -15,13 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  OnDestroy,
+  ChangeDetectorRef,
+  NgZone,
+} from "@angular/core";
+import { LoggingProxyService } from "../../../services/logging-proxy.service";
 import { StatusProviderService } from "../../../services/status-provider.service";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { map, shareReplay } from "rxjs/operators";
-import { InventoryService } from "../../../services/inventory.service";
+import { map, shareReplay, takeUntil } from "rxjs/operators";
+import { UserInformationService } from "src/app/services/user-information.service";
+import { ArmorCalculatorService } from "../../../services/armor-calculator.service";
 import { AuthService } from "../../../services/auth.service";
 import { NavigationEnd, Router } from "@angular/router";
 import { environment } from "../../../../environments/environment";
@@ -32,15 +41,21 @@ import { CharacterStatsService } from "../../../services/character-stats.service
   selector: "app-app-v2-core",
   templateUrl: "./app-v2-core.component.html",
   styleUrls: ["./app-v2-core.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppV2CoreComponent implements OnInit {
+export class AppV2CoreComponent implements OnInit, AfterViewInit, OnDestroy {
   version = environment.version;
   activeLinkIndex = 0;
   computationProgress = 0;
+  private ngUnsubscribe = new Subject();
   navLinks = [
     {
       link: "/",
       name: "Home",
+    },
+    {
+      link: "/cluster",
+      name: "Clustering",
     },
     {
       link: "/help",
@@ -50,18 +65,27 @@ export class AppV2CoreComponent implements OnInit {
       link: "/account",
       name: "Account",
     },
+    {
+      link: "/privacy-policy",
+      name: "Privacy Policy",
+    },
   ];
 
   constructor(
     public status: StatusProviderService,
     private breakpointObserver: BreakpointObserver,
-    private inv: InventoryService,
+    private inv: UserInformationService,
+    private armorCalculator: ArmorCalculatorService,
     private auth: AuthService,
     private router: Router,
     private characterStats: CharacterStatsService,
     public changelog: ChangelogService,
-    private logger: NGXLogger
-  ) {}
+    private logger: LoggingProxyService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {
+    this.logger.debug("AppV2CoreComponent", "constructor", "Component initialized");
+  }
 
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe([Breakpoints.Handset, Breakpoints.Small, Breakpoints.XSmall])
@@ -81,20 +105,54 @@ export class AppV2CoreComponent implements OnInit {
           this.navLinks.find((tab) => tab.link === this.router.url) as any
         );
     });
+  }
 
+  ngAfterViewInit(): void {
+    this.logger.debug("AppV2CoreComponent", "ngAfterViewInit", "Component after view initialized");
+    this.changelog.checkAndShowChangelog();
     this.characterStats.loadCharacterStats();
-
-    this.inv.calculationProgress.subscribe((progress) => {
-      this.computationProgress = progress;
-    });
+    this.armorCalculator.calculationProgress
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((progress) => {
+        this.ngZone.run(() => {
+          this.computationProgress = progress;
+          this.cdr.markForCheck();
+        });
+      });
   }
 
   async refreshAll(b: boolean) {
     this.logger.debug("AppV2CoreComponent", "refreshAll", "Trigger refreshAll due to button press");
-    await this.inv.refreshAll(b);
+    try {
+      await this.inv.refreshManifestAndInventory(b);
+    } catch (error) {
+      this.logger.error(
+        "AppV2CoreComponent",
+        "refreshAll",
+        "Failed to refresh manifest and inventory",
+        error
+      );
+    }
   }
 
-  logout() {
-    this.auth.logout();
+  async logout() {
+    try {
+      await this.auth.logout();
+      this.logger.debug("AppV2CoreComponent", "logout", "Logout successful, navigating to login");
+      await this.router.navigate(["login"]);
+    } catch (error) {
+      this.logger.error("AppV2CoreComponent", "logout", "Failed during logout process", error);
+      // Still try to navigate even if logout fails
+      try {
+        await this.router.navigate(["login"]);
+      } catch (navError) {
+        this.logger.error("AppV2CoreComponent", "logout", "Failed to navigate to login", navError);
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

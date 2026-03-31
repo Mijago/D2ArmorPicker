@@ -15,20 +15,498 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-:host ::ng-deep .mat-line {
-  word-wrap: break-word !important;
-  white-space: pre-wrap !important;
+.changelog-container {
+  max-height: 70vh;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-y: auto; // Ensure container can scroll if height is constrained
+
+  .version-card {
+    margin-bottom: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+      transform: translateY(-2px);
+    }
+
+    &.latest-version {
+      background: linear-gradient(135deg, rgba(63, 81, 181, 0.08), rgba(33, 150, 243, 0.08));
+      border: 2px solid rgba(63, 81, 181, 0.2);
+
+      .version-header {
+        background: linear-gradient(135deg, rgba(63, 81, 181, 0.1), rgba(33, 150, 243, 0.1));
+      }
+    }
+
+    .version-header {
+      background: rgba(0, 0, 0, 0.04);
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+      .version-info {
+        width: 100%;
+
+        .version-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 8px;
+          color: rgba(0, 0, 0, 0.87);
+
+          .version-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            color: #3f51b5;
+          }
+
+          .version-number {
+            font-family: "Roboto Mono", monospace;
+            background: rgba(63, 81, 181, 0.1);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+          }
+
+          .latest-badge {
+            font-size: 0.75rem;
+            height: 24px;
+            line-height: 24px;
+            background: #4caf50;
+            color: white;
+          }
+        }
+
+        .release-date {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.9rem;
+          color: rgba(0, 0, 0, 0.6);
+          margin: 0;
+
+          .date-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+
+    .changelog-content {
+      padding: 0;
+
+      .entries-list {
+        .changelog-entry {
+          padding: 12px 24px;
+          border-left: 4px solid transparent;
+          transition: all 0.2s ease-in-out;
+          min-height: auto;
+          height: auto;
+          align-items: flex-start;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+          }
+
+          &.entry-add {
+            border-left-color: #4caf50;
+
+            .entry-icon.icon-add {
+              color: #4caf50;
+              background: rgba(76, 175, 80, 0.1);
+              border-radius: 50%;
+              padding: 4px;
+            }
+          }
+
+          &.entry-remove {
+            border-left-color: #f44336;
+
+            .entry-icon.icon-remove {
+              color: #f44336;
+              background: rgba(244, 67, 54, 0.1);
+              border-radius: 50%;
+              padding: 4px;
+            }
+          }
+
+          &.entry-modified {
+            border-left-color: #ff9800;
+
+            .entry-icon.icon-modified {
+              color: #ff9800;
+              background: rgba(255, 152, 0, 0.1);
+              border-radius: 50%;
+              padding: 4px;
+            }
+          }
+
+          .entry-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            margin-right: 16px;
+            margin-top: 2px;
+            flex-shrink: 0;
+          }
+
+          .entry-content {
+            flex: 1;
+            min-width: 0; // Prevent flex item from overflowing
+
+            .entry-text {
+              line-height: 1.6;
+              color: rgba(0, 0, 0, 0.87);
+              word-wrap: break-word;
+              overflow-wrap: break-word;
+              hyphens: auto;
+              white-space: normal;
+              margin-bottom: 8px;
+              max-width: 100%;
+            }
+
+            .entry-issues {
+              .issues-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-top: 8px;
+
+                .issue-chip {
+                  background: rgba(63, 81, 181, 0.1);
+                  color: #3f51b5;
+                  font-size: 0.75rem;
+                  height: 24px;
+                  border-radius: 12px;
+                  cursor: default;
+
+                  .issue-icon {
+                    font-size: 14px;
+                    width: 14px;
+                    height: 14px;
+                    margin-right: 4px;
+                  }
+
+                  &:hover {
+                    background: rgba(63, 81, 181, 0.15);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
-:host ::ng-deep .mat-list .mat-list-item {
-  height: initial !important;
+// Responsive design
+@media (max-width: 768px) {
+  .changelog-container {
+    padding: 8px;
+
+    .scroll-mode-toggle {
+      padding: 12px;
+      margin-bottom: 16px;
+
+      .toggle-label {
+        font-size: 0.85rem;
+      }
+    }
+
+    .version-card {
+      margin-bottom: 16px;
+      border-radius: 8px;
+
+      .version-header {
+        padding: 16px 16px 12px;
+
+        .version-info .version-title {
+          font-size: 1.25rem;
+          flex-wrap: wrap;
+          gap: 8px;
+
+          .version-number {
+            font-size: 1rem;
+            padding: 3px 10px;
+          }
+
+          .latest-badge {
+            font-size: 0.7rem;
+            height: 20px;
+            line-height: 20px;
+          }
+        }
+      }
+
+      .changelog-content .entries-list .changelog-entry {
+        padding: 10px 16px;
+
+        .entry-icon {
+          margin-right: 12px;
+        }
+
+        .entry-content .entry-text {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .load-more-section .load-more-card .load-more-content {
+      padding: 20px;
+
+      .load-more-button {
+        min-width: 160px;
+        height: 44px;
+      }
+
+      .auto-load-hint {
+        font-size: 0.75rem;
+        text-align: center;
+      }
+    }
+  }
 }
 
-.title {
-  text-decoration: underline;
-  font-size: 18px;
+@media (max-width: 480px) {
+  .changelog-container {
+    padding: 4px;
+
+    .version-card {
+      .version-header .version-info .version-title {
+        font-size: 1.1rem;
+
+        .version-number {
+          font-size: 0.9rem;
+        }
+      }
+
+      .changelog-content .entries-list .changelog-entry {
+        padding: 8px 12px;
+
+        .entry-content .entry-text {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
 }
 
-.e {
-  text-wrap: auto;
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .changelog-container .version-card {
+    &.latest-version {
+      background: linear-gradient(135deg, rgba(63, 81, 181, 0.15), rgba(33, 150, 243, 0.15));
+      border-color: rgba(63, 81, 181, 0.3);
+    }
+
+    .version-header {
+      background: rgba(255, 255, 255, 0.08);
+      border-bottom-color: rgba(255, 255, 255, 0.12);
+
+      .version-info .version-title {
+        color: rgba(255, 255, 255, 0.87);
+
+        .version-number {
+          background: rgba(63, 81, 181, 0.2);
+        }
+      }
+    }
+
+    .changelog-content .entries-list .changelog-entry {
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .entry-content .entry-text {
+        color: rgba(255, 255, 255, 0.87);
+      }
+    }
+  }
+}
+
+// Load More Section Styles
+.load-more-section {
+  margin: 32px 0;
+
+  .load-more-card {
+    background: linear-gradient(135deg, rgba(63, 81, 181, 0.05), rgba(33, 150, 243, 0.05));
+    border: 1px dashed rgba(63, 81, 181, 0.3);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(63, 81, 181, 0.08), rgba(33, 150, 243, 0.08));
+      border-color: rgba(63, 81, 181, 0.5);
+    }
+
+    .load-more-content {
+      text-align: center;
+      padding: 24px;
+
+      .load-more-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: #3f51b5;
+        margin-bottom: 16px;
+        opacity: 0.7;
+      }
+
+      .load-more-title {
+        margin: 0 0 8px 0;
+        color: rgba(0, 0, 0, 0.87);
+        font-weight: 500;
+      }
+
+      .load-more-subtitle {
+        margin: 0 0 20px 0;
+        color: rgba(0, 0, 0, 0.6);
+        font-size: 0.9rem;
+      }
+
+      .load-more-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .load-more-button {
+        min-width: 180px;
+        height: 48px;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+        mat-icon {
+          margin-right: 8px;
+        }
+
+        &:hover {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+      }
+
+      .auto-load-hint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        color: rgba(0, 0, 0, 0.5);
+        font-size: 0.8rem;
+        font-style: italic;
+
+        .hint-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+
+      .loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+
+        .loading-text {
+          margin: 0;
+          color: rgba(0, 0, 0, 0.6);
+          font-size: 0.9rem;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
+
+// End of Changelog Styles
+.end-of-changelog {
+  margin: 32px 0;
+
+  .end-card {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(139, 195, 74, 0.05));
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+
+    .end-content {
+      text-align: center;
+      padding: 24px;
+
+      .end-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: #4caf50;
+        margin-bottom: 16px;
+      }
+
+      .end-title {
+        margin: 0 0 8px 0;
+        color: rgba(0, 0, 0, 0.87);
+        font-weight: 500;
+      }
+
+      .end-subtitle {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.6);
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// Dark theme support for new components
+@media (prefers-color-scheme: dark) {
+  .load-more-section .load-more-card {
+    background: linear-gradient(135deg, rgba(63, 81, 181, 0.15), rgba(33, 150, 243, 0.15));
+    border-color: rgba(63, 81, 181, 0.4);
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(63, 81, 181, 0.2), rgba(33, 150, 243, 0.2));
+      border-color: rgba(63, 81, 181, 0.6);
+    }
+
+    .load-more-content {
+      .load-more-title {
+        color: rgba(255, 255, 255, 0.87);
+      }
+
+      .load-more-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .loading-content .loading-text {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .auto-load-hint {
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+  }
+
+  .end-of-changelog .end-card {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(139, 195, 74, 0.15));
+    border-color: rgba(76, 175, 80, 0.3);
+
+    .end-content {
+      .end-title {
+        color: rgba(255, 255, 255, 0.87);
+      }
+
+      .end-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+      }
+    }
+  }
 }

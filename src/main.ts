@@ -21,6 +21,31 @@ import { platformBrowserDynamic } from "@angular/platform-browser-dynamic";
 import { AppModule } from "./app/app.module";
 import { environment } from "./environments/environment";
 
+import * as Sentry from "@sentry/angular";
+
+// Only initialize Sentry if DSN is provided and valid
+if (environment.sentryDsn && environment.sentryDsn.trim() !== "") {
+  try {
+    Sentry.init({
+      dsn: environment.sentryDsn,
+      environment: environment.version,
+      // Setting this option to true will send default PII data to Sentry.
+      // For example, automatic IP address collection on events
+      sendDefaultPii: true,
+      integrations: [
+        // send console.log, console.warn, and console.error calls as logs to Sentry
+        Sentry.consoleLoggingIntegration({ levels: ["warn", "error", "log", "info", "debug"] }), // Reduced log levels
+      ],
+      enableLogs: true,
+      // Add transport options to help with CORS
+    });
+  } catch (error) {
+    console.warn("Failed to initialize Sentry:", error);
+  }
+} else {
+  console.log("Sentry DSN not provided, skipping Sentry initialization");
+}
+
 if (environment.production) {
   enableProdMode();
 }

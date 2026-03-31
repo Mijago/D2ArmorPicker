@@ -16,7 +16,7 @@
  */
 
 import { Component, Input, OnInit } from "@angular/core";
-import { InventoryService } from "../../../../services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 
@@ -31,7 +31,7 @@ export class GearsetTooltipComponent implements OnInit {
   iconUrl: string | undefined;
 
   constructor(
-    public inv: InventoryService,
+    public inv: UserInformationService,
     public iconService: ItemIconServiceService
   ) {}
 

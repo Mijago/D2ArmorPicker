@@ -29,6 +29,7 @@
               <img
                 *ngIf="bonus.perk.displayProperties.hasIcon"
                 [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                loading="lazy"
                 alt="{{ bonus.perk.displayProperties.name }} icon"
                 class="bonus-icon-image" />
             </span>
@@ -52,6 +53,7 @@
               <img
                 *ngIf="bonus.perk.displayProperties.hasIcon"
                 [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                loading="lazy"
                 alt="{{ bonus.perk.displayProperties.name }} icon"
                 class="bonus-icon-image" />
             </span>

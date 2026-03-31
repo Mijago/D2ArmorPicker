@@ -65,52 +65,62 @@
 
     <mat-card-content>
       <div class="settings-container">
+        <span><b>Cluster Count</b><br />Choose how many clusters to generate.</span>
+        <span style="min-width: 200px">
+          <mat-slider
+            class="example-margin"
+            min="5"
+            max="50"
+            step="1"
+            [discrete]="true"
+            [showTickMarks]="true"
+            style="width: 150px">
+            <input matSliderThumb [(ngModel)]="clusterCount" (ngModelChange)="Update()" />
+          </mat-slider>
+          <span style="margin-left: 10px">{{ clusterCount }}</span>
+        </span>
+      </div>
+      <div class="settings-container">
         <span><b>Exotics</b><br />Decide whether you want to see or hide exotics.</span>
         <span>
           <mat-button-toggle-group (valueChange)="Update()" [(value)]="exoticFilter">
             <mat-button-toggle
               class="red"
               matTooltip="Only select non-exotic armor pieces."
-              value="-1"
+              [value]="-1"
               ><mat-icon>visibility_off</mat-icon></mat-button-toggle
             >
             <mat-button-toggle
               class="green"
               matTooltip="Only select exotic  armor pieces."
-              value="1"
+              [value]="1"
               ><mat-icon>visibility</mat-icon></mat-button-toggle
             >
-            <mat-button-toggle checked value="0">All</mat-button-toggle>
+            <mat-button-toggle checked [value]="undefined">All</mat-button-toggle>
           </mat-button-toggle-group>
         </span>
       </div>
+
       <div class="settings-container">
-        <span
-          ><b>Masterwork</b><br />Decide whether you want to see or hide masterworked armor.</span
-        >
+        <span><b>Armor System</b><br />Decide which armor system you want to see.</span>
         <span>
-          <mat-button-toggle-group (valueChange)="Update()" [(value)]="masterworkFilter">
-            <mat-button-toggle
-              class="red"
-              matTooltip="Only select non-masterworked armor pieces."
-              value="-1"
-              ><mat-icon>visibility_off</mat-icon></mat-button-toggle
+          <mat-button-toggle-group (valueChange)="Update()" [(value)]="armorSystemFilter">
+            <mat-button-toggle class="red" matTooltip="Only select Armor 2.0 items." [value]="2"
+              >Armor 2.0</mat-button-toggle
             >
-            <mat-button-toggle
-              class="green"
-              matTooltip="Only select masterworked armor pieces."
-              value="1"
-              ><mat-icon>visibility</mat-icon></mat-button-toggle
+            <mat-button-toggle class="green" matTooltip="Only select Armor 3.0 items." [value]="3"
+              >Armor 3.0</mat-button-toggle
             >
-            <mat-button-toggle checked value="0">All</mat-button-toggle>
+            <mat-button-toggle checked [value]="undefined">All</mat-button-toggle>
           </mat-button-toggle-group>
         </span>
       </div>
+
       <div class="settings-container">
         <span><b>Class</b><br />Decide which class you want to see.</span>
         <span>
           <mat-button-toggle-group (valueChange)="Update()" [(value)]="classFilter">
-            <mat-button-toggle matTooltip="Titan" value="0">
+            <mat-button-toggle matTooltip="Titan" [value]="0">
               <svg
                 aria-hidden="true"
                 class="svgClassIcon"
@@ -122,7 +132,7 @@
                   fill="currentColor"></path>
               </svg>
             </mat-button-toggle>
-            <mat-button-toggle matTooltip="Hunter" value="1">
+            <mat-button-toggle matTooltip="Hunter" [value]="1">
               <svg
                 aria-hidden="true"
                 class="svgClassIcon"
@@ -134,7 +144,7 @@
                   fill="currentColor"></path>
               </svg>
             </mat-button-toggle>
-            <mat-button-toggle matTooltip="Warlock" value="2">
+            <mat-button-toggle matTooltip="Warlock" [value]="2">
               <svg
                 aria-hidden="true"
                 class="svgClassIcon"
@@ -147,7 +157,7 @@
               </svg>
             </mat-button-toggle>
 
-            <mat-button-toggle checked value="-1">All</mat-button-toggle>
+            <mat-button-toggle checked [value]="undefined">All</mat-button-toggle>
           </mat-button-toggle-group>
         </span>
       </div>
@@ -171,22 +181,18 @@
         <mat-card-content>
           <div>
             <table width="100%">
-              <ng-container *ngFor="let entry of clusterInformation[idx].mean; let idx1 = index">
-                <tr
-                  *ngIf="idx1 > 0"
-                  [matTooltip]="
-                    ['', 'Weapon', 'Health', 'Class', 'Grenade', 'Super', 'Melee'][idx1]
-                  ">
+              <ng-container *ngFor="let stat of ARMORSTAT_ORDER">
+                <tr [matTooltip]="ArmorStatNames[stat]">
                   <td>
-                    {{ ["", "Weapon", "Health", "Class", "Grenade", "Super", "Melee"][idx1] }}
+                    {{ ArmorStatNames[stat] }}
                   </td>
                   <td width="100%">
                     <div class="stat-range">
                       <div
                         class="stat-range-bar"
-                        [style.width]="(clusterInformation[idx].mean[idx1] / 32) * 100 + '%'"></div>
+                        [style.width]="(clusterInformation[idx].mean[stat] / 40) * 100 + '%'"></div>
                       <span class="avg-stat-value">
-                        {{ clusterInformation[idx].mean[idx1] | number: "1.0-0" }}
+                        {{ clusterInformation[idx].mean[stat] | number: "1.0-0" }}
                       </span>
                     </div>
                   </td>

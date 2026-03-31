@@ -26,6 +26,7 @@ import { EnumDictionary } from "./types/EnumDictionary";
 import { ModifierType } from "./enum/modifierType";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
+import { environment } from "src/environments/environment";
 
 export function getDefaultStatDict(
   value: number
@@ -78,8 +79,9 @@ export class BuildConfiguration {
   // New compact stat mod limits (global, not per-slot)
   statModLimits: StatModLimits = { maxMods: 5, maxMajorMods: 5 };
 
+  calculateTierFiveTuning = !environment.production;
   putArtificeMods = true;
-  useFotlArmor = true;
+  useFotlArmor = false;
   allowBlueArmorPieces = true;
   // Allow armor 2.0, which is the legacy armor system
   allowLegacyLegendaryArmor = true;
@@ -96,6 +98,7 @@ export class BuildConfiguration {
   onlyUseMasterworkedLegendaries = false;
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
+  earlyAbortClassItems = true; // High-Speed setting
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
 
@@ -112,6 +115,7 @@ export class BuildConfiguration {
       enabledMods: [],
       disabledItems: [],
       addConstent1Health: false,
+      calculateTierFiveTuning: !environment.production,
       assumeEveryLegendaryIsArtifice: false,
       assumeEveryExoticIsArtifice: false,
       assumeClassItemIsArtifice: false,
@@ -130,6 +134,7 @@ export class BuildConfiguration {
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
       limitParsedResults: true,
+      earlyAbortClassItems: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,

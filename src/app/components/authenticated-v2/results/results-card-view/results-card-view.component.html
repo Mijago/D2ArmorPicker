@@ -153,7 +153,6 @@
                 <span class="stat-value-compact">{{ result.stats[stat] }}</span>
               </div>
             </div>
-
             <div class="mods-section">
               <app-table-mod-display
                 [mods]="result.mods"
@@ -376,6 +375,20 @@
                       <td *ngFor="let stat of STAT_ORDER">
                         <span *ngIf="getArtificeModCount(result, stat) > 0" class="positive">
                           {{ getArtificeModCount(result, stat) }}×3
+                        </span>
+                      </td>
+                    </tr>
+                    <!-- Tuning stat row -->
+                    <tr class="tuning-row" *ngIf="result.tuningStats && isBreakdownExpanded(i)">
+                      <td class="tuning-label">Tuning</td>
+                      <td *ngFor="let stat of STAT_ORDER">
+                        <span *ngIf="result.tuningStats[stat] !== 0" class="tuning-value">
+                          <span
+                            [class.positive]="result.tuningStats[stat] > 0"
+                            [class.negative]="result.tuningStats[stat] < 0">
+                            {{ result.tuningStats[stat] > 0 ? "+" : ""
+                            }}{{ result.tuningStats[stat] }}
+                          </span>
                         </span>
                       </td>
                     </tr>

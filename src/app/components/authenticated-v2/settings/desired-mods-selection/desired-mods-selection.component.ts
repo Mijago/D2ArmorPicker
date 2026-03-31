@@ -32,7 +32,7 @@ import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 
 @Component({
   selector: "app-desired-mods-selection",
@@ -65,7 +65,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   constructor(
     private config: ConfigurationService,
     private bungieApi: BungieApiService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {
