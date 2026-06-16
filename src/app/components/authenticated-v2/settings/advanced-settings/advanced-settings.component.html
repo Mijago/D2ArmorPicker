@@ -51,44 +51,38 @@
     <!-- Dropdown setting -->
     <div *ngIf="f.type === 'dropdown'" class="dropdown-setting">
       <!-- Toggleable dropdown -->
-      <div class="dropdown-header">
-        <mat-slide-toggle
-          color="primary"
-          [disabled]="f.disabled"
-          [checked]="f.isEnabled"
-          (change)="f.onToggle && f.onToggle($event.checked)">
-          <span class="dropdown-label">{{ f.name }}</span>
-        </mat-slide-toggle>
+      <label class="dropdown-header">{{ f.name }}</label>
+      <mat-form-field subscriptSizing="dynamic" style="flex-grow: 1">
+        <mat-label>{{ f.description }}</mat-label>
         <mat-select
           [value]="f.value"
-          [disabled]="f.disabled || !f.isEnabled"
+          [disabled]="f.disabled"
           (selectionChange)="f.onSelect($event.value)"
-          class="dropdown-inline"
-          placeholder="Select option">
+          class="dropdown-inline">
           <mat-option *ngFor="let option of f.options" [value]="option.value">
             {{ option.label }}
           </mat-option>
         </mat-select>
-        <mat-icon
-          inline
-          aria-hidden="false"
-          aria-label="Help"
-          *ngIf="f.help"
-          matTooltip="{{ f.help }}"
-          #tooltip="matTooltip">
-          help
-        </mat-icon>
-        <mat-icon
-          inline
-          aria-hidden="false"
-          aria-label="Help"
-          *ngIf="f.impactsResultCount"
-          class="report-problem-icon"
-          matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
-          #tooltip="matTooltip">
-          report_problem
-        </mat-icon>
-      </div>
+      </mat-form-field>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.help"
+        matTooltip="{{ f.help }}"
+        #tooltip="matTooltip">
+        help
+      </mat-icon>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.impactsResultCount"
+        class="report-problem-icon"
+        matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
+        #tooltip="matTooltip">
+        report_problem
+      </mat-icon>
     </div>
   </div>
   <div class="category-spacer"></div>

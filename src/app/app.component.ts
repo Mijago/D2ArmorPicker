@@ -18,8 +18,9 @@
 import { AfterViewInit, Component, OnInit } from "@angular/core";
 import { environment } from "../environments/environment";
 import { UserInformationService } from "src/app/services/user-information.service";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService, LogEntry } from "./services/logging-proxy.service";
 import { AuthService } from "./services/auth.service";
+import { Observable } from "rxjs";
 
 @Component({
   selector: "app-root",
@@ -30,12 +31,16 @@ export class AppComponent implements AfterViewInit, OnInit {
   title = "D2ArmorPicker";
   is_beta = environment.beta;
   is_canary = environment.canary;
+  showLogs = environment.showLogs;
+  recentLogs$: Observable<LogEntry[]>;
 
   constructor(
     private userInformationService: UserInformationService,
-    private logger: NGXLogger,
+    private logger: LoggingProxyService,
     public authService: AuthService
-  ) {}
+  ) {
+    this.recentLogs$ = this.logger.getRecentLogs();
+  }
 
   ngOnInit() {
     this.logger.debug("AppComponent", "ngOnInit", "Application initialized");
@@ -56,7 +61,10 @@ export class AppComponent implements AfterViewInit, OnInit {
     // Check if UserInformationService is initialized after 10 seconds
     // if not, forcefully trigger an initial refreshAll
     setTimeout(() => {
-      if (!this.userInformationService.isInitialized) {
+      if (
+        !this.userInformationService.isInitialized &&
+        !this.userInformationService.isFetchingManifest
+      ) {
         this.logger.warn(
           "AppComponent",
           "ngAfterViewInit",
@@ -72,5 +80,34 @@ export class AppComponent implements AfterViewInit, OnInit {
         });
       }
     }, 10 * 1000);
+  }
+
+  /**
+   * Get CSS class for log level
+   */
+  getLogLevelClass(level: number): string {
+    switch (level) {
+      case 0: // TRACE
+        return "log-trace";
+      case 1: // DEBUG
+        return "log-debug";
+      case 2: // INFO
+        return "log-info";
+      case 3: // WARN
+        return "log-warn";
+      case 4: // ERROR
+        return "log-error";
+      case 5: // FATAL
+        return "log-fatal";
+      default:
+        return "log-info";
+    }
+  }
+
+  /**
+   * Clear recent logs
+   */
+  clearLogs(): void {
+    this.logger.clearRecentLogs();
   }
 }

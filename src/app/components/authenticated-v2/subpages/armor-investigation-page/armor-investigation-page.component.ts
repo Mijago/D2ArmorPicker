@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import { Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { UserInformationService } from "src/app/services/user-information.service";
@@ -73,7 +73,7 @@ export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   constructor(
     public inventory: UserInformationService,
     private db: DatabaseService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   ngOnInit(): void {

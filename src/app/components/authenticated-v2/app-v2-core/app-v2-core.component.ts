@@ -15,12 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, AfterViewInit, ChangeDetectionStrategy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  OnDestroy,
+  ChangeDetectorRef,
+  NgZone,
+} from "@angular/core";
+import { LoggingProxyService } from "../../../services/logging-proxy.service";
 import { StatusProviderService } from "../../../services/status-provider.service";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { BreakpointObserver, Breakpoints } from "@angular/cdk/layout";
-import { map, shareReplay } from "rxjs/operators";
+import { map, shareReplay, takeUntil } from "rxjs/operators";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ArmorCalculatorService } from "../../../services/armor-calculator.service";
 import { AuthService } from "../../../services/auth.service";
@@ -35,10 +43,11 @@ import { CharacterStatsService } from "../../../services/character-stats.service
   styleUrls: ["./app-v2-core.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppV2CoreComponent implements OnInit, AfterViewInit {
+export class AppV2CoreComponent implements OnInit, AfterViewInit, OnDestroy {
   version = environment.version;
   activeLinkIndex = 0;
   computationProgress = 0;
+  private ngUnsubscribe = new Subject();
   navLinks = [
     {
       link: "/",
@@ -71,7 +80,9 @@ export class AppV2CoreComponent implements OnInit, AfterViewInit {
     private router: Router,
     private characterStats: CharacterStatsService,
     public changelog: ChangelogService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.logger.debug("AppV2CoreComponent", "constructor", "Component initialized");
   }
@@ -100,9 +111,14 @@ export class AppV2CoreComponent implements OnInit, AfterViewInit {
     this.logger.debug("AppV2CoreComponent", "ngAfterViewInit", "Component after view initialized");
     this.changelog.checkAndShowChangelog();
     this.characterStats.loadCharacterStats();
-    this.armorCalculator.calculationProgress.subscribe((progress) => {
-      this.computationProgress = progress;
-    });
+    this.armorCalculator.calculationProgress
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((progress) => {
+        this.ngZone.run(() => {
+          this.computationProgress = progress;
+          this.cdr.markForCheck();
+        });
+      });
   }
 
   async refreshAll(b: boolean) {
@@ -133,5 +149,10 @@ export class AppV2CoreComponent implements OnInit, AfterViewInit {
         this.logger.error("AppV2CoreComponent", "logout", "Failed to navigate to login", navError);
       }
     }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

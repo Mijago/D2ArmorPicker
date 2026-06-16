@@ -27,31 +27,29 @@
           <span class="info-stat-value">{{ this.itemCount | number }}</span>
         </div>
         <div class="info-stat-card">
-          <span class="info-stat-label">Combinations generated</span>
+          <span class="info-stat-label">Results shown</span>
           <div class="info-stat-value-container">
-            <span class="info-stat-value">{{ this.totalResults | number }}</span>
+            <span class="info-stat-value">{{ this.savedResults | number }}</span>
             <mat-icon
               #tooltip="matTooltip"
-              *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 5e4"
+              *ngIf="this.totalPermutations !== this.savedResults"
               class="report-problem-icon"
-              matTooltip="Note: To speed up the whole process, only {{
-                this.parsedResults | number
+              matTooltip="Note: To speed up the whole process and prevent Out-Of-Memory crashes, only {{
+                this.savedResults | number
               }} results are listed in this table.
                           If you need more entries, disable the limitation in the advanced settings."
               >report_problem
             </mat-icon>
-            <mat-icon
-              #tooltip="matTooltip"
-              *ngIf="this.parsedResults !== this.totalResults && this.parsedResults === 1e6"
-              class="report-problem-icon"
-              matTooltip="Note: To prevent Out-Of-Memory crashes, only {{
-                this.parsedResults | number
-              }} results are listed in this table.
-                                  You should narrow down your settings a bit."
-              >report_problem
-            </mat-icon>
           </div>
         </div>
+        <div class="info-stat-card">
+          <span class="info-stat-label">Combinations calculated</span>
+          <span class="info-stat-value">{{ this.totalPermutations | number }}</span>
+        </div>
+        <!-- <div class="info-stat-card">
+          <span class="info-stat-label">Combinations possible</span>
+          <span class="info-stat-value">{{ this.totalPossibleCombinations | number }}</span>
+        </div> -->
         <div class="info-stat-card">
           <span class="info-stat-label">Time required</span>
           <span class="info-stat-value">{{ this.totalTime | number }}ms</span>
@@ -228,6 +226,31 @@
         </button>
       </div>
 
+      <!-- Ongoing calculation progress while results are already visible -->
+      <div
+        class="progress-bar-container"
+        *ngIf="_results.length > 0 && isCalculatingPermutations && !initializing">
+        <mat-icon class="rotate"> hourglass_top </mat-icon>
+        <h3>Continuing calculation...</h3>
+        <mat-progress-bar
+          [value]="computationProgress"
+          aria-label="Continuing calculation..."></mat-progress-bar>
+        <p>
+          Additional combinations are still being checked. Current results are shown while the
+          calculation continues.
+        </p>
+
+        <br />
+        <button
+          mat-raised-button
+          color="warn"
+          matTooltip="Cancel the current calculation. This is useful if you want to change your settings or if the calculation takes too long."
+          (click)="cancelCalculation()"
+          [disabled]="!isCalculatingPermutations">
+          Cancel Calculation
+        </button>
+      </div>
+
       <!-- Cancelled Message -->
       <div class="cancelled-message" *ngIf="_results.length === 0 && cancelledCalculation">
         <mat-icon>cancel</mat-icon>
@@ -273,6 +296,16 @@
 
       <!-- Results Content -->
       <div *ngIf="_results.length > 0">
+        <!-- Warning when results are shown after cancellation -->
+        <div class="cancelled-warning-banner" *ngIf="cancelledCalculation">
+          <mat-icon>warning</mat-icon>
+          <div>
+            <strong>Calculation was cancelled.</strong>
+            <span>
+              These results might be incomplete. The possible max stats might be inaccurate</span
+            >
+          </div>
+        </div>
         <!-- Card View -->
         <app-results-card-view
           *ngIf="viewMode === 'cards'"
@@ -289,7 +322,7 @@
       </div>
     </div>
   </mat-card-content>
-  <mat-card-actions *ngIf="totalResults > 0">
+  <mat-card-actions *ngIf="savedResults > 0">
     <span class="flex-spacer"></span>
 
     <button mat-raised-button color="primary" (click)="saveBuilds()"

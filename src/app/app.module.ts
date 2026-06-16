@@ -71,6 +71,7 @@ import {
   VendorIdFromItemIdPipe,
   VendorNamePipe,
 } from "./components/authenticated-v2/pipes/vendor-name-pipe";
+import { LogLevelPipe } from "./components/authenticated-v2/pipes/log-level.pipe";
 
 import { environment } from "../environments/environment";
 // import { H } from "highlight.run";
@@ -241,6 +242,7 @@ const routes: Routes = [
     CountElementInListPipe,
     VendorIdFromItemIdPipe,
     VendorNamePipe,
+    LogLevelPipe,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,

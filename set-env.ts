@@ -57,6 +57,7 @@ const requiredEnvKeys = [
   "D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION",
   "D2AP_FEATURE_ENABLE_ZERO_WASTE",
   "D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES",
+  "D2AP_SHOW_LOGS",
   // Feature flags are optional; they default to disabled when not set
 ];
 
@@ -104,6 +105,7 @@ const data = {
   // highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
   open_replay_project_key: process.env["D2AP_OPEN_REPLAY_PROJECT_KEY"],
   sentryDsn: process.env["D2AP_SENTRY_DSN"],
+  showLogs: process.env["D2AP_SHOW_LOGS"] == "1",
   featureFlags: {
     enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
     enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",

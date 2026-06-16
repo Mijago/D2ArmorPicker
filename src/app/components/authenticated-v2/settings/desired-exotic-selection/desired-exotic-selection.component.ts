@@ -16,7 +16,7 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import { ClassExoticInfo, UserInformationService } from "src/app/services/user-information.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
@@ -59,6 +59,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   allowLegacyExoticArmor: boolean = false;
   enforceFeaturedLegendaryArmor = false;
   enforceFeaturedExoticArmor: boolean = false;
+  armors: ClassExoticInfo[] = [];
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
   importEquippedExoticInProgress = false;
@@ -71,7 +72,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     public inventory: UserInformationService,
     public config: ConfigurationService,
     private bungieApi: BungieApiService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   ngOnInit(): void {
@@ -110,14 +111,15 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       "updateExoticsForClass",
       "Updating exotics for class: " + this.currentClass
     );
-    const armors = await this.inventory.getExoticsForClass(this.currentClass);
+    this.armors = await this.inventory.getExoticsForClass(this.currentClass);
 
     this.exotics = [
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
+      [], // Generic, will be filled in html loop, "item" for all exotics, or where exotic doesn't matter
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
     ];
 
     // Update available exotic class item perks
@@ -125,22 +127,23 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   }
 
   private updateAvailableExoticClassItemPerks() {
-    const classItemExotics = this.exotics[4]; // Class items are at index 4
     const firstPerks = new Set<number>();
     const secondPerks = new Set<number>();
 
     // Collect first and second perks separately from exotic class items
-    classItemExotics.forEach((exotic) => {
-      exotic.instances.forEach((item) => {
-        // Exotic class items have exactly two perks in exoticPerkHash array
-        if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
-          // Add first perk (left dropdown)
-          firstPerks.add(item.exoticPerkHash[0]);
-          // Add second perk (right dropdown)
-          secondPerks.add(item.exoticPerkHash[1]);
-        }
+    this.armors
+      .filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass)
+      .forEach((exotic) => {
+        exotic.instances.forEach((item) => {
+          // Exotic class items have exactly two perks in exoticPerkHash array
+          if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
+            // Add first perk (left dropdown)
+            firstPerks.add(item.exoticPerkHash[0]);
+            // Add second perk (right dropdown)
+            secondPerks.add(item.exoticPerkHash[1]);
+          }
+        });
       });
-    });
 
     // Convert first perk hashes to display format
     this.availableFirstPerks = Array.from(firstPerks)
@@ -161,24 +164,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
         value: perkHash as ArmorPerkOrSlot,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-
-    this.logger.debug(
-      "DesiredExoticSelectionComponent",
-      "updateAvailableExoticClassItemPerks",
-      "Available first perks: " + JSON.stringify(this.availableFirstPerks)
-    );
-    this.logger.debug(
-      "DesiredExoticSelectionComponent",
-      "updateAvailableExoticClassItemPerks",
-      "Available second perks: " + JSON.stringify(this.availableSecondPerks)
-    );
   }
 
   hasSelectedExoticClassItem(): boolean {
-    const classItemExotics = this.exotics[4] || [];
-    return classItemExotics.some((exotic) =>
-      exotic.items.some((item) => this.selectedExotics.includes(item.hash))
-    );
+    return this.armors
+      .filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass)
+      .some((exotic) => exotic.items.some((item) => this.selectedExotics.includes(item.hash)));
   }
 
   setExoticPerk(index: number, perk: ArmorPerkOrSlot) {

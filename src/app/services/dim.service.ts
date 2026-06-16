@@ -37,7 +37,7 @@ import {
   LoadoutParameters,
 } from "@destinyitemmanager/dim-api-types";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 
 @Injectable({
   providedIn: "root",
@@ -47,7 +47,7 @@ export class DimService implements OnDestroy {
 
   constructor(
     private configService: ConfigurationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.logger.debug("DimService", "constructor", "Initializing DimService");
   }
@@ -60,7 +60,7 @@ export class DimService implements OnDestroy {
    * Generate a DIM search query for the given result
    */
   generateDIMQuery(result: ResultDefinition): string {
-    let query = result.items.map((d) => `id:'${d.itemInstanceId}'`).join(" OR ");
+    let query = result.items.map((d) => `(id:'${d.itemInstanceId}')`).join(" OR ");
 
     return query;
   }
@@ -71,10 +71,32 @@ export class DimService implements OnDestroy {
   async copyDIMQuery(result: ResultDefinition): Promise<boolean> {
     try {
       const query = this.generateDIMQuery(result);
-      await navigator.clipboard.writeText(query);
-      return true;
-    } catch (error) {
+
+      // Use ClipboardItem with explicit text/plain type for better iOS compatibility
+      if (navigator.clipboard && navigator.clipboard.write) {
+        const clipboardItem = new ClipboardItem({
+          "text/plain": new Blob([query], { type: "text/plain" }),
+        });
+        await navigator.clipboard.write([clipboardItem]);
+        return true;
+      }
+
+      // Fallback to writeText if ClipboardItem is not supported
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(query);
+        return true;
+      }
+
       return false;
+    } catch (error) {
+      // Fallback to writeText on error
+      try {
+        const query = this.generateDIMQuery(result);
+        await navigator.clipboard.writeText(query);
+        return true;
+      } catch (fallbackError) {
+        return false;
+      }
     }
   }
 

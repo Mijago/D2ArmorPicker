@@ -21,7 +21,7 @@ import { ModifierType } from "../data/enum/modifierType";
 import type { CharacterStats, Override } from "../data/character_stats/schema";
 import { DestinyClass, DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 
 export enum CharacterStatType {
   Speed = 1,
@@ -59,7 +59,7 @@ export class CharacterStatsService implements OnDestroy {
   constructor(
     private clarity: ClarityService,
     private db: DatabaseService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.logger.debug("CharacterStatsService", "constructor", "Initializing CharacterStatsService");
     this.clarity.characterStats.subscribe(async (data) => {

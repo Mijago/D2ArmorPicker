@@ -1,5 +1,5 @@
 import { Injectable, NgZone, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { HttpClientConfig } from "bungie-api-ts/destiny2";
 import { AuthService } from "./auth.service";
 import { HttpClient } from "@angular/common/http";
@@ -24,7 +24,7 @@ export class HttpClientService implements OnDestroy {
     private authService: AuthService,
     private http: HttpClient,
     private status: StatusProviderService,
-    private logger: NGXLogger,
+    private logger: LoggingProxyService,
     private ngZone: NgZone
   ) {
     this.logger.debug("HttpClientService", "constructor", "Initializing HttpClientService");

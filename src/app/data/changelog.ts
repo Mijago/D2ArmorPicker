@@ -34,6 +34,53 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.13",
+    date: "March, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added functionallity to allow items that have a gear set selectable and active (e.g Guardian Games Class Item, FOTL Mask) to act and fill that item slot as if they had the gear set perk",
+      },
+    ],
+  },
+  {
+    version: "2.9.12",
+    date: "February, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated worker spawn logic of armor calculator, to be more readable and for potential future optimizations.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added more logging to the armor calculator worker, to help with debugging if it crashes.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed progress bar for armor calculation, it should now reflect the actual progress of the calculation process.",
+      },
+    ],
+  },
+  {
+    version: "2.9.11",
+    date: "February 19, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the logic for manifest download to use sqlite (if WASM fails, fallback to old JSON method), reduces calls to the API, and memory usage, fixing crashes and performance issues, primarily for iOS users.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Better view for tablet users? Please give feedback on this, screen sizes varies a lot, share your device model/characteristics.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.10",
     date: "February 15, 2026",
     clearManifest: true,

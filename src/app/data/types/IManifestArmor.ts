@@ -31,6 +31,8 @@ export enum ArmorSystem {
 }
 
 export interface IDisplayManifestArmor {
+  id: number;
+
   hash: number;
   name: string;
   icon: string;
@@ -42,6 +44,7 @@ export interface IDisplayManifestArmor {
   armorSystem: ArmorSystem;
   isFeatured: boolean;
   gearSetHash: number | null;
+  gearSetPerkSelectable: boolean;
 }
 export interface IManifestArmor extends IDisplayManifestArmor {
   watermarkIcon: string;

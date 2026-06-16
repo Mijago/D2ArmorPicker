@@ -120,3 +120,135 @@
 .header-spacer {
   flex: 1 1 auto;
 }
+
+// Recent Logs Styles
+.recent-logs-container {
+  background-color: rgba(0, 0, 0, 0.9);
+  border-bottom: 1px solid #444;
+  padding: 8px 16px;
+  max-width: 100vw;
+  overflow: hidden;
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+
+  .recent-logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+
+    .recent-logs-title {
+      color: #fff;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .clear-logs-btn {
+      color: #ccc;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+      }
+
+      &:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+
+  .recent-logs-list {
+    .log-entry {
+      display: flex;
+      align-items: center;
+      padding: 2px 0;
+      border-left: 3px solid transparent;
+      padding-left: 8px;
+      margin: 1px 0;
+
+      .log-timestamp {
+        color: #888;
+        margin-right: 8px;
+        font-size: 10px;
+        min-width: 60px;
+      }
+
+      .log-level {
+        margin-right: 8px;
+        font-weight: bold;
+        min-width: 50px;
+        font-size: 10px;
+      }
+
+      .log-message {
+        color: #ddd;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      &.log-trace {
+        border-left-color: #6c757d;
+        .log-level {
+          color: #6c757d;
+        }
+      }
+
+      &.log-debug {
+        border-left-color: #17a2b8;
+        .log-level {
+          color: #17a2b8;
+        }
+      }
+
+      &.log-info {
+        border-left-color: #28a745;
+        .log-level {
+          color: #28a745;
+        }
+      }
+
+      &.log-warn {
+        border-left-color: #ffc107;
+        .log-level {
+          color: #ffc107;
+        }
+        .log-message {
+          color: #fff3cd;
+        }
+      }
+
+      &.log-error {
+        border-left-color: #dc3545;
+        .log-level {
+          color: #dc3545;
+        }
+        .log-message {
+          color: #f8d7da;
+        }
+      }
+
+      &.log-fatal {
+        border-left-color: #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+        .log-level {
+          color: #dc3545;
+          background-color: rgba(220, 53, 69, 0.2);
+          padding: 1px 4px;
+          border-radius: 2px;
+        }
+        .log-message {
+          color: #fff;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}

@@ -19,7 +19,7 @@
  */
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import {
   ArmorStat,
   ArmorStatIconUrls,
@@ -73,7 +73,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
     private bungieApi: BungieApiService,
     private dimService: DimService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   public async CopyDIMQuery() {

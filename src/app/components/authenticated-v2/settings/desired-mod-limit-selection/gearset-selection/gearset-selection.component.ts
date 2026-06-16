@@ -16,7 +16,7 @@
  */
 
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { Subject } from "rxjs";
 import { distinctUntilChanged, takeUntil } from "rxjs/operators";
@@ -50,7 +50,7 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     private inventoryService: UserInformationService,
     private db: DatabaseService,
     private config: ConfigurationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
   ngOnInit(): void {
     this.inventoryService.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async () => {
@@ -86,12 +86,26 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
     for (const gearSet of this.gearSets) {
       // Get all inventory items for this class and gear set
-      const items = await this.db.inventoryArmor
+      const itemsGearSet = await this.db.inventoryArmor
         .where({
           clazz: currentClass,
           gearSetHash: gearSet.hash,
         })
         .toArray();
+      const itemsGearSetSelectable = await this.db.inventoryArmor
+        .where({
+          clazz: currentClass,
+          gearSetPerkSelectable: true,
+        })
+        .toArray();
+
+      const allItems = [...itemsGearSet, ...itemsGearSetSelectable];
+      const uniqueItemsMap = new Map<string, (typeof allItems)[0]>();
+
+      allItems.forEach((item) => {
+        uniqueItemsMap.set(item.itemInstanceId, item);
+      });
+      const items = Array.from(uniqueItemsMap.values());
 
       // Count how many unique slots are represented by these items
       const uniqueSlots = new Set(items.map((item) => item.slot));

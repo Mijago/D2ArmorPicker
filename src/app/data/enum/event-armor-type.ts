@@ -15,24 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#card-config {
-  width: fit-content;
-  display: inline-block;
-  vertical-align: top;
-  white-space: normal;
-  margin-bottom: 20px;
-  margin-left: 3px;
-  margin-right: 3px;
-
-  @media (min-width: 1360px) {
-    max-width: 49vw;
-  }
-}
-
-#card-config > mat-card {
-  margin-bottom: 4px;
-}
-
-#content-char-selection {
-  margin-bottom: 0;
+export enum EventArmorType {
+  None = "None",
+  FestivalOfTheLost = "event_FOTL",
+  GuardianGames = "event_GG",
 }

@@ -16,13 +16,12 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { DatabaseService } from "./database.service";
 import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
 import { ConfigurationService } from "./configuration.service";
 import { debounceTime } from "rxjs/operators";
 import { Observable, ReplaySubject } from "rxjs";
-import { BuildConfiguration } from "../data/buildConfiguration";
 import { StatusProviderService } from "./status-provider.service";
 import { BungieApiService } from "./bungie-api.service";
 import { AuthService } from "./auth.service";
@@ -32,7 +31,6 @@ import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryA
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { VendorsService } from "./vendors.service";
 import { isEqual as _isEqual } from "lodash";
-import { getHumanReadableDifferences } from "../data/commonFunctions";
 import { MembershipService } from "./membership.service";
 
 export type ClassExoticInfo = {
@@ -48,6 +46,7 @@ export type ClassExoticInfo = {
 })
 export class UserInformationService implements OnDestroy {
   private initialized: boolean = false;
+  private fetchingManifest: boolean = false;
 
   private _characters: ReplaySubject<
     { emblemUrl: string; characterId: string; clazz: DestinyClass; lastPlayed: number }[]
@@ -60,8 +59,6 @@ export class UserInformationService implements OnDestroy {
   private _inventory: ReplaySubject<null>;
   public readonly inventory: Observable<null>;
 
-  private _config: BuildConfiguration = BuildConfiguration.buildEmptyConfiguration();
-  private previouslyFetchedManifest = false;
   private refreshing: boolean = false;
 
   constructor(
@@ -73,7 +70,7 @@ export class UserInformationService implements OnDestroy {
     private httpClient: HttpClientService,
     private vendors: VendorsService,
     private membership: MembershipService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     logger.debug("UserInformationService", "constructor", "Initializing UserInformationService");
     this._characters = new ReplaySubject(1);
@@ -95,9 +92,10 @@ export class UserInformationService implements OnDestroy {
     this.config.configuration.pipe(debounceTime(1000)).subscribe(async (c) => {
       this.logger.debug(
         "UserInformationService",
+        "Config Observable",
         "Configuration changed, requesting manifest/inventory refresh if needed"
       );
-      this.requestRefreshManifestAndInventoryOnUserInteraction(c);
+      this.requestRefreshManifestAndInventoryOnUserInteraction();
     });
 
     logger.debug(
@@ -120,31 +118,33 @@ export class UserInformationService implements OnDestroy {
     this.updateCharacterData();
   }
 
-  private async requestRefreshManifestAndInventoryOnUserInteraction(c?: BuildConfiguration) {
+  private async requestRefreshManifestAndInventoryOnUserInteraction() {
     if (!this.httpClient.isAuthenticated()) {
       this.logger.info(
         "UserInformationService",
+        "requestRefreshManifestAndInventoryOnUserInteraction",
         "User is not authenticated, skipping router event handling"
       );
       return;
     }
-    if (c) {
-      if (_isEqual(c, this._config)) return;
-      this.logger.debug(
-        "UserInformationService",
-        "Build configuration changed: " + getHumanReadableDifferences(this._config, c)
-      );
-      this._config = structuredClone(c);
-    }
 
+    if (this.fetchingManifest) {
+      this.logger.warn(
+        "UserInformationService",
+        "requestRefreshManifestAndInventoryOnUserInteraction",
+        "Manifest fetch request in progress, skipping"
+      );
+      return;
+    }
+    this.fetchingManifest = true;
+    await this.refreshManifestAndInventory();
+    this.fetchingManifest = false;
     this.initialized = true;
-    await this.refreshManifestAndInventory(!this.previouslyFetchedManifest);
-    this.previouslyFetchedManifest = true;
   }
 
   async refreshManifestAndInventory(
-    forceUpdateInventoryArmor: boolean = false,
-    forceUpdateManifest = false
+    forceUpdateManifest: boolean = false,
+    forceUpdateInventoryArmor: boolean = false
   ) {
     if (this.refreshing) {
       this.logger.warn(
@@ -212,8 +212,8 @@ export class UserInformationService implements OnDestroy {
       this.vendors
         .updateVendorArmorItemsCache()
         .then((success) => {
-          // trigger armor update if vendor items were updated and changes are relevant
-          if (success && this._config.includeVendorRolls) {
+          const config = this.config.currentConfiguration;
+          if (success && config.includeVendorRolls) {
             this.triggerInventoryUpdate(success);
           }
         })
@@ -331,11 +331,6 @@ export class UserInformationService implements OnDestroy {
     const characterCache = this.getCharacterCache();
     if (characterCache && this.api.isCharacterCacheValid(characterCache)) {
       this._characters.next(characterCache.characters);
-      this.logger.info(
-        "UserInformationService",
-        "loadCachedCharacterData",
-        "Loaded valid cached character data"
-      );
     } else {
       this._characters.next([]);
       this.logger.info(
@@ -489,6 +484,14 @@ export class UserInformationService implements OnDestroy {
 
   get isInitialized(): boolean {
     return this.initialized;
+  }
+
+  get isRefreshing(): boolean {
+    return this.refreshing;
+  }
+
+  get isFetchingManifest(): boolean {
+    return this.fetchingManifest;
   }
 
   ngOnDestroy(): void {

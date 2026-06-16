@@ -20,7 +20,7 @@ import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { BehaviorSubject } from "rxjs";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 export interface ItemIconData {
   icon: string | undefined;
   watermark: string | undefined;
@@ -38,7 +38,7 @@ export class ItemIconServiceService {
 
   constructor(
     private db: DatabaseService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   async getItemCached(hash: number): Promise<IManifestArmor | undefined> {

@@ -104,6 +104,7 @@ export class IgnoredItemsListComponent implements OnInit, OnDestroy {
             rarity: TierType.Unknown,
             source: InventoryArmorSource.Inventory,
             gearSetHash: null,
+            gearSetPerkSelectable: false,
             mobility: 0,
             resilience: 0,
             recovery: 0,

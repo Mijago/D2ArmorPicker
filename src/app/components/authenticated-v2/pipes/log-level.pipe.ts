@@ -15,24 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#card-config {
-  width: fit-content;
-  display: inline-block;
-  vertical-align: top;
-  white-space: normal;
-  margin-bottom: 20px;
-  margin-left: 3px;
-  margin-right: 3px;
+import { Pipe, PipeTransform } from "@angular/core";
+import { NgxLoggerLevel } from "ngx-logger";
 
-  @media (min-width: 1360px) {
-    max-width: 49vw;
+@Pipe({
+  name: "logLevel",
+  pure: true,
+})
+export class LogLevelPipe implements PipeTransform {
+  transform(value: NgxLoggerLevel): string {
+    switch (value) {
+      case NgxLoggerLevel.TRACE:
+        return "TRACE";
+      case NgxLoggerLevel.DEBUG:
+        return "DEBUG";
+      case NgxLoggerLevel.INFO:
+        return "INFO";
+      case NgxLoggerLevel.WARN:
+        return "WARN";
+      case NgxLoggerLevel.ERROR:
+        return "ERROR";
+      case NgxLoggerLevel.FATAL:
+        return "FATAL";
+      default:
+        return "UNKNOWN";
+    }
   }
-}
-
-#card-config > mat-card {
-  margin-bottom: 4px;
-}
-
-#content-char-selection {
-  margin-bottom: 0;
 }

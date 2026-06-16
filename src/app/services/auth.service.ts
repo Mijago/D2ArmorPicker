@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { environment } from "../../environments/environment";
 import { Observable, ReplaySubject } from "rxjs";
 
@@ -27,7 +27,7 @@ export class AuthService implements OnDestroy {
   private _logoutEvent: ReplaySubject<null>;
   public readonly logoutEvent: Observable<null>;
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: LoggingProxyService) {
     this.logger.debug("AuthService", "constructor", "Initializing AuthService");
     this._logoutEvent = new ReplaySubject(1);
     this.logoutEvent = this._logoutEvent.asObservable();

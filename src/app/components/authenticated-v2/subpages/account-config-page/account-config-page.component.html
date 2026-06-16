@@ -35,34 +35,103 @@
 
   <mat-card appearance="outlined">
     <mat-card-header>
-      <mat-card-title> Debugging </mat-card-title>
-      <mat-card-subtitle> Some options for debugging purposes. </mat-card-subtitle>
+      <mat-card-title> Debugging & Troubleshooting </mat-card-title>
+      <mat-card-subtitle>
+        Tools for debugging issues and generating diagnostic data.
+      </mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
-      If the team asks you to send some specific data, you can find it here:<br />
-      <a (click)="downloadArmorInformation()" class="btn-download" color="primary" mat-flat-button>
-        Download armor information (d2ap_armor.json)
-      </a>
-      <a
-        (click)="downloadManifestInformation()"
-        class="btn-download"
-        color="primary"
-        mat-flat-button>
-        Download manifest information (d2ap_manifest.json)
-      </a>
-      <br />
-      <br />
+      <!-- Data Export Section -->
+      <div class="debug-section">
+        <h4 class="debug-section-title">Diagnostic Data</h4>
+        <p class="debug-section-description">
+          Export diagnostic data files when requested by the support team for troubleshooting.
+        </p>
+        <div class="debug-button-group">
+          <button
+            (click)="downloadArmorInformation()"
+            class="debug-btn"
+            color="primary"
+            mat-flat-button
+            matTooltip="Download your armor data for analysis">
+            Export Armor Data
+            <span class="debug-btn-filename">(d2ap_armor.json)</span>
+          </button>
+          <button
+            (click)="downloadManifestInformation()"
+            class="debug-btn"
+            color="primary"
+            mat-flat-button
+            matTooltip="Download manifest data for debugging">
+            Export Manifest Data
+            <span class="debug-btn-filename">(d2ap_manifest.json)</span>
+          </button>
+          <button
+            (click)="downloadSystemInformation()"
+            class="debug-btn"
+            color="primary"
+            mat-flat-button
+            matTooltip="Download system information including localStorage keys and database table counts">
+            Export System Info
+            <span class="debug-btn-filename">(d2ap_system_info.json)</span>
+          </button>
+          <button
+            *ngIf="isDevEnvironment"
+            (click)="triggerFileInput()"
+            class="debug-btn"
+            color="warn"
+            mat-flat-button
+            matTooltip="Import and replace armor data from a d2ap_armor.json">
+            Import Armor Data
+          </button>
+          <input
+            #armorFileInput
+            id="armorFileInput"
+            type="file"
+            accept=".json"
+            (change)="importArmorData($event)"
+            style="display: none" />
+        </div>
+      </div>
 
-      If you experience issues with the local database - for example, exotics not being found, try
-      this:<br />
-      <a (click)="resetDatabase()" class="btn-download" color="warn" mat-raised-button>
-        Delete Database </a
-      ><br />
-      If you really want to reset EVERYTHING, use this: <br />
-      <a (click)="resetEverything()" class="btn-download" color="warn" mat-raised-button>
-        Reset the whole application
-      </a>
+      <!-- Database Reset Section -->
+      <div class="debug-section">
+        <h4 class="debug-section-title">Database Management</h4>
+        <p class="debug-section-description">
+          Use these options if you experience database issues such as missing exotics or corrupted
+          data.
+        </p>
+        <div class="debug-button-group">
+          <button
+            (click)="resetDatabase()"
+            class="debug-btn"
+            color="warn"
+            mat-raised-button
+            matTooltip="Clear local database cache - your settings will be preserved">
+            Clear Database Cache
+          </button>
+        </div>
+      </div>
+
+      <!-- Full Reset Section -->
+      <div class="debug-section">
+        <h4 class="debug-section-title">Complete Reset</h4>
+        <p class="debug-section-description danger-text">
+          <strong>Warning:</strong> This will completely reset the application, removing all
+          settings, builds, and data.
+        </p>
+        <div class="debug-button-group">
+          <button
+            (click)="resetEverything()"
+            class="debug-btn"
+            color="warn"
+            mat-raised-button
+            matTooltip="WARNING: This will delete everything and cannot be undone">
+            Reset Application
+          </button>
+        </div>
+      </div>
     </mat-card-content>
   </mat-card>
 

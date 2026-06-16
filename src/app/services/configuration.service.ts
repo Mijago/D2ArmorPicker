@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ModOrAbility } from "../data/enum/modOrAbility";
@@ -27,6 +27,7 @@ import { EnumDictionary } from "../data/types/EnumDictionary";
 import { ArmorStat } from "../data/enum/armor-stat";
 // import { ArmorSlot } from "../data/enum/armor-slot";
 import { ModInformation } from "../data/ModInformation";
+import { EventArmorType } from "../data/enum/event-armor-type";
 import { isEqual as _isEqual } from "lodash";
 
 export interface StoredConfiguration {
@@ -48,6 +49,9 @@ const lzDecompOptions = {
   providedIn: "root",
 })
 export class ConfigurationService implements OnDestroy {
+  get currentConfiguration() {
+    return this.__configuration;
+  }
   private __configuration: BuildConfiguration;
   private __LastConfiguration: BuildConfiguration;
 
@@ -61,7 +65,7 @@ export class ConfigurationService implements OnDestroy {
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: LoggingProxyService) {
     this.logger.debug("ConfigurationService", "constructor", "Initializing ConfigurationService");
     this.__configuration = this.loadCurrentConfiguration();
     this.__LastConfiguration = this.loadCurrentConfiguration();
@@ -147,6 +151,11 @@ export class ConfigurationService implements OnDestroy {
     // Always reset risky mods on reload
     c.configuration.limitParsedResults = true;
     c.configuration.addConstent1Health = false;
+
+    // Migrate legacy event armor setting values
+    if ((c.configuration as any).useEventArmor === "FOTL") {
+      (c.configuration as any).useEventArmor = EventArmorType.FestivalOfTheLost;
+    }
   }
 
   listSavedConfigurations(): StoredConfiguration[] {
@@ -217,13 +226,13 @@ export class ConfigurationService implements OnDestroy {
         config = {};
       }
 
-      var dummy: StoredConfiguration = {
+      var storedConfiguration: StoredConfiguration = {
         name: "dummy",
         version: "1",
         configuration: JSON.parse(config),
       };
-      this.checkAndFixOldSavedConfigurations(dummy);
-      return dummy.configuration;
+      this.checkAndFixOldSavedConfigurations(storedConfiguration);
+      return storedConfiguration.configuration;
     } catch (e) {
       this.logger.error(
         "ConfigurationService",

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { Component, OnDestroy, OnInit, NgZone } from "@angular/core";
+import { LoggingProxyService } from "../../../services/logging-proxy.service";
 import { ArmorCalculatorService } from "../../../services/armor-calculator.service";
 import { ConfigurationService } from "../../../services/configuration.service";
 import { ArmorPerkOrSlot, ArmorStat, StatModifier } from "../../../data/enum/armor-stat";
@@ -25,7 +25,7 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../../../data/enum/armor-slot";
 import { BuildConfiguration } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { takeUntil, skip } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "src/app/data/constants";
 import { Tuning } from "src/app/data/types/IPermutatorArmorSet";
@@ -110,9 +110,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   // info values
   selectedClass: DestinyClass = DestinyClass.Unknown;
-  totalTime: number = 0;
+  totalTime: number | null = 0;
   itemCount: number = 0;
-  totalResults: number = 0;
+  savedResults: number = 0;
+  totalPermutations: number = 0;
+  totalPossibleCombinations: number = 0;
   parsedResults: number = 0;
   viewMode: "table" | "cards" = "table";
   _config_legacyArmor: any;
@@ -125,7 +127,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
     private armorCalculator: ArmorCalculatorService,
     public configService: ConfigurationService,
     public status: StatusProviderService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService,
+    private ngZone: NgZone
   ) {
     this.logger.debug("ResultsComponent", "constructor", "Component initialized");
     // Load saved view mode from localStorage
@@ -145,9 +148,21 @@ export class ResultsComponent implements OnInit, OnDestroy {
       this.cancelledCalculation = s.cancelledCalculation;
     });
 
-    this.armorCalculator.calculationProgress.subscribe((progress) => {
-      this.computationProgress = progress;
-    });
+    this.armorCalculator.calculationProgress
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((progress) => {
+        this.ngZone.run(() => {
+          this.computationProgress = progress;
+        });
+      });
+
+    this.armorCalculator.totalPossibleCombinations
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((value) => {
+        this.ngZone.run(() => {
+          this.totalPossibleCombinations = value;
+        });
+      });
     //
     this.configService.configuration
       .pipe(takeUntil(this.ngUnsubscribe))
@@ -173,7 +188,7 @@ export class ResultsComponent implements OnInit, OnDestroy {
       });
 
     this.armorCalculator.armorResults
-      .pipe(takeUntil(this.ngUnsubscribe))
+      .pipe(takeUntil(this.ngUnsubscribe), skip(1))
       .subscribe(async (value) => {
         if (value.results.length > 0 && this.initializing) {
           this.initializing = false;
@@ -181,29 +196,14 @@ export class ResultsComponent implements OnInit, OnDestroy {
         this._results = value.results;
         this.itemCount = value.itemCount;
         this.totalTime = value.totalTime;
-        this.totalResults = value.totalResults;
+        this.savedResults = value.savedResults;
+        this.totalPermutations = value.totalPermutations;
         this.parsedResults = this._results.length;
-
-        this.status.modifyStatus((s) => (s.updatingResultsTable = true));
-        await this.updateData();
-        this.status.modifyStatus((s) => (s.updatingResultsTable = false));
       });
   }
 
   cancelCalculation() {
     this.armorCalculator.cancelCalculation();
-  }
-
-  async updateData() {
-    this.logger.info(
-      "ResultsComponent",
-      "updateData",
-      "Table total results: " + this._results.length
-    );
-    const start = performance.now();
-
-    const end = performance.now();
-    this.logger.info("ResultsComponent", "updateData", `Update Data took ${end - start} ms`);
   }
 
   private ngUnsubscribe = new Subject();
