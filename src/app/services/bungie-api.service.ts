@@ -42,13 +42,12 @@ import {
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
-import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, detectArmor3Sockets, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
   createArmorItem,
   applyInvestmentStats,
-  getInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import {
@@ -95,7 +94,7 @@ export interface DestinyEquipableItemSetDefinition {
   blacklisted: boolean;
 }
 
-function collectInvestmentStats(
+export function collectInvestmentStats(
   r: IInventoryArmor,
   itemInvestmentStats: DestinyItemInvestmentStatDefinition[],
   plugHashes: (number | undefined)[],
@@ -526,41 +525,56 @@ export class BungieApiService implements OnDestroy {
     d: DestinyItemComponent,
     modsMap: Record<string, IManifestArmor>
   ): void {
-    // 3.0 armor system detection and tuning stat processing
-    if (!!(instance as any).gearTier) {
-      armorItem.armorSystem = ArmorSystem.Armor3;
-      armorItem.tier = (instance as any).gearTier;
+    // Armor 3.0 detection: socket-based (from the manifest, set in extractArmorDataFromManifest)
+    // OR a per-instance gearTier. Exotic class items have a tuning socket but no archetype socket.
+    const gearTier = (instance as any).gearTier as number | undefined;
+    const isArmor3 =
+      armorItem.armorSystem === ArmorSystem.Armor3 ||
+      !!armorItem.hasTuningSlot ||
+      !!armorItem.hasArchetypeSocket ||
+      !!gearTier ||
+      (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass);
 
-      // Grab the tuning stat from the reusable plugs
-      try {
-        const plugs =
-          profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
-        if (plugs) {
-          const availablePlugs = Object.values(plugs).find((value: any) => {
-            return value.length > 1 && value.some((p: any) => p.plugItemHash == 3122197216); // 3122197216 is the balanced tuning stat
-          }) as any[];
+    if (!isArmor3) {
+      armorItem.armorSystem = ArmorSystem.Armor2;
+      return;
+    }
 
-          if (availablePlugs && availablePlugs.length > 1) {
-            const pickedPlug = availablePlugs.find((p: any) => p.plugItemHash != 3122197216);
-            if (pickedPlug) {
-              const statCheckHash = pickedPlug.plugItemHash;
-              const mod = modsMap[statCheckHash];
-              const tuningStatHash = mod?.investmentStats.find((p) => p.value > 0)?.statTypeHash;
-              if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
-            }
+    armorItem.armorSystem = ArmorSystem.Armor3;
+
+    // Monument of Triumph: every (socket-detected) Armor 3.0 exotic is Tier 5 with access to
+    // ALL tuning mods. Force tier 5 regardless of gearTier; the optimizer handles the flexible
+    // +5/-5 tuning, so we deliberately leave tuningStat null for exotics (no single fixed stat).
+    if (armorItem.isExotic) {
+      armorItem.tier = 5;
+      return;
+    }
+
+    if (gearTier) armorItem.tier = gearTier;
+
+    // Legendaries: grab the (fixed) tuning stat from the reusable plugs.
+    try {
+      const plugs = profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
+      if (plugs) {
+        const availablePlugs = Object.values(plugs).find((value: any) => {
+          return value.length > 1 && value.some((p: any) => p.plugItemHash == 3122197216); // balanced tuning
+        }) as any[];
+
+        if (availablePlugs && availablePlugs.length > 1) {
+          const pickedPlug = availablePlugs.find((p: any) => p.plugItemHash != 3122197216);
+          if (pickedPlug) {
+            const mod = modsMap[pickedPlug.plugItemHash];
+            const tuningStatHash = mod?.investmentStats.find((p) => p.value > 0)?.statTypeHash;
+            if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
           }
         }
-      } catch (e) {
-        this.logger.error(
-          "BungieApiService",
-          "updateInventory",
-          `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
-        );
       }
-    } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
-      armorItem.armorSystem = ArmorSystem.Armor3;
-    } else {
-      armorItem.armorSystem = ArmorSystem.Armor2;
+    } catch (e) {
+      this.logger.error(
+        "BungieApiService",
+        "updateInventory",
+        `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
+      );
     }
   }
 
@@ -583,37 +597,11 @@ export class BungieApiService implements OnDestroy {
       modsMap
     );
 
-    // Process exotic class item archetype stats
-    if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
-      let statData = profile.Response.itemComponents.stats.data || {};
-      let stats = statData[d.itemInstanceId || ""]?.stats || {};
-
-      for (let n = 0; n < 7; n++) {
-        const sock = sockets[d.itemInstanceId!]?.sockets[n];
-        if (!sock || !sock.plugHash) continue;
-        const mod = modsMap[sock.plugHash];
-        if (!mod) continue;
-        if (mod.investmentStats.length == 0) continue;
-        for (const stat of mod.investmentStats) {
-          if (stat.statTypeHash in stats) {
-            (stats[stat.statTypeHash] as any).value -= stat.value;
-          }
-        }
-      }
-      // Sort the stats by value in descending order and get the third highest value
-      const sortedStats = Object.entries(stats)
-        .map(([hash, statObj]) => ({ hash: parseInt(hash), value: (statObj as any).value }))
-        .sort((a, b) => b.value - a.value);
-
-      if (sortedStats.length >= 3) {
-        const thirdHighestStatHash = sortedStats[2].hash;
-        armorItem.archetypeStats.push(Object.values(ArmorStatHashes).indexOf(thirdHighestStatHash));
-
-        const investmentStat = getInvestmentStats(armorItem);
-        investmentStat[thirdHighestStatHash] += 13;
-        applyInvestmentStats(armorItem, investmentStat);
-      }
-    }
+    // Exotic class items are treated like normal armor now (Monument of Triumph): their stats
+    // come from the "Spirit of..." perks via collectInvestmentStats, and processArmorSystemAndTuning
+    // gives them Tier 5 + flexible tuning. The legacy "+13 to the 3rd-highest stat" approximation
+    // (an EoF-era hack flagged "TODO: must be tiered") is removed — it has no basis in the current
+    // manifest (class items carry zero base armor stats; the archetype socket rolls nothing).
 
     // Process masterwork level
     for (let socket of socketsList) {
@@ -1203,6 +1191,9 @@ export class BungieApiService implements OnDestroy {
         }
 
         const isFeatured = !!(v as any)?.isFeaturedItem;
+        const armor3 = detectArmor3Sockets(v.sockets?.socketEntries, (h) =>
+          h ? (manifestTables.DestinyInventoryItemDefinition as any)[h] : undefined
+        );
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
@@ -1210,7 +1201,16 @@ export class BungieApiService implements OnDestroy {
           name: v.displayProperties.name,
           description: v.displayProperties.description,
           clazz: clasz,
-          armorSystem: isArmor2 ? 2 : 1, // TODO: There may be a smarter way
+          // Armor 3.0 is detected data-driven via socket presence; fall back to the
+          // legacy 1.0/2.0 socket heuristic for pre-3.0 items.
+          armorSystem:
+            armor3.hasArchetypeSocket || armor3.hasTuningSlot
+              ? ArmorSystem.Armor3
+              : isArmor2
+                ? ArmorSystem.Armor2
+                : ArmorSystem.Armor1,
+          hasTuningSlot: armor3.hasTuningSlot,
+          hasArchetypeSocket: armor3.hasArchetypeSocket,
           slot: slot,
           isExotic: isExotic ? 1 : 0,
           isSunset: isSunset,

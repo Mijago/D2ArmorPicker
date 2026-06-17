@@ -18,12 +18,26 @@
 import { TestBed } from "@angular/core/testing";
 import { AppComponent } from "./app.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { UserInformationService } from "src/app/services/user-information.service";
+import { NGXLogger } from "ngx-logger";
+import { AuthService } from "./services/auth.service";
 
 describe("AppComponent", () => {
   beforeEach(async () => {
+    // AppComponent only injects these three services and the tests construct it without change
+    // detection, so stub them to avoid pulling the whole DI chain (DatabaseService -> AuthService
+    // -> NGXLogger -> TOKEN_LOGGER_CONFIG) into the test module.
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
       imports: [BrowserAnimationsModule],
+      providers: [
+        { provide: UserInformationService, useValue: { isInitialized: true } },
+        {
+          provide: NGXLogger,
+          useValue: { debug() {}, info() {}, warn() {}, error() {} },
+        },
+        { provide: AuthService, useValue: {} },
+      ],
     }).compileComponents();
   });
 
