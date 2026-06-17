@@ -30,6 +30,41 @@ export enum ArmorSystem {
   Armor3 = 3, // Armor 3.0
 }
 
+// Armor 3.0 is identified by the plug CATEGORY of the plugs in its archetype / tuning
+// sockets, NOT by socketTypeHash. Bungie regenerates socketTypeHash between patches (cf.
+// the recurring artifice-socket churn), so we key off the stable plugCategoryIdentifier
+// string ("armor_archetypes" / the tuning identifier) and fall back to the plugCategory
+// hash. Detection resolves each socket's default plug via a caller-provided resolver
+// (the manifest item table); it works for inventory, collection and vendor items alike,
+// with no per-instance gearTier needed.
+export const ARMOR3_ARCHETYPE_PLUG_CATEGORY = "armor_archetypes";
+export const ARMOR3_TUNING_PLUG_CATEGORY = "core.gear_systems.armor_tiering.plugs.tuning.mods";
+export const ARMOR3_ARCHETYPE_PLUG_CATEGORY_HASH = 778194869;
+export const ARMOR3_TUNING_PLUG_CATEGORY_HASH = 3481777685;
+
+type PlugCategoryInfo = {
+  plug?: { plugCategoryIdentifier?: string; plugCategoryHash?: number };
+};
+
+export function detectArmor3Sockets(
+  socketEntries: { singleInitialItemHash?: number }[] | undefined,
+  resolvePlug: (hash: number | undefined) => PlugCategoryInfo | undefined
+): { hasArchetypeSocket: boolean; hasTuningSlot: boolean } {
+  let hasArchetypeSocket = false;
+  let hasTuningSlot = false;
+  for (const entry of socketEntries ?? []) {
+    const plug = resolvePlug(entry.singleInitialItemHash)?.plug;
+    if (!plug) continue;
+    const id = plug.plugCategoryIdentifier;
+    const hash = plug.plugCategoryHash;
+    if (id === ARMOR3_TUNING_PLUG_CATEGORY || hash === ARMOR3_TUNING_PLUG_CATEGORY_HASH)
+      hasTuningSlot = true;
+    if (id === ARMOR3_ARCHETYPE_PLUG_CATEGORY || hash === ARMOR3_ARCHETYPE_PLUG_CATEGORY_HASH)
+      hasArchetypeSocket = true;
+  }
+  return { hasArchetypeSocket, hasTuningSlot };
+}
+
 export interface IDisplayManifestArmor {
   hash: number;
   name: string;
@@ -53,4 +88,7 @@ export interface IManifestArmor extends IDisplayManifestArmor {
   itemSubType: number;
   investmentStats: DestinyItemInvestmentStatDefinition[];
   socketEntries: DestinyItemSocketEntryDefinition[];
+  // Armor 3.0 socket presence (set during manifest ingestion via detectArmor3Sockets).
+  hasTuningSlot?: boolean;
+  hasArchetypeSocket?: boolean;
 }

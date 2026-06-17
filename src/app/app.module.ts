@@ -74,8 +74,6 @@ import {
 
 import { environment } from "../environments/environment";
 // import { H } from "highlight.run";
-import Tracker from "@openreplay/tracker";
-import trackerAssist from "@openreplay/tracker-assist";
 
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
 import { ResultsTableViewComponent } from "./components/authenticated-v2/results/results-table-view/results-table-view.component";
@@ -83,75 +81,10 @@ import { GearsetSelectionComponent } from "./components/authenticated-v2/setting
 import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
 import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
-let openReplayTracker: Tracker;
-
-export function identifyUserWithTracker(membershipData: GroupUserInfoCard | null) {
-  try {
-    openReplayTracker.setMetadata("version", `${environment.version}`);
-
-    if (!membershipData) return;
-    const identifier = `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`;
-
-    openReplayTracker.identify(identifier);
-    openReplayTracker.setMetadata(
-      "bungieGlobalDisplayName",
-      membershipData.bungieGlobalDisplayName
-    );
-    openReplayTracker.setMetadata(
-      "bungieGlobalDisplayNameCode",
-      (membershipData.bungieGlobalDisplayNameCode ?? -1).toString()
-    );
-    openReplayTracker.setMetadata("membershipType", membershipData.membershipType.toString());
-    openReplayTracker.setMetadata(
-      "applicableMembershipTypes",
-      JSON.stringify(membershipData.applicableMembershipTypes)
-    );
-
-    // Identify user with Sentry
-    Sentry.setUser({
-      id: identifier,
-      username: membershipData.displayName,
-      email: membershipData.bungieGlobalDisplayName,
-      extra: {
-        membershipId: membershipData.membershipId,
-        membershipType: membershipData.membershipType,
-        bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
-        applicableMembershipTypes: membershipData.applicableMembershipTypes,
-        iconPath: membershipData.iconPath,
-      },
-    });
-    // H.identify(identifier, {
-    //   highlightDisplayName: `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`,
-    //   avatar: `https://bungie.net${membershipData.iconPath}`,
-    //   bungieGlobalDisplayName: membershipData.bungieGlobalDisplayName,
-    //   bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
-    //   membershipType: membershipData.membershipType,
-    //   applicableMembershipTypes: JSON.stringify(membershipData.applicableMembershipTypes),
-    // });
-  } catch (err) {
-    console.error("Error identifying user with tracker", err);
-  }
-}
-
-try {
-  openReplayTracker = new Tracker({
-    projectKey: environment.open_replay_project_key,
-  });
-
-  openReplayTracker.start();
-  const options = {};
-  openReplayTracker.use(trackerAssist(options)); // check the list of available options below
-
-  let membershipInfo: GroupUserInfoCard | null = JSON.parse(
-    localStorage.getItem("user-membershipInfo") || "null"
-  );
-  if (membershipInfo) {
-    console.log("Found cached membership info, using it to identify user in OpenReplay");
-  }
-  identifyUserWithTracker(membershipInfo);
-} catch (e) {
-  console.error("Failed to initialize OpenReplay tracker", e);
-}
+// OpenReplay tracker lives in its own module to avoid a circular import with
+// membership.service (which imports identifyUserWithTracker). The side-effect
+// import below runs the tracker init on app load, as before.
+import "./services/openreplay-tracker";
 
 // if (!!environment.highlight_project_id) {
 //   H.init(environment.highlight_project_id, {
@@ -179,7 +112,6 @@ try {
 import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
 import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
 import { PrivacyPolicyComponent } from "./components/privacy-policy/privacy-policy.component";
-import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
 
 const routes: Routes = [
   {

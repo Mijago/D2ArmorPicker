@@ -39,7 +39,12 @@ import {
 } from "../data/types/IInventoryArmor";
 import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { getSkillTier, getWaste } from "./results-builder.worker";
+import {
+  getSkillTier,
+  getWaste,
+  buildProfileKey,
+  outputBuildBetter,
+} from "./results-builder.worker";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
@@ -75,7 +80,6 @@ export class ArmorCalculatorService implements OnDestroy {
   private selectedExotics: IManifestArmor[] = [];
   private inventoryArmorItems: IInventoryArmor[] = [];
   private permutatorArmorItems: IPermutatorArmor[] = [];
-  private endResults: ResultDefinition[] = [];
   private allArmorResults: ResultDefinition[] = [];
 
   private calculationSubscription?: Subscription;
@@ -542,6 +546,19 @@ export class ArmorCalculatorService implements OnDestroy {
       );
       let oldProgressValue = 0;
 
+      // STREAMING state: each thread's FROZEN output frontier (from a cap preview or its final done),
+      // so results can render as soon as every thread has frozen — while max-tiers keep settling.
+      const threadFrontier: (IPermutatorArmorSet[] | null)[] = [...Array(nthreads).keys()].map(
+        () => null
+      );
+      let emittedPreview = false;
+      let streamItemCount = 0;
+      // more-is-better == output is one best build per (exotic+set) profile; else union of frontiers.
+      const moreIsBetter =
+        !Object.values(config.minimumStatTiers).some((v) => v.fixed) &&
+        !config.tryLimitWastedStats &&
+        !config.onlyShowResultsWithNoWastedStats;
+
       // Improve per thread performance by shuffling the inventory
       // sorting is a naive aproach that can be optimized
       // in my test is better than the default order from the db
@@ -549,6 +566,127 @@ export class ArmorCalculatorService implements OnDestroy {
         (a, b) => totalStats(b) - totalStats(a)
       );
       this._calculationProgress.next(0);
+
+      // Slim per-worker payload: the worker is pure math and never reads the display-only fields
+      // (icon/watermarkIcon/name URLs+strings, rarity, isSunset, source, energyLevel, clazz), which
+      // are the bulk of the structured-clone cost when the full inventory is posted to EACH worker.
+      // permutatorArmorItems stays full for main-thread display (icons mapped from result ids).
+      // Built ONCE and reused for every worker. Keep in sync with the fields the worker accesses.
+      const workerItems = this.permutatorArmorItems.map((a) => ({
+        id: a.id,
+        hash: a.hash,
+        slot: a.slot,
+        isExotic: a.isExotic,
+        perk: a.perk,
+        masterworkLevel: a.masterworkLevel,
+        archetypeStats: a.archetypeStats,
+        mobility: a.mobility,
+        resilience: a.resilience,
+        recovery: a.recovery,
+        discipline: a.discipline,
+        intellect: a.intellect,
+        strength: a.strength,
+        exoticPerkHash: a.exoticPerkHash,
+        gearSetHash: a.gearSetHash ?? null,
+        tuningStat: a.tuningStat,
+        armorSystem: a.armorSystem,
+        tier: a.tier,
+      })) as unknown as IPermutatorArmor[];
+
+      // Build the ResultDefinition list from the collected per-thread frontiers and emit it. Called
+      // once per STREAMING preview (frozen builds, still-settling max-tiers) and once at FINAL done
+      // (exact max-tiers). sourceBuilds order is preserved into the per-profile merge, so the FINAL
+      // emit (sourceBuilds = this.results, the pre-streaming accumulation order) stays byte-identical
+      // to the old behaviour; the preview is transient and replaced by the final.
+      const emitResults = (sourceBuilds: IPermutatorArmorSet[], perThreadTiers: number[][]) => {
+        let merged = sourceBuilds;
+        if (moreIsBetter) {
+          const idToPiece = new Map<number, any>(this.inventoryArmorItems.map((i) => [i.id, i]));
+          const bestByProfile = new Map<string, IPermutatorArmorSet>();
+          for (const armorSet of sourceBuilds) {
+            const key = buildProfileKey(armorSet.armor, idToPiece);
+            const cur = bestByProfile.get(key);
+            if (!cur || outputBuildBetter(armorSet, cur)) bestByProfile.set(key, armorSet);
+          }
+          merged = Array.from(bestByProfile.values());
+        }
+
+        const endResults: ResultDefinition[] = [];
+        for (let armorSet of merged) {
+          let items = armorSet.armor.map((x) =>
+            this.inventoryArmorItems.find((y) => y.id == x)
+          ) as IInventoryArmor[];
+          let exotic = items.find((x) => x.isExotic);
+          let v: ResultDefinition = {
+            loaded: false, // TODO check if loaded is even needed
+            tuningStats: armorSet.tuning,
+            exotic:
+              exotic == null
+                ? undefined
+                : {
+                    icon: exotic?.icon,
+                    watermark: exotic?.watermarkIcon,
+                    name: exotic?.name,
+                    hash: exotic?.hash,
+                  },
+            artifice: armorSet.usedArtifice,
+            modCount: armorSet.usedMods.length,
+            modCost: armorSet.usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
+            mods: armorSet.usedMods,
+            stats: armorSet.statsWithMods,
+            statsNoMods: armorSet.statsWithoutMods,
+            tiers: getSkillTier(armorSet.statsWithMods),
+            waste: getWaste(armorSet.statsWithMods),
+            items: items.map(
+              (instance): ResultItem => ({
+                tuningStat: instance.tuningStat,
+                energyLevel: instance.energyLevel,
+                hash: instance.hash,
+                itemInstanceId: instance.itemInstanceId,
+                name: instance.name,
+                exotic: !!instance.isExotic,
+                masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+                archetypeStats: instance.archetypeStats,
+                armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
+                masterworkLevel: instance.masterworkLevel,
+                slot: instance.slot,
+                perk: instance.perk,
+                transferState: 0, // TRANSFER_NONE
+                tier: instance.tier,
+                stats: [
+                  instance.mobility,
+                  instance.resilience,
+                  instance.recovery,
+                  instance.discipline,
+                  instance.intellect,
+                  instance.strength,
+                ],
+                source: instance.source,
+                statsNoMods: [],
+              })
+            ),
+            usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
+            usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
+          };
+          endResults.push(v);
+        }
+
+        this._armorResults.next({
+          results: endResults,
+          totalResults: this.totalPermutationCount, // differs from the real amount under the result cap
+          itemCount: streamItemCount,
+          totalTime: Date.now() - startTime,
+          maximumPossibleTiers: perThreadTiers
+            .reduce(
+              (p, v) => {
+                for (let k = 0; k < 6; k++) if (p[k] < v[k]) p[k] = v[k];
+                return p;
+              },
+              [0, 0, 0, 0, 0, 0]
+            )
+            .map((k) => Math.min(200, k) / 10),
+        });
+      };
 
       for (let n = 0; n < nthreads; n++) {
         this.workers[n] = new Worker(new URL("./results-builder.worker", import.meta.url), {
@@ -581,99 +719,45 @@ export class ArmorCalculatorService implements OnDestroy {
               this._calculationProgress.next(newProgress);
             }
           }
+          // STREAMING preview: a thread froze its output at the result cap (the slow 3+/fixed/waste
+          // path keeps walking only to settle max-tiers). Record its frozen frontier; once EVERY
+          // thread has a frozen frontier (preview here, or its final done below), render results NOW
+          // with the current still-settling max-tiers. Sliders keep streaming live, and the final
+          // `done` re-emits with the exact max-tiers. Fired at most once.
+          if (data.previewResults) {
+            threadFrontier[n] = data.previewResults as IPermutatorArmorSet[];
+            if (data.itemCount != null) streamItemCount = data.itemCount;
+            if (!emittedPreview && threadFrontier.every((f) => f != null)) {
+              emittedPreview = true;
+              const previewBuilds = ([] as IPermutatorArmorSet[]).concat(
+                ...threadFrontier.map((f) => f as IPermutatorArmorSet[])
+              );
+              emitResults(previewBuilds, threadCalculationReachableTiers);
+            }
+            return;
+          }
+
           if (data.runtime == null) return;
 
+          // FINAL accumulation. this.results stays the pre-streaming arrival-order accumulation so the
+          // final emit is byte-identical; threadFrontier[n] also records the (now final) frontier.
           this.results.push(...(data.results as IPermutatorArmorSet[]));
+          threadFrontier[n] = data.results as IPermutatorArmorSet[];
           if (data.done == true) {
             doneWorkerCount++;
             this.totalPermutationCount += data.stats.permutationCount;
+            if (data.stats && data.stats.itemCount != null) streamItemCount = data.stats.itemCount;
             this.resultMaximumTiers.push(data.runtime.maximumPossibleTiers);
           }
           if (data.done == true && doneWorkerCount == nthreads) {
             this.status.modifyStatus((s) => (s.calculatingResults = false));
             this._calculationProgress.next(0);
 
-            this.endResults = [];
+            // Each worker sent its per-(exotic+set) best build (or, under fixed-stat/waste configs,
+            // its per-profile frontier). emitResults merges across threads so the user sees ONE best
+            // build per exotic+set profile globally (max total stats); else the union of frontiers.
+            emitResults(this.results, this.resultMaximumTiers);
 
-            for (let armorSet of this.results) {
-              let items = armorSet.armor.map((x) =>
-                this.inventoryArmorItems.find((y) => y.id == x)
-              ) as IInventoryArmor[];
-              let exotic = items.find((x) => x.isExotic);
-              let v: ResultDefinition = {
-                loaded: false, // TODO check if loaded is even needed
-                tuningStats: armorSet.tuning,
-                exotic:
-                  exotic == null
-                    ? undefined
-                    : {
-                        icon: exotic?.icon,
-                        watermark: exotic?.watermarkIcon,
-                        name: exotic?.name,
-                        hash: exotic?.hash,
-                      },
-                artifice: armorSet.usedArtifice,
-                modCount: armorSet.usedMods.length,
-                modCost: armorSet.usedMods.reduce(
-                  (p, d: StatModifier) => p + STAT_MOD_VALUES[d][2],
-                  0
-                ),
-                mods: armorSet.usedMods,
-                stats: armorSet.statsWithMods,
-                statsNoMods: armorSet.statsWithoutMods,
-                tiers: getSkillTier(armorSet.statsWithMods),
-                waste: getWaste(armorSet.statsWithMods),
-                items: items.map(
-                  (instance): ResultItem => ({
-                    tuningStat: instance.tuningStat,
-                    energyLevel: instance.energyLevel,
-                    hash: instance.hash,
-                    itemInstanceId: instance.itemInstanceId,
-                    name: instance.name,
-                    exotic: !!instance.isExotic,
-                    masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-                    archetypeStats: instance.archetypeStats,
-                    armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
-                    masterworkLevel: instance.masterworkLevel,
-                    slot: instance.slot,
-                    perk: instance.perk,
-                    transferState: 0, // TRANSFER_NONE
-                    tier: instance.tier,
-                    stats: [
-                      instance.mobility,
-                      instance.resilience,
-                      instance.recovery,
-                      instance.discipline,
-                      instance.intellect,
-                      instance.strength,
-                    ],
-                    source: instance.source,
-                    statsNoMods: [],
-                  })
-                ),
-                usesCollectionRoll: items.some(
-                  (y) => y.source === InventoryArmorSource.Collections
-                ),
-                usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-              };
-              this.endResults.push(v);
-            }
-
-            this._armorResults.next({
-              results: this.endResults,
-              totalResults: this.totalPermutationCount, // Total amount of results, differs from the real amount if the memory save setting is active
-              itemCount: data.stats.itemCount,
-              totalTime: Date.now() - startTime,
-              maximumPossibleTiers: this.resultMaximumTiers
-                .reduce(
-                  (p, v) => {
-                    for (let k = 0; k < 6; k++) if (p[k] < v[k]) p[k] = v[k];
-                    return p;
-                  },
-                  [0, 0, 0, 0, 0, 0]
-                )
-                .map((k) => Math.min(200, k) / 10),
-            });
             const updateResultsEnd = performance.now();
             this.logger.info(
               "ArmorCalculatorService",
@@ -695,7 +779,7 @@ export class ArmorCalculatorService implements OnDestroy {
             count: nthreads,
             current: n,
           },
-          items: this.permutatorArmorItems,
+          items: workerItems,
           selectedExotics: this.selectedExotics,
         });
       }

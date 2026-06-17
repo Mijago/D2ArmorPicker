@@ -53,7 +53,7 @@ describe("PrivacyPolicyPageComponent", () => {
     expect(sectionTitles).toContain("Information We Collect");
     expect(sectionTitles).toContain("How We Use Your Information");
     expect(sectionTitles).toContain("Data Storage and Security");
-    expect(sectionTitles).toContain("Your Rights");
+    expect(sectionTitles).toContain("Data Sharing");
     expect(sectionTitles).toContain("Contact Us");
   });
 });

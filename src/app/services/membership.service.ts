@@ -11,7 +11,7 @@ import { getMembershipDataForCurrentUser } from "bungie-api-ts/user";
 import { HttpClientService } from "./http-client.service";
 import { StatusProviderService } from "./status-provider.service";
 import { NGXLogger } from "ngx-logger";
-import { identifyUserWithTracker } from "../app.module";
+import { identifyUserWithTracker } from "./openreplay-tracker";
 // import { H } from "highlight.run";
 
 @Injectable({
