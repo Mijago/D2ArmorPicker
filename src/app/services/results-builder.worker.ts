@@ -1786,6 +1786,10 @@ export function handlePermutation(
 
   const baseT5Improvements: t5Improvement[] = [];
   const preTuningMax: number[] = [0, 0, 0, 0, 0, 0];
+  // Per-stat MOST-NEGATIVE tuning reachable from the 4 main pieces (how far tuning can pull a stat
+  // DOWN). Mirrors preTuningMax; only the negative side is used, to keep the fixed-overshoot abort
+  // sound (a locked stat the base overshoots may still be tuned back down to its lock).
+  const preTuningMin: number[] = [0, 0, 0, 0, 0, 0];
   // Deduped tuning accumulator for the 4 fixed main pieces — computed ONCE per core, then each
   // class item only folds in its own options (see the class-item loop). null until built.
   let baseTuningAcc: Map<number, Tuning> | null = null;
@@ -1806,9 +1810,10 @@ export function handlePermutation(
 
     for (const t5 of baseT5Improvements) {
       if (t5.flexible) {
-        // exotic: +5 reachable on any stat
+        // exotic: +5 reachable on any stat; and -5 reachable on any stat (the other half of the pair)
         for (let i = 0; i < 6; i++) {
           preTuningMax[i] += 5;
+          preTuningMin[i] += -5;
         }
         continue;
       }
@@ -1816,21 +1821,31 @@ export function handlePermutation(
       // Balanced bonus (1 on a lowest-3 stat, 0 otherwise). The +5/-5 options only ever lower the
       // other stats, so they never beat Balanced for a per-stat MAX. (Previously this summed one
       // option per -5 target, ~5x over-counting and badly loosening the tier/feasibility gates.)
+      // For the MIN: -5 reachable on any stat EXCEPT the tuned stat (which a legendary can't lower —
+      // its options are no-op, +5 on the tuned stat, or Balanced's >=0).
       const balanced = t5.balancedBonus;
       for (let i = 0; i < 6; i++) {
         preTuningMax[i] += i === t5.tuningStat ? 5 : balanced[i];
+        preTuningMin[i] += i === t5.tuningStat ? 0 : -5;
       }
     }
   }
 
-  // Fixed-overshoot abort (STRICT): if the 4 main pieces already overshoot a locked stat, abort the
-  // whole core. A class item only ADDS, so it can't bring an overshot stat back down. (Negative
-  // tuning could in theory pull it back to the lock, but the strict path does not model that — an
-  // accepted tradeoff: the tuning-down relaxation showed no measured benefit and was catastrophic on
-  // all-locked configs, where ~every core reached get_mods + the per-core Minkowski materialization.)
+  // Fixed-overshoot abort (tuning-aware). A locked stat can only be pulled DOWN by negative tuning
+  // (mods only add). So abort the whole core only if even the most-negative tuning the 4 main pieces
+  // can supply, PLUS a best-case -5 from some class item, still leaves the stat above its lock — then
+  // no class item can rescue it. preTuningMin is 0 with tuning off, so this reduces to "base > lock".
+  //
+  // PERF GATE: the FULL tuning-down relaxation makes ~every core reach get_mods + the per-core
+  // Minkowski tuning materialization on all-locked configs (catastrophic — even CAP=8 doesn't
+  // finish). Until the fixed-stat solver is redesigned, default to the STRICT base-overshoot abort
+  // (base > lock) which is fast; opt into the sound tuning-aware relaxation via a global flag.
   if (anyFixed) {
+    const relax = !!(globalThis as any).__TUNINGDOWNRELAX__;
+    const classRed = relax && config.calculateTierFiveTuning ? 5 : 0;
     for (let n: ArmorStat = 0; n < 6; n++) {
-      if (targetFixed[n] && stats[n] > targetVals[n]) return [];
+      const floorN = relax ? stats[n] + preTuningMin[n] - classRed : stats[n];
+      if (targetFixed[n] && floorN > targetVals[n]) return [];
     }
   }
 
@@ -1886,6 +1901,19 @@ export function handlePermutation(
     return result;
   }
 
+  // Per-stat MOST-NEGATIVE tuning including an optional class-item T5 (mirror of the max helper).
+  // Used only by the fixed-overshoot gate, so it's only built when a stat is locked.
+  function calcTuningMinWithExtra(extra?: t5Improvement): number[] {
+    if (!extra) return preTuningMin.slice();
+    const result = preTuningMin.slice();
+    if (extra.flexible) {
+      for (let i = 0; i < 6; i++) result[i] += -5;
+      return result;
+    }
+    for (let i = 0; i < 6; i++) result[i] += i === extra.tuningStat ? 0 : -5;
+    return result;
+  }
+
   // Class items are emitted as a per-core SKYLINE (the non-dominated builds), not a single
   // heuristic pick — so achievable builds across class items are not silently dropped (a real
   // issue now that class items carry 0–200 stats). collected gathers every valid class-item
@@ -1936,12 +1964,19 @@ export function handlePermutation(
         ? mapItemToTuning(classItem)
         : undefined;
 
-    // Bug #1 fix: this class item overshoots a FIXED-stat target -> skip ONLY this class item (other
-    // class items may still fit). STRICT check: a class item only ADDS, so once a locked stat is
-    // above its lock it can't come back down here.
+    // Bug #1 fix: this class item overshoots a FIXED-stat target -> skip ONLY this class item
+    // (other class items may still fit). Tuning-aware (opt-in, see the per-core abort above): a stat
+    // above its lock can still be pulled back down by NEGATIVE tuning (mods only add), so under the
+    // relaxation skip only when even the most-negative tuning (4 main + this class item) can't reach
+    // the lock. Default is the fast STRICT check (adjusted > lock).
     if (anyFixed) {
+      const tMin =
+        (globalThis as any).__TUNINGDOWNRELAX__ && config.calculateTierFiveTuning
+          ? calcTuningMinWithExtra(classItemT5)
+          : null;
       for (let n: ArmorStat = 0; n < 6; n++) {
-        if (targetFixed[n] && adjustedStats[n] > targetVals[n]) continue classItemLoop;
+        if (targetFixed[n] && adjustedStats[n] + (tMin ? tMin[n] : 0) > targetVals[n])
+          continue classItemLoop;
       }
     }
 
@@ -2038,7 +2073,17 @@ export function handlePermutation(
 
     // heavy work: mod precalc
     let result: StatModifierPrecalc | null;
-    if (newDistanceSum === 0 && newTotalOptionalDistances === 0) {
+    // A locked stat already ABOVE its lock (only reachable under the tuning-down relaxation; strict
+    // aborts it earlier) blocks the no-op shortcut — the no-op can't bring it down. Route to get_mods
+    // so a negative tuning can hit the lock exactly, or the core is correctly rejected.
+    let lockedOvershoot = false;
+    if (anyFixed)
+      for (let n: ArmorStat = 0; n < 6; n++)
+        if (targetFixed[n] && adjustedStats[n] > targetVals[n]) {
+          lockedOvershoot = true;
+          break;
+        }
+    if (newDistanceSum === 0 && newTotalOptionalDistances === 0 && !lockedOvershoot) {
       result = { mods: [], tuning: [0, 0, 0, 0, 0, 0], modBonus: [0, 0, 0, 0, 0, 0] };
     } else {
       // Tuning set for the OUTPUT get_mods. When more-is-better with targets, build only the
@@ -2880,10 +2925,20 @@ function get_mods_precalc(
   }
 
   if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
-    // No mods needed — every stat already meets its target. (Cores that overshoot a locked stat are
-    // aborted strictly before get_mods, so totalDistance==0 here means each locked stat sits exactly
-    // on its lock.)
-    return { mods: [], tuning: [0, 0, 0, 0, 0, 0], modBonus: [0, 0, 0, 0, 0, 0] };
+    // No mods needed — BUT the no-op (no mods, no tuning) is only valid if no LOCKED stat is ALREADY
+    // overshooting its lock. totalDistance==0 means every stat already meets its target, so a locked
+    // stat here is either exactly on its lock (fine) or above it (the no-op can't bring it down — fall
+    // through so a negative tuning can, or it's correctly rejected). Strict early-exits abort overshoot
+    // cores before get_mods, so this only fires for the (opt-in) tuning-down relaxation.
+    let lockedOvershoot = false;
+    if (fixedMask !== null)
+      for (let i = 0; i < 6; i++)
+        if (fixedMask[i] && currentStats[i] > targetStats[i]) {
+          lockedOvershoot = true;
+          break;
+        }
+    if (!lockedOvershoot)
+      return { mods: [], tuning: [0, 0, 0, 0, 0, 0], modBonus: [0, 0, 0, 0, 0, 0] };
   }
 
   // Per-stat max of the available tuning set (floored at 0), computed once and carried into the
