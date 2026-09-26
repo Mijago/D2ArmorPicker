@@ -55,12 +55,12 @@ export const CHANGELOG_DATA: {
         text: "Fixed stats locked to zero incorrectly rejecting builds that can reach the target with negative tuning.",
       },
       {
-        type: ChangelogEntryType.ADD,
-        text: "Added a maximum results slider (10K-100K, or unlimited) in Advanced Settings, replacing the previous on/off result-limiting toggle.",
+        type: ChangelogEntryType.MODIFIED,
+        text: "Available Gearset bonuses are now sorted for selection.",
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Calculations now stop early once the maximum possible tier of 200 is reached for every stat, and the results panel shows warning icons when the result limit is reached, the calculation stopped early, or it was cancelled.",
+        text: "Added a maximum results slider (10K-100K, or unlimited) in Advanced Settings, replacing the previous on/off result-limiting toggle.",
       },
       {
         type: ChangelogEntryType.MODIFIED,
@@ -68,7 +68,7 @@ export const CHANGELOG_DATA: {
       },
       {
         type: ChangelogEntryType.REMOVE,
-        text: "Temporarily hid the wasted stats, high-speed mode, and mod optimization strategy settings while they are reworked.",
+        text: "Hid the wasted stats, high-speed mode, and mod optimization strategy settings as they are no longer in use.",
       },
     ],
   },
