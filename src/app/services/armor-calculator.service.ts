@@ -50,6 +50,14 @@ import { combineLatest, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, catchError, startWith } from "rxjs/operators";
 import { of } from "rxjs";
 
+export interface PrunedArmorItemView {
+  item: IInventoryArmor;
+  pruned: boolean;
+  prunedBy?: IInventoryArmor | null;
+}
+
+export type ArmorPoolItemView = PrunedArmorItemView;
+
 type info = {
   results: ResultDefinition[];
   savedResults: number;
@@ -59,6 +67,7 @@ type info = {
   maximumPossibleTiers: number[];
   itemCount: number;
   totalTime: number | null;
+  prePruneArmorItems: PrunedArmorItemView[];
 };
 
 interface WorkerMessageData {
@@ -119,6 +128,7 @@ export class ArmorCalculatorService implements OnDestroy {
   private static resultMaximumTiers: number[][] = [];
   private static selectedExotics: IManifestArmor[] = [];
   private static endResults: ResultDefinition[] = [];
+  private static prePruneArmorItems: PrunedArmorItemView[] = [];
 
   // Static thread tracking arrays
   private static threadCalculationAmountArr: number[] = [];
@@ -156,6 +166,14 @@ export class ArmorCalculatorService implements OnDestroy {
 
     this._armorResults = new BehaviorSubject({
       results: ArmorCalculatorService.endResults,
+      savedResults: 0,
+      totalPermutations: 0,
+      resultLimitReached: false,
+      stoppedEarlyAtMaxTier: false,
+      maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+      itemCount: 0,
+      totalTime: null,
+      prePruneArmorItems: [],
     } as info);
     this.armorResults = this._armorResults.asObservable();
 
@@ -316,6 +334,7 @@ export class ArmorCalculatorService implements OnDestroy {
   }
 
   private clearResults() {
+    ArmorCalculatorService.prePruneArmorItems = [];
     if (ArmorCalculatorService.endResults.length > 0) {
       ArmorCalculatorService.endResults = [];
       this._armorResults.next({
@@ -327,6 +346,7 @@ export class ArmorCalculatorService implements OnDestroy {
         totalTime: 0,
         itemCount: 0,
         maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+        prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
       });
     }
   }
@@ -494,9 +514,24 @@ export class ArmorCalculatorService implements OnDestroy {
     );
   }
 
+  static markPrunedArmorItems(
+    inventoryArmorItems: IInventoryArmor[],
+    remainingArmorItems: IPermutatorArmor[],
+    prunedByMap?: Map<number, IInventoryArmor>
+  ): PrunedArmorItemView[] {
+    const remainingArmorIds = new Set(remainingArmorItems.map((item) => item.id));
+    return inventoryArmorItems.map((item) => ({
+      item,
+      pruned: !remainingArmorIds.has(item.id),
+      prunedBy: prunedByMap?.get(item.id) ?? null,
+    }));
+  }
+
   private static pruneDominatedArmorItems(
     items: IPermutatorArmor[],
-    config: BuildConfiguration
+    config: BuildConfiguration,
+    inventoryById: Map<number, IInventoryArmor> = new Map(),
+    prunedByMap: Map<number, IInventoryArmor> = new Map()
   ): IPermutatorArmor[] {
     // Prune the complete slot pools before partitioning. Every worker therefore uses the same
     // Pareto-reduced inventory, and dominated pieces cannot inflate the largest split bucket.
@@ -509,7 +544,9 @@ export class ArmorCalculatorService implements OnDestroy {
     ].flatMap((slot) =>
       ArmorCalculatorService.pruneDominatedPerSlot(
         items.filter((item) => item.slot === slot),
-        config
+        config,
+        inventoryById,
+        prunedByMap
       )
     );
   }
@@ -638,7 +675,9 @@ export class ArmorCalculatorService implements OnDestroy {
 
   private static pruneDominatedPerSlot(
     pieces: IPermutatorArmor[],
-    config: BuildConfiguration
+    config: BuildConfiguration,
+    inventoryById: Map<number, IInventoryArmor> = new Map(),
+    prunedByMap: Map<number, IInventoryArmor> = new Map()
   ): IPermutatorArmor[] {
     // Raw-stat dominance is valid only when higher is strictly better. Exact locks and waste
     // constraints introduce upper bounds, so pruning is disabled for those configurations.
@@ -672,6 +711,10 @@ export class ArmorCalculatorService implements OnDestroy {
             dominator < candidate
           ) {
             pruned[candidate] = true;
+            const prunedByItem = inventoryById.get(pieces[dominator].id);
+            if (prunedByItem) {
+              prunedByMap.set(pieces[candidate].id, prunedByItem);
+            }
             break;
           }
         }
@@ -887,6 +930,7 @@ export class ArmorCalculatorService implements OnDestroy {
           [0, 0, 0, 0, 0, 0]
         )
         .map((k) => Math.min(200, k) / 10),
+      prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
     });
     const updateResultsEnd = performance.now();
     this.logger.info(
@@ -974,6 +1018,7 @@ export class ArmorCalculatorService implements OnDestroy {
       maximumPossibleTiers: ArmorCalculatorService.globalMaximumPossibleTiers.map(
         (k) => Math.min(200, k) / 10
       ),
+      prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
     });
 
     this.logger.info(
@@ -1430,6 +1475,7 @@ export class ArmorCalculatorService implements OnDestroy {
         itemCount: inventoryArmorItems.length,
         totalTime: null,
         maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+        prePruneArmorItems: [],
       });
 
       let permutatorArmorItems: IPermutatorArmor[] = inventoryArmorItems.map((armor) =>
@@ -1451,10 +1497,40 @@ export class ArmorCalculatorService implements OnDestroy {
         this.status.modifyStatus((s) => (s.calculatingResults = false));
         return;
       }
+      const inventoryById = new Map<number, IInventoryArmor>();
+      for (const armor of inventoryArmorItems) {
+        inventoryById.set(armor.id, armor);
+      }
+
+      const prunedByMap = new Map<number, IInventoryArmor>();
+      const prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
+        inventoryArmorItems,
+        permutatorArmorItems,
+        prunedByMap
+      );
+      ArmorCalculatorService.prePruneArmorItems = prePruneArmorItems;
       permutatorArmorItems = ArmorCalculatorService.pruneDominatedArmorItems(
         permutatorArmorItems,
-        config
+        config,
+        inventoryById,
+        prunedByMap
       );
+      ArmorCalculatorService.prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
+        inventoryArmorItems,
+        permutatorArmorItems,
+        prunedByMap
+      );
+      this._armorResults.next({
+        results: [],
+        savedResults: 0,
+        totalPermutations: 0,
+        resultLimitReached: false,
+        stoppedEarlyAtMaxTier: false,
+        itemCount: inventoryArmorItems.length,
+        totalTime: null,
+        maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+        prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
+      });
       nthreads = ArmorCalculatorService.estimateRequiredThreads(config, permutatorArmorItems);
       this.logger.info("ArmorCalculatorService", "updateResults", "Estimated threads: " + nthreads);
       const workerItems = permutatorArmorItems.map(

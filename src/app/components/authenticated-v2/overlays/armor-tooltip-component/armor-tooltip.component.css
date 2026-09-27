@@ -19,6 +19,26 @@
   border: 1px solid gray;
   padding: 1px 5px 4px 5px;
   background: linear-gradient(#484848 0px, #2c2c2c 100%);
+  display: flex;
+  gap: 10px;
+}
+
+.tooltip-container.tooltip-comparison .tooltip-column:first-child {
+  border-right: 1px solid gray;
+  padding-right: 10px;
+}
+
+.tooltip-column {
+  min-width: 0;
+}
+
+.comparison-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #a1a1a1;
+  margin-bottom: 2px;
 }
 
 .stat-display {

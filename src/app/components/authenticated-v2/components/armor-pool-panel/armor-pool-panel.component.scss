@@ -1,0 +1,89 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.armor-pool-window {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.armor-pool-window .mat-mdc-card-content,
+.armor-pool-window .mat-mdc-card-header,
+.armor-pool-window .armor-pool-header-row,
+.armor-pool-window .action-row,
+.armor-pool-window .armor-pool-slot-group,
+.armor-pool-window .armor-pool-items {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.armor-pool-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.armor-pool-title-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.collapse-toggle {
+  margin-left: auto;
+}
+
+.armor-pool-window.is-collapsed .armor-pool-header {
+  padding-bottom: 12px;
+}
+
+.armor-pool-window.is-collapsed .mat-mdc-card-content {
+  display: none;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 14px;
+}
+
+.armor-pool-search {
+  margin: 0 0 18px;
+}
+
+.search-field {
+  width: 100%;
+}
+
+.armor-pool-slot-group {
+  margin-bottom: 18px;
+}
+
+.armor-pool-slot-group:last-child {
+  margin-bottom: 0;
+}
+
+.armor-pool-slot-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.armor-pool-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 64px;
+}

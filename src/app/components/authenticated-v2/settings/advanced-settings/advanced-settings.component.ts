@@ -182,6 +182,17 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             description: "Use Tier 5 tuning for armor pieces.",
           },
           {
+            name: "Fold same-stat armor with different gear sets",
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.foldSameStatDifferentGearSets = v)),
+            value: c.foldSameStatDifferentGearSets,
+            disabled: false,
+            impactsResultCount: true,
+            help: "When enabled, items with the exact same stat profile are folded together even if they belong to different gear sets. Explicitly selected gear sets still remain distinct.",
+            description: "Fold same-stat armor pieces across different gear sets.",
+          },
+          {
             name: "Maximum results (Unlimited resets to default on reload)",
             type: "slider",
             value: c.parsedResultLimit === 0 ? 11 : c.parsedResultLimit / 10_000,

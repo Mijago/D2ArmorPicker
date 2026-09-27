@@ -34,6 +34,25 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.17",
+    date: "September 26, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an Armor pool overview panel that lists every armor item considered during calculation, grouped by slot, and highlights which pieces were removed by dominance pruning.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Hovering a pruned item in the Armor pool overview now shows a side-by-side comparison tooltip with the item that pruned it.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Item tooltips now show the item's gearset, tuning stat, and how many generated loadouts use it.",
+      },
+    ],
+  },
+  {
     version: "2.9.16",
     date: "September 26, 2026",
     clearManifest: false,

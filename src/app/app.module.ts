@@ -64,8 +64,11 @@ import { ModTooltipDirective } from "./components/authenticated-v2/overlays/mod-
 import { StatCooldownTooltipComponent } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.component";
 import { StatCooldownTooltipDirective } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component";
+import { ArmorItemTileComponent } from "./components/authenticated-v2/components/armor-item-tile/armor-item-tile.component";
+import { ArmorPoolPanelComponent } from "./components/authenticated-v2/components/armor-pool-panel/armor-pool-panel.component";
 import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { LoggerModule, NgxLoggerLevel } from "ngx-logger";
 import {
   VendorIdFromItemIdPipe,
@@ -202,9 +205,12 @@ const routes: Routes = [
     ModslotVisualizationComponent,
     ModLimitSegmentedComponent,
     PrivacyPolicyComponent,
+    ArmorItemTileComponent,
+    ArmorPoolPanelComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     CommonMaterialModule,
 
     BrowserModule,

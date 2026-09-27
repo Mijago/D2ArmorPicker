@@ -82,6 +82,7 @@ export interface ResultItem {
   transferState: ResultItemMoveState;
   statsNoMods: number[];
   source: InventoryArmorSource;
+  usedByCount?: number;
 }
 
 @Component({

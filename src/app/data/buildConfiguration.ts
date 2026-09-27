@@ -101,6 +101,7 @@ export class BuildConfiguration {
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   parsedResultLimit = 30_000; // Zero disables the limit and resets to 30,000 on reload.
   earlyAbortClassItems = true; // High-Speed setting
+  foldSameStatDifferentGearSets = true;
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
 
@@ -139,6 +140,7 @@ export class BuildConfiguration {
       parsedResultLimit: 30_000,
       earlyAbortClassItems: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
+      foldSameStatDifferentGearSets: true,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
       characterClass: DestinyClass.Unknown,

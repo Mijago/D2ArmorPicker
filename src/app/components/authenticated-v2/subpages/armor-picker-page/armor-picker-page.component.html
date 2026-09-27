@@ -17,5 +17,14 @@
 
 <div id="container">
   <app-settings></app-settings>
-  <app-results></app-results>
+
+  <div class="results-column">
+    <app-results></app-results>
+
+    <app-armor-pool-panel
+      *ngIf="hasResults && armorPoolItems.length > 0"
+      [armorPoolItems]="armorPoolItems"
+      [itemUsageCounts]="itemUsageCounts">
+    </app-armor-pool-panel>
+  </div>
 </div>
