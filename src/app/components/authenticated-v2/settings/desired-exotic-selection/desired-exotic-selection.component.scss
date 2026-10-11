@@ -80,6 +80,25 @@
   margin-right: 8px;
 }
 
+.exotic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+
+  .button-spinner {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    --mdc-circular-progress-active-indicator-color: currentColor;
+    --mat-progress-spinner-active-indicator-color: currentColor;
+
+    ::ng-deep circle {
+      stroke: currentColor !important;
+    }
+  }
+}
+
 .exotic-class-item-perks {
   margin-top: 16px;
   padding: 16px;

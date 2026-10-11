@@ -333,9 +333,9 @@ export class ArmorCalculatorService implements OnDestroy {
     );
   }
 
-  private clearResults() {
+  private clearResults(force: boolean = false) {
     ArmorCalculatorService.prePruneArmorItems = [];
-    if (ArmorCalculatorService.endResults.length > 0) {
+    if (force || ArmorCalculatorService.endResults.length > 0) {
       ArmorCalculatorService.endResults = [];
       this._armorResults.next({
         results: ArmorCalculatorService.endResults,
@@ -1124,10 +1124,18 @@ export class ArmorCalculatorService implements OnDestroy {
     // this.logger.debug("ArmorCalculatorService", "updateResults", items.map(d => "id:'"+d.itemInstanceId+"'" ).join(" or "))
     // Remove collection items if they are in inventory
     inventoryArmorItems = inventoryArmorItems.filter((item) => {
-      if (item.source === InventoryArmorSource.Inventory) return true;
+      if (
+        item.source === InventoryArmorSource.Inventory ||
+        item.source === InventoryArmorSource.Postmaster
+      ) {
+        return true;
+      }
 
       const purchasedItemInstance = inventoryArmorItems.find(
-        (rhs) => rhs.source === InventoryArmorSource.Inventory && isEqualItem(item, rhs)
+        (rhs) =>
+          (rhs.source === InventoryArmorSource.Inventory ||
+            rhs.source === InventoryArmorSource.Postmaster) &&
+          isEqualItem(item, rhs)
       );
 
       // If this item is a collection/vendor item, ignore it if the player
@@ -1494,6 +1502,21 @@ export class ArmorCalculatorService implements OnDestroy {
           "updateResults",
           "Incomplete armor items available for permutation, skipping calculation"
         );
+        ArmorCalculatorService.prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
+          inventoryArmorItems,
+          permutatorArmorItems
+        );
+        this._armorResults.next({
+          results: [],
+          savedResults: 0,
+          totalPermutations: 0,
+          resultLimitReached: false,
+          stoppedEarlyAtMaxTier: false,
+          itemCount: inventoryArmorItems.length,
+          totalTime: 0,
+          maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+          prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
+        });
         this.status.modifyStatus((s) => (s.calculatingResults = false));
         return;
       }
@@ -1625,7 +1648,7 @@ export class ArmorCalculatorService implements OnDestroy {
       );
       this.status.modifyStatus((s) => (s.calculatingResults = false));
       this._calculationProgress.next(0);
-      this.clearResults();
+      this.clearResults(true);
     } finally {
     }
   }

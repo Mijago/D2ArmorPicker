@@ -22,7 +22,7 @@ import { ConfigurationService } from "../../../../services/configuration.service
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
-import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
@@ -63,6 +63,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
   importEquippedExoticInProgress = false;
+  refreshInventoryInProgress = false;
 
   anyPerkValue = ArmorPerkOrSlot.Any;
   availableFirstPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
@@ -91,17 +92,20 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.allowLegacyExoticArmor = c.allowLegacyExoticArmor;
       this.enforceFeaturedLegendaryArmor = c.enforceFeaturedLegendaryArmor;
       this.enforceFeaturedExoticArmor = c.enforceFeaturedExoticArmor;
+      this.syncSelectedExoticVariants();
     });
 
     this.inventory.manifest
       .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         await this.updateExoticsForClass();
+        this.syncSelectedExoticVariants();
       });
     this.inventory.inventory
       .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         await this.updateExoticsForClass();
+        this.syncSelectedExoticVariants();
       });
   }
 
@@ -232,6 +236,34 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     return exotic.items.map((x) => x.hash);
   }
 
+  private syncSelectedExoticVariants(): void {
+    const selected = this.config.readonlyConfigurationSnapshot.selectedExotics;
+    const normalized = this.expandSelectedExoticVariants(selected);
+    this.selectedExotics = normalized;
+    if (
+      normalized.length !== selected.length ||
+      normalized.some((hash, index) => hash !== selected[index])
+    ) {
+      this.config.modifyConfiguration((configuration) => {
+        configuration.selectedExotics = normalized;
+      });
+    }
+  }
+
+  private expandSelectedExoticVariants(selected: number[]): number[] {
+    if (selected.includes(FORCE_USE_ANY_EXOTIC) || selected.includes(FORCE_USE_NO_EXOTIC)) {
+      return selected;
+    }
+
+    const normalized = new Set<number>();
+    for (const hash of selected) {
+      const exotic = this.armors.find((entry) => entry.items.some((item) => item.hash === hash));
+      const hashes = exotic ? this.getHashesForExotic(exotic) : [hash];
+      hashes.forEach((exoticHash) => normalized.add(exoticHash));
+    }
+    return [...normalized];
+  }
+
   selectExotic(hashes: number[], $event: any) {
     const anyHashSelected = hashes.some((hash) => this.selectedExotics.indexOf(hash) > -1);
     if (anyHashSelected) {
@@ -254,8 +286,13 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
-  async refreshAll() {
-    await this.inventory.refreshManifestAndInventory(true, true);
+  async refreshInventory() {
+    this.refreshInventoryInProgress = true;
+    try {
+      await this.inventory.refreshInventory();
+    } finally {
+      this.refreshInventoryInProgress = false;
+    }
   }
 
   async importEquippedExotic() {

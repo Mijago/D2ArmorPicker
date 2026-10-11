@@ -25,7 +25,7 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../../../data/enum/armor-slot";
 import { BuildConfiguration } from "../../../data/buildConfiguration";
 import { Subject } from "rxjs";
-import { takeUntil, skip } from "rxjs/operators";
+import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "src/app/data/constants";
 import { Tuning } from "src/app/data/types/IPermutatorArmorSet";
@@ -209,9 +209,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
       });
 
     this.armorCalculator.armorResults
-      .pipe(takeUntil(this.ngUnsubscribe), skip(1))
+      .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(async (value) => {
-        if (value.results.length > 0 && this.initializing) {
+        // totalTime is only set once a calculation has completed
+        if ((value.results.length > 0 || value.totalTime !== null) && this.initializing) {
           this.initializing = false;
         }
         this._results = value.results;

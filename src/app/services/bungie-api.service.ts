@@ -101,11 +101,33 @@ export interface DestinyEquipableItemSetDefinition {
   blacklisted: boolean;
 }
 
+const POSTMASTER_BUCKET_HASH = 215593132;
+const SUBCLASS_BUCKET_HASH = 3284755031;
+
+const ARMOR2_STAT_SOCKET_TYPES = new Set([
+  1489351422, // Fixed-roll intrinsic stats (shared by all four stat plugs).
+  1119034468, // Random roll: first Weapons/Health/Class stat plug.
+  1119034469, // Random roll: second Weapons/Health/Class stat plug.
+  3833399976, // Random roll: first Grenade/Super/Melee stat plug.
+  3833399977, // Random roll: second Grenade/Super/Melee stat plug.
+]);
+
+// Base-stat sockets only; equipped mods, masterwork and tuning are handled separately.
+const ARMOR3_STAT_SOCKET_TYPES = new Set([
+  2104613635, // armor_archetypes: archetype.
+  1271523453, // armor_stats: primary stat.
+  2212837421, // armor_stats: secondary stat.
+  3303600813, // armor_stats: tertiary stat.
+  4039767041, // intrinsics: first exotic class Spirit perk.
+  2771980068, // intrinsics: second exotic class Spirit perk.
+]);
+
 export function collectInvestmentStats(
   r: IInventoryArmor,
   itemInvestmentStats: DestinyItemInvestmentStatDefinition[],
   plugHashes: (number | undefined)[],
-  mods: Record<string, IManifestArmor>
+  mods: Record<string, IManifestArmor>,
+  socketTypeHashes: (number | undefined)[]
 ) {
   const investmentStats: { [id: number]: number } = {
     2996146975: 0,
@@ -122,11 +144,17 @@ export function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
-  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
-  if (r.isExotic && r.slot === ArmorSlot.ArmorSlotClass) {
-    plugs.push(plugHashes[10]); // Exotic class item perk
-    plugs.push(plugHashes[11]); // Exotic class item perk
-  }
+  const statSocketPlugs = plugHashes.filter((_, index) => {
+    const socketType = socketTypeHashes[index];
+    return (
+      socketType !== undefined &&
+      (ARMOR2_STAT_SOCKET_TYPES.has(socketType) || ARMOR3_STAT_SOCKET_TYPES.has(socketType))
+    );
+  });
+  const plugs =
+    r.armorSystem === ArmorSystem.Armor1 && statSocketPlugs.length === 0
+      ? [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]]
+      : statSocketPlugs;
   r.statPlugHashes = plugs;
   var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
   for (let entry of plm) {
@@ -138,19 +166,13 @@ export function collectInvestmentStats(
 
   applyInvestmentStats(r, investmentStats);
 
-  // TODO: THIS IS A QUICK HACK: FIX THIS
-  const investmentStatsOverZero = Object.entries(investmentStats).filter(([_, value]) => value > 0);
-  if (investmentStatsOverZero.length > 3) return;
-  r.archetypeStats = [];
-  const stats = Object.values(ArmorStat).filter(
-    (value) => typeof value === "number"
-  ) as ArmorStat[];
-  for (let stat of stats) {
-    const statHash = ArmorStatHashes[stat];
-    if (investmentStatsOverZero.find(([hash, _]) => parseInt(hash) == statHash)) {
-      r.archetypeStats.push(stat);
-    }
-  }
+  const positiveStats = Object.entries(investmentStats)
+    .filter(([, value]) => value > 0)
+    .map(([hash]) => ArmorStatFromHash[Number(hash)])
+    .filter((stat): stat is ArmorStat => stat !== undefined)
+    .sort((left, right) => left - right);
+
+  r.archetypeStats = positiveStats.length <= 3 ? positiveStats : [];
 }
 
 @Injectable({
@@ -313,9 +335,9 @@ export class BungieApiService implements OnDestroy {
       if (localStorage.getItem("d2ap-db-lastName") == this.db.inventoryArmor.db.name)
         if (
           Date.now() - Number.parseInt(localStorage.getItem("d2ap-inventory-lastDate") || "0") <
-          1000 * 3600 * 0.5
+          1000 * 60 * 5
         ) {
-          // Do not update if inventory was updated less than 30 minutes ago, unless forced to update. This is to avoid hitting rate limits and unnecessary processing
+          // Do not update if inventory was updated less than 5 minutes ago, unless forced to update. This is to avoid hitting rate limits and unnecessary processing
           this.logger.info(
             "BungieApiService",
             "updateInventory",
@@ -374,7 +396,12 @@ export class BungieApiService implements OnDestroy {
     unlockedExoticArmorItemHashes.forEach((id) => idSet.add(id));
 
     // Check if inventory has changed by comparing item hashes
-    const currentItemHashesKey = Array.from(idSet).sort().join(",");
+    const postmasterInstanceIds = allItems
+      .filter((item) => item.bucketHash === POSTMASTER_BUCKET_HASH)
+      .map((item) => item.itemInstanceId)
+      .sort()
+      .join(",");
+    const currentItemHashesKey = `${Array.from(idSet).sort().join(",")}|${postmasterInstanceIds}`;
     const cachedItemHashesKey = localStorage.getItem("user-armorItems") || "";
 
     if (!force && currentItemHashesKey == cachedItemHashesKey && currentItemHashesKey.length > 0) {
@@ -466,7 +493,7 @@ export class BungieApiService implements OnDestroy {
   ): IInventoryArmor[] {
     return allItems
       .filter((d) => !!d.itemInstanceId)
-      .filter((d) => d.bucketHash !== 3284755031) // Filter out subclasses
+      .filter((d) => d.bucketHash !== SUBCLASS_BUCKET_HASH)
       .filter((d) => {
         let statData = profile.Response.itemComponents.stats.data || {};
         let stats = statData[d.itemInstanceId || ""]?.stats || {};
@@ -493,7 +520,9 @@ export class BungieApiService implements OnDestroy {
         let armorItem = createArmorItem(
           validManifestArmorMap[d.itemHash],
           d.itemInstanceId || "",
-          InventoryArmorSource.Inventory
+          d.bucketHash === POSTMASTER_BUCKET_HASH
+            ? InventoryArmorSource.Postmaster
+            : InventoryArmorSource.Inventory
         );
 
         // Process armor system and tuning stats
@@ -609,7 +638,8 @@ export class BungieApiService implements OnDestroy {
       armorItem,
       validManifestArmorMap[d.itemHash]?.investmentStats ?? [],
       socketsList,
-      modsMap
+      modsMap,
+      (validManifestArmorMap[d.itemHash]?.socketEntries ?? []).map((s) => s.socketTypeHash)
     );
 
     // Exotic class items are treated like normal armor now (Monument of Triumph): their stats
@@ -678,7 +708,8 @@ export class BungieApiService implements OnDestroy {
           collectionItem,
           manifestArmorItem.investmentStats,
           manifestArmorItem.socketEntries.map((s) => s.singleInitialItemHash),
-          modsMap
+          modsMap,
+          manifestArmorItem.socketEntries.map((s) => s.socketTypeHash)
         );
 
         return collectionItem;
@@ -687,7 +718,12 @@ export class BungieApiService implements OnDestroy {
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
-    await this.db.inventoryArmor.filter((d) => d.source == InventoryArmorSource.Inventory).delete();
+    await this.db.inventoryArmor
+      .filter(
+        (d) =>
+          d.source == InventoryArmorSource.Inventory || d.source == InventoryArmorSource.Postmaster
+      )
+      .delete();
     await this.db.inventoryArmor
       .filter((d) => d.source == InventoryArmorSource.Collections)
       .delete();
@@ -2187,7 +2223,9 @@ export class BungieApiService implements OnDestroy {
     let updatedConfig = false;
 
     // Import subclass and fragments
-    const subclass = characterEquipment.items.find((item) => item.bucketHash === 3284755031); // Subclass bucket
+    const subclass = characterEquipment.items.find(
+      (item) => item.bucketHash === SUBCLASS_BUCKET_HASH
+    );
     if (subclass) {
       const configClass = this.config.readonlyConfigurationSnapshot
         .characterClass as keyof typeof SubclassHashes;

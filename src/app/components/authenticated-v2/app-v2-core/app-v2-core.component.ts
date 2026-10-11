@@ -124,12 +124,30 @@ export class AppV2CoreComponent implements OnInit, AfterViewInit, OnDestroy {
   async refreshAll(b: boolean) {
     this.logger.debug("AppV2CoreComponent", "refreshAll", "Trigger refreshAll due to button press");
     try {
-      await this.inv.refreshManifestAndInventory(b);
+      await this.inv.refreshManifestAndInventory(b, b);
     } catch (error) {
       this.logger.error(
         "AppV2CoreComponent",
         "refreshAll",
         "Failed to refresh manifest and inventory",
+        error
+      );
+    }
+  }
+
+  async refreshInventory() {
+    this.logger.debug(
+      "AppV2CoreComponent",
+      "refreshInventory",
+      "Trigger inventory refresh due to button press"
+    );
+    try {
+      await this.inv.refreshInventory();
+    } catch (error) {
+      this.logger.error(
+        "AppV2CoreComponent",
+        "refreshInventory",
+        "Failed to refresh inventory",
         error
       );
     }

@@ -175,6 +175,23 @@ export class UserInformationService implements OnDestroy {
     }
   }
 
+  async refreshInventory() {
+    if (this.refreshing) {
+      this.logger.warn(
+        "UserInformationService",
+        "refreshInventory",
+        "Refresh already in progress, skipping inventory refresh request"
+      );
+      return;
+    }
+    this.refreshing = true;
+    try {
+      await this.updateInventoryItems(true);
+    } finally {
+      this.refreshing = false;
+    }
+  }
+
   private async triggerInventoryUpdate(
     triggerInventoryUpdate: boolean = false,
     triggerResultsUpdate: boolean = true
@@ -235,7 +252,10 @@ export class UserInformationService implements OnDestroy {
     if (!!slot) pieces = pieces.filter((i) => i.slot == slot);
     //if (!this._config.includeVendorRolls) pieces = pieces.filter((i) => i.source != InventoryArmorSource.Vendor);
     //if (!this._config.includeCollectionRolls) pieces = pieces.filter((i) => i.source != InventoryArmorSource.Collections);
-    pieces = pieces.filter((i) => i.source == InventoryArmorSource.Inventory);
+    pieces = pieces.filter(
+      (i) =>
+        i.source == InventoryArmorSource.Inventory || i.source == InventoryArmorSource.Postmaster
+    );
     return pieces.length;
   }
 
@@ -265,7 +285,11 @@ export class UserInformationService implements OnDestroy {
           inCollection:
             instances.find((i) => i.source === InventoryArmorSource.Collections) !== undefined,
           inInventory:
-            instances.find((i) => i.source === InventoryArmorSource.Inventory) !== undefined,
+            instances.find(
+              (i) =>
+                i.source === InventoryArmorSource.Inventory ||
+                i.source === InventoryArmorSource.Postmaster
+            ) !== undefined,
           inVendor: instances.find((i) => i.source === InventoryArmorSource.Vendor) !== undefined,
         };
       })

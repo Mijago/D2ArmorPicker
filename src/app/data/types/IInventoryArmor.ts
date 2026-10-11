@@ -28,6 +28,7 @@ export enum InventoryArmorSource {
   Inventory = 0,
   Collections = 1,
   Vendor = 2,
+  Postmaster = 3,
 }
 
 export interface IDestinyArmor {

@@ -34,6 +34,53 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.18",
+    date: "October 11, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed exotic class item base stats, stats are now read from the correct sockets, and equipped tuning mods no longer shift the base stats.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Armor 2.0 and Armor 3.0 base stat detection using socket types instead of indexed positions.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor held at the Postmaster is now labeled separately and treated as owned armor in calculations, armor counts, and exotic availability.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed importing legacy configuration exports and improved compatibility with older exports, including legacy stat ordering.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Imported configurations can now be added to saved configurations without replacing your current settings.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Advanced Settings can now be reset independently to their default values.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Saved configurations now show subclass, exotic selection, stat targets, selected mods, and named armor limits, with DIM-style suggested names.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the results page returning to 'Initializing...' when switching back from another tab, even though calculation results were already available, or when a calculation was skipped due to missing armor slots or failed with an error.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The Armor pool overview is now also shown when no results are found, including when an armor slot has no available items.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The automatic inventory refresh interval is now 5 minutes (previously 30 minutes).",
+      },
+    ],
+  },
+  {
     version: "2.9.17",
     date: "September 26, 2026",
     clearManifest: false,

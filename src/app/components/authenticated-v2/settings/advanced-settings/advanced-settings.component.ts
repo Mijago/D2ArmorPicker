@@ -16,11 +16,16 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-// import { environment } from "../../../../../environments/environment";
 import { EventArmorType } from "../../../../data/enum/event-armor-type";
+import { BuildConfiguration } from "../../../../data/buildConfiguration";
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from "../../components/confirm-dialog/confirm-dialog.component";
 
 interface AdvancedSettingFieldBase {
   name: string;
@@ -65,7 +70,39 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   fields2: { [id: string]: AdvancedSettingField[] } = {};
   fieldKeys: string[] = [];
 
-  constructor(private config: ConfigurationService) {}
+  constructor(
+    private config: ConfigurationService,
+    private dialog: MatDialog
+  ) {}
+
+  resetAdvancedSettings(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "320px",
+      data: {
+        description: "Reset Advanced Settings to their default values?",
+      } as ConfirmDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      const defaults = BuildConfiguration.buildEmptyConfiguration();
+      this.config.modifyConfiguration((configuration) => {
+        configuration.useEventArmor = defaults.useEventArmor;
+        configuration.assumeLegendariesMasterworked = defaults.assumeLegendariesMasterworked;
+        configuration.assumeExoticsMasterworked = defaults.assumeExoticsMasterworked;
+        configuration.onlyUseMasterworkedExotics = defaults.onlyUseMasterworkedExotics;
+        configuration.onlyUseMasterworkedLegendaries = defaults.onlyUseMasterworkedLegendaries;
+        configuration.assumeClassItemIsArtifice = defaults.assumeClassItemIsArtifice;
+        configuration.assumeEveryLegendaryIsArtifice = defaults.assumeEveryLegendaryIsArtifice;
+        configuration.assumeEveryExoticIsArtifice = defaults.assumeEveryExoticIsArtifice;
+        configuration.calculateTierFiveTuning = defaults.calculateTierFiveTuning;
+        configuration.foldSameStatDifferentGearSets = defaults.foldSameStatDifferentGearSets;
+        configuration.parsedResultLimit = defaults.parsedResultLimit;
+        configuration.addConstent1Health = defaults.addConstent1Health;
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {

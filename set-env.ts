@@ -26,7 +26,7 @@ const is_beta = release === "BETA";
 const is_canary = release === "CANARY";
 // const is_dev = release === "DEV";
 
-const version = "2.9.17";
+const version = "2.9.18";
 
 // Configure Angular `environment.ts` file path
 const targetPath = "./src/environments/environment.ts";

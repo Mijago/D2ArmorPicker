@@ -15,9 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 .tSubclassFragments {
+  width: 100%;
+  min-width: 560px;
   --mat-table-header-container-height: 32px !important;
   --mat-table-row-item-container-height: 32px !important;
-  min-width: revert;
+}
+
+.subclass-fragments-table {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .mdc-data-table__cell,
@@ -32,10 +38,6 @@
 .stat-part-title {
   margin-top: 10px;
   margin-bottom: 5px;
-}
-
-.modTable {
-  width: 100%;
 }
 
 .mat-header-row,
@@ -137,6 +139,18 @@ td.mat-footer-cell:last-of-type {
 
 #clear-container {
   padding-top: 10px;
+}
+
+.button-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  --mdc-circular-progress-active-indicator-color: currentColor;
+  --mat-progress-spinner-active-indicator-color: currentColor;
+
+  ::ng-deep circle {
+    stroke: currentColor !important;
+  }
 }
 
 #retrofit-table {

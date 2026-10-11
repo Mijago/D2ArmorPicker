@@ -90,28 +90,34 @@
   </div>
 </div>
 
-<div>
+<div class="exotic-actions">
   <button
-    *ngIf="exotics.length === 0 || exotics[0].length === 0"
     mat-raised-button
-    color="warn"
-    (click)="refreshAll()">
-    Manually refresh manifest and inventory
+    color="primary"
+    [disabled]="refreshInventoryInProgress"
+    matTooltip="Reload your inventory from the API."
+    (click)="refreshInventory()">
+    <mat-spinner
+      *ngIf="refreshInventoryInProgress"
+      diameter="18"
+      class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!refreshInventoryInProgress">refresh</mat-icon>
+    Refresh Inventory
   </button>
-</div>
 
-<div>
   <button
     mat-raised-button
     color="primary"
     [disabled]="importEquippedExoticInProgress"
+    matTooltip="Select the exotic currently equipped on your character."
     (click)="importEquippedExotic()">
+    <mat-spinner
+      *ngIf="importEquippedExoticInProgress"
+      diameter="18"
+      class="button-spinner"></mat-spinner>
+    <mat-icon *ngIf="!importEquippedExoticInProgress">input</mat-icon>
     Import Equipped Exotic
   </button>
-  <mat-spinner
-    *ngIf="importEquippedExoticInProgress"
-    diameter="20"
-    class="inline-spinner"></mat-spinner>
 </div>
 <br />
 <div>

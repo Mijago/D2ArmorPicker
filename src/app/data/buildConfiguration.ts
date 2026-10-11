@@ -19,7 +19,7 @@ export interface StatModLimits {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ArmorPerkOrSlot, ArmorStat } from "./enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorStat, ArmorStatNames } from "./enum/armor-stat";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
 // import { ArmorSlot } from "./enum/armor-slot";
@@ -55,7 +55,25 @@ export interface ArmorRequirementPerk {
 }
 export type ArmorRequirement = ArmorRequirementGearSet | ArmorRequirementPerk;
 
+export const CURRENT_CONFIGURATION_VERSION = 2;
+
+export function serializeBuildConfiguration(configuration: BuildConfiguration) {
+  return {
+    ...configuration,
+    configurationVersion: CURRENT_CONFIGURATION_VERSION,
+    armorStatOrderVersion: 2,
+    minimumStatTiers: Object.fromEntries(
+      Object.entries(configuration.minimumStatTiers).map(([stat, selection]) => [
+        ArmorStatNames[Number(stat) as ArmorStat],
+        selection,
+      ])
+    ),
+  };
+}
+
 export class BuildConfiguration {
+  version: string = environment.version;
+  configurationVersion = CURRENT_CONFIGURATION_VERSION;
   armorStatOrderVersion = 2;
   characterClass: DestinyClass = DestinyClass.Unknown;
 
@@ -114,6 +132,8 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      version: environment.version,
+      configurationVersion: CURRENT_CONFIGURATION_VERSION,
       armorStatOrderVersion: 2,
       armorRequirements: [],
       enabledMods: [],
