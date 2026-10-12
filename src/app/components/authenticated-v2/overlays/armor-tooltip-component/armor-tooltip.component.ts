@@ -23,6 +23,10 @@ import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
 import { ArmorSystem } from "src/app/data/types/IManifestArmor";
 import { DatabaseService } from "src/app/services/database.service";
+import {
+  ExoticClassItemPerkNames,
+  ExoticClassItemSpirits,
+} from "src/app/data/exotic-class-item-spirits";
 
 @Component({
   selector: "app-armor-tooltip-component",
@@ -75,6 +79,16 @@ export class ArmorTooltipComponent implements OnInit {
     }
 
     return ArmorStatNames[item.tuningStat];
+  }
+
+  getExoticClassItemPerks(item: ResultItem | undefined): string[] | undefined {
+    if (!item?.exotic || (item.exoticPerkHash?.length ?? 0) < 2) return undefined;
+    return item
+      .exoticPerkHash!.slice(0, 2)
+      .map(
+        (hash) =>
+          ExoticClassItemPerkNames[hash as ExoticClassItemSpirits] || `Unknown perk (${hash})`
+      );
   }
 
   getUsedByCount(item: ResultItem | undefined): number {

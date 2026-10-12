@@ -40,6 +40,7 @@ import { ArmorStat } from "../../../../data/enum/armor-stat";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
+import { environment } from "src/environments/environment";
 
 interface GearsetBonusDisplay {
   perk: DestinySandboxPerkDefinition;
@@ -70,6 +71,10 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
   @ViewChild(MatSort) sort: MatSort | null = null;
   expandedElement: ResultDefinition | null = null;
   expandedElementId: string | null = null; // Use ID instead of object reference
+  hoveredSharedArmorHash: string | null = null;
+  selectedSharedArmorHash: string | null = null;
+  private readonly showEasySwapColumn =
+    !environment.production && !environment.beta && !environment.canary;
   shownColumns = [
     "exotic",
     "gearsetBonuses",
@@ -145,6 +150,8 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
       // Reset expanded element when results change
       this.expandedElement = null;
       this.expandedElementId = null;
+      this.selectedSharedArmorHash = null;
+      this.hoveredSharedArmorHash = null;
 
       // Defer table data initialization until the view (and paginator) are ready
       if (this.viewInitialized) {
@@ -184,6 +191,8 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
           return +100 * (data.modCount + data.tuningMods.length) + data.modCost;
         case "GearsetBonuses":
           return this.getGearsetBonusRank(data);
+        case "EasySwap":
+          return data.sharedBuildCount ?? 1;
       }
       return 0;
     };
@@ -235,6 +244,7 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
       "total",
       "mods",
     ];
+    if (this.showEasySwapColumn) columns.push("easySwap");
     if (config.includeVendorRolls || config.includeCollectionRolls) {
       columns.push("source");
     }
@@ -393,6 +403,19 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
     return this.expandedElementId === elementId;
   }
 
+  isSharedArmorHighlighted(element: ResultDefinition): boolean {
+    const activeHash = this.hoveredSharedArmorHash ?? this.selectedSharedArmorHash;
+    return !!activeHash && element.sharedArmorHash === activeHash;
+  }
+
+  hoverSharedArmor(element: ResultDefinition): void {
+    this.hoveredSharedArmorHash = element.sharedArmorHash ?? null;
+  }
+
+  clearHoveredSharedArmor(): void {
+    this.hoveredSharedArmorHash = null;
+  }
+
   // Helper method to toggle expansion
   toggleElement(element: ResultDefinition): void {
     const elementId = this.getResultId(element);
@@ -401,10 +424,12 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
       // Collapse if already expanded
       this.expandedElement = null;
       this.expandedElementId = null;
+      this.selectedSharedArmorHash = null;
     } else {
       // Expand the clicked element
       this.expandedElement = element;
       this.expandedElementId = elementId;
+      this.selectedSharedArmorHash = element.sharedArmorHash ?? null;
     }
   }
 

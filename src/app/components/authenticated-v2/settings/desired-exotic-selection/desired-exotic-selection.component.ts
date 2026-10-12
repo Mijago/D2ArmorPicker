@@ -266,14 +266,23 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
 
   selectExotic(hashes: number[], $event: any) {
     const anyHashSelected = hashes.some((hash) => this.selectedExotics.indexOf(hash) > -1);
+    const addToSelection = $event.ctrlKey || $event.shiftKey || $event.metaKey;
     if (anyHashSelected) {
-      // remove all of them
-      this.selectedExotics = this.selectedExotics.filter((x) => hashes.indexOf(x) == -1);
-    } else if (hashes.length > 0 && hashes[0] == FORCE_USE_NO_EXOTIC) {
-      // Otherwise, add the hashes to the selection
+      const remainingExotics = this.selectedExotics.filter((hash) => !hashes.includes(hash));
+      this.selectedExotics = addToSelection
+        ? remainingExotics
+        : remainingExotics.length > 0
+          ? hashes
+          : [];
+    } else if (
+      hashes.some((hash) => hash === FORCE_USE_ANY_EXOTIC || hash === FORCE_USE_NO_EXOTIC)
+    ) {
       this.selectedExotics = hashes;
     } else {
-      this.selectedExotics = hashes;
+      const selectedExotics = this.selectedExotics.filter((hash) => hash >= 0);
+      this.selectedExotics = addToSelection
+        ? [...new Set([...selectedExotics, ...hashes])]
+        : hashes;
     }
     this.config.modifyConfiguration((c) => {
       c.selectedExotics = this.selectedExotics;

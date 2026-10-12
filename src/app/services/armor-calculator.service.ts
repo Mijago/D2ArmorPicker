@@ -70,6 +70,12 @@ type info = {
   prePruneArmorItems: PrunedArmorItemView[];
 };
 
+interface PreparedInventoryArmorItems {
+  items: IInventoryArmor[];
+  duplicates: IInventoryArmor[];
+  duplicatePruners: Map<number, IInventoryArmor>;
+}
+
 interface WorkerMessageData {
   // Progress update properties
   checkedCalculations: number;
@@ -127,6 +133,7 @@ export class ArmorCalculatorService implements OnDestroy {
   private static totalPermutationsCount = 0;
   private static resultMaximumTiers: number[][] = [];
   private static selectedExotics: IManifestArmor[] = [];
+  private static sharedArmorExcludedSlots = new Set<ArmorSlot>();
   private static endResults: ResultDefinition[] = [];
   private static prePruneArmorItems: PrunedArmorItemView[] = [];
 
@@ -859,6 +866,8 @@ export class ArmorCalculatorService implements OnDestroy {
       let exotic = items.find((x) => x.isExotic);
       let v: ResultDefinition = {
         loaded: false, // TODO check if loaded is even needed
+        sharedArmorHash: ArmorCalculatorService.getSharedArmorHash(items),
+        sharedBuildCount: 1,
         tuningStats: armorSet.tuning,
         exotic:
           exotic == null
@@ -887,6 +896,7 @@ export class ArmorCalculatorService implements OnDestroy {
             gearSetHash: instance.gearSetHash,
             name: instance.name,
             exotic: !!instance.isExotic,
+            exoticPerkHash: instance.exoticPerkHash,
             masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
             archetypeStats: instance.archetypeStats,
             armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
@@ -912,6 +922,7 @@ export class ArmorCalculatorService implements OnDestroy {
       };
       ArmorCalculatorService.endResults.push(v);
     }
+    ArmorCalculatorService.updateSharedBuildCounts(ArmorCalculatorService.endResults);
 
     this._armorResults.next({
       results: ArmorCalculatorService.endResults,
@@ -953,6 +964,8 @@ export class ArmorCalculatorService implements OnDestroy {
       const exotic = items.find((x) => x.isExotic);
       const v: ResultDefinition = {
         loaded: false,
+        sharedArmorHash: ArmorCalculatorService.getSharedArmorHash(items),
+        sharedBuildCount: 1,
         tuningStats: armorSet.tuning,
         exotic:
           exotic == null
@@ -981,6 +994,7 @@ export class ArmorCalculatorService implements OnDestroy {
             gearSetHash: instance.gearSetHash,
             name: instance.name,
             exotic: !!instance.isExotic,
+            exoticPerkHash: instance.exoticPerkHash,
             masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
             archetypeStats: instance.archetypeStats,
             armorSystem: instance.armorSystem,
@@ -1006,6 +1020,7 @@ export class ArmorCalculatorService implements OnDestroy {
       };
       ArmorCalculatorService.endResults.push(v);
     }
+    ArmorCalculatorService.updateSharedBuildCounts(ArmorCalculatorService.endResults);
 
     this._armorResults.next({
       results: ArmorCalculatorService.endResults,
@@ -1047,12 +1062,25 @@ export class ArmorCalculatorService implements OnDestroy {
     }
   }
 
-  private async filterAndPrepareInventoryItems(config: BuildConfiguration) {
+  private async filterAndPrepareInventoryItems(
+    config: BuildConfiguration
+  ): Promise<PreparedInventoryArmorItems> {
     let inventoryArmorItems: IInventoryArmor[] = (await this.db.inventoryArmor
       .where("clazz")
       .equals(config.characterClass)
       .distinct()
       .toArray()) as IInventoryArmor[];
+    const selectedExoticSlots = new Set(
+      ArmorCalculatorService.selectedExotics.map((exotic) => exotic.slot)
+    );
+    const selectedExoticsSpanSlots = selectedExoticSlots.size > 1;
+    const selectedGearSetHashes = new Set(
+      config.armorRequirements
+        .filter(
+          (requirement): requirement is { gearSetHash: number } => "gearSetHash" in requirement
+        )
+        .map((requirement) => requirement.gearSetHash)
+    );
 
     inventoryArmorItems = inventoryArmorItems
       // only armor :)
@@ -1087,15 +1115,18 @@ export class ArmorCalculatorService implements OnDestroy {
       .filter((item) => config.selectedExotics.indexOf(FORCE_USE_NO_EXOTIC) == -1 || !item.isExotic)
       .filter(
         (item) =>
+          !item.isExotic ||
           ArmorCalculatorService.selectedExotics.length === 0 ||
-          (item.isExotic &&
-            ArmorCalculatorService.selectedExotics.some(
-              (exotic: IManifestArmor) => exotic.hash === item.hash
-            )) ||
-          (!item.isExotic &&
-            ArmorCalculatorService.selectedExotics.every(
-              (exotic: IManifestArmor) => exotic.slot !== item.slot
-            ))
+          ArmorCalculatorService.selectedExotics.some(
+            (exotic: IManifestArmor) => exotic.hash === item.hash
+          )
+      )
+      .filter(
+        (item) =>
+          item.isExotic ||
+          ArmorCalculatorService.selectedExotics.length === 0 ||
+          selectedExoticsSpanSlots ||
+          !selectedExoticSlots.has(item.slot)
       )
 
       // config.OnlyUseMasterworkedExotics - only keep exotics that are masterworked
@@ -1179,8 +1210,6 @@ export class ArmorCalculatorService implements OnDestroy {
     }
 
     // Apply exotic class item perk filtering and class item grouping logic
-    const anyStatFixed = Object.values(config.minimumStatTiers).some((v: any) => v.fixed);
-
     let filteredClassItems = classItems;
 
     if (config.useEventArmor === EventArmorType.GuardianGames) {
@@ -1245,35 +1274,130 @@ export class ArmorCalculatorService implements OnDestroy {
       ];
     }
 
-    const doesNotRequireArmorPerks = config.armorRequirements.length === 0;
-    // When there are armor requirements, keep distinct items only
-    inventoryArmorItems = inventoryArmorItems.filter(
-      (item, index, self) =>
-        index ===
-        self.findIndex(
-          (i) =>
-            i.slot === item.slot &&
-            i.mobility === item.mobility &&
-            i.resilience === item.resilience &&
-            i.recovery === item.recovery &&
-            i.discipline === item.discipline &&
-            i.intellect === item.intellect &&
-            i.strength === item.strength &&
-            i.isExotic === item.isExotic &&
-            // Keep items grouped by tier/tuning behavior
-            i.tuningStat === item.tuningStat &&
-            ((i.isExotic && config.assumeExoticsMasterworked) ||
-              (!i.isExotic && config.assumeLegendariesMasterworked) ||
-              // If there is any stat fixed, we check if the masterwork level is the same as the first item
-              (anyStatFixed && i.masterworkLevel === item.masterworkLevel) ||
-              // If there is no stat fixed, then we just use the masterwork level of the first item.
-              // As it is already sorted descending, we can just check if the masterwork level is the same
-              !anyStatFixed) &&
-            (doesNotRequireArmorPerks ||
-              (i.perk === item.perk && i.gearSetHash === item.gearSetHash))
-        )
+    const gearSetRequirementCounts = new Map<number, number>();
+    for (const requirement of config.armorRequirements) {
+      if ("gearSetHash" in requirement) {
+        gearSetRequirementCounts.set(
+          requirement.gearSetHash,
+          (gearSetRequirementCounts.get(requirement.gearSetHash) ?? 0) + 1
+        );
+      }
+    }
+    const gearSetRequirements = [...gearSetRequirementCounts.entries()];
+    const selectedFourPieceGearSet = gearSetRequirements.find(([, count]) => count >= 4)?.[0];
+    const selectedTwoPieceGearSets =
+      gearSetRequirements.length === 2 && gearSetRequirements.every(([, count]) => count === 2)
+        ? new Set(gearSetRequirements.map(([hash]) => hash))
+        : undefined;
+    const gearSetsForExoticBuild =
+      selectedFourPieceGearSet !== undefined
+        ? new Set([selectedFourPieceGearSet])
+        : selectedTwoPieceGearSets;
+    const exoticIsSelected =
+      config.selectedExotics.length > 0 && !config.selectedExotics.includes(FORCE_USE_NO_EXOTIC);
+    if (gearSetsForExoticBuild && exoticIsSelected) {
+      inventoryArmorItems = inventoryArmorItems.filter(
+        (item) =>
+          item.isExotic ||
+          item.gearSetPerkSelectable ||
+          (item.gearSetHash != null && gearSetsForExoticBuild.has(item.gearSetHash))
+      );
+    }
+
+    const distinctItems: IInventoryArmor[] = [];
+    const duplicates: IInventoryArmor[] = [];
+    const duplicatePruners = new Map<number, IInventoryArmor>();
+    const selectedPerks = new Set(
+      config.armorRequirements
+        .filter((requirement): requirement is { perk: ArmorPerkOrSlot } => "perk" in requirement)
+        .map((requirement) => requirement.perk)
     );
-    return inventoryArmorItems;
+    const getSelectedCapabilities = (item: IInventoryArmor) => {
+      const capabilities = new Set<string>();
+      if (item.gearSetHash != null && selectedGearSetHashes.has(item.gearSetHash)) {
+        capabilities.add(`gearset:${item.gearSetHash}`);
+      }
+      if (selectedPerks.has(item.perk)) capabilities.add(`perk:${item.perk}`);
+      return capabilities;
+    };
+    const coversCapabilities = (candidate: IInventoryArmor, item: IInventoryArmor) => {
+      const candidateCapabilities = getSelectedCapabilities(candidate);
+      return [...getSelectedCapabilities(item)].every((capability) =>
+        candidateCapabilities.has(capability)
+      );
+    };
+    const isArtificeCapable = (item: IInventoryArmor) =>
+      ArmorCalculatorService.pieceArtificeCapable(
+        ArmorCalculatorService.convertInventoryArmorToPermutatorArmor(item),
+        config
+      );
+    for (const item of inventoryArmorItems) {
+      const duplicateIndex = distinctItems.findIndex((candidate) => {
+        const sameStatProfile =
+          candidate.slot === item.slot &&
+          candidate.isExotic === item.isExotic &&
+          candidate.mobility === item.mobility &&
+          candidate.resilience === item.resilience &&
+          candidate.recovery === item.recovery &&
+          candidate.discipline === item.discipline &&
+          candidate.intellect === item.intellect &&
+          candidate.strength === item.strength &&
+          candidate.armorSystem === item.armorSystem &&
+          candidate.tier === item.tier &&
+          candidate.tuningStat === item.tuningStat &&
+          JSON.stringify(candidate.archetypeStats) === JSON.stringify(item.archetypeStats) &&
+          candidate.source === item.source &&
+          ((item.isExotic && config.assumeExoticsMasterworked) ||
+            (!item.isExotic && config.assumeLegendariesMasterworked) ||
+            candidate.masterworkLevel === item.masterworkLevel);
+        if (!sameStatProfile || candidate.gearSetPerkSelectable !== item.gearSetPerkSelectable)
+          return false;
+
+        if (candidate.isExotic || item.isExotic) {
+          return (
+            candidate.hash === item.hash &&
+            JSON.stringify(candidate.exoticPerkHash ?? []) ===
+              JSON.stringify(item.exoticPerkHash ?? []) &&
+            candidate.perk === item.perk &&
+            candidate.gearSetHash === item.gearSetHash
+          );
+        }
+
+        if (!config.foldSameStatDifferentGearSets) {
+          return (
+            candidate.hash === item.hash &&
+            candidate.perk === item.perk &&
+            candidate.gearSetHash === item.gearSetHash
+          );
+        }
+
+        return coversCapabilities(candidate, item) || coversCapabilities(item, candidate);
+      });
+      if (duplicateIndex >= 0) {
+        const duplicate = distinctItems[duplicateIndex];
+        const itemCoversDuplicate = coversCapabilities(item, duplicate);
+        const duplicateCoversItem = coversCapabilities(duplicate, item);
+        const itemShouldRepresent =
+          (itemCoversDuplicate && !duplicateCoversItem) ||
+          (itemCoversDuplicate === duplicateCoversItem &&
+            isArtificeCapable(item) &&
+            !isArtificeCapable(duplicate));
+        if (itemShouldRepresent) {
+          duplicates.push(duplicate);
+          duplicatePruners.set(duplicate.id, item);
+          for (const [duplicateId, pruner] of duplicatePruners) {
+            if (pruner.id === duplicate.id) duplicatePruners.set(duplicateId, item);
+          }
+          distinctItems[duplicateIndex] = item;
+          continue;
+        }
+        duplicates.push(item);
+        duplicatePruners.set(item.id, duplicate);
+      } else {
+        distinctItems.push(item);
+      }
+    }
+    return { items: distinctItems, duplicates, duplicatePruners };
   }
 
   static convertInventoryArmorToPermutatorArmor(armor: IInventoryArmor): IPermutatorArmor {
@@ -1375,6 +1499,17 @@ export class ArmorCalculatorService implements OnDestroy {
     inventoryArmorItems: IInventoryArmor[]
   ): void {
     const inventoryById = new Map(inventoryArmorItems.map((item) => [item.id, item]));
+    const similarityHashes = new Map<IPermutatorArmorSet, string>();
+    const similarityCounts = new Map<string, number>();
+    for (const armorSet of armorSets) {
+      const items = armorSet.armor
+        .map((itemId) => inventoryById.get(itemId))
+        .filter((item): item is IInventoryArmor => !!item);
+      const similarityHash = ArmorCalculatorService.getSharedArmorHash(items);
+      similarityHashes.set(armorSet, similarityHash);
+      similarityCounts.set(similarityHash, (similarityCounts.get(similarityHash) ?? 0) + 1);
+    }
+
     const gearSetRanks = new Map(
       armorSets.map((armorSet) => [
         armorSet,
@@ -1389,9 +1524,38 @@ export class ArmorCalculatorService implements OnDestroy {
         ).length,
       ])
     );
-    armorSets.sort((a, b) =>
-      ArmorCalculatorService.compareArmorSets(a, b, gearSetRanks, masterworkedItemCounts)
-    );
+    armorSets.sort((a, b) => {
+      const similarityCountDiff =
+        (similarityCounts.get(similarityHashes.get(b)!) ?? 0) -
+        (similarityCounts.get(similarityHashes.get(a)!) ?? 0);
+      if (similarityCountDiff !== 0) return similarityCountDiff;
+
+      const similarityHashDiff = similarityHashes.get(a)!.localeCompare(similarityHashes.get(b)!);
+      if (similarityHashDiff !== 0) return similarityHashDiff;
+
+      return ArmorCalculatorService.compareArmorSets(a, b, gearSetRanks, masterworkedItemCounts);
+    });
+  }
+
+  private static getSharedArmorHash(items: IInventoryArmor[]): string {
+    return items
+      .filter(
+        (item) => !item.isExotic && !ArmorCalculatorService.sharedArmorExcludedSlots.has(item.slot)
+      )
+      .map((item) => item.itemInstanceId)
+      .sort()
+      .join("|");
+  }
+
+  private static updateSharedBuildCounts(results: ResultDefinition[]): void {
+    const sharedBuildCounts = new Map<string, number>();
+    for (const result of results) {
+      const hash = result.sharedArmorHash ?? "";
+      sharedBuildCounts.set(hash, (sharedBuildCounts.get(hash) ?? 0) + 1);
+    }
+    for (const result of results) {
+      result.sharedBuildCount = sharedBuildCounts.get(result.sharedArmorHash ?? "") ?? 1;
+    }
   }
 
   private static compareArmorSets(
@@ -1470,9 +1634,20 @@ export class ArmorCalculatorService implements OnDestroy {
       ArmorCalculatorService.selectedExotics = tempSelectedExotics.filter(
         (i: IManifestArmor) => !!i
       );
+      const selectedExoticSlots = new Set(
+        ArmorCalculatorService.selectedExotics.map((exotic) => exotic.slot)
+      );
+      ArmorCalculatorService.sharedArmorExcludedSlots =
+        selectedExoticSlots.size === 2 || selectedExoticSlots.size === 3
+          ? selectedExoticSlots
+          : new Set<ArmorSlot>();
 
-      let inventoryArmorItems: IInventoryArmor[] =
-        await this.filterAndPrepareInventoryItems(config);
+      const preparedInventoryArmor = await this.filterAndPrepareInventoryItems(config);
+      const inventoryArmorItems = preparedInventoryArmor.items;
+      const armorPoolInventoryItems = [
+        ...inventoryArmorItems,
+        ...preparedInventoryArmor.duplicates,
+      ];
 
       this._armorResults.next({
         results: [],
@@ -1503,7 +1678,7 @@ export class ArmorCalculatorService implements OnDestroy {
           "Incomplete armor items available for permutation, skipping calculation"
         );
         ArmorCalculatorService.prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
-          inventoryArmorItems,
+          armorPoolInventoryItems,
           permutatorArmorItems
         );
         this._armorResults.next({
@@ -1525,9 +1700,9 @@ export class ArmorCalculatorService implements OnDestroy {
         inventoryById.set(armor.id, armor);
       }
 
-      const prunedByMap = new Map<number, IInventoryArmor>();
+      const prunedByMap = new Map(preparedInventoryArmor.duplicatePruners);
       const prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
-        inventoryArmorItems,
+        armorPoolInventoryItems,
         permutatorArmorItems,
         prunedByMap
       );
@@ -1539,7 +1714,7 @@ export class ArmorCalculatorService implements OnDestroy {
         prunedByMap
       );
       ArmorCalculatorService.prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
-        inventoryArmorItems,
+        armorPoolInventoryItems,
         permutatorArmorItems,
         prunedByMap
       );

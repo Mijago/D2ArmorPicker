@@ -88,6 +88,30 @@
   border: 2px solid gold;
 }
 
+.generic-exotic-icon {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.generic-exotic-count {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border: 1px solid #222;
+  border-radius: 10px;
+  background: #d6ae35;
+  color: #161616;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .modslot-icon.gearset {
   border: 2px solid #4caf50;
 }

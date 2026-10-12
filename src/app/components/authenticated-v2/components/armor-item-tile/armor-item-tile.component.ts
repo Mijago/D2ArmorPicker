@@ -27,6 +27,7 @@ export class ArmorItemTileComponent {
       tier: item.tier,
       name: item.name,
       exotic: item.isExotic === 1,
+      exoticPerkHash: item.exoticPerkHash,
       tuningStat: item.tuningStat,
       masterworked: item.masterworkLevel >= 5,
       armorSystem: item.armorSystem,

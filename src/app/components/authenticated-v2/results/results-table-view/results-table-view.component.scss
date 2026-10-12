@@ -95,6 +95,10 @@ tr.result-detail-row {
   cursor: pointer;
 }
 
+.result-table tr.result-element-row.shared-armor-match > .cdk-cell {
+  background-color: rgba(105, 160, 230, 0.18);
+}
+
 .mat-row:nth-child(4n + 3) {
   background-color: rgba(116, 116, 116, 0.1);
 }

@@ -29,6 +29,7 @@
         [selectedTier]="minimumStatTiers[enum.value].value"
         [locked]="minimumStatTiers[enum.value].fixed"
         (selectedTierChange)="setSelectedTier(enum.value, $event)"
+        (sliderInteractionStart)="cancelCalculationForSlider()"
         (lockedChange)="setLockState(enum.value, $event)"
         [tabIndexOffset]="i * 10"></app-stat-tier-selection>
     </td>

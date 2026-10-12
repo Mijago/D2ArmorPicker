@@ -34,6 +34,33 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.9.19",
+    date: "October 11, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved stat selection input.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Exotic armor selection supports modifier-click multi-selection, and Mod Slot Configuration summarizes multiple selected exotics.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Gearset filtering and armor folding and better selects representatives.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The Armor pool overview now shows pre-pruned duplicate items, and exotic class-item perk rolls remain distinct during pruning.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Exotic class-item perks are now shown in armor tooltips.",
+      },
+    ],
+  },
+  {
     version: "2.9.18",
     date: "October 11, 2026",
     clearManifest: true,

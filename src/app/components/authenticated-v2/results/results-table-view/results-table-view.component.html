@@ -188,6 +188,17 @@
     </td>
   </ng-container>
 
+  <ng-container matColumnDef="easySwap">
+    <th
+      *matHeaderCellDef
+      mat-header-cell
+      mat-sort-header="EasySwap"
+      matTooltip="Number of displayed builds that share the same legendary armor pieces.">
+      # Easy Swap
+    </th>
+    <td *matCellDef="let element" mat-cell>{{ element.sharedBuildCount ?? 1 }}</td>
+  </ng-container>
+
   <!-- Vendor/Collection Column -->
   <ng-container matColumnDef="source">
     <th *matHeaderCellDef mat-header-cell>Sources</th>
@@ -253,8 +264,11 @@
   <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
   <tr
     (click)="toggleElement(element)"
+    (mouseenter)="hoverSharedArmor(element)"
+    (mouseleave)="clearHoveredSharedArmor()"
     *matRowDef="let element; columns: shownColumns"
     [class.example-expanded-row]="isElementExpanded(element)"
+    [class.shared-armor-match]="isSharedArmorHighlighted(element)"
     class="result-element-row"
     mat-row>
   </tr>

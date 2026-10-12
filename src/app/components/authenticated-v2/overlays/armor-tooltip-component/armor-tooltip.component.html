@@ -50,6 +50,10 @@
       <td>Tuning</td>
       <td colspan="2">{{ tuningStatName }}</td>
     </tr>
+    <tr *ngIf="getExoticClassItemPerks(item) as exoticClassItemPerks">
+      <td>Exotic perks</td>
+      <td colspan="2">{{ exoticClassItemPerks.join(" + ") }}</td>
+    </tr>
     <tr>
       <td>Current stats:</td>
     </tr>

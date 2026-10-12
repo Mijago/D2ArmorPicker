@@ -18,6 +18,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { StatusProviderService } from "../../../../services/status-provider.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
 import { ArmorCalculatorService } from "../../../../services/armor-calculator.service";
@@ -42,7 +43,8 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     public config: ConfigurationService,
-    private armorCalculator: ArmorCalculatorService
+    private armorCalculator: ArmorCalculatorService,
+    private status: StatusProviderService
   ) {
     this.stats = (
       Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
@@ -90,6 +92,13 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     this.config.modifyConfiguration((c) => {
       c.minimumStatTiers[stat].value = value;
     });
+  }
+
+  cancelCalculationForSlider(): void {
+    const status = this.status.getStatus();
+    if (status.calculatingResults || status.calculatingPermutations) {
+      this.armorCalculator.cancelCalculation();
+    }
   }
 
   clearStatSelection() {

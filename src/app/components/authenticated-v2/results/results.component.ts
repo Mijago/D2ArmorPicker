@@ -53,6 +53,8 @@ export interface ResultDefinition {
   loaded: boolean;
   usesCollectionRoll?: boolean;
   usesVendorRoll?: boolean;
+  sharedArmorHash?: string;
+  sharedBuildCount?: number;
 }
 
 export enum ResultItemMoveState {
@@ -71,6 +73,7 @@ export interface ResultItem {
   tier: number; // 0 = exotic, 1-5 = legendary
   name: string;
   exotic: boolean;
+  exoticPerkHash?: number[];
   tuningStat: ArmorStat | null;
   masterworked: boolean;
   armorSystem: number; // 2 = Armor 2.0, 3 = Armor 3.0
