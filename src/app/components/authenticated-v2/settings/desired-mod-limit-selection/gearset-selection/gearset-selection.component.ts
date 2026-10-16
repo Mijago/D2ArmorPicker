@@ -24,6 +24,16 @@ import { FORCE_USE_NO_EXOTIC } from "src/app/data/constants";
 import { ConfigurationService } from "src/app/services/configuration.service";
 import { DatabaseService } from "src/app/services/database.service";
 import { UserInformationService } from "src/app/services/user-information.service";
+import {
+  formatGearSetAcquisitionSourceName,
+  GearSetAcquisitionSource,
+} from "src/app/data/gear-set-acquisition";
+import {
+  ARMOR_SET_SYNERGY_INFO,
+  ArmorSetSynergy,
+  ArmorSetSynergyInfo,
+} from "src/app/data/armor-set-synergies";
+import { ARMOR_SET_SYNERGIES_BY_TIER } from "src/app/data/armor-set-synergy-tiers";
 
 interface GearSetBonus {
   perk: DestinySandboxPerkDefinition | undefined;
@@ -34,9 +44,66 @@ interface GearSetBonus {
 interface GearSet {
   name: string;
   hash: number;
+  acquisitionSources: GearSetAcquisitionSource[];
+  synergies: {
+    twoPiece: ArmorSetSynergyInfo[];
+    fourPiece: ArmorSetSynergyInfo[];
+  };
   twoPieceBonus: GearSetBonus;
   fourPieceBonus: GearSetBonus;
 }
+
+const SYNERGY_DISPLAY_ORDER: readonly ArmorSetSynergy[] = [
+  "prismatic",
+  "arc",
+  "solar",
+  "void",
+  "stasis",
+  "strand",
+  "light",
+  "darkness",
+  "kinetic",
+  "weapons",
+  "autoRifles",
+  "bows",
+  "fusionRifles",
+  "glaives",
+  "grenadeLaunchers",
+  "handCannons",
+  "heatWeapons",
+  "linearFusionRifles",
+  "microMissiles",
+  "rocketLaunchers",
+  "scoutRifles",
+  "sidearms",
+  "shotguns",
+  "smgs",
+  "swords",
+  "ammoBrick",
+  "primaryAmmo",
+  "specialAmmo",
+  "heavyAmmo",
+  "grenade",
+  "melee",
+  "classAbility",
+  "allAbilities",
+  "super",
+  "finishers",
+  "orbsOfPower",
+  "elementalPickups",
+  "armorCharge",
+  "healing",
+  "damageDebuff",
+  "enemyDamageOutput",
+  "disorient",
+  "exhaust",
+  "healthStat",
+  "mobility",
+  "meleeStat",
+  "grenadeStat",
+  "superStat",
+  "weaponStat",
+];
 
 @Component({
   selector: "app-gearset-selection",
@@ -165,10 +232,20 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
       const configCount = this.config.readonlyConfigurationSnapshot.armorRequirements.filter(
         (req) => "gearSetHash" in req && req.gearSetHash === gearset.hash
       ).length;
+      const synergyTiers = ARMOR_SET_SYNERGIES_BY_TIER[gearset.hash];
+      const mapSynergies = (synergies: readonly ArmorSetSynergy[]) =>
+        [...synergies]
+          .sort((a, b) => SYNERGY_DISPLAY_ORDER.indexOf(a) - SYNERGY_DISPLAY_ORDER.indexOf(b))
+          .map((synergy) => ARMOR_SET_SYNERGY_INFO[synergy]);
 
       const newEntry = {
         name: gearset.displayProperties.name || "Unknown Gear Set",
         hash: gearset.hash,
+        acquisitionSources: gearset.acquisitionSources ?? [],
+        synergies: {
+          twoPiece: mapSynergies(synergyTiers?.twoPiece ?? []),
+          fourPiece: mapSynergies(synergyTiers?.fourPiece ?? []),
+        },
         twoPieceBonus: {
           perk: twoPieceBonusData,
           enabled: configCount == 2,
@@ -189,6 +266,13 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
       }
     }
     this.refreshingGearsets = false;
+  }
+
+  getAcquisitionSourceTooltip(gearSet: GearSet): string {
+    const sources = gearSet.acquisitionSources.slice(0, 6).map(formatGearSetAcquisitionSourceName);
+    const remaining = gearSet.acquisitionSources.length - sources.length;
+    const sourceText = sources.length > 0 ? sources.join(", ") : "Unknown";
+    return `Source: ${sourceText}${remaining > 0 ? `, +${remaining} more` : ""}`;
   }
 
   get hasTwoPieceSelected(): boolean {

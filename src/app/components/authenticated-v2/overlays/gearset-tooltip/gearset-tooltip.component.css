@@ -37,6 +37,20 @@
   color: #eedb9e;
 }
 
+.source-label {
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.source-item-count {
+  color: #bdbdbd;
+  font-size: 11px;
+}
+
+.more-sources {
+  color: #bdbdbd;
+  font-size: 11px;
+}
 
 .collection-roll-info {
   color: #5cc3ec;

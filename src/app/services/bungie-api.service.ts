@@ -78,6 +78,13 @@ import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
 import { SubclassHashes } from "../data/enum/armor-stat";
 import { ModInformation } from "../data/ModInformation";
 import { Subject, Observable } from "rxjs";
+import {
+  createGearSetAcquisitionMap,
+  GearSetAcquisitionManifestData,
+  GearSetAcquisitionSource,
+  GearSetLocationDefinition,
+  GearSetRewardSource,
+} from "../data/gear-set-acquisition";
 
 // Database type for SQLite operations
 type Database = any;
@@ -99,6 +106,7 @@ export interface DestinyEquipableItemSetDefinition {
   index: number;
   redacted: boolean;
   blacklisted: boolean;
+  acquisitionSources?: GearSetAcquisitionSource[];
 }
 
 const POSTMASTER_BUCKET_HASH = 215593132;
@@ -1109,13 +1117,50 @@ export class BungieApiService implements OnDestroy {
       );
       return;
     }
+
+    const itemHashes = Array.from(new Set(mapped.flatMap((set) => set.setItems)));
+    const itemResult = itemHashes.length
+      ? db.exec(
+          `SELECT json FROM DestinyInventoryItemDefinition WHERE JSON_EXTRACT(json, '$.hash') IN (${itemHashes.join(",")})`
+        )
+      : [];
+    const items = itemResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const sourceResult = db.exec("SELECT json FROM DestinyRewardSourceDefinition");
+    const rewardSources =
+      sourceResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const collectibleResult = db.exec("SELECT json FROM DestinyCollectibleDefinition");
+    const collectibles =
+      collectibleResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const activityGraphResult = db.exec(
+      "SELECT json FROM DestinyFireteamFinderActivityGraphDefinition"
+    );
+    const activityGraphs =
+      activityGraphResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const presentationNodeResult = db.exec("SELECT json FROM DestinyPresentationNodeDefinition");
+    const presentationNodes =
+      presentationNodeResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const destinationResult = db.exec("SELECT json FROM DestinyDestinationDefinition");
+    const destinations =
+      destinationResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const manifestData: GearSetAcquisitionManifestData = {
+      rewardSources,
+      collectibles,
+      activityLocations: [...activityGraphs, ...presentationNodes],
+      worldLocations: destinations,
+    };
+    const acquisitionMap = createGearSetAcquisitionMap(mapped, items, manifestData);
+    const mappedWithSources = mapped.map((set) => ({
+      ...set,
+      acquisitionSources: acquisitionMap.get(set.hash)?.sources ?? [],
+    }));
+
     this.db.equipableItemSetDefinition.clear();
     this.logger.info(
       "BungieApiService",
       "updateEquipableItemSetDefinitionsFromSQLite",
-      `Storing ${mapped.length} equipable item set definitions in localStorage`
+      `Storing ${mappedWithSources.length} equipable item set definitions in localStorage`
     );
-    this.db.equipableItemSetDefinition.bulkPut(mapped);
+    this.db.equipableItemSetDefinition.bulkPut(mappedWithSources);
   }
 
   private async extractArmorDataFromSQLiteManifest(db: Database) {
@@ -1609,6 +1654,10 @@ export class BungieApiService implements OnDestroy {
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
         "DestinyEquipableItemSetDefinition",
+        "DestinyRewardSourceDefinition",
+        "DestinyFireteamFinderActivityGraphDefinition",
+        "DestinyPresentationNodeDefinition",
+        "DestinyDestinationDefinition",
         "DestinySandboxPerkDefinition",
       ] as any as DestinyManifestComponentName[],
       language: "en",
@@ -1881,12 +1930,37 @@ export class BungieApiService implements OnDestroy {
     const mapped = Object.entries(equipableItemSetDefinitions).map(([key, value]) => {
       return value as DestinyEquipableItemSetDefinition;
     });
+    const items = Object.values(manifestTables.DestinyInventoryItemDefinition);
+    const rewardSources = Object.values(
+      (manifestTables as any).DestinyRewardSourceDefinition ?? {}
+    ) as GearSetRewardSource[];
+    const collectibles = Object.values(manifestTables.DestinyCollectibleDefinition);
+    const activityGraphs = Object.values(
+      (manifestTables as any).DestinyFireteamFinderActivityGraphDefinition ?? {}
+    ) as GearSetLocationDefinition[];
+    const presentationNodes = Object.values(
+      manifestTables.DestinyPresentationNodeDefinition
+    ) as GearSetLocationDefinition[];
+    const destinations = Object.values(
+      (manifestTables as any).DestinyDestinationDefinition ?? {}
+    ) as GearSetLocationDefinition[];
+    const manifestData: GearSetAcquisitionManifestData = {
+      rewardSources,
+      collectibles,
+      activityLocations: [...activityGraphs, ...presentationNodes],
+      worldLocations: destinations,
+    };
+    const acquisitionMap = createGearSetAcquisitionMap(mapped, items, manifestData);
+    const mappedWithSources = mapped.map((set) => ({
+      ...set,
+      acquisitionSources: acquisitionMap.get(set.hash)?.sources ?? [],
+    }));
     this.logger.info(
       "BungieApiService",
       "updateEquipableItemSetDefinitions",
-      `Storing ${mapped.length} equipable item set definitions in localStorage`
+      `Storing ${mappedWithSources.length} equipable item set definitions in localStorage`
     );
-    this.db.equipableItemSetDefinition.bulkPut(mapped);
+    this.db.equipableItemSetDefinition.bulkPut(mappedWithSources);
   }
 
   async moveItem(

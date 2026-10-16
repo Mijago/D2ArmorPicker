@@ -36,7 +36,7 @@ export const CHANGELOG_DATA: {
   {
     version: "2.9.19",
     date: "October 11, 2026",
-    clearManifest: false,
+    clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
@@ -57,6 +57,10 @@ export const CHANGELOG_DATA: {
       {
         type: ChangelogEntryType.ADD,
         text: "Exotic class-item perks are now shown in armor tooltips.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Gear Set bonuses now show categorized synergy icons for 2- and 4-piece effects, with descriptions on hover; set-name tooltips show source types and manifest-derived location names.",
       },
     ],
   },
