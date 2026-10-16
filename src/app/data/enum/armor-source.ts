@@ -22,4 +22,5 @@ export const InventoryArmorSourceNames: EnumDictionary<InventoryArmorSource, str
   [InventoryArmorSource.Inventory]: "Inventory",
   [InventoryArmorSource.Collections]: "Collections",
   [InventoryArmorSource.Vendor]: "Vendor",
+  [InventoryArmorSource.Postmaster]: "Postmaster",
 };

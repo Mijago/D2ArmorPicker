@@ -20,7 +20,7 @@ import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { BehaviorSubject } from "rxjs";
-
+import { LoggingProxyService } from "./logging-proxy.service";
 export interface ItemIconData {
   icon: string | undefined;
   watermark: string | undefined;
@@ -36,19 +36,32 @@ export class ItemIconServiceService {
   private sandboxperkIconLookup = new Map<number, DestinySandboxPerkDefinition | undefined>();
   private gearsetIconLookup = new Map<string, DestinySandboxPerkDefinition | undefined>();
 
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private logger: LoggingProxyService
+  ) {}
 
   async getItemCached(hash: number): Promise<IManifestArmor | undefined> {
     if (this.itemLookup.has(hash))
-      return new Promise<IManifestArmor | undefined>((resolve) => {
+      return new Promise<IManifestArmor | undefined>((resolve, reject) => {
         this.itemLookup
           .get(hash)!
           .asObservable()
-          .subscribe((item) => {
-            if (item) {
-              resolve(item);
-              return;
-            }
+          .subscribe({
+            next: (item) => {
+              if (item) {
+                resolve(item);
+                return;
+              }
+            },
+            error: (error) => {
+              this.logger.error(
+                "ItemIconServiceService",
+                "getItemCached",
+                "Error fetching item from cache: " + error
+              );
+              reject(error);
+            },
           });
       });
 

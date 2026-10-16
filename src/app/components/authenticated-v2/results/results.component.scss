@@ -15,14 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.result-table {
-  --mat-table-header-container-height: 38px !important;
-  --mat-table-row-item-container-height: 32px !important;
-}
-.result-element-row > .cdk-cell {
-  padding-block: 5px;
-}
-
 .mdc-data-table__cell,
 .mdc-data-table__header-cell {
   padding: 0px;
@@ -34,67 +26,10 @@
   white-space: normal;
   width: fit-content;
   margin-left: 3px;
-}
 
-.statColumn {
-  position: relative;
-}
-
-.statIcon {
-  position: absolute;
-  height: 22px;
-  margin-left: 2px;
-  top: 8px;
-}
-
-.itemDiv {
-  display: flex;
-  margin: auto;
-  width: 32px;
-  height: 32px;
-}
-.itemIcon {
-  width: inherit;
-  height: inherit;
-  position: absolute;
-}
-
-.itemIconWatermark {
-  width: inherit;
-  height: inherit;
-  pointer-events: none;
-  position: relative;
-}
-
-.source-column {
-  float: left;
-
-  img:nth-of-type(2) {
-    margin-top: 5px;
-    margin-bottom: -3px;
+  @media (min-width: 1360px) {
+    max-width: 49vw;
   }
-}
-
-.collectionIcon,
-.vendorIcon {
-  width: 32px;
-  margin-left: 3px;
-  display: block;
-}
-
-tr.result-element-row td {
-  border-bottom-width: 0;
-}
-
-tr.result-detail-row {
-  height: 0 !important;
-}
-
-.result-element-detail {
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
 }
 
 .report-problem-icon {
@@ -169,14 +104,6 @@ tr.result-detail-row {
   }
 }
 
-.result-table tr.result-element-row {
-  cursor: pointer;
-}
-
-.mat-row:nth-child(4n + 3) {
-  background-color: rgba(116, 116, 116, 0.1);
-}
-
 .warning-none-found {
   color: red;
 }
@@ -193,15 +120,6 @@ tr.result-detail-row {
   top: -1px;
 }
 
-.cdk-column-exotic {
-  min-width: 65px;
-}
-
-.cdk-column-waste {
-  padding-left: 5px;
-}
-
-// overwrite the default th padding
 .mdc-data-table__cell,
 .mdc-data-table__header-cell {
   padding: 0 4px 0 4px;
@@ -423,5 +341,22 @@ tr.result-detail-row {
         margin-bottom: 0.5rem;
       }
     }
+  }
+}
+
+.cancelled-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0 12px 0;
+  border-radius: 4px;
+  background-color: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+
+  mat-icon {
+    color: #ffc107;
   }
 }

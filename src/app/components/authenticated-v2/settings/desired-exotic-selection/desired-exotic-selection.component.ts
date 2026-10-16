@@ -16,13 +16,13 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
-import { ClassExoticInfo, InventoryService } from "../../../../services/inventory.service";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
+import { ClassExoticInfo, UserInformationService } from "src/app/services/user-information.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { animate, query, stagger, style, transition, trigger } from "@angular/animations";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
-import { FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
@@ -59,19 +59,21 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   allowLegacyExoticArmor: boolean = false;
   enforceFeaturedLegendaryArmor = false;
   enforceFeaturedExoticArmor: boolean = false;
+  armors: ClassExoticInfo[] = [];
   currentClass: DestinyClass = DestinyClass.Unknown;
   exotics: ClassExoticInfo[][] = [];
   importEquippedExoticInProgress = false;
+  refreshInventoryInProgress = false;
 
   anyPerkValue = ArmorPerkOrSlot.Any;
   availableFirstPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
   availableSecondPerks: { name: string; value: ArmorPerkOrSlot }[] = [];
 
   constructor(
-    public inventory: InventoryService,
+    public inventory: UserInformationService,
     public config: ConfigurationService,
     private bungieApi: BungieApiService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   ngOnInit(): void {
@@ -90,29 +92,38 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.allowLegacyExoticArmor = c.allowLegacyExoticArmor;
       this.enforceFeaturedLegendaryArmor = c.enforceFeaturedLegendaryArmor;
       this.enforceFeaturedExoticArmor = c.enforceFeaturedExoticArmor;
+      this.syncSelectedExoticVariants();
     });
 
     this.inventory.manifest
       .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         await this.updateExoticsForClass();
+        this.syncSelectedExoticVariants();
       });
     this.inventory.inventory
       .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         await this.updateExoticsForClass();
+        this.syncSelectedExoticVariants();
       });
   }
 
   private async updateExoticsForClass() {
-    const armors = await this.inventory.getExoticsForClass(this.currentClass);
+    this.logger.debug(
+      "DesiredExoticSelectionComponent",
+      "updateExoticsForClass",
+      "Updating exotics for class: " + this.currentClass
+    );
+    this.armors = await this.inventory.getExoticsForClass(this.currentClass);
 
     this.exotics = [
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
-      armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
+      [], // Generic, will be filled in html loop, "item" for all exotics, or where exotic doesn't matter
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotHelmet),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotGauntlet),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotChest),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotLegs),
+      this.armors.filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass),
     ];
 
     // Update available exotic class item perks
@@ -120,22 +131,23 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   }
 
   private updateAvailableExoticClassItemPerks() {
-    const classItemExotics = this.exotics[4]; // Class items are at index 4
     const firstPerks = new Set<number>();
     const secondPerks = new Set<number>();
 
     // Collect first and second perks separately from exotic class items
-    classItemExotics.forEach((exotic) => {
-      exotic.instances.forEach((item) => {
-        // Exotic class items have exactly two perks in exoticPerkHash array
-        if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
-          // Add first perk (left dropdown)
-          firstPerks.add(item.exoticPerkHash[0]);
-          // Add second perk (right dropdown)
-          secondPerks.add(item.exoticPerkHash[1]);
-        }
+    this.armors
+      .filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass)
+      .forEach((exotic) => {
+        exotic.instances.forEach((item) => {
+          // Exotic class items have exactly two perks in exoticPerkHash array
+          if (item.exoticPerkHash && item.exoticPerkHash.length >= 2) {
+            // Add first perk (left dropdown)
+            firstPerks.add(item.exoticPerkHash[0]);
+            // Add second perk (right dropdown)
+            secondPerks.add(item.exoticPerkHash[1]);
+          }
+        });
       });
-    });
 
     // Convert first perk hashes to display format
     this.availableFirstPerks = Array.from(firstPerks)
@@ -156,24 +168,12 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
         value: perkHash as ArmorPerkOrSlot,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-
-    this.logger.debug(
-      "DesiredExoticSelectionComponent",
-      "updateAvailableExoticClassItemPerks",
-      "Available first perks: " + JSON.stringify(this.availableFirstPerks)
-    );
-    this.logger.debug(
-      "DesiredExoticSelectionComponent",
-      "updateAvailableExoticClassItemPerks",
-      "Available second perks: " + JSON.stringify(this.availableSecondPerks)
-    );
   }
 
   hasSelectedExoticClassItem(): boolean {
-    const classItemExotics = this.exotics[4] || [];
-    return classItemExotics.some((exotic) =>
-      exotic.items.some((item) => this.selectedExotics.includes(item.hash))
-    );
+    return this.armors
+      .filter((a) => a.items[0].slot == ArmorSlot.ArmorSlotClass)
+      .some((exotic) => exotic.items.some((item) => this.selectedExotics.includes(item.hash)));
   }
 
   setExoticPerk(index: number, perk: ArmorPerkOrSlot) {
@@ -236,6 +236,34 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     return exotic.items.map((x) => x.hash);
   }
 
+  private syncSelectedExoticVariants(): void {
+    const selected = this.config.readonlyConfigurationSnapshot.selectedExotics;
+    const normalized = this.expandSelectedExoticVariants(selected);
+    this.selectedExotics = normalized;
+    if (
+      normalized.length !== selected.length ||
+      normalized.some((hash, index) => hash !== selected[index])
+    ) {
+      this.config.modifyConfiguration((configuration) => {
+        configuration.selectedExotics = normalized;
+      });
+    }
+  }
+
+  private expandSelectedExoticVariants(selected: number[]): number[] {
+    if (selected.includes(FORCE_USE_ANY_EXOTIC) || selected.includes(FORCE_USE_NO_EXOTIC)) {
+      return selected;
+    }
+
+    const normalized = new Set<number>();
+    for (const hash of selected) {
+      const exotic = this.armors.find((entry) => entry.items.some((item) => item.hash === hash));
+      const hashes = exotic ? this.getHashesForExotic(exotic) : [hash];
+      hashes.forEach((exoticHash) => normalized.add(exoticHash));
+    }
+    return [...normalized];
+  }
+
   selectExotic(hashes: number[], $event: any) {
     const anyHashSelected = hashes.some((hash) => this.selectedExotics.indexOf(hash) > -1);
     if (anyHashSelected) {
@@ -258,8 +286,13 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
-  async refreshAll() {
-    await this.inventory.refreshAll(true, true);
+  async refreshInventory() {
+    this.refreshInventoryInProgress = true;
+    try {
+      await this.inventory.refreshInventory();
+    } finally {
+      this.refreshInventoryInProgress = false;
+    }
   }
 
   async importEquippedExotic() {

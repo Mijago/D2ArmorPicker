@@ -15,16 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component } from "@angular/core";
-import { ChangelogService } from "../../../../services/changelog.service";
+import { Pipe, PipeTransform } from "@angular/core";
+import { NgxLoggerLevel } from "ngx-logger";
 
-@Component({
-  selector: "app-changelog-dialog-controller",
-  templateUrl: "./changelog-dialog-controller.component.html",
+@Pipe({
+  name: "logLevel",
+  pure: true,
 })
-export class ChangelogDialogControllerComponent implements AfterViewInit {
-  constructor(public changelog: ChangelogService) {}
-  ngAfterViewInit(): void {
-    if (this.changelog.mustShowChangelog) this.changelog.openChangelogDialog();
+export class LogLevelPipe implements PipeTransform {
+  transform(value: NgxLoggerLevel): string {
+    switch (value) {
+      case NgxLoggerLevel.TRACE:
+        return "TRACE";
+      case NgxLoggerLevel.DEBUG:
+        return "DEBUG";
+      case NgxLoggerLevel.INFO:
+        return "INFO";
+      case NgxLoggerLevel.WARN:
+        return "WARN";
+      case NgxLoggerLevel.ERROR:
+        return "ERROR";
+      case NgxLoggerLevel.FATAL:
+        return "FATAL";
+      default:
+        return "UNKNOWN";
+    }
   }
 }

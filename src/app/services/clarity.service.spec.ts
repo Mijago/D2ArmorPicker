@@ -26,7 +26,7 @@ import {
   SUPPORTED_SCHEMA_VERSION,
   UpdateData,
 } from "./clarity.service";
-import { NGXLogger } from "ngx-logger";
+import { LoggerModule, NGXLogger, NgxLoggerLevel } from "ngx-logger";
 import { MatDialogModule } from "@angular/material/dialog";
 
 describe("ClarityService", () => {
@@ -36,8 +36,11 @@ describe("ClarityService", () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatDialogModule],
-      providers: [NGXLogger],
+      imports: [
+        HttpClientTestingModule,
+        MatDialogModule,
+        LoggerModule.forRoot({ level: NgxLoggerLevel.OFF }),
+      ],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
@@ -126,8 +129,12 @@ describe("ClarityService", () => {
     service
       .load()
       .then(() => {
+        // fetchUpdateData catches the network error internally (structured log) and returns
+        // null, so load() resolves gracefully — assert the actual warn it emits.
         expect(logger.warn).toHaveBeenCalledWith(
-          "Error loading Clarity data",
+          "ClarityService",
+          "fetchUpdateData",
+          "Failed to fetch update data",
           jasmine.any(HttpErrorResponse)
         );
         done();
@@ -150,8 +157,12 @@ describe("ClarityService", () => {
     service
       .load()
       .then(() => {
+        // fetchLiveCharacterStats catches the network error (structured log) before rethrowing;
+        // load() still resolves gracefully — assert the actual warn it emits.
         expect(logger.warn).toHaveBeenCalledWith(
-          "Error loading Clarity data",
+          "ClarityService",
+          "fetchLiveCharacterStats",
+          "Failed to fetch live character stats",
           jasmine.any(HttpErrorResponse)
         );
         done();

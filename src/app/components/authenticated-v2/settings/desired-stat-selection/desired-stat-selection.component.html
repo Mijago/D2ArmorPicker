@@ -37,8 +37,9 @@
 
 <span id="tierSelectButtonContainer">
   <span class="tierSelectButton">
-    <button mat-stroked-button color="warn" id="clearStatButton" (click)="clearStatSelection()"
-      >Clear</button
+    <button mat-stroked-button color="warn" id="clearStatButton" (click)="clearStatSelection()">
+      <mat-icon>delete_sweep</mat-icon>
+      Clear</button
     >
   </span>
 </span>
@@ -46,7 +47,7 @@
 <br />
 <br />
 <!-- modOptimizationStrategy -->
-<div>
+<!-- <div>
   <div><b>Mod optimization strategy:</b></div>
   <div>You can choose if the algorithm should keep an eye on amount or the cost of mods.</div>
   <div>These settings are extremely expensive when paired with the reduced waste feature.</div>
@@ -69,4 +70,4 @@
       >Many mods, low cost (slow)</mat-button-toggle
     >
   </mat-button-toggle-group>
-</div>
+</div> -->

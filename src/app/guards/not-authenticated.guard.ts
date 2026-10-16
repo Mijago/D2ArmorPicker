@@ -19,6 +19,7 @@ import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { Observable } from "rxjs";
 import { AuthService } from "../services/auth.service";
+import { HttpClientService } from "../services/http-client.service";
 
 @Injectable({
   providedIn: "root",
@@ -26,13 +27,14 @@ import { AuthService } from "../services/auth.service";
 export class NotAuthenticatedGuard {
   constructor(
     public auth: AuthService,
+    public httpClient: HttpClientService,
     public router: Router
   ) {}
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if (this.auth.isAuthenticated()) {
+    if (this.httpClient.isAuthenticated()) {
       this.router.navigate(["/"]);
       return false;
     }

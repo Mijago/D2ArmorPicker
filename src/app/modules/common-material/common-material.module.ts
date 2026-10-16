@@ -41,6 +41,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatChipsModule } from "@angular/material/chips";
 import { MatSidenavModule } from "@angular/material/sidenav";
+import { ScrollingModule } from "@angular/cdk/scrolling";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 
 @NgModule({
@@ -71,6 +72,7 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
     MatTabsModule,
     MatChipsModule,
     MatSidenavModule,
+    ScrollingModule,
     ReactiveFormsModule,
     FormsModule,
   ],
@@ -102,6 +104,8 @@ import { FormsModule, ReactiveFormsModule } from "@angular/forms";
     MatTabsModule,
     MatChipsModule,
     MatSidenavModule,
+    ScrollingModule,
+    MatSliderModule,
   ],
 })
 export class CommonMaterialModule {}

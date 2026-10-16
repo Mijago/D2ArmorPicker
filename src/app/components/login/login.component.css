@@ -51,7 +51,7 @@ mat-card {
   max-width: 800px;
   width: 100%;
   margin: 0;
-  backdrop-filter: blur(10px);
+  /*backdrop-filter: blur(10px);*/
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
@@ -168,6 +168,28 @@ mat-card {
   border-radius: 8px;
   text-transform: none;
   position: relative; /* Reset positioning for login button */
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.privacy-link {
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
+
+.privacy-link a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.privacy-link a:hover {
+  text-decoration: underline;
 }
 
 /* Responsive Design */

@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { Injectable, OnDestroy } from "@angular/core";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { BehaviorSubject, Observable } from "rxjs";
 import { isEqual as _isEqual } from "lodash";
-import { getDifferences } from "../data/commonFunctions";
+import { getHumanReadableDifferences } from "../data/commonFunctions";
 
 export interface Status {
   cancelledCalculation: boolean;
@@ -37,7 +37,7 @@ export interface Status {
 @Injectable({
   providedIn: "root",
 })
-export class StatusProviderService {
+export class StatusProviderService implements OnDestroy {
   private __status: Status = {
     cancelledCalculation: false,
     calculatingResults: false,
@@ -56,9 +56,14 @@ export class StatusProviderService {
   private _status: BehaviorSubject<Status>;
   public readonly status: Observable<Status>;
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: LoggingProxyService) {
+    this.logger.debug("StatusProviderService", "constructor", "Initializing StatusProviderService");
     this._status = new BehaviorSubject<Status>(this.__status);
     this.status = this._status.asObservable();
+  }
+
+  ngOnDestroy(): void {
+    this.logger.debug("StatusProviderService", "ngOnDestroy", "Destroying StatusProviderService");
   }
 
   getStatus() {
@@ -71,11 +76,15 @@ export class StatusProviderService {
       this.logger.debug(
         "StatusProviderService",
         "modifyStatus",
-        `Status changed: ${JSON.stringify(getDifferences(this.__last_Status, this.__status))}`
+        `Status changed: ${getHumanReadableDifferences(this.__last_Status, this.__status)}`
       );
     }
     this.__last_Status = structuredClone(this.__status);
-    this._status.next(this.__status);
+
+    // Push status update to next microtask to avoid change detection conflicts
+    setTimeout(() => {
+      this._status.next(this.__status);
+    }, 0);
   }
 
   setApiError() {

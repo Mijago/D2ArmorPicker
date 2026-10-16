@@ -26,6 +26,7 @@
     <span *ngFor="let i of entries; let idx = index" class="item-sub">
       <img
         class="item-icon"
+        loading="lazy"
         src="https://bungie.net/{{ i.icon }}"
         (click)="enableItem(i.itemInstanceId)"
         matTooltipClass="allow-cr"

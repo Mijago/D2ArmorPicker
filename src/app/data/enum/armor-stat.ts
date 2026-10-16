@@ -42,22 +42,13 @@ export enum StatModifier {
 }
 
 export enum ArmorStat {
-  StatWeapon,
   StatHealth,
-  StatClass,
+  StatMelee,
   StatGrenade,
   StatSuper,
-  StatMelee,
+  StatClass,
+  StatWeapon,
 }
-
-export const ARMORSTAT_ORDER = [
-  ArmorStat.StatHealth,
-  ArmorStat.StatMelee,
-  ArmorStat.StatGrenade,
-  ArmorStat.StatSuper,
-  ArmorStat.StatClass,
-  ArmorStat.StatWeapon,
-];
 
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {
@@ -242,6 +233,15 @@ export const ArmorPerkSocketHashes: EnumDictionary<
 // In the case that a perk has multiple possible hashes, we can use this to determine a mapping
 export const MapAlternativeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {
   [1760565003]: ArmorPerkOrSlot.PerkEchoesOfGlory,
+};
+
+export const ArmorStatFromHash: EnumDictionary<number, ArmorStat> = {
+  [ArmorStatHashes[ArmorStat.StatWeapon]]: ArmorStat.StatWeapon,
+  [ArmorStatHashes[ArmorStat.StatHealth]]: ArmorStat.StatHealth,
+  [ArmorStatHashes[ArmorStat.StatClass]]: ArmorStat.StatClass,
+  [ArmorStatHashes[ArmorStat.StatGrenade]]: ArmorStat.StatGrenade,
+  [ArmorStatHashes[ArmorStat.StatSuper]]: ArmorStat.StatSuper,
+  [ArmorStatHashes[ArmorStat.StatMelee]]: ArmorStat.StatMelee,
 };
 
 export const MapAlternativeSocketTypeToArmorPerkOrSlot: EnumDictionary<number, ArmorPerkOrSlot> = {

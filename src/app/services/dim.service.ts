@@ -18,11 +18,10 @@
  *  bhollis (adaption of the DIM links)
  */
 
-import { Injectable } from "@angular/core";
+import { Injectable, OnDestroy } from "@angular/core";
 import { ConfigurationService } from "./configuration.service";
 import {
   ArmorStat,
-  ARMORSTAT_ORDER,
   ArmorStatHashes,
   STAT_MOD_VALUES,
   StatModifier,
@@ -37,20 +36,32 @@ import {
   LoadoutParameters,
 } from "@destinyitemmanager/dim-api-types";
 import { DestinyClass } from "bungie-api-ts/destiny2";
+import { LoggingProxyService } from "./logging-proxy.service";
 
 @Injectable({
   providedIn: "root",
 })
-export class DimService {
-  private armorStatIds = ARMORSTAT_ORDER;
+export class DimService implements OnDestroy {
+  private armorStatIds = Object.values(ArmorStat).filter(
+    (value) => typeof value === "number"
+  ) as ArmorStat[];
 
-  constructor(private configService: ConfigurationService) {}
+  constructor(
+    private configService: ConfigurationService,
+    private logger: LoggingProxyService
+  ) {
+    this.logger.debug("DimService", "constructor", "Initializing DimService");
+  }
+
+  ngOnDestroy(): void {
+    this.logger.debug("DimService", "ngOnDestroy", "Destroying DimService");
+  }
 
   /**
    * Generate a DIM search query for the given result
    */
   generateDIMQuery(result: ResultDefinition): string {
-    let query = result.items.map((d) => `id:'${d.itemInstanceId}'`).join(" OR ");
+    let query = result.items.map((d) => `(id:'${d.itemInstanceId}')`).join(" OR ");
 
     return query;
   }
@@ -61,10 +72,32 @@ export class DimService {
   async copyDIMQuery(result: ResultDefinition): Promise<boolean> {
     try {
       const query = this.generateDIMQuery(result);
-      await navigator.clipboard.writeText(query);
-      return true;
-    } catch (error) {
+
+      // Use ClipboardItem with explicit text/plain type for better iOS compatibility
+      if (navigator.clipboard && navigator.clipboard.write) {
+        const clipboardItem = new ClipboardItem({
+          "text/plain": new Blob([query], { type: "text/plain" }),
+        });
+        await navigator.clipboard.write([clipboardItem]);
+        return true;
+      }
+
+      // Fallback to writeText if ClipboardItem is not supported
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(query);
+        return true;
+      }
+
       return false;
+    } catch (error) {
+      // Fallback to writeText on error
+      try {
+        const query = this.generateDIMQuery(result);
+        await navigator.clipboard.writeText(query);
+        return true;
+      } catch (fallbackError) {
+        return false;
+      }
     }
   }
 
@@ -95,6 +128,8 @@ export class DimService {
     for (let artificemod of result.artifice || []) {
       mods.push(STAT_MOD_VALUES[artificemod as StatModifier][3]);
     }
+
+    mods.push(...(result.tuningMods || []));
 
     const data: LoadoutParameters = {
       statConstraints: [],

@@ -20,8 +20,8 @@ import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
   ArmorStat,
-  ARMORSTAT_ORDER,
   ArmorStatNames,
+  STAT_MOD_VALUES,
   StatModifier,
 } from "src/app/data/enum/armor-stat";
 
@@ -64,6 +64,40 @@ export const ModUrl: { [k: number]: string } = {
     "https://www.bungie.net/common/destiny2_content/icons/6b45221fccade87ee39f3a03efc6e9b9.png",
 };
 
+const BALANCED_TUNING_MOD_HASH = 3122197216;
+const TUNING_MOD_STATS: Record<number, [ArmorStat, ArmorStat]> = {
+  388618952: [ArmorStat.StatHealth, ArmorStat.StatMelee],
+  3681082702: [ArmorStat.StatHealth, ArmorStat.StatGrenade],
+  4088823605: [ArmorStat.StatHealth, ArmorStat.StatSuper],
+  3310526732: [ArmorStat.StatHealth, ArmorStat.StatClass],
+  2125798995: [ArmorStat.StatHealth, ArmorStat.StatWeapon],
+  4164883102: [ArmorStat.StatMelee, ArmorStat.StatHealth],
+  534630542: [ArmorStat.StatMelee, ArmorStat.StatGrenade],
+  311164277: [ArmorStat.StatMelee, ArmorStat.StatSuper],
+  4210715468: [ArmorStat.StatMelee, ArmorStat.StatClass],
+  4020349587: [ArmorStat.StatMelee, ArmorStat.StatWeapon],
+  455024236: [ArmorStat.StatGrenade, ArmorStat.StatHealth],
+  309000506: [ArmorStat.StatGrenade, ArmorStat.StatMelee],
+  1672416975: [ArmorStat.StatGrenade, ArmorStat.StatSuper],
+  1922571986: [ArmorStat.StatGrenade, ArmorStat.StatClass],
+  4116389173: [ArmorStat.StatGrenade, ArmorStat.StatWeapon],
+  4026414261: [ArmorStat.StatSuper, ArmorStat.StatHealth],
+  673231129: [ArmorStat.StatSuper, ArmorStat.StatMelee],
+  3946669007: [ArmorStat.StatSuper, ArmorStat.StatGrenade],
+  3554800389: [ArmorStat.StatSuper, ArmorStat.StatClass],
+  2244422610: [ArmorStat.StatSuper, ArmorStat.StatWeapon],
+  4030660414: [ArmorStat.StatClass, ArmorStat.StatHealth],
+  1510949672: [ArmorStat.StatClass, ArmorStat.StatMelee],
+  1879022254: [ArmorStat.StatClass, ArmorStat.StatGrenade],
+  957763733: [ArmorStat.StatClass, ArmorStat.StatSuper],
+  323635379: [ArmorStat.StatClass, ArmorStat.StatWeapon],
+  3121760799: [ArmorStat.StatWeapon, ArmorStat.StatHealth],
+  691392383: [ArmorStat.StatWeapon, ArmorStat.StatMelee],
+  3284443097: [ArmorStat.StatWeapon, ArmorStat.StatGrenade],
+  891771298: [ArmorStat.StatWeapon, ArmorStat.StatSuper],
+  1918710127: [ArmorStat.StatWeapon, ArmorStat.StatClass],
+};
+
 @Component({
   selector: "app-table-mod-display",
   templateUrl: "./table-mod-display.component.html",
@@ -71,7 +105,7 @@ export const ModUrl: { [k: number]: string } = {
 })
 export class TableModDisplayComponent {
   artificeUrl = ArmorPerkOrSlotIcons[ArmorPerkOrSlot.SlotArtifice];
-  modIndex = ARMORSTAT_ORDER;
+  modIndex = Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[];
   modTypeIndex = [1, 2];
   ModUrl = ModUrl;
   @Input()
@@ -80,9 +114,43 @@ export class TableModDisplayComponent {
   @Input()
   artifice: number[] = [];
 
+  @Input()
+  tuningMods: number[] = [];
+
   constructor() {}
+
+  getTuningModCounts(): { hash: number; count: number }[] {
+    return Array.from(
+      this.tuningMods.reduce(
+        (counts, hash) => counts.set(hash, (counts.get(hash) ?? 0) + 1),
+        new Map<number, number>()
+      )
+    ).map(([hash, count]) => ({ hash, count }));
+  }
+
+  trackTuningModByHash(_index: number, tuningMod: { hash: number }): number {
+    return tuningMod.hash;
+  }
+
+  getTuningModName(hash: number): string {
+    if (hash === BALANCED_TUNING_MOD_HASH) return "Balanced tuning mod";
+
+    const stats = TUNING_MOD_STATS[hash];
+    return stats
+      ? `Tuning mod: +${ArmorStatNames[stats[0]]} -${ArmorStatNames[stats[1]]}`
+      : "Tuning mod";
+  }
 
   getStatName(stat: number) {
     return ArmorStatNames[stat as ArmorStat];
+  }
+
+  getModifier(stat: ArmorStat, modType: number): StatModifier {
+    return Number(
+      Object.entries(STAT_MOD_VALUES).find(
+        ([, [modifierStat, bonus, cost]]) =>
+          modifierStat === stat && bonus === (modType === 1 ? 5 : 10) && cost > 0
+      )![0]
+    ) as StatModifier;
   }
 }

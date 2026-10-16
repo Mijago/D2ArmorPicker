@@ -16,11 +16,11 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ArmorStat, ArmorStatNames, ARMORSTAT_ORDER } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
-import { InventoryService } from "../../../../services/inventory.service";
+import { ArmorCalculatorService } from "../../../../services/armor-calculator.service";
 import { ModInformation } from "../../../../data/ModInformation";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
@@ -42,10 +42,12 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     public config: ConfigurationService,
-    private inventory: InventoryService
+    private armorCalculator: ArmorCalculatorService
   ) {
-    this.stats = ARMORSTAT_ORDER.map((value) => {
-      return { name: (ArmorStatNames as any)[+value], value: +value };
+    this.stats = (
+      Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
+    ).map((value) => {
+      return { name: ArmorStatNames[value], value };
     });
   }
 
@@ -64,7 +66,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_reduce_waste = c.tryLimitWastedStats;
     });
 
-    this.inventory.reachableTiers.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
+    this.armorCalculator.reachableTiers.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
       const tiers = d || [20, 20, 20, 20, 20, 20];
       if (tiers.filter((d) => d == 0).length < 6) {
@@ -72,7 +74,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.inventory.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
+    this.armorCalculator.armorResults.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
       const tiers = d.maximumPossibleTiers || [20, 20, 20, 20, 20, 20];
       if (tiers.filter((d) => d == 0).length < 6) {
@@ -92,7 +94,7 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   clearStatSelection() {
     this.config.modifyConfiguration((c) => {
-      for (let stat of ARMORSTAT_ORDER) {
+      for (let stat of this.stats.map(({ value }) => value)) {
         c.minimumStatTiers[stat] = { fixed: false, value: 0 };
       }
     });

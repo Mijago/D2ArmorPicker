@@ -19,6 +19,7 @@ import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
 import { Observable } from "rxjs";
 import { AuthService } from "../services/auth.service";
+import { HttpClientService } from "../services/http-client.service";
 
 @Injectable({
   providedIn: "root",
@@ -26,14 +27,20 @@ import { AuthService } from "../services/auth.service";
 export class AuthenticatedGuard {
   constructor(
     public auth: AuthService,
+    public httpClient: HttpClientService,
     public router: Router
   ) {}
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
-    if (!this.auth.isAuthenticated()) {
-      this.router.navigate(["login"]);
+    if (!this.httpClient.isAuthenticated()) {
+      // Check if there's a code parameter in the query string
+      if (state.url.includes("?code=") || route.queryParams["code"]) {
+        this.router.navigate(["authenticate"], { queryParams: route.queryParams });
+      } else {
+        this.router.navigate(["login"]);
+      }
       return false;
     }
     return true;

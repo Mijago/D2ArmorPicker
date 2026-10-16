@@ -15,13 +15,54 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import {
+  ArmorCalculatorService,
+  ArmorPoolItemView,
+} from "src/app/services/armor-calculator.service";
+import { ResultDefinition } from "src/app/components/authenticated-v2/results/results.component";
 
 @Component({
   selector: "app-armor-picker-page",
   templateUrl: "./armor-picker-page.component.html",
   styleUrls: ["./armor-picker-page.component.css"],
 })
-export class ArmorPickerPageComponent {
-  constructor() {}
+export class ArmorPickerPageComponent implements OnInit, OnDestroy {
+  hasResults = false;
+  armorPoolItems: ArmorPoolItemView[] = [];
+  itemUsageCounts = new Map<string, number>();
+
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(private armorCalculator: ArmorCalculatorService) {}
+
+  ngOnInit(): void {
+    this.armorCalculator.armorResults
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (result: { results: ResultDefinition[]; prePruneArmorItems?: ArmorPoolItemView[] }) => {
+          this.hasResults =
+            (result.results?.length ?? 0) > 0 || (result.prePruneArmorItems?.length ?? 0) > 0;
+          this.armorPoolItems = result.prePruneArmorItems ?? [];
+          this.itemUsageCounts = this.buildItemUsageCounts(result.results ?? []);
+        }
+      );
+  }
+
+  private buildItemUsageCounts(results: ResultDefinition[]): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const result of results) {
+      for (const item of result.items) {
+        counts.set(item.itemInstanceId, (counts.get(item.itemInstanceId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

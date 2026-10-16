@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { NgModule } from "@angular/core";
+import { APP_INITIALIZER, ErrorHandler, NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
+import * as Sentry from "@sentry/angular";
 import { AppComponent } from "./app.component";
 import { LoginComponent } from "./components/login/login.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { HttpClientModule } from "@angular/common/http";
-import { RouterModule, Routes } from "@angular/router";
+import { Router, RouterModule, Routes } from "@angular/router";
 import { HandleBungieLoginComponent } from "./components/handle-bungie-login/handle-bungie-login.component";
 import { AuthenticatedGuard } from "./guards/authenticated.guard";
 import { NotAuthenticatedGuard } from "./guards/not-authenticated.guard";
@@ -52,7 +53,6 @@ import { ItemTooltipRendererDirective } from "./components/authenticated-v2/over
 import { ItemIconComponent } from "./components/authenticated-v2/components/item-icon/item-icon.component";
 import { ArmorInvestigationPageComponent } from "./components/authenticated-v2/subpages/armor-investigation-page/armor-investigation-page.component";
 import { ChangelogDialogComponent } from "./components/authenticated-v2/components/changelog-dialog/changelog-dialog.component";
-import { ChangelogDialogControllerComponent } from "./components/authenticated-v2/components/changelog-dialog-controller/changelog-dialog-controller.component";
 import { ChangelogListComponent } from "./components/authenticated-v2/components/changelog-list/changelog-list.component";
 import { LayoutModule } from "@angular/cdk/layout";
 import { ArmorPerkIconComponent } from "./components/authenticated-v2/components/armor-perk-icon/armor-perk-icon.component";
@@ -64,46 +64,58 @@ import { ModTooltipDirective } from "./components/authenticated-v2/overlays/mod-
 import { StatCooldownTooltipComponent } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.component";
 import { StatCooldownTooltipDirective } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component";
+import { ArmorItemTileComponent } from "./components/authenticated-v2/components/armor-item-tile/armor-item-tile.component";
+import { ArmorPoolPanelComponent } from "./components/authenticated-v2/components/armor-pool-panel/armor-pool-panel.component";
 import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { LoggerModule, NgxLoggerLevel } from "ngx-logger";
 import {
   VendorIdFromItemIdPipe,
   VendorNamePipe,
 } from "./components/authenticated-v2/pipes/vendor-name-pipe";
+import { LogLevelPipe } from "./components/authenticated-v2/pipes/log-level.pipe";
 
 import { environment } from "../environments/environment";
-import { H } from "highlight.run";
+// import { H } from "highlight.run";
+
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
+import { ResultsTableViewComponent } from "./components/authenticated-v2/results/results-table-view/results-table-view.component";
 import { GearsetSelectionComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/gearset-selection/gearset-selection.component";
 import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
 import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
-if (!!environment.highlight_project_id) {
-  H.init(environment.highlight_project_id, {
-    environment: environment.production
-      ? "production"
-      : environment.beta
-        ? "beta"
-        : environment.canary
-          ? "canary"
-          : "dev",
-    tracingOrigins: true,
-    inlineImages: false,
-    version: environment.version,
-    networkRecording: {
-      enabled: true,
-      recordHeadersAndBody: false,
-      urlBlocklist: [
-        "https://bungie.net/common/destiny2_content/icons/",
-        "https://www.bungie.net/img/",
-      ],
-    },
-  });
-}
+// OpenReplay tracker lives in its own module to avoid a circular import with
+// membership.service (which imports identifyUserWithTracker). The side-effect
+// import below runs the tracker init on app load, as before.
+import "./services/openreplay-tracker";
+
+// if (!!environment.highlight_project_id) {
+//   H.init(environment.highlight_project_id, {
+//     environment: environment.production
+//       ? "production"
+//       : environment.beta
+//         ? "beta"
+//         : environment.canary
+//           ? "canary"
+//           : "dev",
+//     tracingOrigins: true,
+//     inlineImages: false,
+//     version: environment.version,
+//     networkRecording: {
+//       enabled: true,
+//       recordHeadersAndBody: false,
+//       urlBlocklist: [
+//         "https://bungie.net/common/destiny2_content/icons/",
+//         "https://www.bungie.net/img/",
+//       ],
+//     },
+//   });
+// }
 
 import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
 import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
+import { PrivacyPolicyComponent } from "./components/privacy-policy/privacy-policy.component";
 
 const routes: Routes = [
   {
@@ -134,8 +146,9 @@ const routes: Routes = [
     ],
   },
   //{path: '', component: MainComponent, canActivate: [AuthenticatedGuard]},
+  { path: "privacy-policy", component: PrivacyPolicyComponent },
   { path: "login", component: LoginComponent, canActivate: [NotAuthenticatedGuard] },
-  { path: "login-bungie", component: HandleBungieLoginComponent },
+  { path: "authenticate", component: HandleBungieLoginComponent },
   { path: "**", redirectTo: "/" },
 ];
 
@@ -164,6 +177,7 @@ const routes: Routes = [
     CountElementInListPipe,
     VendorIdFromItemIdPipe,
     VendorNamePipe,
+    LogLevelPipe,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
@@ -174,7 +188,6 @@ const routes: Routes = [
     ItemIconComponent,
     ArmorInvestigationPageComponent,
     ChangelogDialogComponent,
-    ChangelogDialogControllerComponent,
     ChangelogListComponent,
     ArmorPerkIconComponent,
     ExoticPerkTooltipComponent,
@@ -187,27 +200,54 @@ const routes: Routes = [
     StatCooldownTooltipComponent,
     SlotLimitationTitleComponent,
     ResultsCardViewComponent,
+    ResultsTableViewComponent,
     GearsetSelectionComponent,
     ModslotVisualizationComponent,
     ModLimitSegmentedComponent,
+    PrivacyPolicyComponent,
+    ArmorItemTileComponent,
+    ArmorPoolPanelComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     CommonMaterialModule,
 
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
-    RouterModule.forRoot(routes, { useHash: true }),
+    RouterModule.forRoot(routes, { useHash: false }),
     ClipboardModule,
     LayoutModule,
     LoggerModule.forRoot({
-      serverLoggingUrl: "/api/logs",
+      // serverLoggingUrl: "/api/logs",
       level: environment.production ? NgxLoggerLevel.ERROR : NgxLoggerLevel.DEBUG,
       serverLogLevel: NgxLoggerLevel.ERROR,
     }),
   ],
-  providers: [],
+  providers: [
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler({
+        showDialog: false,
+      }),
+    },
+
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler(),
+    },
+    {
+      provide: Sentry.TraceService,
+      deps: [Router],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => () => {},
+      deps: [Sentry.TraceService],
+      multi: true,
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

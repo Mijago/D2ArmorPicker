@@ -24,7 +24,12 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "sql-wasm.wasm",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              }
             ],
             "styles": [
               {
@@ -55,12 +60,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
+              "fileReplacements": [],
               "outputHashing": "all",
               "sourceMap": true,
               "vendorChunk": true
@@ -78,12 +78,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
+              "fileReplacements": [],
               "outputHashing": "all",
               "sourceMap": true,
               "vendorChunk": true
@@ -101,12 +96,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
-                }
-              ],
+              "fileReplacements": [],
               "styles": [
                 {
                   "input": "src/styles.scss",
@@ -159,7 +149,8 @@
               "browserTarget": "D2ArmorPicker:build:canary"
             },
             "development": {
-              "browserTarget": "D2ArmorPicker:build:development"
+              "browserTarget": "D2ArmorPicker:build:development",
+              "host": "192.168.100.15"
             }
           },
           "defaultConfiguration": "development"
@@ -176,10 +167,19 @@
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              },
+              {
+                "glob": "sql-wasm.js",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              }
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",

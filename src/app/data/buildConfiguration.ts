@@ -19,13 +19,15 @@ export interface StatModLimits {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ArmorPerkOrSlot, ArmorStat } from "./enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorStat, ArmorStatNames } from "./enum/armor-stat";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
 // import { ArmorSlot } from "./enum/armor-slot";
 import { ModifierType } from "./enum/modifierType";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
+import { EventArmorType } from "./enum/event-armor-type";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
+import { environment } from "src/environments/environment";
 
 export function getDefaultStatDict(
   value: number
@@ -53,7 +55,26 @@ export interface ArmorRequirementPerk {
 }
 export type ArmorRequirement = ArmorRequirementGearSet | ArmorRequirementPerk;
 
+export const CURRENT_CONFIGURATION_VERSION = 2;
+
+export function serializeBuildConfiguration(configuration: BuildConfiguration) {
+  return {
+    ...configuration,
+    configurationVersion: CURRENT_CONFIGURATION_VERSION,
+    armorStatOrderVersion: 2,
+    minimumStatTiers: Object.fromEntries(
+      Object.entries(configuration.minimumStatTiers).map(([stat, selection]) => [
+        ArmorStatNames[Number(stat) as ArmorStat],
+        selection,
+      ])
+    ),
+  };
+}
+
 export class BuildConfiguration {
+  version: string = environment.version;
+  configurationVersion = CURRENT_CONFIGURATION_VERSION;
+  armorStatOrderVersion = 2;
   characterClass: DestinyClass = DestinyClass.Unknown;
 
   // Add constant +1 strength
@@ -78,8 +99,9 @@ export class BuildConfiguration {
   // New compact stat mod limits (global, not per-slot)
   statModLimits: StatModLimits = { maxMods: 5, maxMajorMods: 5 };
 
+  calculateTierFiveTuning = !environment.production;
   putArtificeMods = true;
-  useFotlArmor = true;
+  useEventArmor: EventArmorType = EventArmorType.None;
   allowBlueArmorPieces = true;
   // Allow armor 2.0, which is the legacy armor system
   allowLegacyLegendaryArmor = true;
@@ -95,7 +117,9 @@ export class BuildConfiguration {
   onlyUseMasterworkedExotics = false;
   onlyUseMasterworkedLegendaries = false;
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
-  limitParsedResults = true; // Limits the amount of results that are parsed. This looses some results, but solves memory issues
+  parsedResultLimit = 30_000; // Zero disables the limit and resets to 30,000 on reload.
+  earlyAbortClassItems = true; // High-Speed setting
+  foldSameStatDifferentGearSets = true;
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
 
@@ -108,15 +132,19 @@ export class BuildConfiguration {
 
   static buildEmptyConfiguration(): BuildConfiguration {
     return {
+      version: environment.version,
+      configurationVersion: CURRENT_CONFIGURATION_VERSION,
+      armorStatOrderVersion: 2,
       armorRequirements: [],
       enabledMods: [],
       disabledItems: [],
       addConstent1Health: false,
+      calculateTierFiveTuning: !environment.production,
       assumeEveryLegendaryIsArtifice: false,
       assumeEveryExoticIsArtifice: false,
       assumeClassItemIsArtifice: false,
       putArtificeMods: true,
-      useFotlArmor: false,
+      useEventArmor: EventArmorType.None,
       onlyUseMasterworkedExotics: false,
       onlyUseMasterworkedLegendaries: false,
       ignoreSunsetArmor: false,
@@ -129,8 +157,10 @@ export class BuildConfiguration {
       allowLegacyExoticArmor: true,
       assumeLegendariesMasterworked: true,
       assumeExoticsMasterworked: true,
-      limitParsedResults: true,
+      parsedResultLimit: 30_000,
+      earlyAbortClassItems: true,
       modOptimizationStrategy: ModOptimizationStrategy.None,
+      foldSameStatDifferentGearSets: true,
       tryLimitWastedStats: false,
       onlyShowResultsWithNoWastedStats: false,
       characterClass: DestinyClass.Unknown,

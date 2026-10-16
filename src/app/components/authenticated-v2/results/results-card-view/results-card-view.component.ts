@@ -25,12 +25,18 @@ import {
   ArmorStatNames,
   ArmorStatIconUrls,
   StatModifier,
-  ARMORSTAT_ORDER,
 } from "../../../../data/enum/armor-stat";
 import { ModInformation } from "src/app/data/ModInformation";
 import { DimService } from "../../../../services/dim.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ArmorSystem } from "src/app/data/types/IManifestArmor";
+import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
+import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
+
+interface GearsetBonusDisplay {
+  perk: DestinySandboxPerkDefinition;
+  requiredSetCount: number;
+}
 
 @Component({
   selector: "app-results-card-view",
@@ -38,7 +44,7 @@ import { ArmorSystem } from "src/app/data/types/IManifestArmor";
   styleUrls: ["./results-card-view.component.scss"],
 })
 export class ResultsCardViewComponent implements OnChanges, OnDestroy {
-  STAT_ORDER = ARMORSTAT_ORDER;
+  STAT_ORDER = Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[];
   ArmorStatNames = ArmorStatNames;
   @Input() results: ResultDefinition[] = [];
 
@@ -57,6 +63,10 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   private readonly PAGE_SIZE = 25;
   private currentPage = 0;
   Math = Math;
+  private gearsetBonuses = new Map<ResultDefinition, GearsetBonusDisplay[]>();
+  private gearsetRequirementCounts = new Map<number, number>();
+  private manifestGearsetHashes = new Map<number, number | null>();
+  private gearsetBonusLoadId = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -64,7 +74,8 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
     private snackBar: MatSnackBar,
     private configService: ConfigurationService,
     private dimService: DimService,
-    private bungieApiService: BungieApiService
+    private bungieApiService: BungieApiService,
+    private itemIconService: ItemIconServiceService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -79,8 +90,13 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initializeData() {
-    this.filteredResults = [...this.results];
+  private async initializeData() {
+    const results = this.results;
+    this.updateGearsetRequirementCounts();
+    await this.loadGearsetBonuses();
+    if (results !== this.results) return;
+
+    this.filteredResults = [...results];
     this.applyFiltersAndSort();
     this.resetPagination();
     this.loadNextPage();
@@ -132,6 +148,10 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
           case "mods":
             aValue = this.getModSortValue(a);
             bValue = this.getModSortValue(b);
+            break;
+          case "gearsetBonuses":
+            aValue = this.getGearsetBonusRank(a);
+            bValue = this.getGearsetBonusRank(b);
             break;
           case "weapon":
             aValue = a.stats[ArmorStat.StatWeapon];
@@ -247,7 +267,102 @@ export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   getModSortValue(result: ResultDefinition): number {
     // Use the same sorting logic as results.component.ts:
     // Primary sort by mod count (weighted by 100), then by mod cost
-    return +100 * result.modCount + result.modCost;
+    return +100 * (result.modCount + result.tuningMods.length) + result.modCost;
+  }
+
+  getGearsetBonuses(result: ResultDefinition): GearsetBonusDisplay[] {
+    return this.gearsetBonuses.get(result) ?? [];
+  }
+
+  private getGearsetCounts(result: ResultDefinition): Map<number, number> {
+    const gearsetCounts = new Map<number, number>();
+    result.items.forEach((item) => {
+      const gearSetHash = item.gearSetHash ?? this.manifestGearsetHashes.get(item.hash);
+      if (gearSetHash != null) {
+        gearsetCounts.set(gearSetHash, (gearsetCounts.get(gearSetHash) ?? 0) + 1);
+      }
+    });
+
+    this.gearsetRequirementCounts.forEach((count, hash) => {
+      gearsetCounts.set(hash, Math.max(count, gearsetCounts.get(hash) ?? 0));
+    });
+    return gearsetCounts;
+  }
+
+  private updateGearsetRequirementCounts(): void {
+    this.gearsetRequirementCounts.clear();
+    this.configService.readonlyConfigurationSnapshot.armorRequirements.forEach((requirement) => {
+      if ("gearSetHash" in requirement) {
+        this.gearsetRequirementCounts.set(
+          requirement.gearSetHash,
+          (this.gearsetRequirementCounts.get(requirement.gearSetHash) ?? 0) + 1
+        );
+      }
+    });
+  }
+
+  private getGearsetBonusRank(result: ResultDefinition): number {
+    const activeSetCounts = Array.from(this.getGearsetCounts(result).values()).filter(
+      (count) => count >= 2
+    );
+    if (activeSetCounts.some((count) => count >= 4)) return 3;
+    if (activeSetCounts.length >= 2) return 2;
+    if (activeSetCounts.length === 1) return 1;
+    return 0;
+  }
+
+  private async loadGearsetBonuses(): Promise<void> {
+    const loadId = ++this.gearsetBonusLoadId;
+    const requestsByResult = new Map<ResultDefinition, { hash: number; amount: number }[]>();
+    const uniqueRequests = new Map<string, { hash: number; amount: number }>();
+
+    const unresolvedItemHashes = new Set<number>();
+    this.results.forEach((result) => {
+      result.items.forEach((item) => {
+        if (item.gearSetHash == null && !this.manifestGearsetHashes.has(item.hash)) {
+          unresolvedItemHashes.add(item.hash);
+        }
+      });
+    });
+    await Promise.all(
+      Array.from(unresolvedItemHashes).map(async (hash) => {
+        const item = await this.itemIconService.getItemCached(hash);
+        this.manifestGearsetHashes.set(hash, item?.gearSetHash ?? null);
+      })
+    );
+    if (loadId !== this.gearsetBonusLoadId) return;
+
+    this.results.forEach((result) => {
+      const requests: { hash: number; amount: number }[] = [];
+      this.getGearsetCounts(result).forEach((count, hash) => {
+        if (count >= 4) requests.push({ hash, amount: 4 });
+        else if (count >= 2) requests.push({ hash, amount: 2 });
+      });
+      requests.forEach((request) =>
+        uniqueRequests.set(`${request.hash}-${request.amount}`, request)
+      );
+      requestsByResult.set(result, requests);
+    });
+
+    const perks = new Map<string, DestinySandboxPerkDefinition>();
+    await Promise.all(
+      Array.from(uniqueRequests.entries()).map(async ([key, request]) => {
+        const perk = await this.itemIconService.getGearsetPerkCached(request.hash, request.amount);
+        if (perk) perks.set(key, perk);
+      })
+    );
+    if (loadId !== this.gearsetBonusLoadId) return;
+
+    this.gearsetBonuses.clear();
+    requestsByResult.forEach((requests, result) => {
+      this.gearsetBonuses.set(
+        result,
+        requests.flatMap((request) => {
+          const perk = perks.get(`${request.hash}-${request.amount}`);
+          return perk ? [{ perk, requiredSetCount: request.amount }] : [];
+        })
+      );
+    });
   }
 
   getStatIcon(statIndex: number): string {

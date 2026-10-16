@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { Injectable, OnDestroy } from "@angular/core";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { HttpClient } from "@angular/common/http";
 import { Observable, BehaviorSubject } from "rxjs";
 
 import type { CharacterStats } from "../data/character_stats/schema";
-import { InventoryService } from "./inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 
 const BASE_URL = "https://Database-Clarity.github.io/Character-Stats";
 export const SUPPORTED_SCHEMA_VERSION = "1.9";
@@ -44,7 +44,7 @@ export type UpdateData = {
 @Injectable({
   providedIn: "root",
 })
-export class ClarityService {
+export class ClarityService implements OnDestroy {
   private _characterStats: BehaviorSubject<CharacterStats | null> =
     new BehaviorSubject<CharacterStats | null>(null);
   public readonly characterStats: Observable<CharacterStats | null> =
@@ -52,11 +52,16 @@ export class ClarityService {
 
   constructor(
     private http: HttpClient,
-    private inv: InventoryService,
-    private logger: NGXLogger
+    private userInfo: UserInformationService,
+    private logger: LoggingProxyService
   ) {
+    this.logger.debug("ClarityService", "constructor", "Initializing ClarityService");
     // trigger a clarity reload on manifest change
-    this.inv.manifest.subscribe((_) => this.load());
+    this.userInfo.manifest.subscribe((_) => this.load());
+  }
+
+  ngOnDestroy(): void {
+    this.logger.debug("ClarityService", "ngOnDestroy", "Destroying ClarityService");
   }
 
   async load() {
@@ -68,7 +73,12 @@ export class ClarityService {
   }
 
   private async fetchUpdateData() {
-    return this.http.get<UpdateData>(UPDATES_URL).toPromise();
+    try {
+      return await this.http.get<UpdateData>(UPDATES_URL).toPromise();
+    } catch (error) {
+      this.logger.warn("ClarityService", "fetchUpdateData", "Failed to fetch update data", error);
+      return null;
+    }
   }
 
   // Load data from cache or fetch live data if necessary
@@ -90,17 +100,34 @@ export class ClarityService {
           liveVersion.schemaVersion
         );
       } else if (liveVersion && liveVersion.lastUpdate !== undefined) {
-        await this.fetchLiveCharacterStats().then((data) => {
+        try {
+          const data = await this.fetchLiveCharacterStats();
           localStorage.setItem(LOCAL_STORAGE_STATS_KEY, JSON.stringify(data));
           localStorage.setItem(LOCAL_STORAGE_STATS_VERSION_KEY, liveVersion.lastUpdate.toString());
-
           this._characterStats.next(data);
-        });
+        } catch (error) {
+          this.logger.warn(
+            "ClarityService",
+            "loadCharacterStats",
+            "Failed to load live character stats",
+            error
+          );
+        }
       }
     }
   }
 
   private async fetchLiveCharacterStats() {
-    return this.http.get<CharacterStats>(CHARACTER_STATS_URL).toPromise();
+    try {
+      return await this.http.get<CharacterStats>(CHARACTER_STATS_URL).toPromise();
+    } catch (error) {
+      this.logger.warn(
+        "ClarityService",
+        "fetchLiveCharacterStats",
+        "Failed to fetch live character stats",
+        error
+      );
+      throw error;
+    }
   }
 }

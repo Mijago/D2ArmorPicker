@@ -16,6 +16,7 @@
           <ng-container *ngSwitchCase="SlotType.SlotTypeGearset">
             <img
               [src]="'https://bungie.net/' + slot.icon"
+              loading="lazy"
               class="modslot-icon gearset"
               alt="Gearset"
               [matTooltip]="slot.name || ''" />

@@ -19,7 +19,7 @@
  */
 
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import {
   ArmorStat,
   ArmorStatIconUrls,
@@ -73,7 +73,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
     private _snackBar: MatSnackBar,
     private bungieApi: BungieApiService,
     private dimService: DimService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   public async CopyDIMQuery() {
@@ -112,7 +112,9 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
         .reduce(
           (p, v) => {
             if (v.stat == SpecialArmorStat.ClassAbilityRegenerationStat)
-              p[[1, 0, 2][c.characterClass]] += v.value;
+              p[
+                [ArmorStat.StatHealth, ArmorStat.StatWeapon, ArmorStat.StatClass][c.characterClass]
+              ] += v.value;
             else p[v.stat as number] += v.value;
             return p;
           },
@@ -265,8 +267,7 @@ export class ExpandedResultContentComponent implements OnInit, OnDestroy {
 
       if (multiplier == 0) return bonus;
 
-      // For Armor 1.0, assume the first three stats are the archetype stats and don't get masterwork bonus
-      // The OTHER THREE stats (3, 4, 5) get +1 per multiplier level
+      // Armor 3 archetype stats do not receive the masterwork bonus.
       for (let i = 0; i < 6; i++) {
         if (item.archetypeStats.indexOf(i) === -1) {
           bonus[i] += multiplier;

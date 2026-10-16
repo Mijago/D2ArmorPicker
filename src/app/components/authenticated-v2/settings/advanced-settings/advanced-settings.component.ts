@@ -16,22 +16,29 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
+import { MatDialog } from "@angular/material/dialog";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { environment } from "../../../../../environments/environment";
+import { EventArmorType } from "../../../../data/enum/event-armor-type";
+import { BuildConfiguration } from "../../../../data/buildConfiguration";
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogData,
+} from "../../components/confirm-dialog/confirm-dialog.component";
 
 interface AdvancedSettingFieldBase {
   name: string;
+  description: string;
   help: string | undefined;
   disabled: boolean;
   impactsResultCount: boolean;
-  onToggle: (v: boolean) => void;
 }
 
 interface BooleanSettingField extends AdvancedSettingFieldBase {
   type: "boolean";
   value: boolean;
+  onToggle: (v: boolean) => void;
 }
 
 interface DropdownSettingField extends AdvancedSettingFieldBase {
@@ -39,10 +46,20 @@ interface DropdownSettingField extends AdvancedSettingFieldBase {
   value: any;
   onSelect: (v: any) => void;
   options: { value: any; label: string }[];
-  isEnabled: boolean;
+  isEnabled?: boolean;
 }
 
-type AdvancedSettingField = BooleanSettingField | DropdownSettingField;
+interface SliderSettingField extends AdvancedSettingFieldBase {
+  type: "slider";
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  displayWith: (value: number) => string;
+  onChange: (value: number) => void;
+}
+
+type AdvancedSettingField = BooleanSettingField | DropdownSettingField | SliderSettingField;
 
 @Component({
   selector: "app-advanced-settings",
@@ -53,26 +70,66 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   fields2: { [id: string]: AdvancedSettingField[] } = {};
   fieldKeys: string[] = [];
 
-  constructor(private config: ConfigurationService) {}
+  constructor(
+    private config: ConfigurationService,
+    private dialog: MatDialog
+  ) {}
+
+  resetAdvancedSettings(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: "320px",
+      data: {
+        description: "Reset Advanced Settings to their default values?",
+      } as ConfirmDialogData,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      const defaults = BuildConfiguration.buildEmptyConfiguration();
+      this.config.modifyConfiguration((configuration) => {
+        configuration.useEventArmor = defaults.useEventArmor;
+        configuration.assumeLegendariesMasterworked = defaults.assumeLegendariesMasterworked;
+        configuration.assumeExoticsMasterworked = defaults.assumeExoticsMasterworked;
+        configuration.onlyUseMasterworkedExotics = defaults.onlyUseMasterworkedExotics;
+        configuration.onlyUseMasterworkedLegendaries = defaults.onlyUseMasterworkedLegendaries;
+        configuration.assumeClassItemIsArtifice = defaults.assumeClassItemIsArtifice;
+        configuration.assumeEveryLegendaryIsArtifice = defaults.assumeEveryLegendaryIsArtifice;
+        configuration.assumeEveryExoticIsArtifice = defaults.assumeEveryExoticIsArtifice;
+        configuration.calculateTierFiveTuning = defaults.calculateTierFiveTuning;
+        configuration.foldSameStatDifferentGearSets = defaults.foldSameStatDifferentGearSets;
+        configuration.parsedResultLimit = defaults.parsedResultLimit;
+        configuration.addConstent1Health = defaults.addConstent1Health;
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.fields2 = {
         Events: [
           {
-            name: "Enforce the usage of a Festival of the Lost Mask.",
-            type: "boolean",
-            onToggle: (v: boolean) => this.config.modifyConfiguration((c) => (c.useFotlArmor = v)),
-            value: c.useFotlArmor,
+            name: "Use Event armor",
+            description: "Select event",
+            type: "dropdown",
+            value: c.useEventArmor,
+            onSelect: (v: EventArmorType) =>
+              this.config.modifyConfiguration((config) => (config.useEventArmor = v)),
+            options: [
+              { value: EventArmorType.None, label: "None" },
+              { value: EventArmorType.FestivalOfTheLost, label: "Festival of the Lost" },
+              { value: EventArmorType.GuardianGames, label: "Guardian Games" },
+            ],
             disabled: false,
             impactsResultCount: true,
-            help: "Only use a FotL masks. You will not get results if you do not own the mask.",
+            help: "Restrict builds to specific event armor where supported.",
           },
         ],
         Masterwork: [
           {
             name: "Assume all legendary items are masterworked",
             type: "boolean",
+            description: "Assume all legendary items are masterworked.",
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeLegendariesMasterworked = v)),
             value: c.assumeLegendariesMasterworked,
@@ -83,6 +140,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           {
             name: "Assume all exotic items are masterworked",
             type: "boolean",
+            description: "Assume all exotic items are masterworked.",
             onToggle: (v: boolean) =>
               this.config.modifyConfiguration((c) => (c.assumeExoticsMasterworked = v)),
             value: c.assumeExoticsMasterworked,
@@ -99,6 +157,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: undefined,
+            description: "Only use already masterworked exotic items.",
           },
           {
             name: "Only use already masterworked legendary items",
@@ -109,6 +168,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: false,
             impactsResultCount: true,
             help: undefined,
+            description: "Only use already masterworked legendary items.",
           },
         ],
         "Artifice Slots (for legacy armor 2.0)": [
@@ -121,6 +181,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: c.assumeEveryLegendaryIsArtifice || !c.allowLegacyLegendaryArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
+            description: "Assume every legacy legendary class item is an artifice armor.",
           },
           {
             name: "Assume every legacy legendary is an artifice armor.",
@@ -131,6 +192,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: !c.allowLegacyLegendaryArmor,
             impactsResultCount: true,
             help: "This is for debugging purposes. No support if you enable this.",
+            description: "Assume every legacy legendary is an artifice armor.",
           },
           {
             name: "Assume every legacy exotic has an artifice slot.",
@@ -141,42 +203,85 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             disabled: !c.allowLegacyExoticArmor,
             impactsResultCount: true,
             help: "Preparation for the upcoming Artifice Mod Slot for exotics.",
+            description: "Assume every legacy exotic has an artifice slot.",
           },
         ],
         "Performance Optimization": [
           {
-            name: "Use security features to prevent app crashes (resets on reload).",
+            name: "Use Tier 5 tuning for armor pieces.",
             type: "boolean",
             onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.limitParsedResults = v)),
-            value: c.limitParsedResults,
+              this.config.modifyConfiguration((c) => (c.calculateTierFiveTuning = v)),
+            value: c.calculateTierFiveTuning,
             disabled: false,
             impactsResultCount: true,
-            help: "Only parse the first 30,000 results. Deactivating this may crash your browser. The results will still be limited to 1,000,000 entries. Note that you will not miss any significant results by leaving this enabled.",
+            help: "Calculate the Tier 5 tuning for armor pieces. This may lead to longer calculation times.",
+            description: "Use Tier 5 tuning for armor pieces.",
           },
-        ],
-        "Wasted Stats": [
           {
-            name: "Try to optimize wasted stats (slower)",
+            name: "Fold same-stat armor with different gear sets",
             type: "boolean",
             onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.tryLimitWastedStats = v)),
-            value: c.tryLimitWastedStats,
+              this.config.modifyConfiguration((c) => (c.foldSameStatDifferentGearSets = v)),
+            value: c.foldSameStatDifferentGearSets,
             disabled: false,
-            impactsResultCount: false,
-            help: "The tool will try to add minor stat mods to minimize wasted stats. This only works for combinations that fulfill your desired stat combination with enough mods so at least one mod slot is still open.",
+            impactsResultCount: true,
+            help: "When enabled, items with the exact same stat profile are folded together even if they belong to different gear sets. Explicitly selected gear sets still remain distinct.",
+            description: "Fold same-stat armor pieces across different gear sets.",
           },
           {
-            name: "Only show builds with no wasted stats",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.onlyShowResultsWithNoWastedStats = v)),
-            value: environment.featureFlags.enableZeroWaste && c.onlyShowResultsWithNoWastedStats,
-            disabled: !environment.featureFlags.enableZeroWaste,
+            name: "Maximum results (Unlimited resets to default on reload)",
+            type: "slider",
+            value: c.parsedResultLimit === 0 ? 11 : c.parsedResultLimit / 10_000,
+            min: 1,
+            max: 11,
+            step: 1,
+            displayWith: (value: number) => (value === 11 ? "Unlimited" : `${value * 10}K`),
+            onChange: (value: number) =>
+              this.config.modifyConfiguration(
+                (config) => (config.parsedResultLimit = value === 11 ? 0 : value * 10_000)
+              ),
+            disabled: false,
             impactsResultCount: true,
-            help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results.",
+            help: "Limits how many results are retained to reduce calculation time and prevent Out-Of-Memory crashes. Unlimited may crash your browser. You will not miss the most significant results with a set limit.",
+            description: "Maximum number of results retained.",
           },
+          //   {
+          //     name: "High-Speed mode: Only check one class item for each permutation",
+          //     type: "boolean",
+          //     onToggle: (v: boolean) =>
+          //       this.config.modifyConfiguration((c) => (c.earlyAbortClassItems = v)),
+          //     value: c.earlyAbortClassItems,
+          //     disabled: false,
+          //     impactsResultCount: true,
+          //     help: "This will speed up the calculation by compressing the number of class items checked for each permutation.",
+          //     description: "High-Speed mode: Only check one class item for each permutation",
+          //   },
         ],
+        // "Wasted Stats": [
+        //   {
+        //     name: "Try to optimize wasted stats (slower)",
+        //     type: "boolean",
+        //     onToggle: (v: boolean) =>
+        //       this.config.modifyConfiguration((c) => (c.tryLimitWastedStats = v)),
+        //     value: c.tryLimitWastedStats,
+        //     disabled: false,
+        //     impactsResultCount: false,
+        //     help: "The tool will try to add minor stat mods to minimize wasted stats. This only works for combinations that fulfill your desired stat combination with enough mods so at least one mod slot is still open.",
+        //     description: "Try to optimize wasted stats (slower)",
+        //   },
+        //   {
+        //     name: "Only show builds with no wasted stats",
+        //     type: "boolean",
+        //     onToggle: (v: boolean) =>
+        //       this.config.modifyConfiguration((c) => (c.onlyShowResultsWithNoWastedStats = v)),
+        //     value: environment.featureFlags.enableZeroWaste && c.onlyShowResultsWithNoWastedStats,
+        //     disabled: !environment.featureFlags.enableZeroWaste,
+        //     impactsResultCount: true,
+        //     help: "Only show builds with zero wasted stats - this means, its highly likely that you won't get any results.",
+        //     description: "Only show builds with no wasted stats",
+        //   },
+        // ],
         "Data-Science": [
           {
             name: "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
@@ -186,6 +291,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             value: c.addConstent1Health,
             disabled: false,
             impactsResultCount: false,
+            description:
+              "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
             help: "You usually do not want to use this.",
           },
           /*

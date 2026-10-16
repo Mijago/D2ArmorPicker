@@ -16,14 +16,14 @@
  */
 
 import { Component, OnInit, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { Subject } from "rxjs";
 import { distinctUntilChanged, takeUntil } from "rxjs/operators";
 import { FORCE_USE_NO_EXOTIC } from "src/app/data/constants";
 import { ConfigurationService } from "src/app/services/configuration.service";
 import { DatabaseService } from "src/app/services/database.service";
-import { InventoryService } from "src/app/services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
 
 interface GearSetBonus {
   perk: DestinySandboxPerkDefinition | undefined;
@@ -47,10 +47,10 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
   private refreshingGearsets = false;
   public gearSets: GearSet[] = [];
   constructor(
-    private inventoryService: InventoryService,
+    private inventoryService: UserInformationService,
     private db: DatabaseService,
     private config: ConfigurationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
   ngOnInit(): void {
     this.inventoryService.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async () => {
@@ -83,24 +83,50 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
     // Check if the current character class has gear sets available
     const currentClass = this.config.readonlyConfigurationSnapshot.characterClass;
+    const itemsGearSetSelectable = await this.db.inventoryArmor
+      .where({
+        clazz: currentClass,
+        gearSetPerkSelectable: true,
+      })
+      .toArray();
+    const gearSets = await Promise.all(
+      this.gearSets.map(async (gearSet) => {
+        const itemsGearSet = await this.db.inventoryArmor
+          .where({
+            clazz: currentClass,
+            gearSetHash: gearSet.hash,
+          })
+          .toArray();
+        const uniqueSlots = new Set(
+          [...itemsGearSet, ...itemsGearSetSelectable].map((item) => item.slot)
+        );
+        const twoPieceAvailable = uniqueSlots.size >= 2;
+        const fourPieceAvailable = uniqueSlots.size >= 4;
 
-    for (const gearSet of this.gearSets) {
-      // Get all inventory items for this class and gear set
-      const items = await this.db.inventoryArmor
-        .where({
-          clazz: currentClass,
-          gearSetHash: gearSet.hash,
-        })
-        .toArray();
+        return {
+          ...gearSet,
+          twoPieceBonus: {
+            ...gearSet.twoPieceBonus,
+            available: twoPieceAvailable,
+            enabled: twoPieceAvailable && gearSet.twoPieceBonus.enabled,
+          },
+          fourPieceBonus: {
+            ...gearSet.fourPieceBonus,
+            available: fourPieceAvailable,
+            enabled: fourPieceAvailable && gearSet.fourPieceBonus.enabled,
+          },
+        };
+      })
+    );
 
-      // Count how many unique slots are represented by these items
-      const uniqueSlots = new Set(items.map((item) => item.slot));
-      gearSet.twoPieceBonus.available = uniqueSlots.size >= 2;
-      gearSet.fourPieceBonus.available = uniqueSlots.size >= 4;
+    gearSets.sort((a, b) => {
+      const rank = (gearSet: GearSet) =>
+        gearSet.fourPieceBonus.available ? 0 : gearSet.twoPieceBonus.available ? 1 : 2;
 
-      if (!gearSet.twoPieceBonus.available) gearSet.twoPieceBonus.enabled = false;
-      if (!gearSet.fourPieceBonus.available) gearSet.fourPieceBonus.enabled = false;
-    }
+      return rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+    this.gearSets = gearSets;
+
     this.updateConfiguration();
   }
 

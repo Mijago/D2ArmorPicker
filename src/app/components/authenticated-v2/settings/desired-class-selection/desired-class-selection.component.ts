@@ -19,8 +19,8 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Subject } from "rxjs";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { takeUntil } from "rxjs/operators";
-import { UserdataService } from "../../../../services/userdata.service";
-import { InventoryService } from "../../../../services/inventory.service";
+import { UserInformationService } from "src/app/services/user-information.service";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 
 @Component({
   selector: "app-desired-class-selection",
@@ -30,6 +30,13 @@ import { InventoryService } from "../../../../services/inventory.service";
 export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
   itemCounts: (null | number)[] = [null, null, null];
   selectedClass = -1;
+  public characters: {
+    emblemUrl: string;
+    characterId: string;
+    clazz: DestinyClass;
+    lastPlayed: number;
+  }[] = [];
+
   public storedMaterials: {
     "3853748946": number;
     "4257549985": number;
@@ -40,20 +47,24 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     public config: ConfigurationService,
-    public userdata: UserdataService,
-    public inv: InventoryService
+    public inv: UserInformationService
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to characters Observable
+    this.inv.characters.pipe(takeUntil(this.ngUnsubscribe)).subscribe((characters) => {
+      this.characters = characters;
+    });
+
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.selectedClass = c.characterClass;
 
       // find valid
       const classAvailable =
-        this.userdata.characters.findIndex((chr) => chr.clazz == c.characterClass) != -1;
-      if (this.userdata.characters.length > 0 && !classAvailable) {
+        this.characters.findIndex((chr) => chr.clazz == c.characterClass) != -1;
+      if (this.characters.length > 0 && !classAvailable) {
         this.config.modifyConfiguration((d) => {
-          d.characterClass = this.userdata.characters[0].clazz;
+          d.characterClass = this.characters[0].clazz;
           d.selectedExotics = [];
         });
       }
@@ -91,7 +102,7 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
       "4257549984": number;
       "3159615086": number;
       "3467984096": number;
-    } = JSON.parse(localStorage.getItem("stored-materials") || "{}");
+    } = JSON.parse(localStorage.getItem("user-materials") || "{}");
 
     this.storedMaterials = {
       "3853748946": k["3853748946"] ?? 0,
