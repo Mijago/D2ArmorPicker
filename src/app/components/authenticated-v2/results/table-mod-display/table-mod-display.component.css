@@ -22,6 +22,12 @@
   position: relative;
 }
 
+.tuning-mod app-item-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
 .modIcon {
   position: absolute;
   top: -12px;

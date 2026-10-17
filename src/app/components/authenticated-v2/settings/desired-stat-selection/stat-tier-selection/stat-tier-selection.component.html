@@ -21,6 +21,7 @@
       <ng-container *ngFor="let value of statValues">
         <div
           class="stat-line"
+          [attr.data-value]="value"
           [class.zero-line]="value === 0"
           [class.milestone-line]="value === 50 || value === 100 || value === 150 || value === 200"
           [class.selected]="value === selectedValue"
@@ -33,16 +34,37 @@
               ? '16px'
               : '8px'
           "
-          [matTooltip]="'Value: ' + value + (value % 50 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
+          [matTooltip]="
+            'Value: ' +
+            tooltipValue(value) +
+            (tooltipValue(value) % 50 === 0 ? ' (Tier ' + tooltipValue(value) / 10 + ')' : '')
+          "
           [matTooltipDisabled]="value > currentAnimatedMaxValue"
           matTooltipPosition="above"
           [matTooltipShowDelay]="0"
           (click)="value <= maximumAvailableTier * 10 && setValueMob(value)"
           (mouseenter)="handleHover(value)"
-          (mouseleave)="clearHover()">
+          (mouseleave)="handleStatLineLeave($event)">
         </div>
       </ng-container>
     </div>
+    <input
+      class="stat-slider-input"
+      type="range"
+      min="0"
+      max="200"
+      step="1"
+      [value]="selectedValue"
+      [attr.tabindex]="tabIndexOffset"
+      aria-label="Adjust minimum stat value"
+      (pointerdown)="startSliderPointer()"
+      (keydown)="sliderInteractionStart.emit()"
+      (input)="setValueFromSlider($event)"
+      (change)="commitSliderValue()"
+      (pointerup)="endSliderPointer()"
+      (pointercancel)="endSliderPointer()"
+      (mousemove)="updateHoverFromSlider($event)"
+      (mouseleave)="clearHover()" />
     <div class="milestone-labels">
       <button
         class="milestone-button zero-button"

@@ -16,51 +16,78 @@
   -->
 
 <div>
-  <div class="tooltip-container">
-    <table>
-      <tr>
-        <td colspan="3">{{ itemTooltip?.name }}</td>
-      </tr>
-      <tr>
-        <td>Source</td>
-        <td colspan="2">{{ getSourceText() }}</td>
-      </tr>
-      <tr *ngIf="isVendorItem && itemTooltip">
-        <td>Vendor</td>
-        <td colspan="2">{{
-          itemTooltip.itemInstanceId | getVendorIdFromItemId | getVendorName | async
-        }}</td>
-      </tr>
-      <tr>
-        <td>Current stats:</td>
-      </tr>
-      <tr *ngFor="let statId of armorStatIds">
-        <td>{{ getArmorStatName(statId) }}</td>
-        <td>
-          <span>{{ getStatWithMasterwork(statId) }}</span>
-        </td>
-        <td>
-          <div class="stat-display">
-            <div
-              class="stat-display-bar"
-              [style.width]="getWidth((itemTooltip?.stats || [])[statId] || 0)"
-              >&nbsp;</div
-            >
-            <div
-              class="stat-display-bar masterwork"
-              [style.width]="getWidth(getMasterworkBonus(itemTooltip!)[statId])"
-              *ngIf="itemTooltip && getMasterworkBonus(itemTooltip)[statId] > 0"
-              >&nbsp;</div
-            >
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td>Total base stats:</td>
-        <td>
-          {{ getTotalStats() }}
-        </td>
-      </tr>
-    </table>
+  <div class="tooltip-container" [class.tooltip-comparison]="comparisonTooltip">
+    <div class="tooltip-column">
+      <ng-container
+        *ngTemplateOutlet="itemTable; context: { $implicit: itemTooltip }"></ng-container>
+    </div>
+    <div class="tooltip-column" *ngIf="comparisonTooltip">
+      <div class="comparison-label" *ngIf="comparisonLabel">{{ comparisonLabel }}</div>
+      <ng-container
+        *ngTemplateOutlet="itemTable; context: { $implicit: comparisonTooltip }"></ng-container>
+    </div>
   </div>
 </div>
+
+<ng-template #itemTable let-item>
+  <table>
+    <tr>
+      <td colspan="3">{{ item?.name }}</td>
+    </tr>
+    <tr>
+      <td>Source</td>
+      <td colspan="2">{{ getSourceText(item) }}</td>
+    </tr>
+    <tr *ngIf="isVendorItem(item) && item">
+      <td>Vendor</td>
+      <td colspan="2">{{ item.itemInstanceId | getVendorIdFromItemId | getVendorName | async }}</td>
+    </tr>
+    <tr *ngIf="getGearsetName(item) as gearsetName">
+      <td>Gearset</td>
+      <td colspan="2">{{ gearsetName }}</td>
+    </tr>
+    <tr *ngIf="getTuningStatName(item) as tuningStatName">
+      <td>Tuning</td>
+      <td colspan="2">{{ tuningStatName }}</td>
+    </tr>
+    <tr *ngIf="getExoticClassItemPerks(item) as exoticClassItemPerks">
+      <td>Exotic perks</td>
+      <td colspan="2">{{ exoticClassItemPerks.join(" + ") }}</td>
+    </tr>
+    <tr>
+      <td>Current stats:</td>
+    </tr>
+    <tr *ngFor="let statId of armorStatIds">
+      <td>{{ getArmorStatName(statId) }}</td>
+      <td>
+        <span>{{ getStatWithMasterwork(item, statId) }}</span>
+      </td>
+      <td>
+        <div class="stat-display">
+          <div class="stat-display-bar" [style.width]="getWidth((item?.stats || [])[statId] || 0)"
+            >&nbsp;</div
+          >
+          <div
+            class="stat-display-bar masterwork"
+            [style.width]="getWidth(getMasterworkBonus(item!)[statId])"
+            *ngIf="item && getMasterworkBonus(item)[statId] > 0"
+            >&nbsp;</div
+          >
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>Total base stats:</td>
+      <td>
+        {{ getTotalStats(item) }}
+      </td>
+    </tr>
+    <tr *ngIf="hasUsedByCount(item)">
+      <td colspan="3"
+        >Used by {{ getUsedByCount(item) }} generated loadout{{
+          getUsedByCount(item) === 1 ? "" : "s"
+        }}</td
+      >
+    </tr>
+  </table>
+</ng-template>

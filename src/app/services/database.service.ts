@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { AuthService } from "./auth.service";
 import { D2APDatabase } from "../data/database";
 import { IManifestArmor } from "../data/types/IManifestArmor";
@@ -30,17 +30,34 @@ export class DatabaseService extends D2APDatabase implements OnDestroy {
   constructor(
     private auth: AuthService,
     private changelog: ChangelogService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     super();
     this.logger.debug("DatabaseService", "constructor", "Initializing DatabaseService");
 
-    if (this.changelog.wipeManifest) {
-      this.logger.log("Wiping manifest due to changelog request");
+    if (this.changelog.shouldWipeManifest) {
+      this.logger.info(
+        "DatabaseService",
+        "constructor",
+        "Wiping manifest due to changelog request"
+      );
+      this.changelog.setlastWipeManifestVersion();
       this.clearManifestInfo();
     }
 
-    this.version(this.verno).upgrade(async (tx) => {
+    this.version(this.verno).upgrade(async (transaction) => {
+      const oldToNewStat = [5, 0, 4, 2, 3, 1];
+      await transaction
+        .table("inventoryArmor")
+        .toCollection()
+        .modify((item) => {
+          if (item.tuningStat !== null && item.tuningStat !== undefined) {
+            item.tuningStat = oldToNewStat[item.tuningStat];
+          }
+          if (Array.isArray(item.archetypeStats)) {
+            item.archetypeStats = item.archetypeStats.map((stat: number) => oldToNewStat[stat]);
+          }
+        });
       this.clearManifestInfo();
     });
 

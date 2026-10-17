@@ -54,20 +54,12 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
     // Subscribe to characters Observable
     this.inv.characters.pipe(takeUntil(this.ngUnsubscribe)).subscribe((characters) => {
       this.characters = characters;
+      this.selectFirstAvailableCharacterIfNeeded();
     });
 
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.selectedClass = c.characterClass;
-
-      // find valid
-      const classAvailable =
-        this.characters.findIndex((chr) => chr.clazz == c.characterClass) != -1;
-      if (this.characters.length > 0 && !classAvailable) {
-        this.config.modifyConfiguration((d) => {
-          d.characterClass = this.characters[0].clazz;
-          d.selectedExotics = [];
-        });
-      }
+      this.selectFirstAvailableCharacterIfNeeded();
     });
     this.inv.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async (k) => {
       await this.loadStoredMaterials();
@@ -81,6 +73,17 @@ export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
     this.config.modifyConfiguration((d) => {
       d.characterClass = clazz;
       d.selectedExotics = [];
+    });
+  }
+
+  private selectFirstAvailableCharacterIfNeeded(): void {
+    if (this.characters.length === 0) return;
+    const currentClass = this.config.readonlyConfigurationSnapshot.characterClass;
+    if (this.characters.some((character) => character.clazz === currentClass)) return;
+
+    this.config.modifyConfiguration((configuration) => {
+      configuration.characterClass = this.characters[0].clazz;
+      configuration.selectedExotics = [];
     });
   }
 

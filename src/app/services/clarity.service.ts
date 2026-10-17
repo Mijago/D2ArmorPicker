@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { HttpClient } from "@angular/common/http";
 import { Observable, BehaviorSubject } from "rxjs";
 
@@ -53,7 +53,7 @@ export class ClarityService implements OnDestroy {
   constructor(
     private http: HttpClient,
     private userInfo: UserInformationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.logger.debug("ClarityService", "constructor", "Initializing ClarityService");
     // trigger a clarity reload on manifest change

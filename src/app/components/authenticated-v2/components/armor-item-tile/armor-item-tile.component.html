@@ -1,0 +1,20 @@
+<div
+  class="armor-item-tile"
+  [class.pruned]="pruned"
+  [class.disabled]="disabled"
+  [class.size-medium]="size === 'medium'"
+  [class.highlight-pruner]="highlight"
+  [itemTooltip]="tooltipItem"
+  [comparisonTooltip]="pruned ? comparisonTooltipItem : undefined"
+  [comparisonLabel]="'Pruned by'"
+  [showToolTip]="!!tooltipItem"
+  [title]="pruned && prunedByItem ? 'Pruned by ' + prunedByItem.name : item.name">
+  <div class="item-stack">
+    <app-item-icon
+      [itemHash]="item.hash"
+      [masterworked]="item.masterworkLevel >= 5"
+      [tier]="item.tier"
+      [source]="item.source"></app-item-icon>
+    <span *ngIf="showName" class="armor-item-name">{{ item.name }}</span>
+  </div>
+</div>

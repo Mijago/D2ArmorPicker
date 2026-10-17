@@ -37,6 +37,7 @@
     src="https://bungie.net/{{ item.watermarkIcon }}"
     loading="lazy"
     *ngIf="item.watermarkIcon" />
+  <img class="item-tier-overlay" [src]="tierIcon" *ngIf="tierIcon" alt="" />
   <div
     class="item-source-overlay"
     *ngIf="isFromVendor || isFromCollection"

@@ -39,6 +39,57 @@
   font-weight: 500;
 }
 
+.gearset-table td.gear-set-name {
+  cursor: help;
+}
+
+.gear-set-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.synergy-tag-list {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.synergy-tag {
+  display: inline-flex;
+  width: 15px;
+  height: 15px;
+}
+
+.synergy-tag mat-icon,
+.synergy-svg-icon,
+.synergy-bungie-icon {
+  display: block;
+  width: 15px;
+  height: 15px;
+  font-size: 15px;
+  line-height: 15px;
+}
+
+.synergy-bungie-icon {
+  object-fit: contain;
+}
+
+.synergy-svg-icon {
+  background-color: currentColor;
+  mask-image: var(--synergy-mask);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-image: var(--synergy-mask);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
 .gearset-table th.two-piece-bonuses,
 .gearset-table td.two-piece-bonuses {
   border-left: 2px solid #888;

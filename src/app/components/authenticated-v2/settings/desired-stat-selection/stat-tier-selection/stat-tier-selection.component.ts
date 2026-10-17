@@ -27,7 +27,7 @@ import {
   ElementRef,
   AfterViewChecked,
 } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
 
 @Component({
@@ -45,6 +45,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Input() tabIndexOffset: number = 0;
   @Output() selectedTierChange = new EventEmitter<number>();
   @Output() lockedChange = new EventEmitter<boolean>();
+  @Output() sliderInteractionStart = new EventEmitter<void>();
 
   @ViewChild("valueInput") valueInput!: ElementRef<HTMLInputElement>;
 
@@ -52,12 +53,15 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public hoveredValue: number | null = null;
   public statValues: number[] = [];
   public editingValue: boolean = false;
+  public sliderPointerActive = false;
   private shouldSelectText: boolean = false;
+  private pendingSliderValue: number | null = null;
 
   public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
+  private hoveredStatLine: HTMLElement | null = null;
 
-  constructor(private logger: NGXLogger) {}
+  constructor(private logger: LoggingProxyService) {}
 
   ngOnInit(): void {
     // Generate values from 0 to 200
@@ -103,6 +107,59 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     this.setValue(newValue / 10);
   }
 
+  setValueFromSlider(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = Math.max(0, Math.min(Number(input.value), this.maximumAvailableTier * 10));
+    this.selectedValue = value;
+    this.pendingSliderValue = value;
+    input.value = value.toString();
+  }
+
+  commitSliderValue(): void {
+    if (this.pendingSliderValue === null) return;
+
+    const value = this.pendingSliderValue;
+    this.pendingSliderValue = null;
+    if (value === this.selectedTier * 10) return;
+
+    this.selectedTier = value / 10;
+    this.selectedTierChange.emit(this.selectedTier);
+  }
+
+  startSliderPointer(): void {
+    this.sliderPointerActive = true;
+    this.sliderInteractionStart.emit();
+  }
+
+  endSliderPointer(): void {
+    this.commitSliderValue();
+    this.sliderPointerActive = false;
+  }
+
+  tooltipValue(tickValue: number): number {
+    return this.sliderPointerActive ? this.selectedValue : tickValue;
+  }
+
+  updateHoverFromSlider(event: MouseEvent): void {
+    const slider = event.currentTarget as HTMLInputElement;
+    const bounds = slider.getBoundingClientRect();
+    const position = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+    const value = Math.round(position * 200);
+    const statLine = document
+      .elementsFromPoint(event.clientX, event.clientY)
+      .find(
+        (element): element is HTMLElement =>
+          element instanceof HTMLElement && element.classList.contains("stat-line")
+      );
+
+    if (statLine !== this.hoveredStatLine) {
+      this.hoveredStatLine?.dispatchEvent(new MouseEvent("mouseleave"));
+      this.hoveredStatLine = statLine || null;
+      this.hoveredStatLine?.dispatchEvent(new MouseEvent("mouseenter"));
+    }
+    this.handleHover(value);
+  }
+
   isAddedByConfigMods(index: number) {
     return (
       index > 0 &&
@@ -134,6 +191,16 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
    */
   clearHover(): void {
     this.hoveredValue = null;
+    const previousStatLine = this.hoveredStatLine;
+    this.hoveredStatLine = null;
+    previousStatLine?.dispatchEvent(new MouseEvent("mouseleave"));
+  }
+
+  handleStatLineLeave(event: MouseEvent): void {
+    if (event.currentTarget === this.hoveredStatLine) {
+      this.hoveredStatLine = null;
+      this.hoveredValue = null;
+    }
   }
 
   commitValueEdit(value: string | number) {
@@ -164,7 +231,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
    * Check if this is the sixth stat (weapon stat)
    */
   isSixthStat(): boolean {
-    return this.stat === ArmorStat.StatMelee;
+    return this.stat === ArmorStat.StatWeapon;
   }
 
   /**

@@ -112,3 +112,9 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+## Third-party content
+
+The Destiny 2 symbol font in `src/assets/fonts/destiny_symbols_common.otf` and the generated SVGs in `src/assets/destiny-symbols/` contain Bungie game content and are not covered by this project's license. Destiny content usage is subject to [Bungie's Terms of Use](https://www.bungie.net/7/en/Legal/terms).
+
+© Bungie, Inc. All rights reserved. Destiny, the Destiny Logo, Bungie and the Bungie logo are among the trademarks of Bungie, Inc.

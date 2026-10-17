@@ -1,0 +1,91 @@
+:host {
+  display: inline-flex;
+}
+
+.armor-item-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 54px;
+  height: 54px;
+  padding: 4px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  cursor: default;
+
+  .item-stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  app-item-icon {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 0;
+  }
+
+  &.size-medium {
+    width: 64px;
+    height: 64px;
+  }
+
+  &.disabled {
+    opacity: 0.55;
+  }
+
+  &.pruned {
+    opacity: 0.38;
+    filter: grayscale(1);
+  }
+
+  &.highlight-pruner {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+
+    app-item-icon {
+      border-radius: 0;
+      box-shadow:
+        0 0 0 2px rgba(122, 211, 255, 0.75),
+        0 0 16px rgba(122, 211, 255, 0.45);
+      animation: prune-glow-pulse 1s ease-in-out infinite alternate;
+    }
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  }
+}
+
+@keyframes prune-glow-pulse {
+  from {
+    box-shadow:
+      0 0 0 1px rgba(122, 211, 255, 0.5),
+      0 0 10px rgba(122, 211, 255, 0.35);
+  }
+  to {
+    box-shadow:
+      0 0 0 2px rgba(122, 211, 255, 0.8),
+      0 0 20px rgba(122, 211, 255, 0.6);
+  }
+}
+
+.armor-item-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  max-width: 180px;
+}

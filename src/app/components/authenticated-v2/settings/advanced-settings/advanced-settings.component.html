@@ -51,24 +51,46 @@
     <!-- Dropdown setting -->
     <div *ngIf="f.type === 'dropdown'" class="dropdown-setting">
       <!-- Toggleable dropdown -->
-      <div class="dropdown-header">
-        <mat-slide-toggle
-          color="primary"
-          [disabled]="f.disabled"
-          [checked]="f.isEnabled"
-          (change)="f.onToggle && f.onToggle($event.checked)">
-          <span class="dropdown-label">{{ f.name }}</span>
-        </mat-slide-toggle>
+      <label class="dropdown-header">{{ f.name }}</label>
+      <mat-form-field subscriptSizing="dynamic" style="flex-grow: 1">
+        <mat-label>{{ f.description }}</mat-label>
         <mat-select
           [value]="f.value"
-          [disabled]="f.disabled || !f.isEnabled"
+          [disabled]="f.disabled"
           (selectionChange)="f.onSelect($event.value)"
-          class="dropdown-inline"
-          placeholder="Select option">
+          class="dropdown-inline">
           <mat-option *ngFor="let option of f.options" [value]="option.value">
             {{ option.label }}
           </mat-option>
         </mat-select>
+      </mat-form-field>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.help"
+        matTooltip="{{ f.help }}"
+        #tooltip="matTooltip">
+        help
+      </mat-icon>
+      <mat-icon
+        inline
+        aria-hidden="false"
+        aria-label="Help"
+        *ngIf="f.impactsResultCount"
+        class="report-problem-icon"
+        matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
+        #tooltip="matTooltip">
+        report_problem
+      </mat-icon>
+    </div>
+
+    <!-- Result limit slider -->
+    <div *ngIf="f.type === 'slider'" class="slider-setting">
+      <div class="slider-header">
+        <label
+          >{{ f.name }}: <strong>{{ f.displayWith(f.value) }}</strong></label
+        >
         <mat-icon
           inline
           aria-hidden="false"
@@ -81,15 +103,37 @@
         <mat-icon
           inline
           aria-hidden="false"
-          aria-label="Help"
+          aria-label="Warning"
           *ngIf="f.impactsResultCount"
           class="report-problem-icon"
-          matTooltip="This setting might impact the amount of results. It may happen that you won't get any results if you change this setting. In this case, simply switch it back to its default state."
+          matTooltip="This setting impacts the number of results retained and may affect browser memory usage."
           #tooltip="matTooltip">
           report_problem
         </mat-icon>
       </div>
+      <mat-slider
+        class="result-limit-slider"
+        [min]="f.min"
+        [max]="f.max"
+        [step]="f.step"
+        [displayWith]="f.displayWith"
+        [disabled]="f.disabled"
+        discrete
+        showTickMarks>
+        <input matSliderThumb [value]="f.value" (valueChange)="f.onChange($event)" />
+      </mat-slider>
     </div>
   </div>
   <div class="category-spacer"></div>
+</div>
+
+<div class="advanced-settings-actions">
+  <button
+    (click)="resetAdvancedSettings()"
+    color="warn"
+    mat-stroked-button
+    matTooltip="Reset only the settings in this section to their defaults.">
+    <mat-icon>restart_alt</mat-icon>
+    Reset advanced settings
+  </button>
 </div>

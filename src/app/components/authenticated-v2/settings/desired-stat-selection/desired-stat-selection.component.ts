@@ -16,8 +16,9 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { ArmorStat, ArmorStatNames, ARMORSTAT_ORDER } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
+import { StatusProviderService } from "../../../../services/status-provider.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
 import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
 import { ArmorCalculatorService } from "../../../../services/armor-calculator.service";
@@ -42,10 +43,13 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   constructor(
     public config: ConfigurationService,
-    private armorCalculator: ArmorCalculatorService
+    private armorCalculator: ArmorCalculatorService,
+    private status: StatusProviderService
   ) {
-    this.stats = ARMORSTAT_ORDER.map((value) => {
-      return { name: (ArmorStatNames as any)[+value], value: +value };
+    this.stats = (
+      Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
+    ).map((value) => {
+      return { name: ArmorStatNames[value], value };
     });
   }
 
@@ -90,9 +94,16 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
+  cancelCalculationForSlider(): void {
+    const status = this.status.getStatus();
+    if (status.calculatingResults || status.calculatingPermutations) {
+      this.armorCalculator.cancelCalculation();
+    }
+  }
+
   clearStatSelection() {
     this.config.modifyConfiguration((c) => {
-      for (let stat of ARMORSTAT_ORDER) {
+      for (let stat of this.stats.map(({ value }) => value)) {
         c.minimumStatTiers[stat] = { fixed: false, value: 0 };
       }
     });

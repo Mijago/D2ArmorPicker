@@ -16,13 +16,19 @@
  */
 
 #card-config {
-  width: fit-content;
-  display: inline-block;
-  vertical-align: top;
+  width: min(calc(100vw - 12px), 680px);
+  min-width: 0;
+  box-sizing: border-box;
+  display: block;
   white-space: normal;
   margin-bottom: 20px;
   margin-left: 3px;
   margin-right: 3px;
+
+  @media (min-width: 1360px) {
+    width: min(49vw, 680px);
+    max-width: 680px;
+  }
 }
 
 #card-config > mat-card {

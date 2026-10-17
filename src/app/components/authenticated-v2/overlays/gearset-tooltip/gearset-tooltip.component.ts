@@ -15,27 +15,56 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input } from "@angular/core";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
+import { DatabaseService } from "src/app/services/database.service";
+import {
+  formatGearSetAcquisitionSourceName,
+  GearSetAcquisitionSource,
+} from "src/app/data/gear-set-acquisition";
 
 @Component({
   selector: "app-gearset-tooltip",
   templateUrl: "./gearset-tooltip.component.html",
   styleUrls: ["./gearset-tooltip.component.css"],
 })
-export class GearsetTooltipComponent implements OnInit {
-  @Input() gearset: DestinySandboxPerkDefinition | undefined;
+export class GearsetTooltipComponent {
+  private gearsetValue: DestinySandboxPerkDefinition | undefined;
+  private sourceLookupId = 0;
+  acquisitionSources: GearSetAcquisitionSource[] = [];
 
-  iconUrl: string | undefined;
+  @Input()
+  set gearset(value: DestinySandboxPerkDefinition | undefined) {
+    this.gearsetValue = value;
+    void this.loadAcquisitionSources(value?.hash);
+  }
+
+  get gearset(): DestinySandboxPerkDefinition | undefined {
+    return this.gearsetValue;
+  }
+
+  getAcquisitionSourceName(source: GearSetAcquisitionSource): string {
+    return formatGearSetAcquisitionSourceName(source);
+  }
 
   constructor(
     public inv: UserInformationService,
-    public iconService: ItemIconServiceService
+    public iconService: ItemIconServiceService,
+    private db: DatabaseService
   ) {}
 
-  async ngOnInit() {
-    this.iconUrl = this.gearset?.displayProperties?.icon;
+  private async loadAcquisitionSources(perkHash?: number): Promise<void> {
+    const lookupId = ++this.sourceLookupId;
+    this.acquisitionSources = [];
+    if (perkHash === undefined) return;
+
+    const gearSets = await this.db.equipableItemSetDefinition.toArray();
+    if (lookupId !== this.sourceLookupId) return;
+
+    this.acquisitionSources =
+      gearSets.find((gearSet) => gearSet.setPerks.some((perk) => perk.sandboxPerkHash === perkHash))
+        ?.acquisitionSources ?? [];
   }
 }

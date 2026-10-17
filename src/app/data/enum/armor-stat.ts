@@ -42,22 +42,13 @@ export enum StatModifier {
 }
 
 export enum ArmorStat {
-  StatWeapon,
   StatHealth,
-  StatClass,
+  StatMelee,
   StatGrenade,
   StatSuper,
-  StatMelee,
+  StatClass,
+  StatWeapon,
 }
-
-export const ARMORSTAT_ORDER = [
-  ArmorStat.StatHealth,
-  ArmorStat.StatMelee,
-  ArmorStat.StatGrenade,
-  ArmorStat.StatSuper,
-  ArmorStat.StatClass,
-  ArmorStat.StatWeapon,
-];
 
 // Stat Enum, bonus, cost, mod hash
 export const STAT_MOD_VALUES: EnumDictionary<StatModifier, [ArmorStat, number, number, number]> = {

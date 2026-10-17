@@ -25,13 +25,13 @@ import { ChangelogService } from "../../../../services/changelog.service";
 })
 export class ChangelogDialogComponent implements OnInit {
   showChangelogList = false;
-  changelogItemsToShow = 1; // Initially show only the first item
+  changelogItemsToShow = 5; // Initially show only the first five items
 
   constructor(public changelog: ChangelogService) {}
 
   ngOnInit() {
     if (this.isIOS()) {
-      // Show first item immediately, then all items after delay
+      // Show first items immediately, then all items after delay
       this.showChangelogList = true;
       // Delay loading all changelog items by 10 seconds on iOS because WebKit is stinky and it crashes for no good reason
       // (The reason appears to add too much junk from the manifest and the large DOM from the changelog list, but it's hard to be sure)
@@ -40,6 +40,7 @@ export class ChangelogDialogComponent implements OnInit {
       setTimeout(() => {
         this.changelogItemsToShow = -1; // Show all items
       }, 10000);
+      // turns out for some devices was the large manifest, still, only show a few items to avoid issues because changelog is getting chonkier
     } else {
       // Show all items immediately on non-iOS devices
       this.showChangelogList = true;

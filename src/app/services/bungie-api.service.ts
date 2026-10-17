@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import {
   DestinyComponentType,
   DestinyInventoryItemDefinition,
@@ -39,16 +39,19 @@ import {
   ServerResponse,
   DestinyProfileResponse,
   DestinyItemInstanceComponent,
+  DestinySandboxPerkDefinition,
+  DestinySocketTypeDefinition,
+  DestinyPresentationNodeDefinition,
+  DestinyCollectibleDefinition,
 } from "bungie-api-ts/destiny2";
 import { DatabaseService } from "./database.service";
 import { environment } from "../../environments/environment";
-import { ArmorSystem, IManifestArmor } from "../data/types/IManifestArmor";
+import { ArmorSystem, detectArmor3Sockets, IManifestArmor } from "../data/types/IManifestArmor";
 import {
   IInventoryArmor,
   InventoryArmorSource,
   createArmorItem,
   applyInvestmentStats,
-  getInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
 import {
@@ -75,6 +78,16 @@ import { ExoticClassItemPerkNames } from "../data/exotic-class-item-spirits";
 import { SubclassHashes } from "../data/enum/armor-stat";
 import { ModInformation } from "../data/ModInformation";
 import { Subject, Observable } from "rxjs";
+import {
+  createGearSetAcquisitionMap,
+  GearSetAcquisitionManifestData,
+  GearSetAcquisitionSource,
+  GearSetLocationDefinition,
+  GearSetRewardSource,
+} from "../data/gear-set-acquisition";
+
+// Database type for SQLite operations
+type Database = any;
 
 // TODO :Remove once DIM API is updated
 
@@ -93,13 +106,36 @@ export interface DestinyEquipableItemSetDefinition {
   index: number;
   redacted: boolean;
   blacklisted: boolean;
+  acquisitionSources?: GearSetAcquisitionSource[];
 }
 
-function collectInvestmentStats(
+const POSTMASTER_BUCKET_HASH = 215593132;
+const SUBCLASS_BUCKET_HASH = 3284755031;
+
+const ARMOR2_STAT_SOCKET_TYPES = new Set([
+  1489351422, // Fixed-roll intrinsic stats (shared by all four stat plugs).
+  1119034468, // Random roll: first Weapons/Health/Class stat plug.
+  1119034469, // Random roll: second Weapons/Health/Class stat plug.
+  3833399976, // Random roll: first Grenade/Super/Melee stat plug.
+  3833399977, // Random roll: second Grenade/Super/Melee stat plug.
+]);
+
+// Base-stat sockets only; equipped mods, masterwork and tuning are handled separately.
+const ARMOR3_STAT_SOCKET_TYPES = new Set([
+  2104613635, // armor_archetypes: archetype.
+  1271523453, // armor_stats: primary stat.
+  2212837421, // armor_stats: secondary stat.
+  3303600813, // armor_stats: tertiary stat.
+  4039767041, // intrinsics: first exotic class Spirit perk.
+  2771980068, // intrinsics: second exotic class Spirit perk.
+]);
+
+export function collectInvestmentStats(
   r: IInventoryArmor,
   itemInvestmentStats: DestinyItemInvestmentStatDefinition[],
   plugHashes: (number | undefined)[],
-  mods: Record<string, IManifestArmor>
+  mods: Record<string, IManifestArmor>,
+  socketTypeHashes: (number | undefined)[]
 ) {
   const investmentStats: { [id: number]: number } = {
     2996146975: 0,
@@ -116,11 +152,17 @@ function collectInvestmentStats(
       investmentStats[newStats.statTypeHash] += newStats.value;
   }
 
-  const plugs = [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]];
-  if (r.isExotic && r.slot === ArmorSlot.ArmorSlotClass) {
-    plugs.push(plugHashes[10]); // Exotic class item perk
-    plugs.push(plugHashes[11]); // Exotic class item perk
-  }
+  const statSocketPlugs = plugHashes.filter((_, index) => {
+    const socketType = socketTypeHashes[index];
+    return (
+      socketType !== undefined &&
+      (ARMOR2_STAT_SOCKET_TYPES.has(socketType) || ARMOR3_STAT_SOCKET_TYPES.has(socketType))
+    );
+  });
+  const plugs =
+    r.armorSystem === ArmorSystem.Armor1 && statSocketPlugs.length === 0
+      ? [plugHashes[6], plugHashes[7], plugHashes[8], plugHashes[9]]
+      : statSocketPlugs;
   r.statPlugHashes = plugs;
   var plm = plugs.map((k) => mods[k || ""]).filter((k) => k != null);
   for (let entry of plm) {
@@ -132,25 +174,13 @@ function collectInvestmentStats(
 
   applyInvestmentStats(r, investmentStats);
 
-  // TODO: THIS IS A QUICK HACK: FIX THIS
-  const investmentStatsOverZero = Object.entries(investmentStats).filter(([_, value]) => value > 0);
-  if (investmentStatsOverZero.length > 3) return;
-  r.archetypeStats = [];
-  const stats = [
-    ArmorStat.StatWeapon,
-    ArmorStat.StatHealth,
-    ArmorStat.StatClass,
-    ArmorStat.StatGrenade,
-    ArmorStat.StatSuper,
-    ArmorStat.StatMelee,
-  ];
-  for (let i = 0; i < stats.length; i++) {
-    const stat = stats[i];
-    const statHash = ArmorStatHashes[stat];
-    if (investmentStatsOverZero.find(([hash, _]) => parseInt(hash) == statHash)) {
-      r.archetypeStats.push(i);
-    }
-  }
+  const positiveStats = Object.entries(investmentStats)
+    .filter(([, value]) => value > 0)
+    .map(([hash]) => ArmorStatFromHash[Number(hash)])
+    .filter((stat): stat is ArmorStat => stat !== undefined)
+    .sort((left, right) => left - right);
+
+  r.archetypeStats = positiveStats.length <= 3 ? positiveStats : [];
 }
 
 @Injectable({
@@ -176,7 +206,7 @@ export class BungieApiService implements OnDestroy {
     private db: DatabaseService,
     private config: ConfigurationService,
     private membership: MembershipService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.logger.debug("BungieApiService", "constructor", "Initializing BungieApiService");
   }
@@ -313,9 +343,9 @@ export class BungieApiService implements OnDestroy {
       if (localStorage.getItem("d2ap-db-lastName") == this.db.inventoryArmor.db.name)
         if (
           Date.now() - Number.parseInt(localStorage.getItem("d2ap-inventory-lastDate") || "0") <
-          1000 * 3600 * 0.5
+          1000 * 60 * 5
         ) {
-          // Do not update if inventory was updated less than 30 minutes ago, unless forced to update. This is to avoid hitting rate limits and unnecessary processing
+          // Do not update if inventory was updated less than 5 minutes ago, unless forced to update. This is to avoid hitting rate limits and unnecessary processing
           this.logger.info(
             "BungieApiService",
             "updateInventory",
@@ -374,10 +404,15 @@ export class BungieApiService implements OnDestroy {
     unlockedExoticArmorItemHashes.forEach((id) => idSet.add(id));
 
     // Check if inventory has changed by comparing item hashes
-    const currentItemHashesKey = Array.from(idSet).sort().join(",");
+    const postmasterInstanceIds = allItems
+      .filter((item) => item.bucketHash === POSTMASTER_BUCKET_HASH)
+      .map((item) => item.itemInstanceId)
+      .sort()
+      .join(",");
+    const currentItemHashesKey = `${Array.from(idSet).sort().join(",")}|${postmasterInstanceIds}`;
     const cachedItemHashesKey = localStorage.getItem("user-armorItems") || "";
 
-    if (!force && currentItemHashesKey === cachedItemHashesKey && currentItemHashesKey.length > 0) {
+    if (!force && currentItemHashesKey == cachedItemHashesKey && currentItemHashesKey.length > 0) {
       this.logger.info(
         "BungieApiService",
         "updateInventory",
@@ -394,6 +429,12 @@ export class BungieApiService implements OnDestroy {
         "No changes in inventory detected, skipping processing"
       );
       return null;
+    } else {
+      this.logger.info(
+        "BungieApiService",
+        "updateInventory",
+        "Changes detected in inventory, processing armor items"
+      );
     }
 
     // Do not search directly in the DB, as it is VERY slow.
@@ -460,7 +501,7 @@ export class BungieApiService implements OnDestroy {
   ): IInventoryArmor[] {
     return allItems
       .filter((d) => !!d.itemInstanceId)
-      .filter((d) => d.bucketHash !== 3284755031) // Filter out subclasses
+      .filter((d) => d.bucketHash !== SUBCLASS_BUCKET_HASH)
       .filter((d) => {
         let statData = profile.Response.itemComponents.stats.data || {};
         let stats = statData[d.itemInstanceId || ""]?.stats || {};
@@ -473,8 +514,8 @@ export class BungieApiService implements OnDestroy {
         return !!instance.energy;
       })
       .map((d) => {
-        let instanceData = profile.Response.itemComponents.instances.data || {};
-        let instance = instanceData[d.itemInstanceId || ""] || {};
+        let instancesData = profile.Response.itemComponents.instances.data || {};
+        let instanceData = instancesData[d.itemInstanceId || ""] || {};
 
         if (!validManifestArmorMap[d.itemHash]) {
           this.logger.warn(
@@ -487,17 +528,19 @@ export class BungieApiService implements OnDestroy {
         let armorItem = createArmorItem(
           validManifestArmorMap[d.itemHash],
           d.itemInstanceId || "",
-          InventoryArmorSource.Inventory
+          d.bucketHash === POSTMASTER_BUCKET_HASH
+            ? InventoryArmorSource.Postmaster
+            : InventoryArmorSource.Inventory
         );
 
         // Process armor system and tuning stats
-        this.processArmorSystemAndTuning(armorItem, instance, profile, d, modsMap);
+        this.processArmorSystemAndTuning(armorItem, instanceData, profile, d, modsMap);
 
+        const sockets =
+          profile.Response.itemComponents.sockets.data?.[d.itemInstanceId!]?.sockets || [];
         // Process exotic class items
         if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
           armorItem.exoticPerkHash = [];
-          const sockets =
-            profile.Response.itemComponents.sockets.data?.[d.itemInstanceId!]?.sockets || [];
           for (const socket of sockets) {
             if (
               socket.plugHash &&
@@ -509,9 +552,17 @@ export class BungieApiService implements OnDestroy {
         }
 
         // Set energy level
-        armorItem.energyLevel = !!instance.energy ? instance.energy.energyCapacity : 0;
-
-        // Process investment stats, masterwork, and perks
+        armorItem.energyLevel = !!instanceData.energy ? instanceData.energy.energyCapacity : 0;
+        if (armorItem.gearSetPerkSelectable) {
+          let gearsetPerkIndex = validManifestArmorMap[d.itemHash].socketEntries.findIndex(
+            (s) => s.socketTypeHash == 1728849630
+          );
+          // Process investment stats, masterwork, and perks
+          let socketStatus = sockets[gearsetPerkIndex]?.isEnabled ?? false;
+          if (!socketStatus) {
+            armorItem.gearSetPerkSelectable = false;
+          }
+        }
         this.processStatsAndPerks(armorItem, d, profile, validManifestArmorMap, modsMap);
 
         return armorItem as IInventoryArmor;
@@ -526,41 +577,56 @@ export class BungieApiService implements OnDestroy {
     d: DestinyItemComponent,
     modsMap: Record<string, IManifestArmor>
   ): void {
-    // 3.0 armor system detection and tuning stat processing
-    if (!!(instance as any).gearTier) {
-      armorItem.armorSystem = ArmorSystem.Armor3;
-      armorItem.tier = (instance as any).gearTier;
+    // Armor 3.0 detection: socket-based (from the manifest, set in extractArmorDataFromManifest)
+    // OR a per-instance gearTier. Exotic class items have a tuning socket but no archetype socket.
+    const gearTier = (instance as any).gearTier as number | undefined;
+    const isArmor3 =
+      armorItem.armorSystem === ArmorSystem.Armor3 ||
+      !!armorItem.hasTuningSlot ||
+      !!armorItem.hasArchetypeSocket ||
+      !!gearTier ||
+      (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass);
 
-      // Grab the tuning stat from the reusable plugs
-      try {
-        const plugs =
-          profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
-        if (plugs) {
-          const availablePlugs = Object.values(plugs).find((value: any) => {
-            return value.length > 1 && value.some((p: any) => p.plugItemHash == 3122197216); // 3122197216 is the balanced tuning stat
-          }) as any[];
+    if (!isArmor3) {
+      armorItem.armorSystem = ArmorSystem.Armor2;
+      return;
+    }
 
-          if (availablePlugs && availablePlugs.length > 1) {
-            const pickedPlug = availablePlugs.find((p: any) => p.plugItemHash != 3122197216);
-            if (pickedPlug) {
-              const statCheckHash = pickedPlug.plugItemHash;
-              const mod = modsMap[statCheckHash];
-              const tuningStatHash = mod?.investmentStats.find((p) => p.value > 0)?.statTypeHash;
-              if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
-            }
+    armorItem.armorSystem = ArmorSystem.Armor3;
+
+    // Monument of Triumph: every (socket-detected) Armor 3.0 exotic is Tier 5 with access to
+    // ALL tuning mods. Force tier 5 regardless of gearTier; the optimizer handles the flexible
+    // +5/-5 tuning, so we deliberately leave tuningStat null for exotics (no single fixed stat).
+    if (armorItem.isExotic) {
+      armorItem.tier = 5;
+      return;
+    }
+
+    if (gearTier) armorItem.tier = gearTier;
+
+    // Legendaries: grab the (fixed) tuning stat from the reusable plugs.
+    try {
+      const plugs = profile.Response.itemComponents.reusablePlugs.data?.[d.itemInstanceId!]?.plugs;
+      if (plugs) {
+        const availablePlugs = Object.values(plugs).find((value: any) => {
+          return value.length > 1 && value.some((p: any) => p.plugItemHash == 3122197216); // balanced tuning
+        }) as any[];
+
+        if (availablePlugs && availablePlugs.length > 1) {
+          const pickedPlug = availablePlugs.find((p: any) => p.plugItemHash != 3122197216);
+          if (pickedPlug) {
+            const mod = modsMap[pickedPlug.plugItemHash];
+            const tuningStatHash = mod?.investmentStats.find((p) => p.value > 0)?.statTypeHash;
+            if (tuningStatHash) armorItem.tuningStat = ArmorStatFromHash[tuningStatHash];
           }
         }
-      } catch (e) {
-        this.logger.error(
-          "BungieApiService",
-          "updateInventory",
-          `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
-        );
       }
-    } else if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
-      armorItem.armorSystem = ArmorSystem.Armor3;
-    } else {
-      armorItem.armorSystem = ArmorSystem.Armor2;
+    } catch (e) {
+      this.logger.error(
+        "BungieApiService",
+        "updateInventory",
+        `Error while getting tuning stat for item ${d.itemInstanceId}: ${e}`
+      );
     }
   }
 
@@ -580,40 +646,15 @@ export class BungieApiService implements OnDestroy {
       armorItem,
       validManifestArmorMap[d.itemHash]?.investmentStats ?? [],
       socketsList,
-      modsMap
+      modsMap,
+      (validManifestArmorMap[d.itemHash]?.socketEntries ?? []).map((s) => s.socketTypeHash)
     );
 
-    // Process exotic class item archetype stats
-    if (armorItem.isExotic && armorItem.slot === ArmorSlot.ArmorSlotClass) {
-      let statData = profile.Response.itemComponents.stats.data || {};
-      let stats = statData[d.itemInstanceId || ""]?.stats || {};
-
-      for (let n = 0; n < 7; n++) {
-        const sock = sockets[d.itemInstanceId!]?.sockets[n];
-        if (!sock || !sock.plugHash) continue;
-        const mod = modsMap[sock.plugHash];
-        if (!mod) continue;
-        if (mod.investmentStats.length == 0) continue;
-        for (const stat of mod.investmentStats) {
-          if (stat.statTypeHash in stats) {
-            (stats[stat.statTypeHash] as any).value -= stat.value;
-          }
-        }
-      }
-      // Sort the stats by value in descending order and get the third highest value
-      const sortedStats = Object.entries(stats)
-        .map(([hash, statObj]) => ({ hash: parseInt(hash), value: (statObj as any).value }))
-        .sort((a, b) => b.value - a.value);
-
-      if (sortedStats.length >= 3) {
-        const thirdHighestStatHash = sortedStats[2].hash;
-        armorItem.archetypeStats.push(Object.values(ArmorStatHashes).indexOf(thirdHighestStatHash));
-
-        const investmentStat = getInvestmentStats(armorItem);
-        investmentStat[thirdHighestStatHash] += 13;
-        applyInvestmentStats(armorItem, investmentStat);
-      }
-    }
+    // Exotic class items are treated like normal armor now (Monument of Triumph): their stats
+    // come from the "Spirit of..." perks via collectInvestmentStats, and processArmorSystemAndTuning
+    // gives them Tier 5 + flexible tuning. The legacy "+13 to the 3rd-highest stat" approximation
+    // (an EoF-era hack flagged "TODO: must be tiered") is removed — it has no basis in the current
+    // manifest (class items carry zero base armor stats; the archetype socket rolls nothing).
 
     // Process masterwork level
     for (let socket of socketsList) {
@@ -675,7 +716,8 @@ export class BungieApiService implements OnDestroy {
           collectionItem,
           manifestArmorItem.investmentStats,
           manifestArmorItem.socketEntries.map((s) => s.singleInitialItemHash),
-          modsMap
+          modsMap,
+          manifestArmorItem.socketEntries.map((s) => s.socketTypeHash)
         );
 
         return collectionItem;
@@ -684,7 +726,12 @@ export class BungieApiService implements OnDestroy {
   }
 
   private async updateDatabaseItems(newItems: IInventoryArmor[]) {
-    await this.db.inventoryArmor.filter((d) => d.source == InventoryArmorSource.Inventory).delete();
+    await this.db.inventoryArmor
+      .filter(
+        (d) =>
+          d.source == InventoryArmorSource.Inventory || d.source == InventoryArmorSource.Postmaster
+      )
+      .delete();
     await this.db.inventoryArmor
       .filter((d) => d.source == InventoryArmorSource.Collections)
       .delete();
@@ -799,7 +846,549 @@ export class BungieApiService implements OnDestroy {
     return ArmorPerkOrSlot.None;
   }
 
-  private async updateVendorNames(
+  /**
+   * Check if WASM is supported in this environment
+   */
+  private canUseWASM(): boolean {
+    try {
+      // Check for WebAssembly support
+      if (typeof WebAssembly !== "object" || WebAssembly === null) {
+        this.logger.warn("BungieApiService", "canUseWASM", "WebAssembly not supported");
+        return false;
+      }
+
+      // Check for required APIs
+      if (typeof WebAssembly.instantiate !== "function") {
+        this.logger.warn("BungieApiService", "canUseWASM", "WebAssembly.instantiate not available");
+        return false;
+      }
+
+      // Check if we're in a web worker or other restricted environment
+      if (typeof window === "undefined" && typeof self === "undefined") {
+        this.logger.warn("BungieApiService", "canUseWASM", "No global context available");
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.warn(
+        "BungieApiService",
+        "canUseWASM",
+        `WASM compatibility check failed: ${error}`
+      );
+      return false;
+    }
+  }
+
+  private async downloadAndProcessSQLiteManifest(
+    manifest: DestinyManifest,
+    language: string
+  ): Promise<Database> {
+    const sqlitePath = manifest.mobileWorldContentPaths[language];
+    const fullUrl = `https://www.bungie.net${sqlitePath}`;
+
+    this.logger.info(
+      "BungieApiService",
+      "downloadAndProcessSQLiteManifest",
+      `Downloading SQLite manifest ZIP from: ${fullUrl}`
+    );
+
+    // Download the ZIP file containing the SQLite database
+    const response = await fetch(fullUrl);
+    const zipArrayBuffer = await response.arrayBuffer();
+
+    // Extract SQLite database from ZIP
+    const JSZipModule = await import("jszip");
+    // Handle different export patterns (ESM default vs CJS)
+    const JSZip =
+      (JSZipModule as any).default ||
+      (JSZipModule as any).JSZip ||
+      (JSZipModule as any) ||
+      JSZipModule;
+    const zip = new JSZip();
+    const loadedZip = await zip.loadAsync(zipArrayBuffer);
+
+    // Find the SQLite database file in the ZIP (usually has .content extension)
+    const dbFileName = Object.keys(loadedZip.files).find(
+      (name) => name.endsWith(".content") || name.endsWith(".db") || name.endsWith(".sqlite")
+    );
+
+    if (!dbFileName) {
+      throw new Error("Could not find SQLite database file in manifest ZIP");
+    }
+
+    this.logger.info(
+      "BungieApiService",
+      "downloadAndProcessSQLiteManifest",
+      `Extracting SQLite database: ${dbFileName}`
+    );
+
+    // Extract the SQLite database
+    const dbFile = loadedZip.files[dbFileName];
+    const uint8Array = await dbFile.async("uint8array");
+
+    // Initialize SQL.js with explicit WASM loading
+    try {
+      const initSqlJs = await import("sql.js");
+
+      // Try loading WASM file explicitly
+      const wasmResponse = await fetch("assets/sql-wasm.wasm");
+      const wasmBuffer = await wasmResponse.arrayBuffer();
+
+      const SQL = await initSqlJs.default({
+        wasmBinary: wasmBuffer,
+      });
+      const db = new SQL.Database(uint8Array);
+
+      this.logger.info(
+        "BungieApiService",
+        "downloadAndProcessSQLiteManifest",
+        "SQLite database initialized successfully"
+      );
+
+      return db;
+    } catch (error) {
+      this.logger.error(
+        "BungieApiService",
+        "downloadAndProcessSQLiteManifest",
+        `Failed to initialize SQL.js with WASM: ${error}`
+      );
+      throw error;
+    }
+  }
+
+  private async updateVendorNamesFromSQLite(db: Database) {
+    const result = db.exec("SELECT json FROM DestinyVendorDefinition");
+    const vendorInfo: IVendorInfo[] = [];
+
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const vendor = JSON.parse(row[0] as string);
+        vendorInfo.push({
+          vendorId: vendor.hash,
+          vendorName: vendor.displayProperties.name,
+          vendorDescription: vendor.displayProperties.description,
+          vendorIdentifier: vendor.vendorIdentifier,
+        });
+      }
+    }
+
+    this.logger.info(
+      "BungieApiService",
+      "updateVendorNamesFromSQLite",
+      `Storing ${vendorInfo.length} vendor names in localStorage`
+    );
+    await this.db.vendorNames.clear();
+    await this.db.vendorNames.bulkAdd(vendorInfo);
+  }
+
+  private async updateVendorItemSubScreensFromSQLite(db: Database) {
+    const result = db.exec(`
+      SELECT id, json FROM DestinyInventoryItemDefinition 
+      WHERE json LIKE '%"preview":%' 
+      AND json LIKE '%"previewVendorHash":%'
+      AND JSON_EXTRACT(json, '$.preview.previewVendorHash') IS NOT NULL
+      AND JSON_EXTRACT(json, '$.preview.previewVendorHash') != 0
+    `);
+
+    const vendorItemSubscreen: IVendorItemSubscreen[] = [];
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const item = JSON.parse(row[1] as string);
+        vendorItemSubscreen.push({
+          itemHash: item.hash,
+          vendorHash: item.preview.previewVendorHash,
+        });
+      }
+    }
+
+    await this.db.vendorItemSubscreen.clear();
+    this.logger.info(
+      "BungieApiService",
+      "updateVendorItemSubScreensFromSQLite",
+      `Storing ${vendorItemSubscreen.length} vendor item subscreens in localStorage`
+    );
+    await this.db.vendorItemSubscreen.bulkPut(vendorItemSubscreen);
+  }
+
+  private async updateAbilitiesFromSQLite(db: Database) {
+    const result = db.exec(`
+      SELECT json FROM DestinyInventoryItemDefinition 
+      WHERE json LIKE '%"plugCategoryIdentifier":%' 
+      AND (
+        json LIKE '%".supers"%' OR 
+        json LIKE '%".grenades"%' OR 
+        json LIKE '%".class_abilities"%' OR 
+        json LIKE '%".melee"%' OR 
+        json LIKE '%".aspects"%' OR 
+        json LIKE '%".fragments"%'
+      )
+    `);
+
+    const allAbilities: any[] = [];
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const item = JSON.parse(row[0] as string);
+        allAbilities.push(item);
+      }
+    }
+
+    this.logger.info(
+      "BungieApiService",
+      "updateAbilitiesFromSQLite",
+      `Storing ${allAbilities.length} ability hashes in database`
+    );
+    await this.db.writeCharacterAbilities(allAbilities);
+  }
+
+  private async updateExoticCollectiblesFromSQLite(db: Database) {
+    const result = db.exec(`
+      SELECT c.id as collectible_hash, c.json as collectible_json, i.json as item_json
+      FROM DestinyCollectibleDefinition c
+      JOIN DestinyInventoryItemDefinition i ON JSON_EXTRACT(c.json, '$.itemHash') = i.id
+      WHERE JSON_EXTRACT(i.json, '$.inventory.tierType') = 6 
+      AND JSON_EXTRACT(i.json, '$.itemType') = 2
+    `);
+
+    const exoticArmorCollectibles: IManifestCollectible[] = [];
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const collectibleHash = row[0] as number;
+        const collectibleData = JSON.parse(row[1] as string);
+        exoticArmorCollectibles.push({
+          hash: collectibleHash,
+          itemHash: collectibleData.itemHash,
+        });
+      }
+    }
+
+    this.logger.info(
+      "BungieApiService",
+      "updateExoticCollectiblesFromSQLite",
+      `Storing ${exoticArmorCollectibles.length} exotic armor hashes`
+    );
+    await this.db.manifestCollectibles.clear();
+    await this.db.manifestCollectibles.bulkPut(exoticArmorCollectibles);
+  }
+
+  private updateSandboxPerksFromSQLite(db: Database) {
+    const result = db.exec("SELECT json FROM DestinySandboxPerkDefinition");
+    const mappedSandboxPerks: DestinySandboxPerkDefinition[] = [];
+
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        mappedSandboxPerks.push(JSON.parse(row[0] as string));
+      }
+    }
+
+    if (mappedSandboxPerks.length === 0) {
+      this.logger.warn(
+        "BungieApiService",
+        "updateSandboxPerksFromSQLite",
+        "No sandbox perks found in database"
+      );
+      return;
+    }
+
+    this.db.sandboxPerkDefinition.clear();
+    this.logger.info(
+      "BungieApiService",
+      "updateSandboxPerksFromSQLite",
+      `Storing ${mappedSandboxPerks.length} sandbox perks in localStorage`
+    );
+    this.db.sandboxPerkDefinition.bulkPut(mappedSandboxPerks);
+  }
+
+  private updateEquipableItemSetDefinitionsFromSQLite(db: Database) {
+    const result = db.exec("SELECT json FROM DestinyEquipableItemSetDefinition");
+    const mapped: DestinyEquipableItemSetDefinition[] = [];
+
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        mapped.push(JSON.parse(row[0] as string));
+      }
+    }
+
+    if (mapped.length === 0) {
+      this.logger.warn(
+        "BungieApiService",
+        "updateEquipableItemSetDefinitionsFromSQLite",
+        "No equipable item set definitions found in database"
+      );
+      return;
+    }
+
+    const itemHashes = Array.from(new Set(mapped.flatMap((set) => set.setItems)));
+    const itemResult = itemHashes.length
+      ? db.exec(
+          `SELECT json FROM DestinyInventoryItemDefinition WHERE JSON_EXTRACT(json, '$.hash') IN (${itemHashes.join(",")})`
+        )
+      : [];
+    const items = itemResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const sourceResult = db.exec("SELECT json FROM DestinyRewardSourceDefinition");
+    const rewardSources =
+      sourceResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const collectibleResult = db.exec("SELECT json FROM DestinyCollectibleDefinition");
+    const collectibles =
+      collectibleResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const activityGraphResult = db.exec(
+      "SELECT json FROM DestinyFireteamFinderActivityGraphDefinition"
+    );
+    const activityGraphs =
+      activityGraphResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const presentationNodeResult = db.exec("SELECT json FROM DestinyPresentationNodeDefinition");
+    const presentationNodes =
+      presentationNodeResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const destinationResult = db.exec("SELECT json FROM DestinyDestinationDefinition");
+    const destinations =
+      destinationResult[0]?.values.map((row: unknown[]) => JSON.parse(row[0] as string)) ?? [];
+    const manifestData: GearSetAcquisitionManifestData = {
+      rewardSources,
+      collectibles,
+      activityLocations: [...activityGraphs, ...presentationNodes],
+      worldLocations: destinations,
+    };
+    const acquisitionMap = createGearSetAcquisitionMap(mapped, items, manifestData);
+    const mappedWithSources = mapped.map((set) => ({
+      ...set,
+      acquisitionSources: acquisitionMap.get(set.hash)?.sources ?? [],
+    }));
+
+    this.db.equipableItemSetDefinition.clear();
+    this.logger.info(
+      "BungieApiService",
+      "updateEquipableItemSetDefinitionsFromSQLite",
+      `Storing ${mappedWithSources.length} equipable item set definitions in localStorage`
+    );
+    this.db.equipableItemSetDefinition.bulkPut(mappedWithSources);
+  }
+
+  private async extractArmorDataFromSQLiteManifest(db: Database) {
+    // Load supporting tables for lookups during processing
+    const collectiblesMap: Record<number, DestinyCollectibleDefinition> = {};
+    const presentationNodesMap: Record<number, DestinyPresentationNodeDefinition> = {};
+    const socketTypesMap: Record<number, DestinySocketTypeDefinition> = {};
+    const equipableItemSetsArray: DestinyEquipableItemSetDefinition[] = [];
+
+    // Load supporting data efficiently
+    const collectiblesResult = db.exec("SELECT json FROM DestinyCollectibleDefinition");
+    if (collectiblesResult.length > 0) {
+      for (const row of collectiblesResult[0].values) {
+        const collectible = JSON.parse(row[0] as string);
+        collectiblesMap[collectible.hash] = collectible;
+      }
+    }
+
+    const presentationNodesResult = db.exec("SELECT json FROM DestinyPresentationNodeDefinition");
+    if (presentationNodesResult.length > 0) {
+      for (const row of presentationNodesResult[0].values) {
+        const node = JSON.parse(row[0] as string);
+        presentationNodesMap[node.hash] = node;
+      }
+    }
+
+    const socketTypesResult = db.exec("SELECT json FROM DestinySocketTypeDefinition");
+    if (socketTypesResult.length > 0) {
+      for (const row of socketTypesResult[0].values) {
+        const socketType = JSON.parse(row[0] as string);
+        socketTypesMap[socketType.hash] = socketType;
+      }
+    }
+
+    const equipableItemSetsResult = db.exec("SELECT json FROM DestinyEquipableItemSetDefinition");
+    if (equipableItemSetsResult.length > 0) {
+      for (const row of equipableItemSetsResult[0].values) {
+        const equipableItemSet = JSON.parse(row[0] as string);
+        equipableItemSetsArray.push(equipableItemSet);
+      }
+    }
+
+    // Query for relevant items using SQL filtering
+    const result = db.exec(`
+      SELECT json FROM DestinyInventoryItemDefinition 
+      WHERE 
+        JSON_EXTRACT(json, '$.itemType') = 19 OR  -- mods
+        (JSON_EXTRACT(json, '$.itemType') = 16 AND json LIKE '%"itemCategoryHashes"%' AND json LIKE '%50%') OR  -- subclasses
+        JSON_EXTRACT(json, '$.itemType') = 2 OR  -- armor
+        JSON_EXTRACT(json, '$.inventory.bucketTypeHash') = 3448274439 OR  -- helmets
+        JSON_EXTRACT(json, '$.inventory.bucketTypeHash') = 3551918588 OR  -- gauntlets
+        JSON_EXTRACT(json, '$.inventory.bucketTypeHash') = 14239492 OR   -- chest
+        JSON_EXTRACT(json, '$.inventory.bucketTypeHash') = 20886954 OR   -- legs
+        (JSON_EXTRACT(json, '$.inventory.bucketTypeHash') = 1585787867 AND JSON_EXTRACT(json, '$.inventory.tierType') = 6)  -- exotic class items
+    `);
+
+    // NOTE: This is also storing emotes, as these have itemType 19 (mods)
+    const entries: IManifestArmor[] = [];
+
+    if (result.length > 0) {
+      for (const row of result[0].values) {
+        const v: DestinyInventoryItemDefinition = JSON.parse(row[0] as string);
+
+        if (
+          v.itemType == 16 &&
+          (!v.itemCategoryHashes || v.itemCategoryHashes.indexOf(50) === -1)
+        ) {
+          continue;
+        }
+
+        let slot = ArmorSlot.ArmorSlotNone;
+        if (
+          v.inventory?.bucketTypeHash == 3448274439 ||
+          (v.itemCategoryHashes?.indexOf(45) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotHelmet;
+        if (
+          v.inventory?.bucketTypeHash == 3551918588 ||
+          (v.itemCategoryHashes?.indexOf(46) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotGauntlet;
+        if (
+          v.inventory?.bucketTypeHash == 14239492 ||
+          (v.itemCategoryHashes?.indexOf(47) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotChest;
+        if (
+          v.inventory?.bucketTypeHash == 20886954 ||
+          (v.itemCategoryHashes?.indexOf(48) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotLegs;
+        if (
+          v.inventory?.bucketTypeHash == 1585787867 ||
+          (v.itemCategoryHashes?.indexOf(49) || -1) > -1
+        )
+          slot = ArmorSlot.ArmorSlotClass;
+
+        const isArmor2 =
+          (
+            v.sockets?.socketEntries.filter((d) => {
+              return (
+                d.socketTypeHash == 2512726577 || // general
+                d.socketTypeHash == 1108765570 || // arms
+                d.socketTypeHash == 959256494 || // chest
+                d.socketTypeHash == 2512726577 || // class
+                d.socketTypeHash == 3219375296 || // legs
+                d.socketTypeHash == 968742181 // head
+              );
+            }) || []
+          ).length > 0;
+
+        const isExotic = v.inventory?.tierType == 6;
+        let exoticPerkHash: number[] = [];
+        if (isExotic) {
+          const perks =
+            v.sockets?.socketEntries
+              .filter((s) => s.socketTypeHash == 965959289)
+              .map((d) => d.singleInitialItemHash) || [];
+          exoticPerkHash = perks.filter((p) => p !== undefined && p !== null);
+        }
+
+        var sunsetPowerCaps = [
+          1862490585, // 1260
+          1862490584, // 1060
+          1862490584, // 1060
+          1862490583, // 1060
+          2471437758, // 1010
+        ];
+        // if every entry is sunset, so is this item.
+        var isSunset =
+          v.quality?.versions.filter((k) => sunsetPowerCaps.includes(k.powerCapHash)).length ==
+          v.quality?.versions.length;
+
+        var clasz = v.classType;
+        if (clasz == DestinyClass.Unknown && isArmor2) {
+          if (v.collectibleHash != undefined) {
+            let presentationParentNode = collectiblesMap[v.collectibleHash]?.parentNodeHashes;
+            if (presentationParentNode !== undefined) {
+              if (
+                presentationParentNode.findIndex(
+                  (x) => presentationNodesMap[x]?.displayProperties.name == "Warlock"
+                ) != -1
+              )
+                clasz = DestinyClass.Warlock;
+              if (
+                presentationParentNode.findIndex(
+                  (x) => presentationNodesMap[x]?.displayProperties.name == "Titan"
+                ) != -1
+              )
+                clasz = DestinyClass.Titan;
+              if (
+                presentationParentNode.findIndex(
+                  (x) => presentationNodesMap[x]?.displayProperties.name == "Hunter"
+                ) != -1
+              )
+                clasz = DestinyClass.Hunter;
+            }
+          }
+
+          if (clasz == DestinyClass.Unknown && isArmor2) {
+            v.sockets?.socketEntries.forEach((a) => {
+              let socketDef = socketTypesMap[a.socketTypeHash];
+              if (socketDef !== undefined) {
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("warlock")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Warlock;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("titan")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Titan;
+                  return;
+                }
+                if (
+                  socketDef.plugWhitelist.findIndex((x) =>
+                    x.categoryIdentifier.includes("hunter")
+                  ) != -1
+                ) {
+                  clasz = DestinyClass.Hunter;
+                  return;
+                }
+              }
+            });
+          }
+        }
+
+        const isFeatured = !!(v as any)?.isFeaturedItem;
+
+        const gearSetSelectable = v.sockets?.socketEntries.some(
+          (s) => s.socketTypeHash == 1728849630
+        );
+
+        entries.push({
+          hash: v.hash,
+          icon: v.displayProperties.icon,
+          watermarkIcon: isFeatured ? (v as any).iconWatermarkFeatured : v.iconWatermark,
+          name: v.displayProperties.name,
+          description: v.displayProperties.description,
+          clazz: clasz,
+          armorSystem: isArmor2 ? 2 : 1, // TODO: There may be a smarter way
+          slot: slot,
+          isExotic: isExotic ? 1 : 0,
+          isSunset: isSunset,
+          rarity: v.inventory?.tierType,
+          exoticPerkHash: exoticPerkHash,
+          itemType: v.itemType,
+          itemSubType: v.itemSubType,
+          investmentStats: v.investmentStats,
+          // TODO: fix as soon as DIM Api is updated
+          perk: this.getArmorPerk(v),
+          socketEntries: v.sockets?.socketEntries ?? [],
+          isFeatured: isFeatured,
+          gearSetHash: this.getGearSet(v, equipableItemSetsArray),
+          gearSetPerkSelectable: gearSetSelectable,
+        } as IManifestArmor);
+      }
+    }
+
+    return entries;
+  }
+
+  private async updateVendorNamesFromJSON(
     manifestTables: DestinyManifestSlice<"DestinyVendorDefinition"[]>
   ) {
     const vendors = manifestTables.DestinyVendorDefinition;
@@ -822,7 +1411,7 @@ export class BungieApiService implements OnDestroy {
     await this.db.vendorNames.bulkAdd(vendorInfo);
   }
 
-  private async updateVendorItemSubScreens(
+  private async updateVendorItemSubScreensFromJSON(
     manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
   ) {
     const items = Object.values(manifestTables.DestinyInventoryItemDefinition);
@@ -844,7 +1433,7 @@ export class BungieApiService implements OnDestroy {
     await this.db.vendorItemSubscreen.bulkPut(vendorItemSubscreen);
   }
 
-  private async updateAbilities(
+  private async updateAbilitiesFromJSON(
     manifestTables: DestinyManifestSlice<"DestinyInventoryItemDefinition"[]>
   ) {
     const allAbilities = Object.values(manifestTables.DestinyInventoryItemDefinition).filter(
@@ -865,7 +1454,7 @@ export class BungieApiService implements OnDestroy {
 
   // Collect the data for exotic armor collectibles
   // this allows us to map a collection entry hash to the associated armor inventory item hash
-  private async updateExoticCollectibles(
+  private async updateExoticCollectiblesFromJSON(
     manifestTables: DestinyManifestSlice<
       ("DestinyCollectibleDefinition" | "DestinyInventoryItemDefinition")[]
     >
@@ -895,7 +1484,7 @@ export class BungieApiService implements OnDestroy {
 
   isManifestCacheValid(manifestCache: { updatedAt: number; version: string }) {
     if (environment.offlineMode) {
-      this.logger.info(
+      this.logger.debug(
         "BungieApiService",
         "isManifestCacheValid",
         "marking manifest cache as valid due to offline mode"
@@ -903,7 +1492,7 @@ export class BungieApiService implements OnDestroy {
       return true;
     }
     if (Date.now() - manifestCache.updatedAt < 1000 * 3600 * 24) {
-      this.logger.info(
+      this.logger.debug(
         "BungieApiService",
         "isManifestCacheValid",
         "marking manifest cache as valid, Manifest is less than a day old"
@@ -915,7 +1504,7 @@ export class BungieApiService implements OnDestroy {
 
   isCharacterCacheValid(characterCache: { updatedAt: number; characters: any[] }) {
     if (environment.offlineMode) {
-      this.logger.info(
+      this.logger.debug(
         "BungieApiService",
         "isCharacterCacheValid",
         "marking character cache as valid due to offline mode"
@@ -925,7 +1514,7 @@ export class BungieApiService implements OnDestroy {
 
     // Check if we have cached characters data
     if (!characterCache || !characterCache.characters || characterCache.characters.length === 0) {
-      this.logger.info(
+      this.logger.debug(
         "BungieApiService",
         "isCharacterCacheValid",
         "no character data in cache, marking as invalid"
@@ -935,7 +1524,7 @@ export class BungieApiService implements OnDestroy {
 
     // Character data is considered valid for 24 hours (same as manifest cache)
     if (Date.now() - characterCache.updatedAt < 1000 * 3600 * 24) {
-      this.logger.info(
+      this.logger.debug(
         "BungieApiService",
         "isCharacterCacheValid",
         "marking character cache as valid, Character data is less than a day old"
@@ -945,9 +1534,7 @@ export class BungieApiService implements OnDestroy {
     return false;
   }
 
-  async updateManifest(
-    force = false
-  ): Promise<DestinyManifestSlice<(keyof AllDestinyManifestComponents)[]> | null> {
+  async updateManifest(force = false): Promise<boolean> {
     const manifestCache = this.db.lastManifestUpdate();
     let destinyManifest = null;
     if (manifestCache && !force) {
@@ -982,7 +1569,7 @@ export class BungieApiService implements OnDestroy {
           this.manifestAlreadyUpdated = true;
           this.manifestUpdatedSubject.next();
         }
-        return null;
+        return false;
       }
     }
 
@@ -997,27 +1584,80 @@ export class BungieApiService implements OnDestroy {
       `Manifest version: ${destinyManifest.Response.version}`
     );
 
-    const manifestTables1 = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
+    // Try SQLite first if WASM is supported, fallback to slice manifest
+    const canUseSQLite = this.canUseWASM();
+    let manifestTables: DestinyManifestSlice<(keyof AllDestinyManifestComponents)[]> | null = null;
+
+    if (canUseSQLite) {
+      try {
+        this.logger.info(
+          "BungieApiService",
+          "updateManifest",
+          "WASM supported, attempting SQLite manifest download"
+        );
+
+        // Download SQLite database
+        const db = await this.downloadAndProcessSQLiteManifest(destinyManifest.Response, "en");
+
+        this.logger.info(
+          "BungieApiService",
+          "updateManifest",
+          "SQLite manifest database downloaded successfully, processing data"
+        );
+
+        try {
+          // Process all data using SQLite methods
+          await this.updateAbilitiesFromSQLite(db);
+          await this.updateExoticCollectiblesFromSQLite(db);
+          await this.updateVendorNamesFromSQLite(db);
+          await this.updateVendorItemSubScreensFromSQLite(db);
+          this.updateEquipableItemSetDefinitionsFromSQLite(db);
+          this.updateSandboxPerksFromSQLite(db);
+
+          const manifestVersion = destinyManifest.Response.version;
+          let entries = await this.extractArmorDataFromSQLiteManifest(db);
+
+          await this.db.writeManifestArmor(entries, manifestVersion);
+        } finally {
+          // Clean up database connection
+          if (db && typeof db.close === "function") {
+            db.close();
+          }
+        }
+
+        this.manifestUpdatedSubject.next();
+        return true;
+      } catch (sqliteError) {
+        this.logger.warn(
+          "BungieApiService",
+          "updateManifest",
+          `SQLite manifest processing failed, falling back to slice manifest: ${sqliteError}`
+        );
+        // Continue to fallback method below
+      }
+    } else {
+      this.logger.info(
+        "BungieApiService",
+        "updateManifest",
+        "WASM not supported or disabled, using slice manifest"
+      );
+    }
+
+    // Fallback to original slice manifest method
+    this.logger.info("BungieApiService", "updateManifest", "Using slice manifest method");
+
+    manifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
       destinyManifest: destinyManifest.Response,
       tableNames: [
         "DestinyInventoryItemDefinition",
         "DestinyCollectibleDefinition",
-      ] as any as DestinyManifestComponentName[],
-      language: "en",
-    });
-    this.logger.info(
-      "BungieApiService",
-      "updateManifest",
-      `Fetched manifest tables: ${Object.keys(manifestTables1).join(", ")}`
-    );
-    await this.updateAbilities(manifestTables1);
-
-    const manifestTables2 = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
-      destinyManifest: destinyManifest.Response,
-      tableNames: [
         "DestinyVendorDefinition",
         "DestinySocketTypeDefinition",
         "DestinyEquipableItemSetDefinition",
+        "DestinyRewardSourceDefinition",
+        "DestinyFireteamFinderActivityGraphDefinition",
+        "DestinyPresentationNodeDefinition",
+        "DestinyDestinationDefinition",
         "DestinySandboxPerkDefinition",
       ] as any as DestinyManifestComponentName[],
       language: "en",
@@ -1025,39 +1665,29 @@ export class BungieApiService implements OnDestroy {
     this.logger.info(
       "BungieApiService",
       "updateManifest",
-      `Fetched manifest tables: ${Object.keys(manifestTables2).join(", ")}`
+      `Fetched manifest tables: ${Object.keys(manifestTables).join(", ")}`
     );
 
-    // Call updates on individual manifest tables before merging
-    await this.updateVendorNames(manifestTables2);
-    await this.updateEquipableItemSetDefinitions(manifestTables2);
-    await this.updateSandboxPerks(manifestTables2);
-
-    const manifestTables = { ...manifestTables1, ...manifestTables2 };
-
-    // Call updates that require data from both manifest tables
-    await this.updateExoticCollectibles(manifestTables);
-    await this.updateVendorItemSubScreens(manifestTables);
+    // Call updates on individual manifest tables
+    await this.updateAbilitiesFromJSON(manifestTables);
+    await this.updateExoticCollectiblesFromJSON(manifestTables);
+    await this.updateVendorNamesFromJSON(manifestTables);
+    await this.updateVendorItemSubScreensFromJSON(manifestTables);
+    this.updateEquipableItemSetDefinitionsFromJSON(manifestTables);
+    this.updateSandboxPerksFromJSON(manifestTables);
 
     const manifestVersion = destinyManifest.Response.version;
 
-    let entries = await this.extractArmorDataFromManifest(destinyManifest, manifestTables);
+    let entries = await this.extractArmorDataFromJSONManifest(manifestTables);
 
     await this.db.writeManifestArmor(entries, manifestVersion);
     this.manifestUpdatedSubject.next();
-    return manifestTables;
+    return true;
   }
 
-  private async extractArmorDataFromManifest(
-    destinyManifest: ServerResponse<DestinyManifest>,
+  private async extractArmorDataFromJSONManifest(
     manifestTables: DestinyManifestSlice<(keyof AllDestinyManifestComponents)[]>
   ) {
-    const enManifestTables = await getDestinyManifestSlice((d) => this.http.$httpWithoutApiKey(d), {
-      destinyManifest: destinyManifest.Response,
-      tableNames: ["DestinyCollectibleDefinition", "DestinyPresentationNodeDefinition"],
-      language: "en",
-    });
-
     // NOTE: This is also storing emotes, as these have itemType 19 (mods)
     let entries = Object.entries(manifestTables.DestinyInventoryItemDefinition)
       .filter(([k, v]) => {
@@ -1140,12 +1770,12 @@ export class BungieApiService implements OnDestroy {
         if (clasz == DestinyClass.Unknown && isArmor2) {
           if (v.collectibleHash != undefined) {
             let presentationParentNode =
-              enManifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
+              manifestTables.DestinyCollectibleDefinition[v.collectibleHash].parentNodeHashes;
             if (presentationParentNode !== undefined) {
               if (
                 presentationParentNode.findIndex(
                   (x) =>
-                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    manifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
                     "Warlock"
                 ) != -1
               )
@@ -1153,7 +1783,7 @@ export class BungieApiService implements OnDestroy {
               if (
                 presentationParentNode.findIndex(
                   (x) =>
-                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    manifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
                     "Titan"
                 ) != -1
               )
@@ -1161,7 +1791,7 @@ export class BungieApiService implements OnDestroy {
               if (
                 presentationParentNode.findIndex(
                   (x) =>
-                    enManifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
+                    manifestTables.DestinyPresentationNodeDefinition[x].displayProperties.name ==
                     "Hunter"
                 ) != -1
               )
@@ -1203,6 +1833,9 @@ export class BungieApiService implements OnDestroy {
         }
 
         const isFeatured = !!(v as any)?.isFeaturedItem;
+        const armor3 = detectArmor3Sockets(v.sockets?.socketEntries, (h) =>
+          h ? (manifestTables.DestinyInventoryItemDefinition as any)[h] : undefined
+        );
         return {
           hash: v.hash,
           icon: v.displayProperties.icon,
@@ -1210,7 +1843,16 @@ export class BungieApiService implements OnDestroy {
           name: v.displayProperties.name,
           description: v.displayProperties.description,
           clazz: clasz,
-          armorSystem: isArmor2 ? 2 : 1, // TODO: There may be a smarter way
+          // Armor 3.0 is detected data-driven via socket presence; fall back to the
+          // legacy 1.0/2.0 socket heuristic for pre-3.0 items.
+          armorSystem:
+            armor3.hasArchetypeSocket || armor3.hasTuningSlot
+              ? ArmorSystem.Armor3
+              : isArmor2
+                ? ArmorSystem.Armor2
+                : ArmorSystem.Armor1,
+          hasTuningSlot: armor3.hasTuningSlot,
+          hasArchetypeSocket: armor3.hasArchetypeSocket,
           slot: slot,
           isExotic: isExotic ? 1 : 0,
           isSunset: isSunset,
@@ -1243,12 +1885,15 @@ export class BungieApiService implements OnDestroy {
     }
     return null;
   }
-  updateSandboxPerks(manifestTables: DestinyManifestSlice<"DestinySandboxPerkDefinition"[]>) {
+
+  updateSandboxPerksFromJSON(
+    manifestTables: DestinyManifestSlice<"DestinySandboxPerkDefinition"[]>
+  ) {
     const sandboxPerks = manifestTables.DestinySandboxPerkDefinition;
     if (!sandboxPerks) {
       this.logger.warn(
         "BungieApiService",
-        "updateSandboxPerks",
+        "updateSandboxPerksFromJSON",
         "No sandbox perks found in manifest"
       );
       return;
@@ -1266,7 +1911,8 @@ export class BungieApiService implements OnDestroy {
     );
     this.db.sandboxPerkDefinition.bulkPut(mappedSandboxPerks);
   }
-  updateEquipableItemSetDefinitions(
+
+  updateEquipableItemSetDefinitionsFromJSON(
     manifestTables: DestinyManifestSlice<(keyof AllDestinyManifestComponents)[]>
   ) {
     const equipableItemSetDefinitions = (manifestTables as any)
@@ -1274,7 +1920,7 @@ export class BungieApiService implements OnDestroy {
     if (!equipableItemSetDefinitions) {
       this.logger.warn(
         "BungieApiService",
-        "updateEquipableItemSetDefinitions",
+        "updateEquipableItemSetDefinitionsFromJSON",
         "No equipable item set definitions found in manifest"
       );
       return;
@@ -1284,12 +1930,37 @@ export class BungieApiService implements OnDestroy {
     const mapped = Object.entries(equipableItemSetDefinitions).map(([key, value]) => {
       return value as DestinyEquipableItemSetDefinition;
     });
+    const items = Object.values(manifestTables.DestinyInventoryItemDefinition);
+    const rewardSources = Object.values(
+      (manifestTables as any).DestinyRewardSourceDefinition ?? {}
+    ) as GearSetRewardSource[];
+    const collectibles = Object.values(manifestTables.DestinyCollectibleDefinition);
+    const activityGraphs = Object.values(
+      (manifestTables as any).DestinyFireteamFinderActivityGraphDefinition ?? {}
+    ) as GearSetLocationDefinition[];
+    const presentationNodes = Object.values(
+      manifestTables.DestinyPresentationNodeDefinition
+    ) as GearSetLocationDefinition[];
+    const destinations = Object.values(
+      (manifestTables as any).DestinyDestinationDefinition ?? {}
+    ) as GearSetLocationDefinition[];
+    const manifestData: GearSetAcquisitionManifestData = {
+      rewardSources,
+      collectibles,
+      activityLocations: [...activityGraphs, ...presentationNodes],
+      worldLocations: destinations,
+    };
+    const acquisitionMap = createGearSetAcquisitionMap(mapped, items, manifestData);
+    const mappedWithSources = mapped.map((set) => ({
+      ...set,
+      acquisitionSources: acquisitionMap.get(set.hash)?.sources ?? [],
+    }));
     this.logger.info(
       "BungieApiService",
       "updateEquipableItemSetDefinitions",
-      `Storing ${mapped.length} equipable item set definitions in localStorage`
+      `Storing ${mappedWithSources.length} equipable item set definitions in localStorage`
     );
-    this.db.equipableItemSetDefinition.bulkPut(mapped);
+    this.db.equipableItemSetDefinition.bulkPut(mappedWithSources);
   }
 
   async moveItem(
@@ -1626,7 +2297,9 @@ export class BungieApiService implements OnDestroy {
     let updatedConfig = false;
 
     // Import subclass and fragments
-    const subclass = characterEquipment.items.find((item) => item.bucketHash === 3284755031); // Subclass bucket
+    const subclass = characterEquipment.items.find(
+      (item) => item.bucketHash === SUBCLASS_BUCKET_HASH
+    );
     if (subclass) {
       const configClass = this.config.readonlyConfigurationSnapshot
         .characterClass as keyof typeof SubclassHashes;

@@ -26,6 +26,10 @@
   white-space: normal;
   width: fit-content;
   margin-left: 3px;
+
+  @media (min-width: 1360px) {
+    max-width: 49vw;
+  }
 }
 
 .report-problem-icon {
@@ -337,5 +341,22 @@
         margin-bottom: 0.5rem;
       }
     }
+  }
+}
+
+.cancelled-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0 12px 0;
+  border-radius: 4px;
+  background-color: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+
+  mat-icon {
+    color: #ffc107;
   }
 }

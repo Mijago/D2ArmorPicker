@@ -43,6 +43,12 @@ export class ItemTooltipRendererDirective implements OnInit, OnDestroy {
   //If this is specified then specified text will be showin in the tooltip
   @Input() itemTooltip: ResultItem | undefined;
 
+  //If this is specified, a second comparison box is rendered next to the main tooltip
+  @Input() comparisonTooltip: ResultItem | undefined;
+
+  //Label shown above the comparison box, e.g. "Pruned by"
+  @Input() comparisonLabel: string | undefined;
+
   //If this is specified then specified template will be rendered in the tooltip
   @Input() contentTemplate: TemplateRef<any> | undefined;
 
@@ -98,6 +104,8 @@ export class ItemTooltipRendererDirective implements OnInit, OnDestroy {
         new ComponentPortal(ArmorTooltipComponent)
       );
       tooltipRef.instance.itemTooltip = this.itemTooltip;
+      tooltipRef.instance.comparisonTooltip = this.comparisonTooltip;
+      tooltipRef.instance.comparisonLabel = this.comparisonLabel;
     }
   }
 
