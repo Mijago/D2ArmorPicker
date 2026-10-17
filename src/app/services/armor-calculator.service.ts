@@ -887,36 +887,34 @@ export class ArmorCalculatorService implements OnDestroy {
         statsNoMods: armorSet.statsWithoutMods,
         tiers: getSkillTier(armorSet.statsWithMods),
         waste: getWaste(armorSet.statsWithMods),
-        items: items.map(
-          (instance): ResultItem => ({
-            tuningStat: instance.tuningStat,
-            energyLevel: instance.energyLevel,
-            hash: instance.hash,
-            itemInstanceId: instance.itemInstanceId,
-            gearSetHash: instance.gearSetHash,
-            name: instance.name,
-            exotic: !!instance.isExotic,
-            exoticPerkHash: instance.exoticPerkHash,
-            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-            archetypeStats: instance.archetypeStats,
-            armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
-            masterworkLevel: instance.masterworkLevel,
-            slot: instance.slot,
-            perk: instance.perk,
-            transferState: 0, // TRANSFER_NONE
-            tier: instance.tier,
-            stats: [
-              instance.resilience,
-              instance.strength,
-              instance.discipline,
-              instance.intellect,
-              instance.recovery,
-              instance.mobility,
-            ],
-            source: instance.source,
-            statsNoMods: [],
-          })
-        ),
+        items: items.map((instance): ResultItem => ({
+          tuningStat: instance.tuningStat,
+          energyLevel: instance.energyLevel,
+          hash: instance.hash,
+          itemInstanceId: instance.itemInstanceId,
+          gearSetHash: instance.gearSetHash,
+          name: instance.name,
+          exotic: !!instance.isExotic,
+          exoticPerkHash: instance.exoticPerkHash,
+          masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+          archetypeStats: instance.archetypeStats,
+          armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
+          masterworkLevel: instance.masterworkLevel,
+          slot: instance.slot,
+          perk: instance.perk,
+          transferState: 0, // TRANSFER_NONE
+          tier: instance.tier,
+          stats: [
+            instance.resilience,
+            instance.strength,
+            instance.discipline,
+            instance.intellect,
+            instance.recovery,
+            instance.mobility,
+          ],
+          source: instance.source,
+          statsNoMods: [],
+        })),
         usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
         usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
       };
@@ -985,36 +983,34 @@ export class ArmorCalculatorService implements OnDestroy {
         statsNoMods: armorSet.statsWithoutMods,
         tiers: getSkillTier(armorSet.statsWithMods),
         waste: getWaste(armorSet.statsWithMods),
-        items: items.map(
-          (instance): ResultItem => ({
-            tuningStat: instance.tuningStat,
-            energyLevel: instance.energyLevel,
-            hash: instance.hash,
-            itemInstanceId: instance.itemInstanceId,
-            gearSetHash: instance.gearSetHash,
-            name: instance.name,
-            exotic: !!instance.isExotic,
-            exoticPerkHash: instance.exoticPerkHash,
-            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-            archetypeStats: instance.archetypeStats,
-            armorSystem: instance.armorSystem,
-            masterworkLevel: instance.masterworkLevel,
-            slot: instance.slot,
-            perk: instance.perk,
-            transferState: 0,
-            tier: instance.tier,
-            stats: [
-              instance.resilience,
-              instance.strength,
-              instance.discipline,
-              instance.intellect,
-              instance.recovery,
-              instance.mobility,
-            ],
-            source: instance.source,
-            statsNoMods: [],
-          })
-        ),
+        items: items.map((instance): ResultItem => ({
+          tuningStat: instance.tuningStat,
+          energyLevel: instance.energyLevel,
+          hash: instance.hash,
+          itemInstanceId: instance.itemInstanceId,
+          gearSetHash: instance.gearSetHash,
+          name: instance.name,
+          exotic: !!instance.isExotic,
+          exoticPerkHash: instance.exoticPerkHash,
+          masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+          archetypeStats: instance.archetypeStats,
+          armorSystem: instance.armorSystem,
+          masterworkLevel: instance.masterworkLevel,
+          slot: instance.slot,
+          perk: instance.perk,
+          transferState: 0,
+          tier: instance.tier,
+          stats: [
+            instance.resilience,
+            instance.strength,
+            instance.discipline,
+            instance.intellect,
+            instance.recovery,
+            instance.mobility,
+          ],
+          source: instance.source,
+          statsNoMods: [],
+        })),
         usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
         usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
       };
@@ -1525,15 +1521,14 @@ export class ArmorCalculatorService implements OnDestroy {
       ])
     );
     armorSets.sort((a, b) => {
-      const similarityCountDiff =
-        (similarityCounts.get(similarityHashes.get(b)!) ?? 0) -
-        (similarityCounts.get(similarityHashes.get(a)!) ?? 0);
-      if (similarityCountDiff !== 0) return similarityCountDiff;
-
-      const similarityHashDiff = similarityHashes.get(a)!.localeCompare(similarityHashes.get(b)!);
-      if (similarityHashDiff !== 0) return similarityHashDiff;
-
-      return ArmorCalculatorService.compareArmorSets(a, b, gearSetRanks, masterworkedItemCounts);
+      return ArmorCalculatorService.compareArmorSets(
+        a,
+        b,
+        similarityHashes,
+        similarityCounts,
+        gearSetRanks,
+        masterworkedItemCounts
+      );
     });
   }
 
@@ -1561,6 +1556,8 @@ export class ArmorCalculatorService implements OnDestroy {
   private static compareArmorSets(
     a: IPermutatorArmorSet,
     b: IPermutatorArmorSet,
+    similarityHashes: Map<IPermutatorArmorSet, string>,
+    similarityCounts: Map<string, number>,
     gearSetRanks: Map<IPermutatorArmorSet, number>,
     masterworkedItemCounts: Map<IPermutatorArmorSet, number>
   ): number {
@@ -1569,6 +1566,17 @@ export class ArmorCalculatorService implements OnDestroy {
       ArmorCalculatorService.sumStats(a.statsWithMods);
     if (totalStatsDiff !== 0) return totalStatsDiff;
 
+    const gearSetRankDiff = (gearSetRanks.get(b) ?? 0) - (gearSetRanks.get(a) ?? 0);
+    if (gearSetRankDiff !== 0) return gearSetRankDiff;
+
+    const similarityHashDiff = similarityHashes.get(a)!.localeCompare(similarityHashes.get(b)!);
+    if (similarityHashDiff !== 0) return similarityHashDiff;
+
+    const similarityCountDiff =
+      (similarityCounts.get(similarityHashes.get(b)!) ?? 0) -
+      (similarityCounts.get(similarityHashes.get(a)!) ?? 0);
+    if (similarityCountDiff !== 0) return similarityCountDiff;
+
     const modCountDiff = a.usedMods.length - b.usedMods.length;
     if (modCountDiff !== 0) return modCountDiff;
 
@@ -1576,9 +1584,6 @@ export class ArmorCalculatorService implements OnDestroy {
       armorSet.usedMods.reduce((sum, mod) => sum + STAT_MOD_VALUES[mod][2], 0);
     const modCostDiff = modCost(a) - modCost(b);
     if (modCostDiff !== 0) return modCostDiff;
-
-    const gearSetRankDiff = (gearSetRanks.get(b) ?? 0) - (gearSetRanks.get(a) ?? 0);
-    if (gearSetRankDiff !== 0) return gearSetRankDiff;
 
     return (masterworkedItemCounts.get(b) ?? 0) - (masterworkedItemCounts.get(a) ?? 0);
   }
