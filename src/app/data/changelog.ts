@@ -35,32 +35,44 @@ export const CHANGELOG_DATA: {
 }[] = [
   {
     version: "2.9.19",
-    date: "October 11, 2026",
+    date: "October 18, 2026",
     clearManifest: true,
     entries: [
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Improved stat selection input.",
+        text: "Improved stat selection input. Now you can drag the selection instead of hard clicking each stat.",
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Exotic armor selection supports modifier-click multi-selection, and Mod Slot Configuration summarizes multiple selected exotics.",
+        text: "Improved tuning and mod selection to prioritize reductions in lower-target stats and respect locked stat targets",
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "Improved Gearset filtering and armor folding and better selects representatives.",
+        text: "Fixed an issue with balanced tuning mod not respecting the locked stat targets.",
       },
       {
         type: ChangelogEntryType.MODIFIED,
-        text: "The Armor pool overview now shows pre-pruned duplicate items, and exotic class-item perk rolls remain distinct during pruning.",
+        text: "Higher Power armor is now preferred when otherwise-equivalent armor is pruned or results are tied.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Exotic armor selection supports ctrl-click multi-selection, and Mod Slot Configuration summarizes multiple selected exotics.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Gearset filtering and armor folding to select better representatives.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved the Armor pool overview to better show pre-pruned duplicate items.",
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Exotic class-item perks are now shown in armor tooltips.",
+        text: "Added categorized synergy icons for Gear Set bonuses; Gear Set bonus and set-name tooltips show descriptions, source types, and manifest-derived locations.",
       },
       {
         type: ChangelogEntryType.ADD,
-        text: "Gear Set bonuses now show categorized synergy icons for 2- and 4-piece effects, with descriptions on hover; set-name tooltips show source types and manifest-derived location names.",
+        text: "Armor tooltips now show item Power and exotic class-item perks.",
       },
     ],
   },

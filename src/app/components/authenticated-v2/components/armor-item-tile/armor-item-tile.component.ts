@@ -21,6 +21,7 @@ export class ArmorItemTileComponent {
   private mapItemToTooltip(item: IInventoryArmor): ResultItem {
     return {
       energyLevel: item.energyLevel,
+      powerLevel: item.powerLevel,
       hash: item.hash,
       itemInstanceId: item.itemInstanceId,
       gearSetHash: item.gearSetHash,

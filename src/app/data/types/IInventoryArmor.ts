@@ -53,13 +53,11 @@ export interface IDestinyArmor {
 export interface IDisplayInventoryArmor extends IDisplayManifestArmor, IDestinyArmor {
   itemInstanceId: string;
   energyLevel: number;
+  powerLevel?: number;
 }
 
 export interface IInventoryArmor
-  extends IDisplayInventoryArmor,
-    IManifestArmor,
-    IDestinyArmor,
-    ITimestampedEntry {
+  extends IDisplayInventoryArmor, IManifestArmor, IDestinyArmor, ITimestampedEntry {
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
   tuningStat: ArmorStat | null; // for armor 3.0, this is the tuning stat hash

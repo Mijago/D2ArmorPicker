@@ -34,6 +34,10 @@
     <tr>
       <td colspan="3">{{ item?.name }}</td>
     </tr>
+    <tr *ngIf="item?.powerLevel !== null && item?.powerLevel !== undefined">
+      <td>Power</td>
+      <td colspan="2">{{ item.powerLevel }}</td>
+    </tr>
     <tr>
       <td>Source</td>
       <td colspan="2">{{ getSourceText(item) }}</td>

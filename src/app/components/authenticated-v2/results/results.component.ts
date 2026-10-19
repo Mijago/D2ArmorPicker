@@ -67,6 +67,7 @@ export enum ResultItemMoveState {
 
 export interface ResultItem {
   energyLevel: number;
+  powerLevel?: number;
   hash: number;
   itemInstanceId: string;
   gearSetHash: number | null;

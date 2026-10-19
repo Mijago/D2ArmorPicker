@@ -8,6 +8,7 @@ import {
   filterTuningsForLockedStats,
   findTuningModHashes,
   generate_tunings,
+  get_mods_recursive,
   prioritizeTuningsByTotalStats,
   t5Improvement,
 } from "./results-builder.worker";
@@ -191,10 +192,79 @@ describe("results builder tuning cache", () => {
     ]);
   });
 
+  it("prefers reducing stats in ascending selected-target order with stable ties", () => {
+    const tunings: Tuning[] = [0, 1, 2, 3, 4, 5].map((negativeStat) => {
+      const tuning: Tuning = [0, 0, 0, 0, 0, 0];
+      tuning[negativeStat === ArmorStat.StatGrenade ? ArmorStat.StatSuper : ArmorStat.StatGrenade] =
+        5;
+      tuning[negativeStat] = -5;
+      return tuning;
+    });
+
+    const ordered = prioritizeTuningsByTotalStats(tunings, [70, 50, 150, 100, 70, 0]);
+
+    expect(ordered.map((tuning) => tuning.indexOf(-5))).toEqual([
+      ArmorStat.StatWeapon,
+      ArmorStat.StatMelee,
+      ArmorStat.StatHealth,
+      ArmorStat.StatClass,
+      ArmorStat.StatSuper,
+      ArmorStat.StatGrenade,
+    ]);
+  });
+
+  it("keeps balanced bonuses ahead of directional tuning with selected targets", () => {
+    const directional: Tuning = [5, 0, 0, 0, 0, -5];
+    const balanced: Tuning = [1, 1, 1, 0, 0, 0];
+
+    expect(
+      prioritizeTuningsByTotalStats([directional, balanced], [70, 50, 150, 100, 70, 0])
+    ).toEqual([balanced, directional]);
+  });
+
   it("rejects recursion branches that cannot cover their remaining distance", () => {
     expect(
       canCoverRemainingDistance([0, 0, 20, 20, 20, 0], 2, [0, 0, 5, 5, 5, 0], 1, 2, 3)
     ).toBeFalse();
+  });
+
+  it("skips balanced bonuses that overshoot a locked stat after stat mods", () => {
+    const balanced: Tuning = [2, 1, 1, 1, 1, 0];
+    const noTuning: Tuning = [0, 0, 0, 0, 0, 0];
+    const result = get_mods_recursive(
+      [65, 70, 100, 100, 100, 50],
+      [70, 70, 100, 100, 100, 50],
+      [5, 0, 0, 0, 0, 0],
+      [balanced, noTuning],
+      0,
+      0,
+      0,
+      1,
+      balanced,
+      [true, false, false, false, false, false]
+    );
+
+    expect(result).not.toBeNull();
+    expect(result![result!.length - 1]).toEqual(noTuning);
+  });
+
+  it("keeps balanced bonuses that reach a locked stat exactly with stat mods", () => {
+    const balanced: Tuning = [2, 1, 1, 1, 1, 0];
+    const result = get_mods_recursive(
+      [63, 70, 100, 100, 100, 50],
+      [70, 70, 100, 100, 100, 50],
+      [7, 0, 0, 0, 0, 0],
+      [balanced],
+      0,
+      0,
+      0,
+      1,
+      balanced,
+      [true, false, false, false, false, false]
+    );
+
+    expect(result).not.toBeNull();
+    expect(result![result!.length - 1]).toEqual(balanced);
   });
 
   it("keeps recursion branches within the optimistic resource bound", () => {

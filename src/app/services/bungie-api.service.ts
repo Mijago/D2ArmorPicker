@@ -553,6 +553,7 @@ export class BungieApiService implements OnDestroy {
 
         // Set energy level
         armorItem.energyLevel = !!instanceData.energy ? instanceData.energy.energyCapacity : 0;
+        armorItem.powerLevel = instanceData.primaryStat?.value;
         if (armorItem.gearSetPerkSelectable) {
           let gearsetPerkIndex = validManifestArmorMap[d.itemHash].socketEntries.findIndex(
             (s) => s.socketTypeHash == 1728849630

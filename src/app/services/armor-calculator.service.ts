@@ -713,9 +713,12 @@ export class ArmorCalculatorService implements OnDestroy {
         for (const dominator of group) {
           if (candidate === dominator || pruned[dominator]) continue;
           if (!ArmorCalculatorService.mixSetCovers(mixes(dominator), mixes(candidate))) continue;
+          const dominatorPower = inventoryById.get(pieces[dominator].id)?.powerLevel ?? 0;
+          const candidatePower = inventoryById.get(pieces[candidate].id)?.powerLevel ?? 0;
           if (
             !ArmorCalculatorService.mixSetCovers(mixes(candidate), mixes(dominator)) ||
-            dominator < candidate
+            dominatorPower > candidatePower ||
+            (dominatorPower === candidatePower && dominator < candidate)
           ) {
             pruned[candidate] = true;
             const prunedByItem = inventoryById.get(pieces[dominator].id);
@@ -890,6 +893,7 @@ export class ArmorCalculatorService implements OnDestroy {
         items: items.map((instance): ResultItem => ({
           tuningStat: instance.tuningStat,
           energyLevel: instance.energyLevel,
+          powerLevel: instance.powerLevel,
           hash: instance.hash,
           itemInstanceId: instance.itemInstanceId,
           gearSetHash: instance.gearSetHash,
@@ -986,6 +990,7 @@ export class ArmorCalculatorService implements OnDestroy {
         items: items.map((instance): ResultItem => ({
           tuningStat: instance.tuningStat,
           energyLevel: instance.energyLevel,
+          powerLevel: instance.powerLevel,
           hash: instance.hash,
           itemInstanceId: instance.itemInstanceId,
           gearSetHash: instance.gearSetHash,
@@ -1373,11 +1378,14 @@ export class ArmorCalculatorService implements OnDestroy {
         const duplicate = distinctItems[duplicateIndex];
         const itemCoversDuplicate = coversCapabilities(item, duplicate);
         const duplicateCoversItem = coversCapabilities(duplicate, item);
+        const itemHasArtifice = isArtificeCapable(item);
+        const duplicateHasArtifice = isArtificeCapable(duplicate);
         const itemShouldRepresent =
           (itemCoversDuplicate && !duplicateCoversItem) ||
           (itemCoversDuplicate === duplicateCoversItem &&
-            isArtificeCapable(item) &&
-            !isArtificeCapable(duplicate));
+            ((itemHasArtifice && !duplicateHasArtifice) ||
+              (itemHasArtifice === duplicateHasArtifice &&
+                (item.powerLevel ?? 0) > (duplicate.powerLevel ?? 0))));
         if (itemShouldRepresent) {
           duplicates.push(duplicate);
           duplicatePruners.set(duplicate.id, item);
@@ -1520,6 +1528,17 @@ export class ArmorCalculatorService implements OnDestroy {
         ).length,
       ])
     );
+
+    const armorPower = new Map(
+      armorSets.map((armorSet) => [
+        armorSet,
+        armorSet.armor.reduce(
+          (sum, itemId) => sum + (inventoryById.get(itemId)?.powerLevel ?? 0),
+          0
+        ),
+      ])
+    );
+
     armorSets.sort((a, b) => {
       return ArmorCalculatorService.compareArmorSets(
         a,
@@ -1527,7 +1546,8 @@ export class ArmorCalculatorService implements OnDestroy {
         similarityHashes,
         similarityCounts,
         gearSetRanks,
-        masterworkedItemCounts
+        masterworkedItemCounts,
+        armorPower
       );
     });
   }
@@ -1559,7 +1579,8 @@ export class ArmorCalculatorService implements OnDestroy {
     similarityHashes: Map<IPermutatorArmorSet, string>,
     similarityCounts: Map<string, number>,
     gearSetRanks: Map<IPermutatorArmorSet, number>,
-    masterworkedItemCounts: Map<IPermutatorArmorSet, number>
+    masterworkedItemCounts: Map<IPermutatorArmorSet, number>,
+    armorPower: Map<IPermutatorArmorSet, number>
   ): number {
     const totalStatsDiff =
       ArmorCalculatorService.sumStats(b.statsWithMods) -
@@ -1585,7 +1606,11 @@ export class ArmorCalculatorService implements OnDestroy {
     const modCostDiff = modCost(a) - modCost(b);
     if (modCostDiff !== 0) return modCostDiff;
 
-    return (masterworkedItemCounts.get(b) ?? 0) - (masterworkedItemCounts.get(a) ?? 0);
+    const masterworkedItemCountDiff =
+      (masterworkedItemCounts.get(b) ?? 0) - (masterworkedItemCounts.get(a) ?? 0);
+    if (masterworkedItemCountDiff !== 0) return masterworkedItemCountDiff;
+
+    return (armorPower.get(b) ?? 0) - (armorPower.get(a) ?? 0);
   }
 
   async calculateArmorSetResults(

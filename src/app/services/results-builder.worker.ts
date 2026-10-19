@@ -1282,11 +1282,21 @@ export function filterTuningsBySharedBudget(
   });
 }
 
-export function prioritizeTuningsByTotalStats(tunings: Tuning[]): Tuning[] {
-  return tunings.sort(
-    (left, right) =>
-      right.reduce((sum, value) => sum + value, 0) - left.reduce((sum, value) => sum + value, 0)
+export function prioritizeTuningsByTotalStats(tunings: Tuning[], targets: number[] = []): Tuning[] {
+  const reductionOrder = [0, 1, 2, 3, 4, 5].sort(
+    (left, right) => (targets[left] ?? 0) - (targets[right] ?? 0)
   );
+  return tunings.sort((left, right) => {
+    const totalDiff =
+      right.reduce((sum, value) => sum + value, 0) - left.reduce((sum, value) => sum + value, 0);
+    if (totalDiff !== 0) return totalDiff;
+
+    for (const stat of reductionOrder) {
+      const reductionDiff = Math.min(0, left[stat]) - Math.min(0, right[stat]);
+      if (reductionDiff !== 0) return reductionDiff;
+    }
+    return 0;
+  });
 }
 
 function combineBalancedTunings(improvements: t5Improvement[]): Tuning {
@@ -1538,7 +1548,7 @@ export function handlePermutation(
     possibleIncreaseByMod + 3 * artificeCount
   );
   if (availableTunings.length === 0) return null;
-  prioritizeTuningsByTotalStats(availableTunings);
+  prioritizeTuningsByTotalStats(availableTunings, targetVals);
 
   // heavy work: mod precalc
   let result: StatModifierPrecalc | null;
@@ -1799,7 +1809,7 @@ export function canCoverRemainingDistance(
   return remainingDistance <= maximumRemainingPoints;
 }
 
-function get_mods_recursive(
+export function get_mods_recursive(
   currentStats: number[],
   targetStats: number[],
 
@@ -1811,7 +1821,8 @@ function get_mods_recursive(
   availableMods: number,
   // Per-stat maxima for the current tuning subset. Carrying this through recursion avoids reducing
   // the entire tuning list at every node; it is recomputed only when the subset is filtered.
-  tuningMax: number[]
+  tuningMax: number[],
+  fixedStats: boolean[] = targetFixed
 ): number[][] | null {
   if (
     !canCoverRemainingDistance(
@@ -1864,7 +1875,8 @@ function get_mods_recursive(
           availableArtificeCount,
           availableMajorMods,
           availableMods,
-          ZERO_TUNING_MAX
+          ZERO_TUNING_MAX,
+          fixedStats
         );
         if (otherMods !== null) {
           return [...otherMods, tuning];
@@ -1900,11 +1912,17 @@ function get_mods_recursive(
     let nextTuningMax = tuningMax;
     const requiredTuningCount = pickedMod[4];
     const requiredTuningValue = pickedMod[3];
-    if (requiredTuningCount > 0) {
+    const maximumTuningValue = fixedStats[statIdx]
+      ? targetStats[statIdx] -
+        currentStats[statIdx] -
+        (3 * pickedMod[0] + 5 * pickedMod[1] + 10 * pickedMod[2])
+      : Infinity;
+    if (requiredTuningCount > 0 || fixedStats[statIdx]) {
       selectedTuningsInner = [];
       nextTuningMax = [0, 0, 0, 0, 0, 0];
       for (const tuning of availableTunings) {
-        if (tuning[statIdx] < requiredTuningValue) continue;
+        if (requiredTuningCount > 0 && tuning[statIdx] < requiredTuningValue) continue;
+        if (tuning[statIdx] > maximumTuningValue) continue;
         selectedTuningsInner.push(tuning);
         for (let stat = 0; stat < 6; stat++) {
           if (tuning[stat] > nextTuningMax[stat]) nextTuningMax[stat] = tuning[stat];
@@ -1925,7 +1943,8 @@ function get_mods_recursive(
       artifice,
       majorMods,
       totalMods,
-      nextTuningMax
+      nextTuningMax,
+      fixedStats
     );
     if (otherMods !== null) {
       return [pickedMod, ...otherMods];
