@@ -15,88 +15,222 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.mdc-data-table__cell,
-.mdc-data-table__header-cell {
-  padding: 5px;
+.save-configuration-form,
+.import-configuration-form {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.modTable {
-  width: 100%;
-  --mat-table-header-container-height: 32px !important;
-  --mat-table-row-item-container-height: 32px !important;
-  min-width: revert;
+.save-current-configuration {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
-.mat-header-row,
-.mat-row {
-  height: 30px;
+.save-current-configuration h3 {
+  margin: 0;
+  font-size: 16px;
 }
 
-.mat-column-class {
-  min-width: 55px;
-  padding-right: 2px;
-  padding-left: 2px;
-  text-align: center;
-
-  border-right: 1px solid currentColor;
+.save-configuration-form {
+  align-items: center;
 }
 
-.mat-column-mobility,
-.mat-column-resilience,
-.mat-column-recovery,
-.mat-column-discipline,
-.mat-column-intellect,
-.mat-column-strength {
+.configuration-name-field {
+  flex: 1 1 280px;
+  max-width: 560px;
+}
+
+.configuration-actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.configuration-actions button {
+  min-width: 200px;
+  min-height: 56px;
+}
+
+.current-configuration-export {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid currentColor;
+  margin-bottom: 12px;
+  padding: 4px 0 14px;
+}
+
+.current-configuration-export h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.saved-configurations {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 20px;
+}
+
+.saved-configurations h3,
+.import-configuration h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.saved-configurations-list {
+  display: grid;
+  gap: 8px;
+}
+
+.saved-configuration {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.saved-configuration-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saved-configuration-identity h4 {
+  margin: 0 0 3px;
+  font-size: 16px;
+}
+
+.saved-configuration-identity > span,
+.saved-configuration-label {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+}
+
+.saved-configuration-actions {
+  display: flex;
+  flex: 0 0 auto;
+  margin: -8px -8px 0 0;
+}
+
+.saved-configuration-details {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+  gap: 12px 20px;
+  margin-top: 10px;
+}
+
+.saved-configuration-detail {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.saved-exotic-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.saved-exotic-icons app-item-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.saved-configuration-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.saved-configuration-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   min-width: 40px;
-  text-align: center;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 4px 6px;
 }
 
-.mat-row:hover {
-  background-color: #494949;
+.saved-configuration-stat app-stat-icon {
+  width: 20px;
+  height: 20px;
 }
 
-.mat-column-mobility,
-.mat-column-recovery,
-.mat-column-intellect {
-  background-color: #464646;
+.saved-configuration-summary > span:last-child {
+  overflow-wrap: anywhere;
 }
 
-.mat-column-name {
-  padding-right: 4px;
-  border-right: 1px solid currentColor;
-  min-width: 150px;
+.saved-configurations-empty {
+  border: 1px dashed rgba(255, 255, 255, 0.24);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.72);
+  padding: 14px;
 }
 
-th.mat-header-cell:last-of-type,
-td.mat-cell:last-of-type,
-td.mat-footer-cell:last-of-type {
-  padding-right: 0;
+.import-configuration {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid currentColor;
+  padding-top: 16px;
 }
 
-.mat-cell:last-of-type,
-.mat-header-cell:last-of-type,
-.mat-footer-cell:last-of-type {
-  padding-right: 0;
+.import-configuration-field {
+  flex: 1 1 120px;
+  min-width: 120px;
+  max-width: none;
 }
 
-.stat-negative,
-.stat-positive {
-  margin-right: 3px;
+.import-configuration-form {
+  width: 100%;
 }
 
-.stat-negative {
-  color: lightcoral;
+.import-configuration-actions {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: 8px;
 }
 
-.stat-positive {
-  color: cornflowerblue;
+.import-configuration-actions button {
+  flex: 0 0 auto;
+  min-height: 56px;
+  white-space: nowrap;
 }
 
-.stat-display {
-  width: 60px;
-  float: left;
-  align-content: end;
-  text-align: right;
+.reset-configuration {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid currentColor;
+  margin-top: 18px;
+  padding-top: 14px;
+}
+
+.reset-configuration h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.reset-configuration p {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 600px) {
+  .saved-configuration-header {
+    align-items: center;
+  }
+
+  .saved-configuration-details {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
 }
 
 .mat-row:hover,
@@ -125,4 +259,59 @@ td.mat-footer-cell:last-of-type {
 :host .mat-form-field-wrapper {
   margin: 0 !important;
   padding: 0;
+}
+
+@media (max-width: 600px) {
+  .save-configuration-form,
+  .import-configuration-form {
+    flex-direction: column;
+  }
+
+  .configuration-name-field,
+  .configuration-actions {
+    width: 100%;
+    max-width: none;
+  }
+
+  .configuration-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .configuration-actions button {
+    width: 100%;
+  }
+
+  .import-configuration-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .import-configuration-field {
+    width: 100%;
+    max-width: none;
+    flex: 0 0 auto;
+  }
+
+  .import-configuration-actions {
+    width: 100%;
+    flex: 0 0 auto;
+    overflow-x: auto;
+  }
+
+  .import-configuration-actions button {
+    flex: 0 0 auto;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .reset-configuration {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .current-configuration-export {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }

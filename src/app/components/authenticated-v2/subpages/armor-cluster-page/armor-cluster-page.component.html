@@ -181,7 +181,7 @@
         <mat-card-content>
           <div>
             <table width="100%">
-              <ng-container *ngFor="let stat of ARMORSTAT_ORDER">
+              <ng-container *ngFor="let stat of armorStats">
                 <tr [matTooltip]="ArmorStatNames[stat]">
                   <td>
                     {{ ArmorStatNames[stat] }}

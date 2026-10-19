@@ -16,7 +16,7 @@
  */
 
 import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 import { BehaviorSubject, Observable } from "rxjs";
 import { isEqual as _isEqual } from "lodash";
 import { getHumanReadableDifferences } from "../data/commonFunctions";
@@ -56,7 +56,7 @@ export class StatusProviderService implements OnDestroy {
   private _status: BehaviorSubject<Status>;
   public readonly status: Observable<Status>;
 
-  constructor(private logger: NGXLogger) {
+  constructor(private logger: LoggingProxyService) {
     this.logger.debug("StatusProviderService", "constructor", "Initializing StatusProviderService");
     this._status = new BehaviorSubject<Status>(this.__status);
     this.status = this._status.asObservable();

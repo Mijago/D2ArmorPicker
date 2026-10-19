@@ -15,18 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable, OnDestroy } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
-import { BuildConfiguration } from "../data/buildConfiguration";
+import { Inject, Injectable, InjectionToken, OnDestroy, Optional } from "@angular/core";
+import { LoggingProxyService } from "./logging-proxy.service";
+import {
+  BuildConfiguration,
+  CURRENT_CONFIGURATION_VERSION,
+  serializeBuildConfiguration,
+} from "../data/buildConfiguration";
 import { BehaviorSubject, Observable } from "rxjs";
 import { ModOrAbility } from "../data/enum/modOrAbility";
 import * as lzutf8 from "lzutf8";
 import { CompressionOptions, DecompressionOptions } from "lzutf8";
 import { environment } from "../../environments/environment";
-import { EnumDictionary } from "../data/types/EnumDictionary";
-import { ArmorStat } from "../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../data/enum/armor-stat";
 // import { ArmorSlot } from "../data/enum/armor-slot";
 import { ModInformation } from "../data/ModInformation";
+import { EventArmorType } from "../data/enum/event-armor-type";
 import { isEqual as _isEqual } from "lodash";
 
 export interface StoredConfiguration {
@@ -44,10 +48,24 @@ const lzDecompOptions = {
   outputEncoding: "String",
 } as DecompressionOptions;
 
+export interface ConfigurationScope {
+  initial: BuildConfiguration;
+  prefix: string;
+}
+
+export const CONFIGURATION_SCOPE = new InjectionToken<ConfigurationScope>("configuration scope");
+
+function serializeStoredConfiguration(stored: StoredConfiguration) {
+  return { ...stored, configuration: serializeBuildConfiguration(stored.configuration) };
+}
+
 @Injectable({
   providedIn: "root",
 })
 export class ConfigurationService implements OnDestroy {
+  get currentConfiguration() {
+    return this.__configuration;
+  }
   private __configuration: BuildConfiguration;
   private __LastConfiguration: BuildConfiguration;
 
@@ -61,7 +79,18 @@ export class ConfigurationService implements OnDestroy {
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
 
-  constructor(private logger: NGXLogger) {
+  get isTheorizer(): boolean {
+    return !!this.scope;
+  }
+
+  private storageKey(key: string): string {
+    return (this.scope?.prefix ?? "") + key;
+  }
+
+  constructor(
+    private logger: LoggingProxyService,
+    @Optional() @Inject(CONFIGURATION_SCOPE) private scope: ConfigurationScope | null = null
+  ) {
     this.logger.debug("ConfigurationService", "constructor", "Initializing ConfigurationService");
     this.__configuration = this.loadCurrentConfiguration();
     this.__LastConfiguration = this.loadCurrentConfiguration();
@@ -103,8 +132,11 @@ export class ConfigurationService implements OnDestroy {
       return 0;
     });
 
-    const compressed = lzutf8.compress(JSON.stringify(list), lzCompOptions);
-    localStorage.setItem("storedConfigurations", compressed);
+    const compressed = lzutf8.compress(
+      JSON.stringify(list.map(serializeStoredConfiguration)),
+      lzCompOptions
+    );
+    localStorage.setItem(this.storageKey("storedConfigurations"), compressed);
     this._storedConfigurations.next(list);
   }
 
@@ -120,17 +152,60 @@ export class ConfigurationService implements OnDestroy {
   }
 
   checkAndFixOldSavedConfigurations(c: StoredConfiguration) {
+    const minimumStatTiers = c.configuration.minimumStatTiers;
+    const legacyMinimumStatTiers = (c.configuration as any).minimumStatTier as
+      | Record<number, number>
+      | undefined;
+    const statOrderVersion = c.configuration.armorStatOrderVersion;
+    const hasNamedStatTiers =
+      !!minimumStatTiers &&
+      Object.values(ArmorStatNames).some((name) =>
+        Object.prototype.hasOwnProperty.call(minimumStatTiers, name)
+      );
+    const requiresArmorStatOrderMigration = statOrderVersion !== 2 && statOrderVersion !== 3;
+
     c.configuration = Object.assign(BuildConfiguration.buildEmptyConfiguration(), c.configuration);
-    if (c.configuration.hasOwnProperty("minimumStatTier")) {
-      let tiers = (c.configuration as any).minimumStatTier as EnumDictionary<ArmorStat, number>;
-      c.configuration.minimumStatTiers[ArmorStat.StatWeapon].value = tiers[ArmorStat.StatWeapon];
-      c.configuration.minimumStatTiers[ArmorStat.StatHealth].value = tiers[ArmorStat.StatHealth];
-      c.configuration.minimumStatTiers[ArmorStat.StatClass].value = tiers[ArmorStat.StatClass];
-      c.configuration.minimumStatTiers[ArmorStat.StatGrenade].value = tiers[ArmorStat.StatGrenade];
-      c.configuration.minimumStatTiers[ArmorStat.StatSuper].value = tiers[ArmorStat.StatSuper];
-      c.configuration.minimumStatTiers[ArmorStat.StatMelee].value = tiers[ArmorStat.StatMelee];
+
+    if (hasNamedStatTiers && minimumStatTiers) {
+      const namedTiers = minimumStatTiers as unknown as Record<
+        string,
+        BuildConfiguration["minimumStatTiers"][ArmorStat]
+      >;
+      c.configuration.minimumStatTiers = Object.fromEntries(
+        Object.entries(ArmorStatNames).map(([stat, name]) => [
+          stat,
+          namedTiers[name] ??
+            c.configuration.minimumStatTiers[Number(stat) as ArmorStat] ?? {
+              fixed: false,
+              value: 0,
+            },
+        ])
+      ) as BuildConfiguration["minimumStatTiers"];
+    }
+
+    if (!hasNamedStatTiers && requiresArmorStatOrderMigration && minimumStatTiers) {
+      c.configuration.minimumStatTiers = {
+        [ArmorStat.StatHealth]: minimumStatTiers[1],
+        [ArmorStat.StatMelee]: minimumStatTiers[5],
+        [ArmorStat.StatGrenade]: minimumStatTiers[3],
+        [ArmorStat.StatSuper]: minimumStatTiers[4],
+        [ArmorStat.StatClass]: minimumStatTiers[2],
+        [ArmorStat.StatWeapon]: minimumStatTiers[0],
+      };
+    }
+
+    if (legacyMinimumStatTiers) {
+      c.configuration.minimumStatTiers = {
+        [ArmorStat.StatHealth]: { fixed: false, value: legacyMinimumStatTiers[1] },
+        [ArmorStat.StatMelee]: { fixed: false, value: legacyMinimumStatTiers[5] },
+        [ArmorStat.StatGrenade]: { fixed: false, value: legacyMinimumStatTiers[3] },
+        [ArmorStat.StatSuper]: { fixed: false, value: legacyMinimumStatTiers[4] },
+        [ArmorStat.StatClass]: { fixed: false, value: legacyMinimumStatTiers[2] },
+        [ArmorStat.StatWeapon]: { fixed: false, value: legacyMinimumStatTiers[0] },
+      };
       delete (c.configuration as any).minimumStatTier;
     }
+    c.configuration.armorStatOrderVersion = 2;
 
     if (c.configuration.hasOwnProperty("selectedExoticHash")) {
       c.configuration.selectedExotics = [(c.configuration as any).selectedExoticHash];
@@ -144,15 +219,24 @@ export class ConfigurationService implements OnDestroy {
       );
     }
 
-    // Always reset risky mods on reload
-    c.configuration.limitParsedResults = true;
+    // Reset the risky unlimited option on reload, but preserve finite limits.
+    if (c.configuration.parsedResultLimit === 0) {
+      c.configuration.parsedResultLimit = 30_000;
+    }
+    delete (c.configuration as any).limitParsedResults;
     c.configuration.addConstent1Health = false;
+
+    // Migrate legacy event armor setting values
+    if ((c.configuration as any).useEventArmor === "FOTL") {
+      (c.configuration as any).useEventArmor = EventArmorType.FestivalOfTheLost;
+    }
+    c.configuration.configurationVersion = CURRENT_CONFIGURATION_VERSION;
   }
 
   listSavedConfigurations(): StoredConfiguration[] {
     let item;
     try {
-      item = localStorage.getItem("storedConfigurations") || "[]";
+      item = localStorage.getItem(this.storageKey("storedConfigurations")) || "[]";
       if (item.substr(0, 1) != "[") item = lzutf8.decompress(item, lzDecompOptions);
     } catch (e) {
       item = [];
@@ -177,8 +261,8 @@ export class ConfigurationService implements OnDestroy {
       list.splice(c[1], 1);
     }
     localStorage.setItem(
-      "storedConfigurations",
-      lzutf8.compress(JSON.stringify(list), lzCompOptions)
+      this.storageKey("storedConfigurations"),
+      lzutf8.compress(JSON.stringify(list.map(serializeStoredConfiguration)), lzCompOptions)
     );
     this._storedConfigurations.next(list);
   }
@@ -202,28 +286,34 @@ export class ConfigurationService implements OnDestroy {
       this.__configuration.minimumStatTiers
     );
 
-    const compressed = lzutf8.compress(JSON.stringify(this.__configuration), lzCompOptions);
-    localStorage.setItem("user-currentConfig", compressed);
+    const compressed = lzutf8.compress(
+      JSON.stringify(serializeBuildConfiguration(this.__configuration)),
+      lzCompOptions
+    );
+    localStorage.setItem(this.storageKey("user-currentConfig"), compressed);
     this._configuration.next(Object.assign({}, this.__configuration));
   }
 
   loadCurrentConfiguration() {
     try {
+      if (this.scope && !localStorage.getItem(this.storageKey("user-currentConfig"))) {
+        return structuredClone(this.scope.initial);
+      }
       let config;
       try {
-        config = localStorage.getItem("user-currentConfig") || "{}";
+        config = localStorage.getItem(this.storageKey("user-currentConfig")) || "{}";
         if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
       } catch (e) {
         config = {};
       }
 
-      var dummy: StoredConfiguration = {
+      var storedConfiguration: StoredConfiguration = {
         name: "dummy",
         version: "1",
         configuration: JSON.parse(config),
       };
-      this.checkAndFixOldSavedConfigurations(dummy);
-      return dummy.configuration;
+      this.checkAndFixOldSavedConfigurations(storedConfiguration);
+      return storedConfiguration.configuration;
     } catch (e) {
       this.logger.error(
         "ConfigurationService",
@@ -236,21 +326,23 @@ export class ConfigurationService implements OnDestroy {
   }
 
   getCurrentConfigBase64Compressed(): string {
-    let config = localStorage.getItem("user-currentConfig") || "{}";
-    if (config.substr(0, 1) == "{") config = lzutf8.compress(config, { outputEncoding: "Base64" });
-    return config;
+    return lzutf8.compress(
+      JSON.stringify(serializeBuildConfiguration(this.__configuration)),
+      lzCompOptions
+    );
   }
 
   getAllStoredConfigurationsBase64Compressed(): string {
-    let item = localStorage.getItem("storedConfigurations") || "[]";
-    if (item.substr(0, 1) == "[") item = lzutf8.compress(item, { outputEncoding: "Base64" });
-    return item;
+    return lzutf8.compress(
+      JSON.stringify(this.listSavedConfigurations().map(serializeStoredConfiguration)),
+      lzCompOptions
+    );
   }
 
   getStoredConfigurationBase64Compressed(name: string): string {
     let c = this.listSavedConfigurations().filter((c) => c.name == name)[0];
     if (!c) return "";
-    return lzutf8.compress(JSON.stringify(c), { outputEncoding: "Base64" });
+    return lzutf8.compress(JSON.stringify(serializeStoredConfiguration(c)), lzCompOptions);
   }
 
   resetCurrentConfiguration() {

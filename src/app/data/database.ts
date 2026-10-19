@@ -54,5 +54,6 @@ export class D2APDatabase extends Dexie {
   constructor() {
     super("d2armorpicker-v2");
     this.version(33).stores(schema);
+    this.version(34).stores(schema);
   }
 }

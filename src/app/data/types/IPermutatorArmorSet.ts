@@ -6,6 +6,7 @@ export interface IPermutatorArmorSet {
   useExoticClassItem: boolean;
   usedArtifice: StatModifier[];
   usedMods: StatModifier[];
+  usedTuningMods: number[];
   statsWithMods: number[];
   statsWithoutMods: number[];
   tuning: Tuning;
@@ -19,6 +20,7 @@ export function createArmorSet(
   classItem: IPermutatorArmor,
   usedArtifice: StatModifier[],
   usedMods: StatModifier[],
+  usedTuningMods: number[],
   statsWithMods: number[],
   statsWithoutMods: number[],
   tuning: Tuning
@@ -28,6 +30,7 @@ export function createArmorSet(
     useExoticClassItem: false,
     usedArtifice,
     usedMods,
+    usedTuningMods,
     statsWithMods,
     statsWithoutMods,
     tuning: tuning,
@@ -41,6 +44,7 @@ export function isIPermutatorArmorSet(obj: any): obj is IPermutatorArmorSet {
     Object.prototype.hasOwnProperty.call(obj, "useExoticClassItem") &&
     Object.prototype.hasOwnProperty.call(obj, "usedArtifice") &&
     Object.prototype.hasOwnProperty.call(obj, "usedMods") &&
+    Object.prototype.hasOwnProperty.call(obj, "usedTuningMods") &&
     Object.prototype.hasOwnProperty.call(obj, "statsWithMods")
   );
 }

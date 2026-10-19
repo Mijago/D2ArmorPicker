@@ -15,242 +15,191 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<form (submit)="submit()" [formGroup]="settingsNameForm">
-  <table id="settings">
-    <tr>
-      <td>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" subscriptSizing="dynamic">
-          <mat-label>Name to save the configuration</mat-label>
-          <input
-            formControlName="name"
-            matInput
-            maxlength="30"
-            minlength="4"
-            placeholder="Awesome Grenade Build 4" />
-        </mat-form-field>
-      </td>
-      <td>
-        <button
-          [disabled]="
-            !this.settingsNameForm.get('name')?.value ||
-            this.settingsNameForm.get('name')?.value.length < 4 ||
-            this.settingsNameForm.get('name')?.value.length > 30
-          "
-          color="primary"
-          mat-raised-button
-          type="submit"
-          >Save current
-        </button>
-      </td>
-      <td>
-        <button
-          (click)="clearEverything()"
-          color="warn"
-          mat-raised-button
-          matTooltip="Clears the ENTIRE configuration and uses the default settings. Use with caution."
-          >Clear everything
-        </button>
-      </td>
-      <td>
-        <button
-          (click)="
-            openSnackBar(
-              'Copied the configuration to your clipboard. You can share it with your friends.'
-            )
-          "
-          [cdkCopyToClipboard]="config.getCurrentConfigBase64Compressed()"
-          color="primary"
-          mat-raised-button
-          matTooltip="Copy your current configuration into your clipboard. You will be able to share it with others and import it later."
-          >Copy Current
-        </button>
-      </td>
-    </tr>
-    <tr style="display: none">
-      <td>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Load saved configuration</mat-label>
-          <mat-select [(value)]="selectedEntry" [disabled]="storedConfigs.length === 0">
-            <mat-option *ngFor="let element of storedConfigs" [value]="element.name">
-              <span
-                >(<span *ngIf="element.configuration.characterClass === 0">Titan</span>
-                <span *ngIf="element.configuration.characterClass === 1">Hunter</span>
-                <span *ngIf="element.configuration.characterClass === 2">Warlock</span>)
-              </span>
-              <span> {{ element.name }}</span>
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </td>
-      <td>
-        <button
-          (click)="load(selectedEntry)"
-          [disabled]="!selectedEntry || storedConfigs.length === 0"
-          color="primary"
-          mat-raised-button
-          matTooltip="Load the currently selected configuration."
-          >Load
-        </button>
-      </td>
-      <td>
-        <button
-          (click)="delete(selectedEntry)"
-          [disabled]="!selectedEntry || storedConfigs.length === 0"
-          color="warn"
-          mat-stroked-button
-          matTooltip="Delete the currently selected configuration. Can not be undone."
-          >Delete
-        </button>
-      </td>
-    </tr>
-  </table>
-</form>
-<br />
-
-<table [dataSource]="storedConfigs" mat-table>
-  <!-- Position Column -->
-  <ng-container matColumnDef="name">
-    <th *matHeaderCellDef mat-header-cell>Name</th>
-    <td *matCellDef="let element" mat-cell>{{ element.name }} </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="class">
-    <th *matHeaderCellDef mat-header-cell> Class </th>
-    <td *matCellDef="let element" mat-cell>
-      <span *ngIf="element.configuration.characterClass === 0">Titan</span>
-      <span *ngIf="element.configuration.characterClass === 1">Hunter</span>
-      <span *ngIf="element.configuration.characterClass === 2">Warlock</span>
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="mobility">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="0"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[0].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="resilience">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="1"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[1].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="recovery">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="2"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[2].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="discipline">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="3"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[3].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="intellect">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="4"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[4].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="strength">
-    <th *matHeaderCellDef mat-header-cell>
-      <app-stat-icon [stat]="5"></app-stat-icon>
-    </th>
-    <td *matCellDef="let element" mat-cell>
-      {{ element.configuration.minimumStatTiers[5].value * 10 }}
-    </td>
-  </ng-container>
-
-  <!-- Position Column -->
-  <ng-container matColumnDef="delete">
-    <th *matHeaderCellDef mat-header-cell> </th>
-    <td *matCellDef="let element" mat-cell>
-      <button
-        (click)="delete(element.name)"
-        color="warn"
-        mat-icon-button
-        matTooltip="Delete this configuration permanently.">
-        <mat-icon>delete_forever</mat-icon>
-      </button>
-      <button
-        (click)="load(element.name)"
-        color="primary"
-        mat-icon-button
-        matTooltip="Load this configuration. Your current settings will be overwritten.">
-        <mat-icon>check_circle_outline</mat-icon>
-      </button>
-      <button
-        (click)="copySingleSettingToClipboard(element)"
-        color="primary"
-        mat-icon-button
-        matTooltip="Copy this configuration into your clipboard. You will be able to share it with others and import it later.">
-        <mat-icon>get_app</mat-icon>
-      </button>
-    </td>
-  </ng-container>
-
-  <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-  <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
-</table>
-
-<ng-container *ngIf="storedConfigs.length > 0">
-  <br />
+<section class="current-configuration-export">
+  <h3>Export current configuration</h3>
   <button
+    (click)="
+      openSnackBar(
+        'Copied the configuration to your clipboard. You can share it with your friends.'
+      )
+    "
+    [cdkCopyToClipboard]="config.getCurrentConfigBase64Compressed()"
     color="primary"
     mat-raised-button
-    (click)="copyAllSettingsToClipboard()"
-    matTooltip="Export all configurations to the clipboard. You can then save and share them.">
-    Copy all saved configurations to the clipboard
+    matTooltip="Copy your current configuration into your clipboard. You will be able to share it with others and import it later.">
+    <mat-icon>content_copy</mat-icon>
+    Copy Current
   </button>
-</ng-container>
+</section>
 
-<!-- import -->
-<br />
-<div>
-  <hr />
-  <h2>Import a previously exported configuration</h2>
-  <form [formGroup]="importTextForm">
-    <table>
-      <tr>
-        <td>
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Copied configuration</mat-label>
-            <input formControlName="content" matInput />
-          </mat-form-field>
-        </td>
-        <td>
-          <button
-            (click)="runImport()"
-            color="primary"
-            mat-raised-button
-            matTooltip="Import the given configuration">
-            Start the import
-          </button>
-        </td>
-      </tr>
-    </table>
+<section class="save-current-configuration">
+  <h3>Save current configuration</h3>
+  <form (submit)="submit()" [formGroup]="settingsNameForm" class="save-configuration-form">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="configuration-name-field">
+      <mat-label>Name to save the configuration</mat-label>
+      <input
+        formControlName="name"
+        matInput
+        maxlength="80"
+        minlength="4"
+        placeholder="Awesome Grenade Build 4" />
+    </mat-form-field>
+    <div class="configuration-actions">
+      <button
+        [disabled]="
+          !this.settingsNameForm.get('name')?.value ||
+          this.settingsNameForm.get('name')?.value.length < 4 ||
+          this.settingsNameForm.get('name')?.value.length > 80
+        "
+        color="primary"
+        mat-raised-button
+        type="submit">
+        <mat-icon>save</mat-icon>
+        Save current
+      </button>
+    </div>
   </form>
-</div>
+</section>
+
+<section class="saved-configurations">
+  <h3>Saved configurations</h3>
+  <div class="saved-configurations-list" *ngIf="storedConfigs.length > 0; else noSavedConfigs">
+    <article class="saved-configuration" *ngFor="let saved of storedConfigs">
+      <header class="saved-configuration-header">
+        <div class="saved-configuration-identity">
+          <h4>{{ saved.name }}</h4>
+          <span
+            >{{ getClassName(saved.configuration) }} ·
+            {{ getSubclassName(saved.configuration) }}</span
+          >
+        </div>
+        <div class="saved-configuration-actions">
+          <button
+            (click)="load(saved.name)"
+            color="primary"
+            mat-icon-button
+            matTooltip="Load this configuration. Your current settings will be overwritten.">
+            <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            (click)="copySingleSettingToClipboard(saved)"
+            color="primary"
+            mat-icon-button
+            matTooltip="Copy this configuration to the clipboard.">
+            <mat-icon>content_copy</mat-icon>
+          </button>
+          <button
+            (click)="delete(saved.name)"
+            color="warn"
+            mat-icon-button
+            matTooltip="Delete this configuration permanently.">
+            <mat-icon>delete_forever</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <div class="saved-configuration-details">
+        <div class="saved-configuration-detail">
+          <span class="saved-configuration-label">Exotic selection</span>
+          <div
+            class="saved-exotic-icons"
+            *ngIf="getExoticHashes(saved.configuration).length > 0; else exoticSelectionLabel">
+            <app-item-icon
+              *ngFor="let exoticHash of getExoticHashes(saved.configuration)"
+              [itemHash]="exoticHash"></app-item-icon>
+          </div>
+          <ng-template #exoticSelectionLabel>
+            <span>{{ getExoticSelectionLabel(saved.configuration) }}</span>
+          </ng-template>
+        </div>
+
+        <div class="saved-configuration-detail">
+          <span class="saved-configuration-label">Minimum stats</span>
+          <div class="saved-configuration-stats">
+            <span
+              class="saved-configuration-stat"
+              *ngFor="let stat of savedConfigurationStats"
+              [matTooltip]="ArmorStatNames[stat]">
+              <app-stat-icon [stat]="stat"></app-stat-icon>
+              {{ saved.configuration.minimumStatTiers[stat].value * 10 }}
+            </span>
+          </div>
+        </div>
+
+        <div class="saved-configuration-detail saved-configuration-summary">
+          <span class="saved-configuration-label">Selected mods / fragments</span>
+          <span [matTooltip]="getSelectedModsSummary(saved.configuration)">
+            {{ getSelectedModsSummary(saved.configuration) }}
+          </span>
+        </div>
+
+        <div class="saved-configuration-detail saved-configuration-summary">
+          <span class="saved-configuration-label">Armor limits</span>
+          <span>{{ getArmorRequirementsSummary(saved.configuration) }}</span>
+        </div>
+      </div>
+    </article>
+  </div>
+  <ng-template #noSavedConfigs>
+    <div class="saved-configurations-empty">No saved configurations yet.</div>
+  </ng-template>
+
+  <ng-container *ngIf="storedConfigs.length > 0">
+    <button
+      color="primary"
+      mat-raised-button
+      (click)="copyAllSettingsToClipboard()"
+      matTooltip="Export all configurations to the clipboard. You can then save and share them.">
+      <mat-icon>inventory_2</mat-icon>
+      Copy all saved configurations to the clipboard
+    </button>
+  </ng-container>
+</section>
+
+<section class="import-configuration">
+  <h3>Import configuration</h3>
+  <form [formGroup]="importTextForm" class="import-configuration-form">
+    <mat-form-field
+      appearance="outline"
+      subscriptSizing="dynamic"
+      class="import-configuration-field">
+      <mat-label>Copied configuration</mat-label>
+      <input formControlName="content" matInput />
+    </mat-form-field>
+    <div class="import-configuration-actions">
+      <button
+        (click)="runImport()"
+        color="primary"
+        mat-raised-button
+        type="button"
+        matTooltip="Import the given configuration">
+        <mat-icon>input</mat-icon>
+        Start the import
+      </button>
+      <button
+        (click)="runImportAsSaved()"
+        color="primary"
+        mat-raised-button
+        type="button"
+        matTooltip="Add the imported configuration to saved configurations without changing your current settings.">
+        <mat-icon>playlist_add</mat-icon>
+        Add to saved configurations
+      </button>
+    </div>
+  </form>
+</section>
+
+<section class="reset-configuration">
+  <div>
+    <h3>Reset all settings</h3>
+    <p>Restore the entire configuration to its defaults.</p>
+  </div>
+  <button
+    (click)="clearEverything()"
+    color="warn"
+    mat-stroked-button
+    matTooltip="Clears the ENTIRE configuration and uses the default settings. Use with caution.">
+    <mat-icon>delete_sweep</mat-icon>
+    Clear everything
+  </button>
+</section>

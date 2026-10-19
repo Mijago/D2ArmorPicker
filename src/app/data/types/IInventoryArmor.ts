@@ -28,18 +28,17 @@ export enum InventoryArmorSource {
   Inventory = 0,
   Collections = 1,
   Vendor = 2,
+  Postmaster = 3,
 }
 
 export interface IDestinyArmor {
-  id: number;
-  hash: number;
   slot: ArmorSlot;
 
   masterworkLevel: number; // 0-5; 5 = full masterwork
   archetypeStats: Array<ArmorStat>;
   tier: number; // 1-5, 0 = exotic
   gearSetHash: number | null;
-
+  gearSetPerkSelectable: boolean;
   mobility: number;
   resilience: number;
   recovery: number;
@@ -54,13 +53,11 @@ export interface IDestinyArmor {
 export interface IDisplayInventoryArmor extends IDisplayManifestArmor, IDestinyArmor {
   itemInstanceId: string;
   energyLevel: number;
+  powerLevel?: number;
 }
 
 export interface IInventoryArmor
-  extends IDisplayInventoryArmor,
-    IManifestArmor,
-    IDestinyArmor,
-    ITimestampedEntry {
+  extends IDisplayInventoryArmor, IManifestArmor, IDestinyArmor, ITimestampedEntry {
   // Note: this will be empty for vendor items
   statPlugHashes?: (number | undefined)[];
   tuningStat: ArmorStat | null; // for armor 3.0, this is the tuning stat hash
@@ -152,7 +149,6 @@ export function getInvestmentStats(r: IInventoryArmor): { [id: number]: number }
 export function isEqualItem(a: IDestinyArmor, b: IDestinyArmor): boolean {
   return (
     a.slot === b.slot &&
-    a.hash === b.hash &&
     a.mobility === b.mobility &&
     a.resilience === b.resilience &&
     a.recovery === b.recovery &&

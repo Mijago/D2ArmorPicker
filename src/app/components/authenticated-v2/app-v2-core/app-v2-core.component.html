@@ -107,6 +107,15 @@
       </a>
 
       <button
+        (click)="refreshInventory()"
+        aria-label="Refresh inventory"
+        class="example-icon"
+        mat-icon-button
+        matTooltip="Reload inventory from the API.">
+        <mat-icon>inventory_2</mat-icon>
+      </button>
+
+      <button
         (click)="refreshAll(true)"
         aria-label="Refresh"
         class="example-icon"

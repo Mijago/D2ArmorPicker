@@ -34,6 +34,258 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.10.0",
+    date: "October 25, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added armor theorizer for T5 armor.",
+      },
+    ],
+  },
+  {
+    version: "2.9.19",
+    date: "October 18, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved stat selection input. Now you can drag the selection instead of hard clicking each stat.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved tuning and mod selection to prioritize reductions in lower-target stats and respect locked stat targets",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed an issue with balanced tuning mod not respecting the locked stat targets.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Higher Power armor is now preferred when otherwise-equivalent armor is pruned or results are tied.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Exotic armor selection supports ctrl-click multi-selection, and Mod Slot Configuration summarizes multiple selected exotics.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Gearset filtering and armor folding to select better representatives.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved the Armor pool overview to better show pre-pruned duplicate items.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added categorized synergy icons for Gear Set bonuses; Gear Set bonus and set-name tooltips show descriptions, source types, and manifest-derived locations.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Armor tooltips now show item Power and exotic class-item perks.",
+      },
+    ],
+  },
+  {
+    version: "2.9.18",
+    date: "October 11, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed exotic class item base stats, stats are now read from the correct sockets, and equipped tuning mods no longer shift the base stats.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Armor 2.0 and Armor 3.0 base stat detection using socket types instead of indexed positions.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor held at the Postmaster is now labeled separately and treated as owned armor in calculations, armor counts, and exotic availability.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed importing legacy configuration exports and improved compatibility with older exports, including legacy stat ordering.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Imported configurations can now be added to saved configurations without replacing your current settings.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Advanced Settings can now be reset independently to their default values.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Saved configurations now show subclass, exotic selection, stat targets, selected mods, and named armor limits, with DIM-style suggested names.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed the results page returning to 'Initializing...' when switching back from another tab, even though calculation results were already available, or when a calculation was skipped due to missing armor slots or failed with an error.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The Armor pool overview is now also shown when no results are found, including when an armor slot has no available items.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The automatic inventory refresh interval is now 5 minutes (previously 30 minutes).",
+      },
+    ],
+  },
+  {
+    version: "2.9.17",
+    date: "September 26, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an Armor pool overview panel that lists every armor item considered during calculation, grouped by slot, and highlights which pieces were removed by dominance pruning.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Hovering a pruned item in the Armor pool overview now shows a side-by-side comparison tooltip with the item that pruned it.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Item tooltips now show the item's gearset, tuning stat, and how many generated loadouts use it.",
+      },
+    ],
+  },
+  {
+    version: "2.9.16",
+    date: "September 26, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Active armor gear set bonuses are now shown and sortable in the table and card result views.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Results, checked permutations, and elapsed time now update while armor calculations are still running.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved result default ordering.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed stats locked to zero incorrectly rejecting builds that can reach the target with negative tuning.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Available Gearset bonuses are now sorted for selection.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added a maximum results slider (10K-100K, or unlimited) in Advanced Settings, replacing the previous on/off result-limiting toggle.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved exotic and legendary armor distribution across calculation threads for more even workloads.",
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Hid the wasted stats, high-speed mode, and mod optimization strategy settings as they are no longer in use.",
+      },
+    ],
+  },
+  {
+    version: "2.9.15",
+    date: "September 25, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Armor 3.0 tuning mods are now shown in result mod summaries.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Corrected stat ordering to remove hardcoded values.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved Armor 3.0 tuning calculations to default to balanced tuning instead of no tuning.",
+      },
+    ],
+  },
+  {
+    version: "2.9.14",
+    date: "September 24, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added support for Monument of Triumph Armor 3.0 exotics, including Tier 5 and flexible tuning.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added an event armor selector for Festival of the Lost and Guardian Games armor.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor 3.0 items are now detected from their manifest socket data for more reliable armor and tuning support.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Tuning mods are now included when opening a loadout in DIM.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved armor calculation performance and results with additional caching and pruning. (Thanks Mijago)",
+      },
+    ],
+  },
+  {
+    version: "2.9.13",
+    date: "March, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added functionallity to allow items that have a gear set selectable and active (e.g Guardian Games Class Item, FOTL Mask) to act and fill that item slot as if they had the gear set perk",
+      },
+    ],
+  },
+  {
+    version: "2.9.12",
+    date: "February, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Updated worker spawn logic of armor calculator, to be more readable and for potential future optimizations.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Added more logging to the armor calculator worker, to help with debugging if it crashes.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed progress bar for armor calculation, it should now reflect the actual progress of the calculation process.",
+      },
+    ],
+  },
+  {
+    version: "2.9.11",
+    date: "February 19, 2026",
+    clearManifest: true,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Changed the logic for manifest download to use sqlite (if WASM fails, fallback to old JSON method), reduces calls to the API, and memory usage, fixing crashes and performance issues, primarily for iOS users.",
+        issues: [],
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Better view for tablet users? Please give feedback on this, screen sizes varies a lot, share your device model/characteristics.",
+        issues: [],
+      },
+    ],
+  },
+  {
     version: "2.9.10",
     date: "February 15, 2026",
     clearManifest: true,

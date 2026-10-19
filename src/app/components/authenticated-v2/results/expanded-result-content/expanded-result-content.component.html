@@ -51,32 +51,32 @@
         <ng-container *ngVar="getMasterworkBonus(i) as bonus">
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatHealth] + bonus[1]
+              i.stats[ArmorStat.StatHealth] + bonus[ArmorStat.StatHealth]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatMelee] + bonus[5]
+              i.stats[ArmorStat.StatMelee] + bonus[ArmorStat.StatMelee]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatGrenade] + bonus[3]
+              i.stats[ArmorStat.StatGrenade] + bonus[ArmorStat.StatGrenade]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatSuper] + bonus[4]
+              i.stats[ArmorStat.StatSuper] + bonus[ArmorStat.StatSuper]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatClass] + bonus[2]
+              i.stats[ArmorStat.StatClass] + bonus[ArmorStat.StatClass]
             }}</span>
           </td>
           <td class="item-stat-container">
             <span [class.text-mw]="i.masterworked" class="item-stat-value">{{
-              i.stats[ArmorStat.StatWeapon] + bonus[0]
+              i.stats[ArmorStat.StatWeapon] + bonus[ArmorStat.StatWeapon]
             }}</span>
           </td>
         </ng-container>

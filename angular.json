@@ -24,7 +24,17 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "sql-wasm.wasm",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              },
+              {
+                "glob": "highs.{wasm,mjs}",
+                "input": "node_modules/highs/build/",
+                "output": "assets/"
+              }
             ],
             "styles": [
               {
@@ -55,8 +65,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-              ],
+              "fileReplacements": [],
               "outputHashing": "all",
               "sourceMap": true,
               "vendorChunk": true
@@ -74,8 +83,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-              ],
+              "fileReplacements": [],
               "outputHashing": "all",
               "sourceMap": true,
               "vendorChunk": true
@@ -93,8 +101,7 @@
                   "maximumError": "80kb"
                 }
               ],
-              "fileReplacements": [
-              ],
+              "fileReplacements": [],
               "styles": [
                 {
                   "input": "src/styles.scss",
@@ -165,10 +172,24 @@
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "*.wasm",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              },
+              {
+                "glob": "sql-wasm.js",
+                "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              },
+              {
+                "glob": "highs.{wasm,mjs}",
+                "input": "node_modules/highs/build/",
+                "output": "assets/"
+              }
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",

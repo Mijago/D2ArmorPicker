@@ -1,3 +1,30 @@
+<ng-template #synergyTags let-synergies>
+  <span class="synergy-tag-list" *ngIf="synergies.length">
+    <span
+      class="synergy-tag"
+      *ngFor="let synergy of synergies"
+      [matTooltip]="synergy.label + ': ' + synergy.description"
+      [style.color]="synergy.color"
+      role="img"
+      [attr.aria-label]="synergy.label + '. ' + synergy.description">
+      <ng-container *ngIf="synergy.imageUrl; else localSynergyIcon">
+        <img class="synergy-bungie-icon" [src]="synergy.imageUrl" alt="" aria-hidden="true" />
+      </ng-container>
+      <ng-template #localSynergyIcon>
+        <span
+          *ngIf="synergy.svg; else materialSynergyIcon"
+          class="synergy-svg-icon"
+          [style.background-image]="synergy.gradient"
+          [style.--synergy-mask]="'url(' + synergy.svg + ')'">
+        </span>
+        <ng-template #materialSynergyIcon>
+          <mat-icon *ngIf="synergy.icon" aria-hidden="true">{{ synergy.icon }}</mat-icon>
+        </ng-template>
+      </ng-template>
+    </span>
+  </span>
+</ng-template>
+
 <div class="gearset-selection-container">
   <table class="gearset-table">
     <thead>
@@ -9,8 +36,13 @@
     </thead>
     <tbody>
       <tr *ngFor="let gearSet of gearSets; let i = index">
-        <td class="gear-set-name">
-          {{ gearSet.name }}
+        <td class="gear-set-name" [matTooltip]="getAcquisitionSourceTooltip(gearSet)">
+          <div class="gear-set-label">
+            <span>{{ gearSet.name }}</span>
+            <span *ngIf="config.isTheorizer" class="owned-coverage"
+              >{{ gearSet.ownedSlots || 0 }}/5 owned</span
+            >
+          </div>
         </td>
         <td class="two-piece-bonuses">
           <div
@@ -27,13 +59,16 @@
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img
-                *ngIf="bonus.perk.displayProperties.hasIcon"
-                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                *ngIf="bonus.perk?.displayProperties?.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk?.displayProperties?.icon"
                 loading="lazy"
-                alt="{{ bonus.perk.displayProperties.name }} icon"
+                alt="{{ bonus.perk?.displayProperties?.name }} icon"
                 class="bonus-icon-image" />
             </span>
-            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+            <span class="bonus-name">{{ bonus.perk?.displayProperties?.name }}</span>
+            <ng-container
+              *ngTemplateOutlet="synergyTags; context: { $implicit: gearSet.synergies.twoPiece }">
+            </ng-container>
           </div>
         </td>
         <td class="four-piece-bonuses">
@@ -51,13 +86,16 @@
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img
-                *ngIf="bonus.perk.displayProperties.hasIcon"
-                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                *ngIf="bonus.perk?.displayProperties?.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk?.displayProperties?.icon"
                 loading="lazy"
-                alt="{{ bonus.perk.displayProperties.name }} icon"
+                alt="{{ bonus.perk?.displayProperties?.name }} icon"
                 class="bonus-icon-image" />
             </span>
-            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+            <span class="bonus-name">{{ bonus.perk?.displayProperties?.name }}</span>
+            <ng-container
+              *ngTemplateOutlet="synergyTags; context: { $implicit: gearSet.synergies.fourPiece }">
+            </ng-container>
           </div>
         </td>
       </tr>

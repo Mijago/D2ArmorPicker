@@ -36,6 +36,10 @@
   flex-direction: row;
   align-items: center;
   margin-bottom: 8px;
+
+  .mat-mdc-form-field-infix {
+    padding-bottom: 4px;
+  }
 }
 
 .dropdown-header {
@@ -43,10 +47,12 @@
   align-items: center;
   gap: 8px;
   flex-wrap: nowrap;
+  font-size: 14px;
+  font-weight: 400;
+  margin-right: 8px;
 }
 
 .dropdown-inline {
-  max-width: 150px;
   min-width: 120px;
   font-size: 13px;
 }
@@ -61,7 +67,28 @@
   font-weight: 500;
 }
 
-mat-select {
-  max-width: 150px;
-  min-height: 32px;
+.slider-setting {
+  display: flex;
+  flex-direction: column;
+  max-width: 520px;
+  margin-bottom: 8px;
+}
+
+.slider-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.result-limit-slider {
+  width: 100%;
+}
+
+.advanced-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  margin-top: 12px;
+  padding-top: 12px;
 }

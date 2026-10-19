@@ -37,6 +37,20 @@
           {{ gearset.displayProperties.description }}
         </td>
       </tr>
+      <tr *ngIf="gearset">
+        <td class="source-label">Source</td>
+        <td>
+          <ng-container *ngIf="acquisitionSources.length > 0; else unknownSource">
+            <div *ngFor="let source of acquisitionSources | slice: 0 : 6">
+              {{ getAcquisitionSourceName(source) }}
+            </div>
+            <div *ngIf="acquisitionSources.length > 6" class="more-sources">
+              + {{ acquisitionSources.length - 6 }} more sources
+            </div>
+          </ng-container>
+          <ng-template #unknownSource>Unknown</ng-template>
+        </td>
+      </tr>
     </table>
   </div>
 </div>

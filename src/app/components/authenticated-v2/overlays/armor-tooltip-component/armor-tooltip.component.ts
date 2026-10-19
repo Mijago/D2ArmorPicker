@@ -15,31 +15,88 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, OnInit } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
-import { ArmorStat, ARMORSTAT_ORDER, ArmorStatNames } from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_MASTERWORK_LEVEL } from "src/app/data/constants";
 import { ArmorSystem } from "src/app/data/types/IManifestArmor";
+import { DatabaseService } from "src/app/services/database.service";
+import {
+  ExoticClassItemPerkNames,
+  ExoticClassItemSpirits,
+} from "src/app/data/exotic-class-item-spirits";
 
 @Component({
   selector: "app-armor-tooltip-component",
   templateUrl: "./armor-tooltip.component.html",
   styleUrls: ["./armor-tooltip.component.css"],
 })
-export class ArmorTooltipComponent {
+export class ArmorTooltipComponent implements OnInit {
   @Input() itemTooltip: ResultItem | undefined;
+  @Input() comparisonTooltip: ResultItem | undefined;
+  @Input() comparisonLabel: string | undefined;
 
-  // Define the correct order of stats as used in the expanded-result-content component
-  armorStatIds = ARMORSTAT_ORDER;
+  armorStatIds = Object.values(ArmorStat).filter(
+    (value) => typeof value === "number"
+  ) as ArmorStat[];
 
-  getSourceText() {
-    if (!this.itemTooltip) {
+  private gearSetNameLookup = new Map<number, string>();
+
+  constructor(private db: DatabaseService) {}
+
+  ngOnInit(): void {
+    void this.loadGearSetNames();
+  }
+
+  private async loadGearSetNames(): Promise<void> {
+    const gearSets = await this.db.equipableItemSetDefinition.toArray();
+    for (const gearSet of gearSets) {
+      this.gearSetNameLookup.set(gearSet.hash, gearSet.displayProperties?.name ?? "");
+    }
+  }
+
+  getSourceText(item: ResultItem | undefined = this.itemTooltip) {
+    if (!item) {
       return "";
     }
 
-    return InventoryArmorSourceNames[this.itemTooltip.source];
+    return InventoryArmorSourceNames[item.source];
+  }
+
+  getGearsetName(item: ResultItem | undefined): string {
+    if (!item || item.gearSetHash == null) {
+      return "";
+    }
+
+    return this.gearSetNameLookup.get(item.gearSetHash) ?? "";
+  }
+
+  getTuningStatName(item: ResultItem | undefined): string {
+    if (!item || item.tuningStat == null) {
+      return "";
+    }
+
+    return ArmorStatNames[item.tuningStat];
+  }
+
+  getExoticClassItemPerks(item: ResultItem | undefined): string[] | undefined {
+    if (!item?.exotic || (item.exoticPerkHash?.length ?? 0) < 2) return undefined;
+    return item
+      .exoticPerkHash!.slice(0, 2)
+      .map(
+        (hash) =>
+          ExoticClassItemPerkNames[hash as ExoticClassItemSpirits] || `Unknown perk (${hash})`
+      );
+  }
+
+  getUsedByCount(item: ResultItem | undefined): number {
+    return item?.usedByCount ?? 0;
+  }
+
+  hasUsedByCount(item: ResultItem | undefined): boolean {
+    return item?.usedByCount !== undefined;
   }
 
   getArmorStatName(statId: ArmorStat) {
@@ -50,8 +107,8 @@ export class ArmorTooltipComponent {
     return Math.min(100, (stat / 32) * 100) + "%";
   }
 
-  getTotalStats() {
-    return this.itemTooltip?.stats.reduce((a, b) => a + b, 0) || 0;
+  getTotalStats(item: ResultItem | undefined = this.itemTooltip) {
+    return item?.stats.reduce((a, b) => a + b, 0) || 0;
   }
 
   getMasterworkBonus(item: ResultItem) {
@@ -86,16 +143,15 @@ export class ArmorTooltipComponent {
     return bonus;
   }
 
-  getStatWithMasterwork(statId: ArmorStat): number {
-    if (!this.itemTooltip) return 0;
+  getStatWithMasterwork(item: ResultItem | undefined, statId: ArmorStat): number {
+    if (!item) return 0;
 
-    const baseValue = this.itemTooltip.stats[statId];
-    const masterworkBonus = this.getMasterworkBonus(this.itemTooltip);
+    const baseValue = item.stats[statId];
+    const masterworkBonus = this.getMasterworkBonus(item);
     return baseValue + masterworkBonus[statId];
   }
 
-  get isVendorItem() {
-    return this.itemTooltip?.source === InventoryArmorSource.Vendor;
+  isVendorItem(item: ResultItem | undefined = this.itemTooltip) {
+    return item?.source === InventoryArmorSource.Vendor;
   }
-  constructor() {}
 }

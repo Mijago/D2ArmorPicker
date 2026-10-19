@@ -16,7 +16,18 @@
  */
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { DestinyClass } from "bungie-api-ts/destiny2";
+import {
+  BuildConfiguration,
+  suggestedConfigurationName,
+} from "../../../../data/buildConfiguration";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
+import { ModInformation } from "../../../../data/ModInformation";
+import { ArmorPerkOrSlotNames, ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
+import { SubclassNames } from "../../../../data/enum/modifierType";
+import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
+import { DatabaseService } from "../../../../services/database.service";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import {
   ConfigurationService,
   StoredConfiguration,
@@ -39,19 +50,24 @@ import { Clipboard } from "@angular/cdk/clipboard";
   styleUrls: ["./load-and-save-settings.component.css"],
 })
 export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
+  ArmorStat = ArmorStat;
+  ArmorStatNames = ArmorStatNames;
+  savedConfigurationStats = [
+    ArmorStat.StatWeapon,
+    ArmorStat.StatHealth,
+    ArmorStat.StatClass,
+    ArmorStat.StatGrenade,
+    ArmorStat.StatSuper,
+    ArmorStat.StatMelee,
+  ];
   selectedEntry: string = "";
   storedConfigs: StoredConfiguration[] = [];
-  displayedColumns = [
-    "name",
-    "class",
-    "mobility",
-    "resilience",
-    "recovery",
-    "discipline",
-    "intellect",
-    "strength",
-    "delete",
-  ];
+  private suggestedConfigurationName = "";
+  private nameSuggestionRequest = 0;
+  private exoticNameLookup = new Map<number, string>();
+  private exoticNameLookupRequest = 0;
+  private gearsetNameLookup = new Map<number, string>();
+  private gearsetLookupRequest = 0;
 
   settingsNameForm: UntypedFormGroup;
   importTextForm: UntypedFormGroup;
@@ -62,16 +78,162 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
     public dialog: MatDialog,
     private _snackBar: MatSnackBar,
     private clipboard: Clipboard,
-    private logger: NGXLogger
+    private itemIconService: ItemIconServiceService,
+    private database: DatabaseService,
+    private logger: LoggingProxyService
   ) {
     this.settingsNameForm = this.formBuilder.group({ name: [null] });
     this.importTextForm = this.formBuilder.group({ content: [null] });
   }
 
   ngOnInit(): void {
-    this.config.storedConfigurations
+    this.config.storedConfigurations.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
+      this.storedConfigs = d;
+      void this.loadExoticNames(d);
+      void this.loadGearsetNames(d);
+    });
+    this.config.configuration
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((d) => (this.storedConfigs = d));
+      .subscribe((configuration) => void this.updateSuggestedConfigurationName(configuration));
+  }
+
+  private async updateSuggestedConfigurationName(configuration: BuildConfiguration): Promise<void> {
+    const request = ++this.nameSuggestionRequest;
+    const exoticHashes = [...new Set(configuration.selectedExotics.filter((hash) => hash >= 0))];
+    const exoticItems = await Promise.all(
+      exoticHashes.map((hash) => this.itemIconService.getItemCached(hash).catch(() => undefined))
+    );
+    if (request !== this.nameSuggestionRequest) return;
+    exoticItems.forEach((item, index) => {
+      if (item?.name) this.exoticNameLookup.set(exoticHashes[index], item.name);
+    });
+
+    const exoticNames = [
+      ...new Set(exoticItems.map((item) => item?.name).filter((name): name is string => !!name)),
+    ];
+    const suggestedName = suggestedConfigurationName(configuration, exoticNames);
+    const nameControl = this.settingsNameForm.get("name");
+    if (!nameControl?.value || nameControl.value === this.suggestedConfigurationName) {
+      nameControl?.setValue(suggestedName);
+    }
+    this.suggestedConfigurationName = suggestedName;
+  }
+
+  private async loadExoticNames(configurations: StoredConfiguration[]): Promise<void> {
+    const request = ++this.exoticNameLookupRequest;
+    const hashes = [
+      ...new Set(
+        configurations.flatMap((saved) =>
+          saved.configuration.selectedExotics.filter((hash) => hash >= 0)
+        )
+      ),
+    ];
+    const entries = await Promise.all(
+      hashes.map(async (hash) => {
+        const item = await this.itemIconService.getItemCached(hash).catch(() => undefined);
+        return [hash, item?.name] as const;
+      })
+    );
+    if (request !== this.exoticNameLookupRequest) return;
+    for (const [hash, name] of entries) {
+      if (name) this.exoticNameLookup.set(hash, name);
+    }
+  }
+
+  private async loadGearsetNames(configurations: StoredConfiguration[]): Promise<void> {
+    const request = ++this.gearsetLookupRequest;
+    const gearsetHashes = [
+      ...new Set(
+        configurations.flatMap((saved) =>
+          saved.configuration.armorRequirements
+            .filter((requirement) => "gearSetHash" in requirement)
+            .map((requirement) => (requirement as { gearSetHash: number }).gearSetHash)
+        )
+      ),
+    ];
+    const entries = await Promise.all(
+      gearsetHashes.map(async (hash) => {
+        try {
+          const gearset = await this.database.equipableItemSetDefinition
+            .where("hash")
+            .equals(hash)
+            .first();
+          return [hash, gearset?.displayProperties.name || `Gearset ${hash}`] as const;
+        } catch {
+          return [hash, `Gearset ${hash}`] as const;
+        }
+      })
+    );
+    if (request !== this.gearsetLookupRequest) return;
+    for (const [hash, name] of entries) this.gearsetNameLookup.set(hash, name);
+  }
+
+  getClassName(configuration: StoredConfiguration["configuration"]): string {
+    switch (configuration.characterClass) {
+      case DestinyClass.Titan:
+        return "Titan";
+      case DestinyClass.Hunter:
+        return "Hunter";
+      case DestinyClass.Warlock:
+        return "Warlock";
+      default:
+        return "Any Class";
+    }
+  }
+
+  getSubclassName(configuration: StoredConfiguration["configuration"]): string {
+    return (
+      (SubclassNames as Record<number, string>)[configuration.selectedModElement] || "No subclass"
+    );
+  }
+
+  getExoticHashes(configuration: StoredConfiguration["configuration"]): number[] {
+    const displayedNames = new Set<string>();
+    return [...new Set(configuration.selectedExotics.filter((hash) => hash >= 0))].filter(
+      (hash) => {
+        const name = this.exoticNameLookup.get(hash)?.trim().toLocaleLowerCase();
+        if (!name) return true;
+        if (displayedNames.has(name)) return false;
+        displayedNames.add(name);
+        return true;
+      }
+    );
+  }
+
+  getExoticSelectionLabel(configuration: StoredConfiguration["configuration"]): string {
+    if (configuration.selectedExotics.includes(FORCE_USE_NO_EXOTIC)) return "No exotic selected";
+    if (configuration.selectedExotics.includes(FORCE_USE_ANY_EXOTIC)) return "Any exotic";
+    if (configuration.selectedExotics.length === 0) return "No exotic restriction";
+    return "Selected exotic(s)";
+  }
+
+  getSelectedModsSummary(configuration: StoredConfiguration["configuration"]): string {
+    const names = configuration.enabledMods
+      .map((mod) => ModInformation[mod]?.name)
+      .filter((name): name is string => !!name);
+    if (names.length === 0) return "None selected";
+    return names.join(", ");
+  }
+
+  getArmorRequirementsSummary(configuration: StoredConfiguration["configuration"]): string {
+    const gearsetCounts = new Map<number, number>();
+    const perkNames: string[] = [];
+    for (const requirement of configuration.armorRequirements) {
+      if ("gearSetHash" in requirement) {
+        gearsetCounts.set(
+          requirement.gearSetHash,
+          (gearsetCounts.get(requirement.gearSetHash) || 0) + 1
+        );
+      } else if ("perk" in requirement) {
+        perkNames.push(ArmorPerkOrSlotNames[requirement.perk] || "Armor perk");
+      }
+    }
+
+    const gearsetNames = [...gearsetCounts.entries()].map(([hash, count]) => {
+      const pieceCount = count >= 4 ? "4-piece" : `${count}-piece`;
+      return `${this.gearsetNameLookup.get(hash) || `Gearset ${hash}`} (${pieceCount})`;
+    });
+    return [...gearsetNames, ...perkNames].join(", ") || "None";
   }
 
   submit() {
@@ -89,13 +251,13 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       dialogRef.afterClosed().subscribe((result) => {
         if (result) {
           this.config.saveCurrentConfigurationToName(name);
-          this.settingsNameForm.reset();
+          this.settingsNameForm.reset({ name: this.suggestedConfigurationName });
           this.selectedEntry = name;
         }
       });
     } else {
       this.config.saveCurrentConfigurationToName(name);
-      this.settingsNameForm.reset();
+      this.settingsNameForm.reset({ name: this.suggestedConfigurationName });
       this.selectedEntry = name;
     }
   }
@@ -137,23 +299,20 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
     const content = this.importTextForm.get("content")?.value;
     if (!content) return this.openSnackBar("Invalid input.");
     try {
-      const jsonText = lzutf8.decompress(content, { inputEncoding: "Base64" });
-      const isArray = jsonText.substr(0, 1) == "[";
-      let jsonData = JSON.parse(jsonText);
-      if (!isArray) jsonData = [jsonData];
-
+      const imported = this.parseImportedConfigurations(content);
       this.logger.debug(
         "LoadAndSaveSettingsComponent",
         "runImport",
-        "Incoming json: " + JSON.stringify(jsonData)
+        "Incoming json: " + JSON.stringify(imported.jsonData)
       );
-      for (let jsonDatum of jsonData) {
-        this.config.checkAndFixOldSavedConfigurations(jsonDatum);
-        if (jsonDatum.hasOwnProperty("name")) {
-          if (isArray) this.config.saveConfiguration(jsonDatum.name, jsonDatum.configuration);
-          else this.config.saveCurrentConfiguration(jsonDatum.configuration);
+      for (const entry of imported.configurations) {
+        if (entry.isNamedConfiguration && imported.isArray) {
+          this.config.saveConfiguration(
+            entry.storedConfiguration.name,
+            entry.storedConfiguration.configuration
+          );
         } else {
-          this.config.saveCurrentConfiguration(jsonDatum);
+          this.config.saveCurrentConfiguration(entry.storedConfiguration.configuration);
         }
       }
       this.openSnackBar("Successfully loaded this configuration");
@@ -162,6 +321,70 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       this.openSnackBar("Invalid input.");
       this.logger.error("LoadAndSaveSettingsComponent", "runImport", "Error: " + e);
     }
+  }
+
+  runImportAsSaved() {
+    const content = this.importTextForm.get("content")?.value;
+    if (!content) return this.openSnackBar("Invalid input.");
+    try {
+      const imported = this.parseImportedConfigurations(content);
+      this.logger.debug(
+        "LoadAndSaveSettingsComponent",
+        "runImportAsSaved",
+        "Incoming json: " + JSON.stringify(imported.jsonData)
+      );
+
+      const usedNames = new Set(this.storedConfigs.map((configuration) => configuration.name));
+      for (const entry of imported.configurations) {
+        const preferredName = entry.isNamedConfiguration
+          ? entry.storedConfiguration.name
+          : "Imported configuration";
+        const name = this.getUniqueImportedConfigurationName(preferredName, usedNames);
+        this.config.saveConfiguration(name, entry.storedConfiguration.configuration);
+      }
+
+      this.openSnackBar(
+        `Added ${imported.configurations.length} configuration(s) to saved configurations. Current settings were not changed.`
+      );
+      this.importTextForm.get("content")?.reset();
+    } catch (e) {
+      this.openSnackBar("Invalid input.");
+      this.logger.error("LoadAndSaveSettingsComponent", "runImportAsSaved", "Error: " + e);
+    }
+  }
+
+  private parseImportedConfigurations(content: string): {
+    isArray: boolean;
+    jsonData: any;
+    configurations: { storedConfiguration: StoredConfiguration; isNamedConfiguration: boolean }[];
+  } {
+    const jsonText = lzutf8.decompress(content, { inputEncoding: "Base64" });
+    const jsonData = JSON.parse(jsonText);
+    const isArray = Array.isArray(jsonData);
+    const configurations = (isArray ? jsonData : [jsonData]).map((jsonDatum: any) => {
+      const isNamedConfiguration = Object.prototype.hasOwnProperty.call(jsonDatum, "name");
+      const storedConfiguration = (
+        isNamedConfiguration
+          ? jsonDatum
+          : { name: "import", version: "1", configuration: jsonDatum }
+      ) as StoredConfiguration;
+      this.config.checkAndFixOldSavedConfigurations(storedConfiguration);
+      return { storedConfiguration, isNamedConfiguration };
+    });
+
+    return { isArray, jsonData, configurations };
+  }
+
+  private getUniqueImportedConfigurationName(name: string, usedNames: Set<string>): string {
+    const baseName = name || "Imported configuration";
+    let uniqueName = baseName;
+    let suffix = 2;
+    while (usedNames.has(uniqueName)) {
+      uniqueName = `${baseName} (${suffix})`;
+      suffix++;
+    }
+    usedNames.add(uniqueName);
+    return uniqueName;
   }
 
   copySingleSettingToClipboard(element: any) {

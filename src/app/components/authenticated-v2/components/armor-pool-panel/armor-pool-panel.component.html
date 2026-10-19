@@ -1,0 +1,72 @@
+<mat-card
+  appearance="outlined"
+  class="armor-pool-window"
+  [class.is-collapsed]="isCollapsed"
+  *ngIf="armorPoolItems.length > 0">
+  <mat-card-header class="armor-pool-header">
+    <div class="armor-pool-header-row">
+      <div class="armor-pool-title-block">
+        <mat-card-title>Armor pool overview</mat-card-title>
+        <mat-card-subtitle *ngIf="!isCollapsed && getPrunedEntries().length"
+          >Gray pieces were removed during dominance pruning.</mat-card-subtitle
+        >
+      </div>
+      <button
+        mat-icon-button
+        type="button"
+        class="collapse-toggle"
+        (click)="toggleCollapsed()"
+        [attr.aria-label]="isCollapsed ? 'Expand armor pool' : 'Collapse armor pool'">
+        <mat-icon>{{ isCollapsed ? "expand_more" : "expand_less" }}</mat-icon>
+      </button>
+    </div>
+  </mat-card-header>
+
+  <mat-card-content *ngIf="!isCollapsed">
+    <div class="action-row">
+      <button
+        *ngIf="getPrunedEntries().length"
+        mat-stroked-button
+        type="button"
+        (click)="copyPrunedDIMQuery()">
+        Copy removed items as DIM query
+      </button>
+      <button mat-stroked-button type="button" (click)="copyAllItemsDIMQuery()">
+        Copy all items as DIM query
+      </button>
+    </div>
+
+    <div class="armor-pool-search" *ngIf="armorPoolItems.length > 0">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search by name, gearset, or item ID</mat-label>
+        <input matInput [(ngModel)]="searchTerm" type="text" />
+      </mat-form-field>
+    </div>
+
+    <ng-container *ngFor="let slot of armorSlotOrder">
+      <div class="armor-pool-slot-group" *ngIf="getArmorSlotEntries(slot).length">
+        <div class="armor-pool-slot-title">{{ getArmorSlotLabel(slot) }}</div>
+        <div class="armor-pool-items" *ngIf="getArmorSlotEntries(slot).length > 0">
+          <ng-container *ngFor="let entry of getArmorSlotEntries(slot)">
+            <mat-menu #entryMenu="matMenu">
+              <button mat-menu-item (click)="copyItemDIMQuery(entry.item)"> Copy DIM query </button>
+              <button mat-menu-item (click)="disableItemFromResults(entry.item)">
+                Disable this item from results
+              </button>
+            </mat-menu>
+
+            <app-armor-item-tile
+              [item]="entry.item"
+              [pruned]="entry.pruned"
+              [prunedByItem]="entry.prunedBy ?? null"
+              [highlight]="highlightedPrunerId === entry.item.itemInstanceId"
+              [itemUsageCounts]="itemUsageCounts"
+              (hoverStateChange)="onHoverStateChange(entry, $event)"
+              [matMenuTriggerFor]="entryMenu"
+              [size]="'compact'"></app-armor-item-tile>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

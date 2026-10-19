@@ -15,7 +15,7 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<div id="card-config">
+<div id="card-config" [class.fit-container]="fitContainer">
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title>Character Selection</mat-card-title>
@@ -95,12 +95,18 @@
       <app-ignored-items-list></app-ignored-items-list>
     </mat-card-content>
   </mat-card>
-  <mat-card appearance="outlined">
+  <mat-card appearance="outlined" *ngIf="!theorizer">
     <mat-card-header>
-      <mat-card-title>Configuration Management</mat-card-title>
-      <mat-card-subtitle>
-        Save and load your buildcrafting settings for another day!
-      </mat-card-subtitle>
+      <mat-card-title>Performance Optimization</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <app-advanced-settings section="performance"></app-advanced-settings>
+    </mat-card-content>
+  </mat-card>
+  <mat-card appearance="outlined" *ngIf="!theorizer">
+    <mat-card-header>
+      <mat-card-title>Configuration Management and Import</mat-card-title>
+      <mat-card-subtitle> Save, load, and import your buildcrafting settings. </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <app-load-and-save-settings></app-load-and-save-settings>

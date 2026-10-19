@@ -16,7 +16,7 @@
  */
 
 import { Component, OnInit } from "@angular/core";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../services/logging-proxy.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { HttpClientService } from "../../services/http-client.service";
 import { UserInformationService } from "../../services/user-information.service";
@@ -32,7 +32,7 @@ export class HandleBungieLoginComponent implements OnInit {
     private router: Router,
     private httpClient: HttpClientService,
     private userInfo: UserInformationService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {}
 
   ngOnInit(): void {

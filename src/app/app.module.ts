@@ -64,18 +64,20 @@ import { ModTooltipDirective } from "./components/authenticated-v2/overlays/mod-
 import { StatCooldownTooltipComponent } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.component";
 import { StatCooldownTooltipDirective } from "./components/authenticated-v2/overlays/stat-cooldown-tooltip/stat-cooldown-tooltip.directive";
 import { SlotLimitationTitleComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/slot-limitation-title/slot-limitation-title.component";
+import { ArmorItemTileComponent } from "./components/authenticated-v2/components/armor-item-tile/armor-item-tile.component";
+import { ArmorPoolPanelComponent } from "./components/authenticated-v2/components/armor-pool-panel/armor-pool-panel.component";
 import { CommonMaterialModule } from "./modules/common-material/common-material.module";
 import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 import { LoggerModule, NgxLoggerLevel } from "ngx-logger";
 import {
   VendorIdFromItemIdPipe,
   VendorNamePipe,
 } from "./components/authenticated-v2/pipes/vendor-name-pipe";
+import { LogLevelPipe } from "./components/authenticated-v2/pipes/log-level.pipe";
 
 import { environment } from "../environments/environment";
 // import { H } from "highlight.run";
-import Tracker from "@openreplay/tracker";
-import trackerAssist from "@openreplay/tracker-assist";
 
 import { ResultsCardViewComponent } from "./components/authenticated-v2/results/results-card-view/results-card-view.component";
 import { ResultsTableViewComponent } from "./components/authenticated-v2/results/results-table-view/results-table-view.component";
@@ -83,75 +85,10 @@ import { GearsetSelectionComponent } from "./components/authenticated-v2/setting
 import { GearsetcTooltipDirective as GearsetTooltipDirective } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.directive";
 import { GearsetTooltipComponent } from "./components/authenticated-v2/overlays/gearset-tooltip/gearset-tooltip.component";
 
-let openReplayTracker: Tracker;
-
-export function identifyUserWithTracker(membershipData: GroupUserInfoCard | null) {
-  try {
-    openReplayTracker.setMetadata("version", `${environment.version}`);
-
-    if (!membershipData) return;
-    const identifier = `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`;
-
-    openReplayTracker.identify(identifier);
-    openReplayTracker.setMetadata(
-      "bungieGlobalDisplayName",
-      membershipData.bungieGlobalDisplayName
-    );
-    openReplayTracker.setMetadata(
-      "bungieGlobalDisplayNameCode",
-      (membershipData.bungieGlobalDisplayNameCode ?? -1).toString()
-    );
-    openReplayTracker.setMetadata("membershipType", membershipData.membershipType.toString());
-    openReplayTracker.setMetadata(
-      "applicableMembershipTypes",
-      JSON.stringify(membershipData.applicableMembershipTypes)
-    );
-
-    // Identify user with Sentry
-    Sentry.setUser({
-      id: identifier,
-      username: membershipData.displayName,
-      email: membershipData.bungieGlobalDisplayName,
-      extra: {
-        membershipId: membershipData.membershipId,
-        membershipType: membershipData.membershipType,
-        bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
-        applicableMembershipTypes: membershipData.applicableMembershipTypes,
-        iconPath: membershipData.iconPath,
-      },
-    });
-    // H.identify(identifier, {
-    //   highlightDisplayName: `${membershipData.displayName}(I${membershipData.membershipId}T${membershipData.membershipType})`,
-    //   avatar: `https://bungie.net${membershipData.iconPath}`,
-    //   bungieGlobalDisplayName: membershipData.bungieGlobalDisplayName,
-    //   bungieGlobalDisplayNameCode: membershipData.bungieGlobalDisplayNameCode ?? -1,
-    //   membershipType: membershipData.membershipType,
-    //   applicableMembershipTypes: JSON.stringify(membershipData.applicableMembershipTypes),
-    // });
-  } catch (err) {
-    console.error("Error identifying user with tracker", err);
-  }
-}
-
-try {
-  openReplayTracker = new Tracker({
-    projectKey: environment.open_replay_project_key,
-  });
-
-  openReplayTracker.start();
-  const options = {};
-  openReplayTracker.use(trackerAssist(options)); // check the list of available options below
-
-  let membershipInfo: GroupUserInfoCard | null = JSON.parse(
-    localStorage.getItem("user-membershipInfo") || "null"
-  );
-  if (membershipInfo) {
-    console.log("Found cached membership info, using it to identify user in OpenReplay");
-  }
-  identifyUserWithTracker(membershipInfo);
-} catch (e) {
-  console.error("Failed to initialize OpenReplay tracker", e);
-}
+// OpenReplay tracker lives in its own module to avoid a circular import with
+// membership.service (which imports identifyUserWithTracker). The side-effect
+// import below runs the tracker init on app load, as before.
+import "./services/openreplay-tracker";
 
 // if (!!environment.highlight_project_id) {
 //   H.init(environment.highlight_project_id, {
@@ -179,7 +116,7 @@ try {
 import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
 import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
 import { PrivacyPolicyComponent } from "./components/privacy-policy/privacy-policy.component";
-import { GroupUserInfoCard } from "bungie-api-ts/groupv2";
+import { TheorizerPageComponent } from "./components/authenticated-v2/subpages/theorizer-page/theorizer-page.component";
 
 const routes: Routes = [
   {
@@ -200,6 +137,10 @@ const routes: Routes = [
         component: ArmorClusterPageComponent,
       },
       {
+        path: "theorizer",
+        component: TheorizerPageComponent,
+      },
+      {
         path: "investigate",
         component: ArmorInvestigationPageComponent,
       },
@@ -218,6 +159,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
+    TheorizerPageComponent,
     AppComponent,
     LoginComponent,
     HandleBungieLoginComponent,
@@ -241,6 +183,7 @@ const routes: Routes = [
     CountElementInListPipe,
     VendorIdFromItemIdPipe,
     VendorNamePipe,
+    LogLevelPipe,
     IgnoredItemsListComponent,
     HelpPageComponent,
     ArmorPickerPageComponent,
@@ -268,9 +211,12 @@ const routes: Routes = [
     ModslotVisualizationComponent,
     ModLimitSegmentedComponent,
     PrivacyPolicyComponent,
+    ArmorItemTileComponent,
+    ArmorPoolPanelComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     CommonMaterialModule,
 
     BrowserModule,

@@ -19,12 +19,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
-import {
-  ArmorStat,
-  ARMORSTAT_ORDER,
-  ArmorStatNames,
-  SpecialArmorStat,
-} from "../../../../data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames, SpecialArmorStat } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { BungieApiService } from "../../../../services/bungie-api.service";
 import { ModOrAbility } from "../../../../data/enum/modOrAbility";
@@ -32,7 +27,7 @@ import { MAT_SLIDE_TOGGLE_DEFAULT_OPTIONS } from "@angular/material/slide-toggle
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 
 @Component({
   selector: "app-desired-mods-selection",
@@ -46,13 +41,13 @@ import { NGXLogger } from "ngx-logger";
   ],
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
-  ARMORSTAT_ORDER = ARMORSTAT_ORDER;
+  armorStats = Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[];
   ArmorStatNames = ArmorStatNames;
   ModifierType = ModifierType;
   ModOrAbility = ModOrAbility;
   dataSource: Modifier[];
   displayedColumns = ["name"].concat(
-    ARMORSTAT_ORDER.map((stat) => {
+    this.armorStats.map((stat) => {
       return ArmorStatNames[stat];
     })
   );
@@ -65,7 +60,7 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   constructor(
     private config: ConfigurationService,
     private bungieApi: BungieApiService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     const modifiers = Object.values(ModInformation).sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {

@@ -11,7 +11,19 @@
       <div class="modslot" [ngClass]="{ blocked: slot.type !== SlotType.SlotTypeEmpty }">
         <ng-container [ngSwitch]="slot.type">
           <ng-container *ngSwitchCase="SlotType.SlotTypeExotic">
-            <app-item-icon [itemHash]="slot.hash" class="modslot-icon exotic"></app-item-icon>
+            <div
+              *ngIf="slot.showGenericExotic; else selectedExoticIcon"
+              class="generic-exotic-icon"
+              [matTooltip]="slot.name || ''">
+              <img
+                src="assets/icons/exotic_helmet.jpg"
+                class="modslot-icon exotic"
+                alt="Selected exotic armor" />
+              <span *ngIf="slot.count" class="generic-exotic-count">{{ slot.count }}</span>
+            </div>
+            <ng-template #selectedExoticIcon>
+              <app-item-icon [itemHash]="slot.hash" class="modslot-icon exotic"></app-item-icon>
+            </ng-template>
           </ng-container>
           <ng-container *ngSwitchCase="SlotType.SlotTypeGearset">
             <img

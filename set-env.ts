@@ -24,9 +24,9 @@ const release = ["PROD", "BETA", "CANARY", "DEV"].includes(releaseRaw) ? release
 const is_production = release === "PROD";
 const is_beta = release === "BETA";
 const is_canary = release === "CANARY";
-const is_dev = release === "DEV";
+// const is_dev = release === "DEV";
 
-const version = "2.9.10";
+const version = require("./package.json").version;
 
 // Configure Angular `environment.ts` file path
 const targetPath = "./src/environments/environment.ts";
@@ -57,10 +57,11 @@ const requiredEnvKeys = [
   "D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION",
   "D2AP_FEATURE_ENABLE_ZERO_WASTE",
   "D2AP_FEATURE_ENABLE_GUARDIAN_GAMES_FEATURES",
+  "D2AP_SHOW_LOGS",
   // Feature flags are optional; they default to disabled when not set
 ];
 
-const optionalEnvKeys = ["D2AP_SENTRY_DSN"];
+// const optionalEnvKeys = ["D2AP_SENTRY_DSN"];
 
 const hasAllRequiredEnv = requiredEnvKeys.every((k) => {
   const val = process.env[k] ?? "";
@@ -104,6 +105,7 @@ const data = {
   // highlight_project_id: process.env["D2AP_HIGHLIGHT_MONITORING_ID"],
   open_replay_project_key: process.env["D2AP_OPEN_REPLAY_PROJECT_KEY"],
   sentryDsn: process.env["D2AP_SENTRY_DSN"],
+  showLogs: process.env["D2AP_SHOW_LOGS"] == "1",
   featureFlags: {
     enableModslotLimitation: process.env["D2AP_FEATURE_ENABLE_MODSLOT_LIMITATION"] == "1",
     enableZeroWaste: process.env["D2AP_FEATURE_ENABLE_ZERO_WASTE"] == "1",

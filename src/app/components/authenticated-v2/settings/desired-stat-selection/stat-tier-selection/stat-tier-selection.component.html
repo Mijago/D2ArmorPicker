@@ -21,28 +21,50 @@
       <ng-container *ngFor="let value of statValues">
         <div
           class="stat-line"
+          [attr.data-value]="value"
           [class.zero-line]="value === 0"
           [class.milestone-line]="value === 50 || value === 100 || value === 150 || value === 200"
           [class.selected]="value === selectedValue"
           [class.lower-than-selected]="value < selectedValue"
           [class.lower-than-hovered]="hoveredValue !== null && value < hoveredValue"
           [class.higher-than-hovered]="hoveredValue !== null && value >= hoveredValue"
-          [class.disabled]="value > currentAnimatedMaxValue"
+          [class.disabled]="value > currentAnimatedMaxValue && !allowUnreachableSelection"
           [style.height]="
             value === 0 || value === 50 || value === 100 || value === 150 || value === 200
               ? '16px'
               : '8px'
           "
-          [matTooltip]="'Value: ' + value + (value % 50 === 0 ? ' (Tier ' + value / 10 + ')' : '')"
-          [matTooltipDisabled]="value > currentAnimatedMaxValue"
+          [matTooltip]="
+            'Value: ' +
+            tooltipValue(value) +
+            (tooltipValue(value) % 50 === 0 ? ' (Tier ' + tooltipValue(value) / 10 + ')' : '')
+          "
+          [matTooltipDisabled]="value > currentAnimatedMaxValue && !allowUnreachableSelection"
           matTooltipPosition="above"
           [matTooltipShowDelay]="0"
-          (click)="value <= maximumAvailableTier * 10 && setValueMob(value)"
+          (click)="value <= effectiveMaximumTier * 10 && setValueMob(value)"
           (mouseenter)="handleHover(value)"
-          (mouseleave)="clearHover()">
+          (mouseleave)="handleStatLineLeave($event)">
         </div>
       </ng-container>
     </div>
+    <input
+      class="stat-slider-input"
+      type="range"
+      min="0"
+      max="200"
+      step="1"
+      [value]="selectedValue"
+      [attr.tabindex]="tabIndexOffset"
+      aria-label="Adjust minimum stat value"
+      (pointerdown)="startSliderPointer()"
+      (keydown)="sliderInteractionStart.emit()"
+      (input)="setValueFromSlider($event)"
+      (change)="commitSliderValue()"
+      (pointerup)="endSliderPointer()"
+      (pointercancel)="endSliderPointer()"
+      (mousemove)="updateHoverFromSlider($event)"
+      (mouseleave)="clearHover()" />
     <div class="milestone-labels">
       <button
         class="milestone-button zero-button"
@@ -75,7 +97,7 @@
         class="milestone-button max-button"
         style="left: 100%"
         *ngIf="selectedValue < 188 || selectedValue > 212"
-        (click)="setValueMob(maximumAvailableTier * 10)"
+        (click)="setValueMob(effectiveMaximumTier * 10)"
         mat-flat-button
         [attr.tabindex]="tabIndexOffset + 2">
         <span class="max-text">MAX</span>
@@ -101,7 +123,7 @@
         type="number"
         class="value-input"
         [min]="0"
-        [max]="maximumAvailableTier * 10"
+        [max]="effectiveMaximumTier * 10"
         [value]="selectedValue"
         (blur)="commitValueEdit(valueInput.value)"
         (keydown.enter)="commitValueEdit(valueInput.value)"
@@ -109,10 +131,10 @@
         [attr.tabindex]="tabIndexOffset + 3" />
     </div>
     <div class="separator-section">/</div>
-    <div class="max-value-section">{{ maximumAvailableTier * 10 }}</div>
+    <div class="max-value-section">{{ effectiveMaximumTier * 10 }}</div>
     <!--
     <div
-      *ngIf="hoveredValue !== null && hoveredValue <= maximumAvailableTier * 10"
+      *ngIf="hoveredValue !== null && hoveredValue <= effectiveMaximumTier * 10"
       class="hover-value-indicator">
       Hovering: {{ hoveredValue }}
     </div>

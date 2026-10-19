@@ -1,5 +1,36 @@
 import { isEqual as _isEqual } from "lodash";
 
+/**
+ * Detects whether the current device is likely a mobile / tablet.
+ * Uses the User-Agent Client Hints API when available, then falls
+ * back to the legacy `userAgent` string.
+ */
+function isMobileDevice(): boolean {
+  // Modern: UA Client Hints (Chromium 89+)
+  if ((navigator as any).userAgentData?.mobile) {
+    return true;
+  }
+  // Legacy fallback
+  return /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
+}
+
+function isChrome(): boolean {
+  const ua = navigator.userAgent;
+  return /Chrome/.test(ua) && !/Edge|OPR/.test(ua);
+}
+
+export function calculateCPUConcurrency(): number {
+  const logicalCores = navigator?.hardwareConcurrency || 4;
+  // Firefox with anti-fingerprinting may report lower logical cores, use the cores
+  const estimatedPhysicalCores = isMobileDevice()
+    ? logicalCores
+    : isChrome()
+      ? Math.ceil(logicalCores / 2)
+      : logicalCores;
+  // Reserve at least 1 core for the main thread, but ensure we use at least 3 cores for calculations on desktop
+  return Math.max(3, estimatedPhysicalCores - 1);
+}
+
 export function getDifferences<T extends object>(
   object1: T,
   object2: T

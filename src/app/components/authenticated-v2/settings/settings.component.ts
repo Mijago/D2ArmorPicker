@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, Input } from "@angular/core";
 
 @Component({
   selector: "app-settings",
@@ -23,5 +23,7 @@ import { Component } from "@angular/core";
   styleUrls: ["./settings.component.css"],
 })
 export class SettingsComponent {
+  @Input() fitContainer = false;
+  @Input() theorizer = false;
   constructor() {}
 }

@@ -235,13 +235,13 @@
 
 .card-header {
   display: grid;
-  grid-template-columns: 200px 240px 1fr 80px; // Fixed column widths
+  grid-template-columns: minmax(240px, max-content) 240px minmax(0, 1fr) 80px;
   gap: 16px;
   align-items: center;
   margin-bottom: 8px;
 
   @media (max-width: 1200px) {
-    grid-template-columns: 180px 220px 1fr 80px;
+    grid-template-columns: minmax(220px, max-content) 220px minmax(0, 1fr) 80px;
   }
 
   @media (max-width: 968px) {
@@ -249,6 +249,54 @@
     gap: 12px;
     text-align: center;
   }
+}
+
+.identity-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  @media (max-width: 968px) {
+    justify-self: center;
+  }
+}
+
+.gearset-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.gearset-bonus {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+}
+
+.gearset-bonus-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.gearset-bonus-count {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
 }
 
 .exotic-section {
@@ -432,6 +480,16 @@
   }
 
   .mods-section-expanded {
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #ccc;
+    }
+  }
+
+  .gearset-section-expanded {
     margin-bottom: 16px;
 
     h4 {

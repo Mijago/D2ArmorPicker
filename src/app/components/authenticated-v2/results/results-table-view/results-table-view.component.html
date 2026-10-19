@@ -20,8 +20,8 @@
   class="result-table"
   mat-table
   matSort
-  matSortActive="Mods"
-  matSortDirection="asc"
+  matSortActive="Total"
+  matSortDirection="desc"
   multiTemplateDataRows>
   <!--- Note that these columns can be defined in any order.
    The actual rendered columns are set as a property on the row definition" -->
@@ -128,6 +128,7 @@
       <app-table-mod-display
         [mods]="element.mods"
         [artifice]="element.artifice"
+        [tuningMods]="element.tuningMods"
         class="modPreview"></app-table-mod-display>
     </td>
   </ng-container>
@@ -156,6 +157,46 @@
           src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png" />
       </div>
     </td>
+  </ng-container>
+
+  <!-- Gearset Bonuses Column -->
+  <ng-container matColumnDef="gearsetBonuses">
+    <th
+      *matHeaderCellDef
+      mat-header-cell
+      mat-sort-header="GearsetBonuses"
+      start="desc"
+      style="text-align: center">
+      Gearset(s)
+    </th>
+    <td *matCellDef="let element" mat-cell>
+      <div class="gearset-bonuses">
+        <span
+          *ngFor="let bonus of getGearsetBonuses(element)"
+          [gearsetTooltip]="bonus.perk"
+          class="gearset-bonus">
+          <img
+            *ngIf="bonus.perk.displayProperties.hasIcon"
+            [alt]="bonus.perk.displayProperties.name"
+            [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+            class="gearset-bonus-icon"
+            loading="lazy" />
+          <span class="gearset-bonus-count">{{ bonus.requiredSetCount }}</span>
+        </span>
+        <span *ngIf="getGearsetBonuses(element).length === 0">-</span>
+      </div>
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="easySwap">
+    <th
+      *matHeaderCellDef
+      mat-header-cell
+      mat-sort-header="EasySwap"
+      matTooltip="Number of displayed builds that share the same legendary armor pieces.">
+      # Easy Swap
+    </th>
+    <td *matCellDef="let element" mat-cell>{{ element.sharedBuildCount ?? 1 }}</td>
   </ng-container>
 
   <!-- Vendor/Collection Column -->
@@ -223,8 +264,11 @@
   <tr *matHeaderRowDef="shownColumns" mat-header-row></tr>
   <tr
     (click)="toggleElement(element)"
+    (mouseenter)="hoverSharedArmor(element)"
+    (mouseleave)="clearHoveredSharedArmor()"
     *matRowDef="let element; columns: shownColumns"
     [class.example-expanded-row]="isElementExpanded(element)"
+    [class.shared-armor-match]="isSharedArmorHighlighted(element)"
     class="result-element-row"
     mat-row>
   </tr>

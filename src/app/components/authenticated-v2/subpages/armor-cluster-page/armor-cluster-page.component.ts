@@ -23,7 +23,7 @@ import { UserInformationService } from "src/app/services/user-information.servic
 import { debounceTime } from "rxjs/operators";
 import { ArmorSlot } from "../../../../data/enum/armor-slot";
 import { ArmorSystem } from "src/app/data/types/IManifestArmor";
-import { ARMORSTAT_ORDER, ArmorStatNames } from "src/app/data/enum/armor-stat";
+import { ArmorStat, ArmorStatNames } from "src/app/data/enum/armor-stat";
 
 @Component({
   selector: "app-armor-cluster-page",
@@ -40,7 +40,9 @@ export class ArmorClusterPageComponent implements AfterViewInit {
   armorSystemFilter: ArmorSystem | undefined = undefined;
   clusterCount: number = 10;
 
-  public ARMORSTAT_ORDER = ARMORSTAT_ORDER;
+  public armorStats = Object.values(ArmorStat).filter(
+    (value) => typeof value === "number"
+  ) as ArmorStat[];
   public ArmorStatNames = ArmorStatNames;
 
   constructor(

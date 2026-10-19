@@ -35,4 +35,20 @@
   <span class="header-spacer"></span>
 </mat-toolbar>
 
+<!-- Recent Logs Display -->
+<div class="recent-logs-container" *ngIf="showLogs">
+  <div class="recent-logs-header">
+    <span class="recent-logs-title">Recent Logs</span>
+  </div>
+  <div class="recent-logs-list">
+    <div
+      *ngFor="let log of recentLogs$ | async"
+      [class]="'log-entry ' + getLogLevelClass(log.level)">
+      <span class="log-timestamp">{{ log.timestamp | date: "HH:mm:ss" }}</span>
+      <span class="log-level">{{ log.level | logLevel }}</span>
+      <span class="log-message">{{ log.message }}</span>
+    </div>
+  </div>
+</div>
+
 <router-outlet></router-outlet>

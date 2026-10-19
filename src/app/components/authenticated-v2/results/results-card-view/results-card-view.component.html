@@ -48,6 +48,16 @@
       <button
         mat-icon-button
         class="sort-button"
+        [class.active]="activeSortField === 'gearsetBonuses'"
+        (click)="toggleSort('gearsetBonuses')"
+        matTooltip="Sort by Gearset Bonuses">
+        <span class="sort-text">Gearset</span>
+        <mat-icon class="sort-icon">{{ getSortIcon("gearsetBonuses") }}</mat-icon>
+      </button>
+
+      <button
+        mat-icon-button
+        class="sort-button"
         [class.active]="activeSortField === 'health'"
         (click)="toggleSort('health')"
         matTooltip="Sort by Health">
@@ -120,25 +130,42 @@
         <div class="card-compact" [class.hidden]="expandedCard === i">
           <!-- First Row: Exotic, Stats, Mods, Total -->
           <div class="card-header">
-            <div class="exotic-section">
-              <div class="exotic-icon">
-                <app-item-icon
-                  [itemHash]="$any(result.exotic.hash)"
-                  *ngIf="result.exotic"
-                  [matTooltip]="result.exotic.name"
-                  class="exotic-img" />
-                <img
-                  *ngIf="!result.exotic"
-                  src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
-                  alt="No Exotic"
-                  class="exotic-img" />
+            <div class="identity-section">
+              <div class="exotic-section">
+                <div class="exotic-icon">
+                  <app-item-icon
+                    [itemHash]="$any(result.exotic.hash)"
+                    *ngIf="result.exotic"
+                    [matTooltip]="result.exotic.name"
+                    class="exotic-img" />
+                  <img
+                    *ngIf="!result.exotic"
+                    src="https://www.bungie.net/common/destiny2_content/icons/b4d05ef69d0c3227a7d4f7f35bbc2848.png"
+                    alt="No Exotic"
+                    class="exotic-img" />
+                </div>
+                <span
+                  class="exotic-name"
+                  [matTooltip]="result.exotic?.name || 'No Exotic'"
+                  [matTooltipDisabled]="!shouldShowTooltip(result.exotic?.name || 'No Exotic')">
+                  {{ result.exotic?.name || "No Exotic" }}
+                </span>
               </div>
-              <span
-                class="exotic-name"
-                [matTooltip]="result.exotic?.name || 'No Exotic'"
-                [matTooltipDisabled]="!shouldShowTooltip(result.exotic?.name || 'No Exotic')">
-                {{ result.exotic?.name || "No Exotic" }}
-              </span>
+
+              <div class="gearset-section">
+                <span
+                  *ngFor="let bonus of getGearsetBonuses(result)"
+                  [gearsetTooltip]="bonus.perk"
+                  class="gearset-bonus">
+                  <img
+                    *ngIf="bonus.perk.displayProperties.hasIcon"
+                    [alt]="bonus.perk.displayProperties.name"
+                    [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                    class="gearset-bonus-icon"
+                    loading="lazy" />
+                  <span class="gearset-bonus-count">{{ bonus.requiredSetCount }}</span>
+                </span>
+              </div>
             </div>
 
             <div class="stats-section">
@@ -157,6 +184,7 @@
               <app-table-mod-display
                 [mods]="result.mods"
                 [artifice]="result.artifice"
+                [tuningMods]="result.tuningMods"
                 class="mods-display">
               </app-table-mod-display>
             </div>
@@ -200,9 +228,30 @@
                 </div>
               </div>
 
+              <div class="gearset-section-expanded" *ngIf="getGearsetBonuses(result).length > 0">
+                <h4>Gearset Bonuses</h4>
+                <div class="gearset-section">
+                  <span
+                    *ngFor="let bonus of getGearsetBonuses(result)"
+                    [gearsetTooltip]="bonus.perk"
+                    class="gearset-bonus">
+                    <img
+                      *ngIf="bonus.perk.displayProperties.hasIcon"
+                      [alt]="bonus.perk.displayProperties.name"
+                      [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                      class="gearset-bonus-icon"
+                      loading="lazy" />
+                    <span class="gearset-bonus-count">{{ bonus.requiredSetCount }}</span>
+                  </span>
+                </div>
+              </div>
+
               <div class="mods-section-expanded">
                 <h4>Required Mods</h4>
-                <app-table-mod-display [mods]="result.mods" [artifice]="result.artifice">
+                <app-table-mod-display
+                  [mods]="result.mods"
+                  [artifice]="result.artifice"
+                  [tuningMods]="result.tuningMods">
                 </app-table-mod-display>
               </div>
 

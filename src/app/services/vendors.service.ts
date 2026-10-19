@@ -19,7 +19,7 @@ import { HttpClientService } from "./http-client.service";
 import { DatabaseService } from "./database.service";
 import { AuthService } from "./auth.service";
 import { intersection as _intersection } from "lodash";
-import { NGXLogger } from "ngx-logger";
+import { LoggingProxyService } from "./logging-proxy.service";
 
 const VENDOR_NEXT_REFRESH_KEY = "user-vendor-nextRefreshTime";
 
@@ -37,7 +37,7 @@ export class VendorsService implements OnDestroy {
     private http: HttpClientService,
     private db: DatabaseService,
     private auth: AuthService,
-    private logger: NGXLogger
+    private logger: LoggingProxyService
   ) {
     this.logger.debug("VendorsService", "constructor", "Initializing VendorsService");
     this.auth.logoutEvent.subscribe((k) => this.clearCachedData());
