@@ -36,6 +36,10 @@ export class ArmorPoolPanelComponent implements OnInit {
     void this.loadGearSetNames();
   }
 
+  get filteredEntries(): ArmorPoolItemView[] {
+    return this.armorPoolItems.filter((entry) => this.matchesSearch(entry));
+  }
+
   private async loadGearSetNames(): Promise<void> {
     const gearSets = await this.db.equipableItemSetDefinition.toArray();
     this.gearSetNameLookup.clear();
@@ -124,9 +128,7 @@ export class ArmorPoolPanelComponent implements OnInit {
   }
 
   getArmorSlotEntries(slot: ArmorSlot): ArmorPoolItemView[] {
-    return this.armorPoolItems.filter(
-      (entry) => entry.item.slot === slot && this.matchesSearch(entry)
-    );
+    return this.filteredEntries.filter((entry) => entry.item.slot === slot);
   }
 
   getPrunedEntries(): ArmorPoolItemView[] {

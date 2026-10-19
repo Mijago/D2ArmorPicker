@@ -34,6 +34,17 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.10.0",
+    date: "October 25, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added armor theorizer for T5 armor.",
+      },
+    ],
+  },
+  {
     version: "2.9.19",
     date: "October 18, 2026",
     clearManifest: true,

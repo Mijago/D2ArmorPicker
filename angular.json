@@ -29,6 +29,11 @@
                 "glob": "sql-wasm.wasm",
                 "input": "node_modules/sql.js/dist/",
                 "output": "assets/"
+              },
+              {
+                "glob": "highs.{wasm,mjs}",
+                "input": "node_modules/highs/build/",
+                "output": "assets/"
               }
             ],
             "styles": [
@@ -178,6 +183,11 @@
               {
                 "glob": "sql-wasm.js",
                 "input": "node_modules/sql.js/dist/",
+                "output": "assets/"
+              },
+              {
+                "glob": "highs.{wasm,mjs}",
+                "input": "node_modules/highs/build/",
                 "output": "assets/"
               }
             ],

@@ -14,9 +14,19 @@ function isMobileDevice(): boolean {
   return /Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(navigator.userAgent);
 }
 
+function isChrome(): boolean {
+  const ua = navigator.userAgent;
+  return /Chrome/.test(ua) && !/Edge|OPR/.test(ua);
+}
+
 export function calculateCPUConcurrency(): number {
   const logicalCores = navigator?.hardwareConcurrency || 4;
-  const estimatedPhysicalCores = isMobileDevice() ? logicalCores : Math.ceil(logicalCores / 2);
+  // Firefox with anti-fingerprinting may report lower logical cores, use the cores
+  const estimatedPhysicalCores = isMobileDevice()
+    ? logicalCores
+    : isChrome()
+      ? Math.ceil(logicalCores / 2)
+      : logicalCores;
   // Reserve at least 1 core for the main thread, but ensure we use at least 3 cores for calculations on desktop
   return Math.max(3, estimatedPhysicalCores - 1);
 }

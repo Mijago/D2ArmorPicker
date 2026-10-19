@@ -39,6 +39,9 @@
         <td class="gear-set-name" [matTooltip]="getAcquisitionSourceTooltip(gearSet)">
           <div class="gear-set-label">
             <span>{{ gearSet.name }}</span>
+            <span *ngIf="config.isTheorizer" class="owned-coverage"
+              >{{ gearSet.ownedSlots || 0 }}/5 owned</span
+            >
           </div>
         </td>
         <td class="two-piece-bonuses">
@@ -56,13 +59,13 @@
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img
-                *ngIf="bonus.perk.displayProperties.hasIcon"
-                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                *ngIf="bonus.perk?.displayProperties?.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk?.displayProperties?.icon"
                 loading="lazy"
-                alt="{{ bonus.perk.displayProperties.name }} icon"
+                alt="{{ bonus.perk?.displayProperties?.name }} icon"
                 class="bonus-icon-image" />
             </span>
-            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+            <span class="bonus-name">{{ bonus.perk?.displayProperties?.name }}</span>
             <ng-container
               *ngTemplateOutlet="synergyTags; context: { $implicit: gearSet.synergies.twoPiece }">
             </ng-container>
@@ -83,13 +86,13 @@
             </mat-slide-toggle>
             <span class="bonus-icon">
               <img
-                *ngIf="bonus.perk.displayProperties.hasIcon"
-                [src]="'https://bungie.net/' + bonus.perk.displayProperties.icon"
+                *ngIf="bonus.perk?.displayProperties?.hasIcon"
+                [src]="'https://bungie.net/' + bonus.perk?.displayProperties?.icon"
                 loading="lazy"
-                alt="{{ bonus.perk.displayProperties.name }} icon"
+                alt="{{ bonus.perk?.displayProperties?.name }} icon"
                 class="bonus-icon-image" />
             </span>
-            <span class="bonus-name">{{ bonus.perk.displayProperties.name }}</span>
+            <span class="bonus-name">{{ bonus.perk?.displayProperties?.name }}</span>
             <ng-container
               *ngTemplateOutlet="synergyTags; context: { $implicit: gearSet.synergies.fourPiece }">
             </ng-container>

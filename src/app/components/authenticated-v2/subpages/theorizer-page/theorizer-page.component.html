@@ -1,0 +1,515 @@
+<header class="theorizer-header">
+  <h1>Theorizer</h1>
+  <button mat-stroked-button (click)="copyMain()">
+    <mat-icon>content_copy</mat-icon> Copy main settings
+  </button>
+</header>
+
+<div class="theorizer-layout">
+  <aside aria-label="Theorizer settings"
+    ><app-settings [fitContainer]="true" [theorizer]="true"></app-settings
+  ></aside>
+  <section class="theorizer-results" aria-label="Theoretical armor combinations">
+    <section class="saved-runs" aria-label="Saved theorizer runs">
+      <mat-form-field appearance="outline" class="run-name">
+        <mat-label>Run name</mat-label>
+        <input matInput [(ngModel)]="savedRunName" [disabled]="savingRun" maxlength="120" />
+      </mat-form-field>
+      <button
+        mat-stroked-button
+        (click)="saveRun()"
+        [disabled]="
+          savingRun || !savedRunName.trim() || !state?.arrangements?.length || !!state?.stale
+        ">
+        <mat-icon>save</mat-icon> Save results
+      </button>
+      <mat-form-field appearance="outline">
+        <mat-label>Saved runs</mat-label>
+        <mat-select [(ngModel)]="selectedSavedRun" [disabled]="savingRun">
+          <mat-option *ngFor="let run of savedRuns" [value]="run.id"
+            >{{ run.name }}{{ run.complete ? "" : " (partial)" }}</mat-option
+          >
+        </mat-select>
+      </mat-form-field>
+      <button
+        mat-stroked-button
+        (click)="restoreSavedRun()"
+        [disabled]="savingRun || selectedSavedRun === undefined">
+        <mat-icon>restore</mat-icon> Restore results
+      </button>
+      <button
+        mat-icon-button
+        (click)="deleteSavedRun()"
+        [disabled]="savingRun || selectedSavedRun === undefined"
+        aria-label="Delete saved run"
+        matTooltip="Delete saved run">
+        <mat-icon>delete_outline</mat-icon>
+      </button>
+      <p *ngIf="savedRunError" class="error" role="alert">{{ savedRunError }}</p>
+    </section>
+    <div class="search-controls">
+      <mat-form-field appearance="outline">
+        <mat-label>Search budget</mat-label>
+        <mat-select [(ngModel)]="timeLimitMs" (ngModelChange)="searchOptionsChanged()">
+          <mat-option *ngFor="let budget of searchBudgets" [value]="budget.value">{{
+            budget.label
+          }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field
+        appearance="outline"
+        [matTooltip]="'Browser reports ' + detectedLogicalCores + ' logical processors'">
+        <mat-label>Workers</mat-label>
+        <mat-select [(ngModel)]="workerLimit" (ngModelChange)="searchOptionsChanged()">
+          <mat-option [value]="0">Auto ({{ automaticWorkers }})</mat-option>
+          <mat-option *ngFor="let count of workerOptions" [value]="count">{{ count }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-flat-button color="primary" (click)="search()" [disabled]="state?.running">
+        <mat-icon>calculate</mat-icon> Calculate arrangements
+      </button>
+      <button
+        mat-icon-button
+        (click)="theorizer.cancel()"
+        [disabled]="!state?.running"
+        aria-label="Cancel theorizer search"
+        matTooltip="Cancel search">
+        <mat-icon>stop</mat-icon>
+      </button>
+    </div>
+    <mat-form-field appearance="outline" class="result-order">
+      <mat-label>Result order</mat-label>
+      <mat-select [(ngModel)]="resultOrder" (ngModelChange)="orderChanged()">
+        <mat-option value="flexibility">More arrangements, fewer archetypes</mat-option>
+        <mat-option value="matches">Most inventory matches</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <ng-container *ngIf="state as view">
+      <mat-progress-bar
+        *ngIf="view.running"
+        mode="indeterminate"
+        aria-label="Search activity"></mat-progress-bar>
+      <div class="search-progress" *ngIf="view.workersTotal">
+        <span
+          >{{ duration(view.elapsedMs) }} elapsed<span *ngIf="timeLimitMs">
+            / {{ duration(timeLimitMs) }} budget</span
+          ></span
+        >
+        <span
+          >{{ view.workersActive }} / {{ view.workersTotal }} workers active ·
+          {{ view.workersFinished }} finished</span
+        >
+        <span *ngIf="view.tasksTotal"
+          >{{ view.tasksFinished }} / {{ view.tasksTotal }} tasks finished ·
+          {{ view.tasksQueued }} queued</span
+        >
+        <span *ngIf="view.budgetProgress !== undefined"
+          >{{ view.budgetProgress | number: "1.1-1" }}% of budget used</span
+        >
+      </div>
+      <mat-progress-bar
+        *ngIf="view.workersTotal && view.budgetProgress !== undefined"
+        mode="determinate"
+        [value]="view.budgetProgress || 0"
+        aria-label="Search budget used"></mat-progress-bar>
+      <div class="search-status" role="status" aria-live="polite">
+        <strong *ngIf="view.matching"
+          >Matching available armor: {{ view.matchingFinished }} /
+          {{ view.matchingTotal }} arrangements</strong
+        >
+        <mat-progress-bar
+          *ngIf="view.matching"
+          mode="determinate"
+          [value]="
+            view.matchingTotal ? ((view.matchingFinished || 0) / view.matchingTotal) * 100 : 0
+          "
+          aria-label="Inventory fit progress"></mat-progress-bar>
+        <strong *ngIf="view.running">{{
+          view.waitingForInventory
+            ? "Waiting for inventory refresh"
+            : view.arrangementsPaused
+              ? "Arrangement discovery paused for requested builds"
+              : view.maximaChecked !== undefined && view.maximaChecked < 6
+                ? "Calculating stat limits (" + view.maximaChecked + "/6)"
+                : "Searching"
+        }}</strong>
+        <strong *ngIf="view.done && view.complete && !view.matching && !view.error && !view.stale"
+          >Search complete</strong
+        >
+        <strong
+          *ngIf="
+            view.done &&
+            !view.complete &&
+            !view.matching &&
+            view.stopReason === 'budget' &&
+            !view.error &&
+            !view.cancelled &&
+            !view.stale
+          "
+          >Search budget used. Partial results; ranking is provisional.</strong
+        >
+        <strong
+          *ngIf="
+            view.done &&
+            !view.complete &&
+            !view.matching &&
+            view.stopReason !== 'budget' &&
+            !view.error &&
+            !view.cancelled &&
+            !view.stale
+          "
+          >Search stopped with partial results; ranking is provisional.</strong
+        >
+        <strong *ngIf="view.cancelled && !view.stale"
+          >Cancelled. Partial results; ranking is provisional.</strong
+        >
+        <strong *ngIf="view.stale">Settings or inventory changed. Results are out of date.</strong>
+        <span *ngIf="view.total"
+          >{{ view.evaluations | number }} arrangement searches ·
+          {{ view.feasible | number }} feasible arrangements</span
+        >
+        <span *ngIf="view.running && view.solverRetries"
+          >{{ view.solverRetries | number }} solver retries · continuing within the search
+          budget</span
+        >
+        <span *ngIf="view.possibleRollCombinations"
+          >{{ view.possibleRollCombinations | number }} possible archetype/tertiary roll
+          combinations</span
+        >
+      </div>
+      <p class="error" role="alert" *ngIf="view.error">{{ view.error }}</p>
+      <p class="notice" *ngFor="let warning of view.warnings">{{ warning }}</p>
+      <p *ngIf="view.restoredRunName"
+        >Restored: {{ view.restoredRunName }}{{ view.complete ? "" : " (partial discovery)" }}</p
+      >
+      <p *ngIf="view.done && !arrangements.length && !view.error && !view.stale"
+        >No matching arrangements found{{
+          view.complete ? "." : " in the checked search space."
+        }}</p
+      >
+      <p *ngIf="arrangements.length"
+        ><strong *ngIf="view.running">Partial results: </strong
+        >{{ archetypeGroups.length | number }} archetype groups ·
+        {{ arrangements.length | number }} arrangements ·
+        {{ view.results.length | number }} retained builds</p
+      >
+
+      <mat-accordion multi>
+        <mat-expansion-panel
+          *ngFor="let group of visible; trackBy: trackArchetypeGroup"
+          class="archetype-group-panel">
+          <mat-expansion-panel-header class="result-header arrangement-header">
+            <mat-panel-title>
+              <div class="result-summary">
+                <div class="arrangement-counts">
+                  <strong *ngFor="let archetype of group.archetypes"
+                    >{{ archetype.count }} x {{ archetype.name }}</strong
+                  >
+                </div>
+                <div class="coverage"
+                  ><span
+                    >{{ group.arrangements.length | number }} arrangements ·
+                    {{ group.builds | number }} builds</span
+                  ><span *ngIf="group.builds || view.matchingFinished"
+                    >Best verified match: {{ group.covered }}/5 covered ·
+                    {{ group.owned }} owned</span
+                  ></div
+                >
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <ng-template matExpansionPanelContent>
+            <div class="group-actions">
+              <button
+                mat-stroked-button
+                (click)="theorizer.loadBuildGroup(group.arrangements)"
+                [disabled]="view.stale || !group.uncalculated"
+                class="calculate-build-group">
+                <mat-icon>playlist_add</mat-icon> Calculate builds for group
+              </button>
+              <span>{{ group.uncalculated | number }} arrangements not calculated</span>
+            </div>
+            <section class="group-arrangements" aria-label="Tertiary and tuning arrangements">
+              <h3>Arrangements</h3>
+              <details
+                *ngFor="let arrangement of visibleArrangements(group); trackBy: trackArrangement"
+                class="arrangement-panel">
+                <summary class="arrangement-summary">
+                  <mat-icon class="arrangement-disclosure" aria-hidden="true"
+                    >chevron_right</mat-icon
+                  >
+                  <div class="result-summary">
+                    <div class="tertiary-counts"
+                      ><span *ngFor="let tertiary of arrangement.tertiaries"
+                        >{{ tertiary.count }} x
+                        {{
+                          tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat]
+                        }}
+                        tertiary</span
+                      ></div
+                    >
+                    <div class="tertiary-counts"
+                      ><span *ngFor="let tuning of arrangement.tunings"
+                        >{{ tuning.count }} x
+                        {{
+                          tuning.stat === null
+                            ? "any tuning family"
+                            : statNames[tuning.stat] + " tuning family"
+                        }}</span
+                      ></div
+                    >
+                    <div *ngIf="arrangement.modAllocation as mods" class="tertiary-counts"
+                      >Feasible stat mods: {{ modAllocationSummary(mods) }}</div
+                    >
+                    <div class="coverage">
+                      <span *ngIf="arrangement.inventoryMatch as match"
+                        >Inventory fit: {{ match.covered }}/5 covered · {{ match.owned }} owned{{
+                          match.proven ? "" : " (provisional)"
+                        }}</span
+                      >
+                      <span *ngIf="!arrangement.buildState || arrangement.buildState === 'idle'"
+                        >Builds not calculated</span
+                      >
+                      <span *ngIf="arrangement.buildState === 'loading'">Calculating builds</span>
+                      <span *ngIf="arrangement.buildState === 'queued'"
+                        >Build calculation queued</span
+                      >
+                      <span *ngIf="arrangement.builds.length"
+                        >{{ arrangement.builds.length | number }} builds · Best match:
+                        {{ arrangement.covered }}/5 covered · {{ arrangement.owned }} owned</span
+                      >
+                    </div>
+                  </div>
+                </summary>
+                <div class="arrangement-content">
+                  <section class="base-arrangement" aria-label="Base archetype arrangement">
+                    <h3>Base arrangement</h3>
+                    <ul>
+                      <li *ngFor="let archetype of arrangement.archetypes">
+                        <strong>{{ archetype.count }} x {{ archetype.name }}</strong>
+                        <span *ngIf="archetype.primary !== null && archetype.secondary !== null"
+                          >30 {{ statNames[archetype.primary] }} / 25
+                          {{ statNames[archetype.secondary] }}</span
+                        >
+                      </li>
+                    </ul>
+                    <h4>Floating tertiary requirements</h4>
+                    <div class="tertiary-counts"
+                      ><strong *ngFor="let tertiary of arrangement.tertiaries"
+                        >{{ tertiary.count }} x
+                        {{
+                          tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat]
+                        }}</strong
+                      ></div
+                    >
+                    <h4>Floating tuning-family requirements</h4>
+                    <div class="tertiary-counts"
+                      ><strong *ngFor="let tuning of arrangement.tunings"
+                        >{{ tuning.count }} x
+                        {{ tuning.stat === null ? "Any family" : statNames[tuning.stat] }}</strong
+                      ></div
+                    >
+                    <h4 *ngIf="arrangement.modAllocation">Feasible stat mods</h4>
+                    <div *ngIf="arrangement.modAllocation as mods" class="tertiary-counts">{{
+                      modAllocationSummary(mods)
+                    }}</div>
+                    <section *ngIf="arrangement.inventoryMatch as match" class="inventory-fit">
+                      <h4>Available armor matches</h4>
+                      <p
+                        >{{ match.covered }}/5 covered · {{ 5 - match.covered }} missing{{
+                          match.proven ? "" : " · provisional fit"
+                        }}</p
+                      >
+                      <ul>
+                        <li *ngFor="let piece of match.pieces"
+                          >{{ slots[piece.slot - 1] }}: {{ piece.name }} · {{ piece.archetype }} ·
+                          {{ sources[piece.source] }}</li
+                        >
+                      </ul>
+                    </section>
+                  </section>
+                  <section
+                    class="arrangement-builds"
+                    aria-label="Concrete builds for this arrangement">
+                    <h3>Builds</h3>
+                    <button
+                      *ngIf="!arrangement.buildState || arrangement.buildState === 'idle'"
+                      mat-stroked-button
+                      (click)="theorizer.loadBuilds(arrangement)"
+                      [disabled]="view.stale"
+                      class="calculate-builds">
+                      <mat-icon>calculate</mat-icon> Calculate builds
+                    </button>
+                    <p *ngIf="arrangement.buildState === 'queued'"
+                      >Waiting for running arrangement tasks to finish.</p
+                    >
+                    <mat-progress-bar
+                      *ngIf="arrangement.buildState === 'loading'"
+                      mode="indeterminate"
+                      aria-label="Calculating builds for this arrangement"></mat-progress-bar>
+                    <p *ngIf="arrangement.buildState === 'partial'"
+                      >Partial builds; calculation budget used.</p
+                    >
+                    <p *ngIf="arrangement.buildState === 'complete' && !arrangement.builds.length"
+                      >No matching builds found.</p
+                    >
+                    <p *ngIf="arrangement.buildState === 'error'" role="alert">{{
+                      arrangement.buildError
+                    }}</p>
+                    <details
+                      *ngFor="let solution of visibleBuilds(arrangement); trackBy: trackResult"
+                      class="generation-build">
+                      <summary class="build-summary">
+                        <mat-icon class="build-disclosure" aria-hidden="true"
+                          >chevron_right</mat-icon
+                        >
+                        <div class="result-summary">
+                          <div class="coverage"
+                            ><strong>{{ solution.covered }}/5 covered</strong
+                            ><span
+                              >{{ 5 - solution.covered }} missing · {{ solution.owned }} owned</span
+                            ></div
+                          >
+                          <div class="archetype-summary">
+                            <span *ngFor="let piece of solution.pieces; let slot = index"
+                              ><small>{{ slots[slot] }}</small
+                              >{{ piece.archetype }}</span
+                            >
+                          </div>
+                          <div class="stat-summary">
+                            <span *ngFor="let stat of stats" [matTooltip]="statNames[stat]"
+                              ><app-stat-icon [stat]="stat"></app-stat-icon
+                              >{{ solution.result.statsWithMods[stat] }}</span
+                            >
+                          </div>
+                        </div>
+                      </summary>
+                      <div class="build-content">
+                        <section
+                          *ngIf="solution.missingRequirements as missing"
+                          class="missing-rolls">
+                          <ng-container *ngIf="missing.archetypes.length">
+                            <h3>Missing rolls</h3>
+                            <h4>Archetypes</h4>
+                            <div class="tertiary-counts"
+                              ><strong *ngFor="let archetype of missing.archetypes"
+                                >{{ archetype.count }} x {{ archetype.name }}</strong
+                              ></div
+                            >
+                            <h4>Floating tertiaries</h4>
+                            <div class="tertiary-counts"
+                              ><span *ngFor="let tertiary of missing.tertiaries"
+                                >{{ tertiary.count }} x
+                                {{
+                                  tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat]
+                                }}</span
+                              ></div
+                            >
+                            <h4>Floating tuning families</h4>
+                            <div class="tertiary-counts"
+                              ><span *ngFor="let tuning of missing.tunings"
+                                >{{ tuning.count }} x
+                                {{
+                                  tuning.stat === null ? "Any family" : statNames[tuning.stat]
+                                }}</span
+                              ></div
+                            >
+                            <ng-container *ngIf="missing.gearsets?.length">
+                              <h4>Remaining gearset requirements</h4>
+                              <div class="tertiary-counts"
+                                ><span *ngFor="let gearset of missing.gearsets"
+                                  >{{ gearset.count }} x {{ gearsetName(gearset.hash) }}</span
+                                ></div
+                              >
+                            </ng-container>
+                          </ng-container>
+                        </section>
+                        <div class="piece-grid">
+                          <ng-container *ngFor="let piece of solution.pieces; let slot = index">
+                            <article *ngIf="piece.instanceId" class="piece">
+                              <h3
+                                >{{ slots[slot] }}
+                                <mat-icon
+                                  [matTooltip]="
+                                    piece.instanceId ? sources[piece.source] : 'Missing piece'
+                                  "
+                                  >{{
+                                    piece.instanceId ? "check_circle" : "add_circle_outline"
+                                  }}</mat-icon
+                                ></h3
+                              >
+                              <img
+                                *ngIf="piece.icon"
+                                [src]="'https://www.bungie.net' + piece.icon"
+                                [alt]="piece.name"
+                                loading="lazy"
+                                width="48"
+                                height="48" />
+                              <strong>{{ piece.name }}</strong>
+                              <span>{{ piece.archetype }}</span>
+                              <span *ngIf="piece.tertiary !== null"
+                                >Tertiary: {{ statNames[piece.tertiary] }}</span
+                              >
+                              <span>{{ tuningName(solution.tuningMods[slot]) }}</span>
+                              <span *ngIf="!piece.isExotic">{{ gearset(piece) }}</span>
+                              <span
+                                >Masterwork {{ piece.masterworkLevel
+                                }}{{ piece.instanceId ? "" : " (planned)" }}</span
+                              >
+                              <span *ngIf="piece.isExotic && spiritNames(piece)">{{
+                                spiritNames(piece)
+                              }}</span>
+                              <strong>{{
+                                piece.instanceId ? sources[piece.source] : "Missing"
+                              }}</strong>
+                            </article>
+                          </ng-container>
+                        </div>
+                        <dl class="solution-details">
+                          <dt>Stat mods</dt><dd>{{ modSummary(solution) }}</dd> <dt>Tuning total</dt
+                          ><dd
+                            ><span *ngFor="let stat of stats"
+                              >{{ statNames[stat] }} {{ solution.result.tuning[stat] > 0 ? "+" : ""
+                              }}{{ solution.result.tuning[stat] }}
+                            </span></dd
+                          >
+                        </dl>
+                      </div>
+                    </details>
+                    <mat-paginator
+                      *ngIf="arrangement.builds.length > buildPageSize"
+                      [length]="arrangement.builds.length"
+                      [pageSize]="buildPageSize"
+                      [pageIndex]="buildPageIndex(arrangement)"
+                      (page)="pageBuilds(arrangement, $event)"
+                      aria-label="Builds in this archetype arrangement"></mat-paginator>
+                  </section>
+                </div>
+              </details>
+              <mat-paginator
+                *ngIf="group.arrangements.length > arrangementPageSize"
+                [length]="group.arrangements.length"
+                [pageSize]="arrangementPageSize"
+                [pageIndex]="arrangementPageIndex(group)"
+                (page)="pageArrangements(group, $event)"
+                aria-label="Arrangements in this archetype group"></mat-paginator>
+            </section>
+          </ng-template>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-paginator
+        *ngIf="archetypeGroups.length"
+        [length]="archetypeGroups.length"
+        [pageSize]="pageSize"
+        [pageIndex]="pageIndex"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="page($event)"
+        aria-label="Archetype group pages"></mat-paginator>
+    </ng-container>
+    <p *ngIf="armorPoolError" class="error" role="alert">{{ armorPoolError }}</p>
+    <app-armor-pool-panel
+      [armorPoolItems]="armorPoolItems"
+      [itemUsageCounts]="itemUsageCounts"></app-armor-pool-panel>
+  </section>
+</div>

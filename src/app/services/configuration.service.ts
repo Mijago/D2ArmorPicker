@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable, OnDestroy } from "@angular/core";
+import { Inject, Injectable, InjectionToken, OnDestroy, Optional } from "@angular/core";
 import { LoggingProxyService } from "./logging-proxy.service";
 import {
   BuildConfiguration,
@@ -48,6 +48,13 @@ const lzDecompOptions = {
   outputEncoding: "String",
 } as DecompressionOptions;
 
+export interface ConfigurationScope {
+  initial: BuildConfiguration;
+  prefix: string;
+}
+
+export const CONFIGURATION_SCOPE = new InjectionToken<ConfigurationScope>("configuration scope");
+
 function serializeStoredConfiguration(stored: StoredConfiguration) {
   return { ...stored, configuration: serializeBuildConfiguration(stored.configuration) };
 }
@@ -72,7 +79,18 @@ export class ConfigurationService implements OnDestroy {
   private _storedConfigurations: BehaviorSubject<StoredConfiguration[]>;
   public readonly storedConfigurations: Observable<StoredConfiguration[]>;
 
-  constructor(private logger: LoggingProxyService) {
+  get isTheorizer(): boolean {
+    return !!this.scope;
+  }
+
+  private storageKey(key: string): string {
+    return (this.scope?.prefix ?? "") + key;
+  }
+
+  constructor(
+    private logger: LoggingProxyService,
+    @Optional() @Inject(CONFIGURATION_SCOPE) private scope: ConfigurationScope | null = null
+  ) {
     this.logger.debug("ConfigurationService", "constructor", "Initializing ConfigurationService");
     this.__configuration = this.loadCurrentConfiguration();
     this.__LastConfiguration = this.loadCurrentConfiguration();
@@ -118,7 +136,7 @@ export class ConfigurationService implements OnDestroy {
       JSON.stringify(list.map(serializeStoredConfiguration)),
       lzCompOptions
     );
-    localStorage.setItem("storedConfigurations", compressed);
+    localStorage.setItem(this.storageKey("storedConfigurations"), compressed);
     this._storedConfigurations.next(list);
   }
 
@@ -218,7 +236,7 @@ export class ConfigurationService implements OnDestroy {
   listSavedConfigurations(): StoredConfiguration[] {
     let item;
     try {
-      item = localStorage.getItem("storedConfigurations") || "[]";
+      item = localStorage.getItem(this.storageKey("storedConfigurations")) || "[]";
       if (item.substr(0, 1) != "[") item = lzutf8.decompress(item, lzDecompOptions);
     } catch (e) {
       item = [];
@@ -243,7 +261,7 @@ export class ConfigurationService implements OnDestroy {
       list.splice(c[1], 1);
     }
     localStorage.setItem(
-      "storedConfigurations",
+      this.storageKey("storedConfigurations"),
       lzutf8.compress(JSON.stringify(list.map(serializeStoredConfiguration)), lzCompOptions)
     );
     this._storedConfigurations.next(list);
@@ -272,15 +290,18 @@ export class ConfigurationService implements OnDestroy {
       JSON.stringify(serializeBuildConfiguration(this.__configuration)),
       lzCompOptions
     );
-    localStorage.setItem("user-currentConfig", compressed);
+    localStorage.setItem(this.storageKey("user-currentConfig"), compressed);
     this._configuration.next(Object.assign({}, this.__configuration));
   }
 
   loadCurrentConfiguration() {
     try {
+      if (this.scope && !localStorage.getItem(this.storageKey("user-currentConfig"))) {
+        return structuredClone(this.scope.initial);
+      }
       let config;
       try {
-        config = localStorage.getItem("user-currentConfig") || "{}";
+        config = localStorage.getItem(this.storageKey("user-currentConfig")) || "{}";
         if (config.substr(0, 1) != "{") config = lzutf8.decompress(config, lzDecompOptions);
       } catch (e) {
         config = {};

@@ -116,6 +116,7 @@ import "./services/openreplay-tracker";
 import { ModslotVisualizationComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/modslot-visualization/modslot-visualization.component";
 import { ModLimitSegmentedComponent } from "./components/authenticated-v2/settings/desired-mod-limit-selection/mod-limit-segmented/mod-limit-segmented.component";
 import { PrivacyPolicyComponent } from "./components/privacy-policy/privacy-policy.component";
+import { TheorizerPageComponent } from "./components/authenticated-v2/subpages/theorizer-page/theorizer-page.component";
 
 const routes: Routes = [
   {
@@ -136,6 +137,10 @@ const routes: Routes = [
         component: ArmorClusterPageComponent,
       },
       {
+        path: "theorizer",
+        component: TheorizerPageComponent,
+      },
+      {
         path: "investigate",
         component: ArmorInvestigationPageComponent,
       },
@@ -154,6 +159,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
+    TheorizerPageComponent,
     AppComponent,
     LoginComponent,
     HandleBungieLoginComponent,

@@ -40,6 +40,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Input() stat: ArmorStat = ArmorStat.StatWeapon;
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 20;
+  @Input() allowUnreachableSelection = false;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
   @Input() tabIndexOffset: number = 0;
@@ -60,6 +61,10 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   public currentAnimatedMaxValue: number = 0;
   private animationTimeouts: Set<number> = new Set();
   private hoveredStatLine: HTMLElement | null = null;
+
+  get effectiveMaximumTier(): number {
+    return this.allowUnreachableSelection ? 20 : this.maximumAvailableTier;
+  }
 
   constructor(private logger: LoggingProxyService) {}
 
@@ -94,7 +99,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   }
 
   setValue(newValue: number) {
-    if (newValue <= this.maximumAvailableTier) {
+    if (newValue <= (this.allowUnreachableSelection ? 20 : this.maximumAvailableTier)) {
       this.logger.debug("StatTierSelectionComponent", "setValue", "Setting value to: " + newValue);
       this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
@@ -109,7 +114,13 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
 
   setValueFromSlider(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = Math.max(0, Math.min(Number(input.value), this.maximumAvailableTier * 10));
+    const value = Math.max(
+      0,
+      Math.min(
+        Number(input.value),
+        this.allowUnreachableSelection ? 200 : this.maximumAvailableTier * 10
+      )
+    );
     this.selectedValue = value;
     this.pendingSliderValue = value;
     input.value = value.toString();
@@ -178,7 +189,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
    * Optimized hover handling for immediate response
    */
   handleHover(value: number): void {
-    if (value <= this.maximumAvailableTier * 10) {
+    if (value <= this.effectiveMaximumTier * 10) {
       // Use requestAnimationFrame for smoother UI updates
       requestAnimationFrame(() => {
         this.hoveredValue = value;
@@ -209,7 +220,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
       num = this.selectedValue;
     }
     num = Math.round(num);
-    num = Math.max(0, Math.min(num, this.maximumAvailableTier * 10));
+    num = Math.max(0, Math.min(num, this.effectiveMaximumTier * 10));
     this.selectedValue = num;
     this.selectedTier = num / 10;
     this.selectedTierChange.emit(this.selectedTier);
@@ -249,7 +260,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     // Clear any existing animation timeouts
     this.clearAnimationTimeouts();
 
-    const targetMaxValue = this.maximumAvailableTier * 10;
+    const targetMaxValue = this.effectiveMaximumTier * 10;
     const startValue = this.currentAnimatedMaxValue;
 
     if (startValue === targetMaxValue) {
@@ -293,7 +304,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
    */
   isStatValueAnimating(value: number): boolean {
     const currentMax = this.currentAnimatedMaxValue;
-    const targetMax = this.maximumAvailableTier * 10;
+    const targetMax = this.effectiveMaximumTier * 10;
 
     if (currentMax === targetMax) {
       return false;

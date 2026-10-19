@@ -17,7 +17,10 @@
 
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { DestinyClass } from "bungie-api-ts/destiny2";
-import { BuildConfiguration } from "../../../../data/buildConfiguration";
+import {
+  BuildConfiguration,
+  suggestedConfigurationName,
+} from "../../../../data/buildConfiguration";
 import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../../../../data/constants";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ArmorPerkOrSlotNames, ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
@@ -105,20 +108,10 @@ export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
       if (item?.name) this.exoticNameLookup.set(exoticHashes[index], item.name);
     });
 
-    const subclassName =
-      (SubclassNames as Record<number, string>)[configuration.selectedModElement] || "Build";
     const exoticNames = [
       ...new Set(exoticItems.map((item) => item?.name).filter((name): name is string => !!name)),
     ];
-    const exoticLabel = configuration.selectedExotics.includes(FORCE_USE_NO_EXOTIC)
-      ? "No Exotic Selected"
-      : configuration.selectedExotics.includes(FORCE_USE_ANY_EXOTIC)
-        ? "Any Exotic"
-        : exoticHashes.length === 0
-          ? "No Exotic Restriction"
-          : exoticNames.join(", ") || "Selected Exotic";
-    const suggestedName =
-      `${subclassName}: (${exoticLabel}) ${this.getClassName(configuration)}`.slice(0, 80);
+    const suggestedName = suggestedConfigurationName(configuration, exoticNames);
     const nameControl = this.settingsNameForm.get("name");
     if (!nameControl?.value || nameControl.value === this.suggestedConfigurationName) {
       nameControl?.setValue(suggestedName);

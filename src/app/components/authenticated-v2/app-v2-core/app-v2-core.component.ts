@@ -54,6 +54,10 @@ export class AppV2CoreComponent implements OnInit, AfterViewInit, OnDestroy {
       name: "Home",
     },
     {
+      link: "/theorizer",
+      name: "T5 Armor Theorizer",
+    },
+    {
       link: "/cluster",
       name: "Clustering",
     },

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, Inject, OnDestroy, OnInit, Optional } from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { StatusProviderService } from "../../../../services/status-provider.service";
@@ -26,6 +26,7 @@ import { ModInformation } from "../../../../data/ModInformation";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { ModOptimizationStrategy } from "../../../../data/enum/mod-optimization-strategy";
+import { STAT_REACHABILITY, StatReachability } from "../../../../services/stat-reachability";
 
 @Component({
   selector: "app-desired-stat-selection",
@@ -44,7 +45,10 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   constructor(
     public config: ConfigurationService,
     private armorCalculator: ArmorCalculatorService,
-    private status: StatusProviderService
+    private status: StatusProviderService,
+    @Optional()
+    @Inject(STAT_REACHABILITY)
+    private theorizerReachability: StatReachability | null = null
   ) {
     this.stats = (
       Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
@@ -67,6 +71,15 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_mod_strategy = c.modOptimizationStrategy;
       this.config_reduce_waste = c.tryLimitWastedStats;
     });
+
+    if (this.config.isTheorizer) {
+      this.theorizerReachability?.reachableTiers
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe((tiers) => {
+          this.maximumPossibleTiers = tiers;
+        });
+      return;
+    }
 
     this.armorCalculator.reachableTiers.pipe(takeUntil(this.ngUnsubscribe)).subscribe((d) => {
       // Do not update if we get 0 results
@@ -95,6 +108,10 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   cancelCalculationForSlider(): void {
+    if (this.config.isTheorizer) {
+      this.theorizerReachability?.cancel();
+      return;
+    }
     const status = this.status.getStatus();
     if (status.calculatingResults || status.calculatingPermutations) {
       this.armorCalculator.cancelCalculation();

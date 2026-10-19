@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { Subject } from "rxjs";
@@ -67,6 +67,7 @@ type AdvancedSettingField = BooleanSettingField | DropdownSettingField | SliderS
   styleUrls: ["./advanced-settings.component.scss"],
 })
 export class AdvancedSettingsComponent implements OnInit, OnDestroy {
+  @Input() section: "advanced" | "performance" = "advanced";
   fields2: { [id: string]: AdvancedSettingField[] } = {};
   fieldKeys: string[] = [];
 
@@ -79,7 +80,10 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: "320px",
       data: {
-        description: "Reset Advanced Settings to their default values?",
+        description:
+          this.section === "performance"
+            ? "Reset Performance Optimization to its default values?"
+            : "Reset Advanced Settings to their default values?",
       } as ConfirmDialogData,
     });
 
@@ -88,6 +92,12 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
 
       const defaults = BuildConfiguration.buildEmptyConfiguration();
       this.config.modifyConfiguration((configuration) => {
+        if (this.section === "performance") {
+          configuration.calculateTierFiveTuning = defaults.calculateTierFiveTuning;
+          configuration.foldSameStatDifferentGearSets = defaults.foldSameStatDifferentGearSets;
+          configuration.parsedResultLimit = defaults.parsedResultLimit;
+          return;
+        }
         configuration.useEventArmor = defaults.useEventArmor;
         configuration.assumeLegendariesMasterworked = defaults.assumeLegendariesMasterworked;
         configuration.assumeExoticsMasterworked = defaults.assumeExoticsMasterworked;
@@ -96,9 +106,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         configuration.assumeClassItemIsArtifice = defaults.assumeClassItemIsArtifice;
         configuration.assumeEveryLegendaryIsArtifice = defaults.assumeEveryLegendaryIsArtifice;
         configuration.assumeEveryExoticIsArtifice = defaults.assumeEveryExoticIsArtifice;
-        configuration.calculateTierFiveTuning = defaults.calculateTierFiveTuning;
-        configuration.foldSameStatDifferentGearSets = defaults.foldSameStatDifferentGearSets;
-        configuration.parsedResultLimit = defaults.parsedResultLimit;
         configuration.addConstent1Health = defaults.addConstent1Health;
       });
     });
@@ -321,7 +328,13 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           //*/
         ],
       };
-      this.fieldKeys = Object.keys(this.fields2);
+      this.fieldKeys = Object.keys(this.fields2).filter(
+        (key) =>
+          (this.section === "performance"
+            ? key === "Performance Optimization" && !this.config.isTheorizer
+            : key !== "Performance Optimization") &&
+          (!this.config.isTheorizer || key !== "Artifice Slots (for legacy armor 2.0)")
+      );
     });
   }
 

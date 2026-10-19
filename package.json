@@ -1,6 +1,6 @@
 {
   "name": "d2-armor-picker",
-  "version": "2.9.19",
+  "version": "2.10.0",
   "scripts": {
     "ng": "ng",
     "config": "ts-node set-env.ts",
@@ -39,6 +39,7 @@
     "bungie-api-ts": "^5.1.0",
     "dexie": "^4.0.7",
     "highlight.run": "^9.7.1",
+    "highs": "^1.15.4",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "lzutf8": "^0.6.3",

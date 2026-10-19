@@ -7,7 +7,7 @@
     <div class="armor-pool-header-row">
       <div class="armor-pool-title-block">
         <mat-card-title>Armor pool overview</mat-card-title>
-        <mat-card-subtitle *ngIf="!isCollapsed"
+        <mat-card-subtitle *ngIf="!isCollapsed && getPrunedEntries().length"
           >Gray pieces were removed during dominance pruning.</mat-card-subtitle
         >
       </div>
@@ -24,7 +24,11 @@
 
   <mat-card-content *ngIf="!isCollapsed">
     <div class="action-row">
-      <button mat-stroked-button type="button" (click)="copyPrunedDIMQuery()">
+      <button
+        *ngIf="getPrunedEntries().length"
+        mat-stroked-button
+        type="button"
+        (click)="copyPrunedDIMQuery()">
         Copy removed items as DIM query
       </button>
       <button mat-stroked-button type="button" (click)="copyAllItemsDIMQuery()">
@@ -39,28 +43,30 @@
       </mat-form-field>
     </div>
 
-    <div class="armor-pool-slot-group" *ngFor="let slot of armorSlotOrder">
-      <div class="armor-pool-slot-title">{{ getArmorSlotLabel(slot) }}</div>
-      <div class="armor-pool-items" *ngIf="getArmorSlotEntries(slot).length > 0">
-        <ng-container *ngFor="let entry of getArmorSlotEntries(slot)">
-          <mat-menu #entryMenu="matMenu">
-            <button mat-menu-item (click)="copyItemDIMQuery(entry.item)"> Copy DIM query </button>
-            <button mat-menu-item (click)="disableItemFromResults(entry.item)">
-              Disable this item from results
-            </button>
-          </mat-menu>
+    <ng-container *ngFor="let slot of armorSlotOrder">
+      <div class="armor-pool-slot-group" *ngIf="getArmorSlotEntries(slot).length">
+        <div class="armor-pool-slot-title">{{ getArmorSlotLabel(slot) }}</div>
+        <div class="armor-pool-items" *ngIf="getArmorSlotEntries(slot).length > 0">
+          <ng-container *ngFor="let entry of getArmorSlotEntries(slot)">
+            <mat-menu #entryMenu="matMenu">
+              <button mat-menu-item (click)="copyItemDIMQuery(entry.item)"> Copy DIM query </button>
+              <button mat-menu-item (click)="disableItemFromResults(entry.item)">
+                Disable this item from results
+              </button>
+            </mat-menu>
 
-          <app-armor-item-tile
-            [item]="entry.item"
-            [pruned]="entry.pruned"
-            [prunedByItem]="entry.prunedBy ?? null"
-            [highlight]="highlightedPrunerId === entry.item.itemInstanceId"
-            [itemUsageCounts]="itemUsageCounts"
-            (hoverStateChange)="onHoverStateChange(entry, $event)"
-            [matMenuTriggerFor]="entryMenu"
-            [size]="'compact'"></app-armor-item-tile>
-        </ng-container>
+            <app-armor-item-tile
+              [item]="entry.item"
+              [pruned]="entry.pruned"
+              [prunedByItem]="entry.prunedBy ?? null"
+              [highlight]="highlightedPrunerId === entry.item.itemInstanceId"
+              [itemUsageCounts]="itemUsageCounts"
+              (hoverStateChange)="onHoverStateChange(entry, $event)"
+              [matMenuTriggerFor]="entryMenu"
+              [size]="'compact'"></app-armor-item-tile>
+          </ng-container>
+        </div>
       </div>
-    </div>
+    </ng-container>
   </mat-card-content>
 </mat-card>

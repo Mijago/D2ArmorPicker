@@ -23,7 +23,8 @@ import { ArmorPerkOrSlot, ArmorStat, ArmorStatNames } from "./enum/armor-stat";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { EnumDictionary } from "./types/EnumDictionary";
 // import { ArmorSlot } from "./enum/armor-slot";
-import { ModifierType } from "./enum/modifierType";
+import { ModifierType, SubclassNames } from "./enum/modifierType";
+import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "./constants";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
 import { EventArmorType } from "./enum/event-armor-type";
 import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
@@ -45,6 +46,30 @@ export function getDefaultStatDict(
 export interface FixableSelection<T> {
   value: T;
   fixed: boolean;
+}
+
+export function suggestedConfigurationName(
+  configuration: BuildConfiguration,
+  exoticNames: readonly string[]
+): string {
+  const subclassName =
+    (SubclassNames as Record<number, string>)[configuration.selectedModElement] || "Build";
+  const exoticLabel = configuration.selectedExotics.includes(FORCE_USE_NO_EXOTIC)
+    ? "No Exotic Selected"
+    : configuration.selectedExotics.includes(FORCE_USE_ANY_EXOTIC)
+      ? "Any Exotic"
+      : !configuration.selectedExotics.some((hash) => hash >= 0)
+        ? "No Exotic Restriction"
+        : [...new Set(exoticNames)].join(", ") || "Selected Exotic";
+  const className =
+    configuration.characterClass === DestinyClass.Titan
+      ? "Titan"
+      : configuration.characterClass === DestinyClass.Hunter
+        ? "Hunter"
+        : configuration.characterClass === DestinyClass.Warlock
+          ? "Warlock"
+          : "Any Class";
+  return `${subclassName}: (${exoticLabel}) ${className}`.slice(0, 80);
 }
 
 export interface ArmorRequirementGearSet {

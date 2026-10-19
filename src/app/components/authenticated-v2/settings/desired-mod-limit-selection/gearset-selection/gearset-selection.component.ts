@@ -18,7 +18,7 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
-import { Subject } from "rxjs";
+import { merge, Subject } from "rxjs";
 import { distinctUntilChanged, takeUntil } from "rxjs/operators";
 import { FORCE_USE_NO_EXOTIC } from "src/app/data/constants";
 import { ConfigurationService } from "src/app/services/configuration.service";
@@ -34,11 +34,14 @@ import {
   ArmorSetSynergyInfo,
 } from "src/app/data/armor-set-synergies";
 import { ARMOR_SET_SYNERGIES_BY_TIER } from "src/app/data/armor-set-synergy-tiers";
+import { InventoryArmorSource } from "../../../../../data/types/IInventoryArmor";
+import { ArmorSystem } from "../../../../../data/types/IManifestArmor";
 
 interface GearSetBonus {
   perk: DestinySandboxPerkDefinition | undefined;
   enabled: boolean;
   available: boolean; // Indicates if the user has enough items to enable this bonus
+  ownedAvailable?: boolean;
 }
 
 interface GearSet {
@@ -51,6 +54,7 @@ interface GearSet {
   };
   twoPieceBonus: GearSetBonus;
   fourPieceBonus: GearSetBonus;
+  ownedSlots?: number;
 }
 
 const SYNERGY_DISPLAY_ORDER: readonly ArmorSetSynergy[] = [
@@ -111,25 +115,30 @@ const SYNERGY_DISPLAY_ORDER: readonly ArmorSetSynergy[] = [
   styleUrls: ["./gearset-selection.component.scss"],
 })
 export class GearsetSelectionComponent implements OnInit, OnDestroy {
-  private refreshingGearsets = false;
+  private refreshingGearsets?: Promise<void>;
   public gearSets: GearSet[] = [];
   constructor(
     private inventoryService: UserInformationService,
     private db: DatabaseService,
-    private config: ConfigurationService,
+    public config: ConfigurationService,
     private logger: LoggingProxyService
   ) {}
   ngOnInit(): void {
-    this.inventoryService.inventory.pipe(takeUntil(this.ngUnsubscribe)).subscribe(async () => {
-      await this.refreshGearSets();
-      await this.refreshGearsetAvailability();
-    });
+    merge(this.inventoryService.inventory, this.inventoryService.manifest)
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(async () => {
+        await this.refreshGearSets();
+        await this.refreshGearsetAvailability();
+      });
 
     this.config.configuration
       .pipe(
         takeUntil(this.ngUnsubscribe),
         distinctUntilChanged((a, b) => {
-          return a.characterClass === b.characterClass;
+          return (
+            a.characterClass === b.characterClass &&
+            JSON.stringify(a.armorRequirements) === JSON.stringify(b.armorRequirements)
+          );
         })
       )
       .subscribe(async () => {
@@ -150,37 +159,42 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
     // Check if the current character class has gear sets available
     const currentClass = this.config.readonlyConfigurationSnapshot.characterClass;
-    const itemsGearSetSelectable = await this.db.inventoryArmor
-      .where({
-        clazz: currentClass,
-        gearSetPerkSelectable: true,
-      })
-      .toArray();
+    const classItems = await this.db.inventoryArmor.where({ clazz: currentClass }).toArray();
+    const ownedItems = classItems.filter(
+      (item) =>
+        !this.config.isTheorizer ||
+        ((item.source === InventoryArmorSource.Inventory ||
+          item.source === InventoryArmorSource.Postmaster) &&
+          item.armorSystem === ArmorSystem.Armor3 &&
+          (item.isExotic || item.tier === 5))
+    );
+    const itemsGearSetSelectable = ownedItems.filter((item) => item.gearSetPerkSelectable);
     const gearSets = await Promise.all(
       this.gearSets.map(async (gearSet) => {
-        const itemsGearSet = await this.db.inventoryArmor
-          .where({
-            clazz: currentClass,
-            gearSetHash: gearSet.hash,
-          })
-          .toArray();
+        const itemsGearSet = ownedItems.filter((item) => item.gearSetHash === gearSet.hash);
         const uniqueSlots = new Set(
           [...itemsGearSet, ...itemsGearSetSelectable].map((item) => item.slot)
         );
-        const twoPieceAvailable = uniqueSlots.size >= 2;
-        const fourPieceAvailable = uniqueSlots.size >= 4;
+        const twoPieceAvailable = this.config.isTheorizer || uniqueSlots.size >= 2;
+        const fourPieceAvailable = this.config.isTheorizer || uniqueSlots.size >= 4;
+        const selectedCount = this.config.currentConfiguration.armorRequirements.filter(
+          (requirement) => "gearSetHash" in requirement && requirement.gearSetHash === gearSet.hash
+        ).length;
 
         return {
           ...gearSet,
+          ownedSlots: uniqueSlots.size,
           twoPieceBonus: {
             ...gearSet.twoPieceBonus,
             available: twoPieceAvailable,
-            enabled: twoPieceAvailable && gearSet.twoPieceBonus.enabled,
+            ownedAvailable: uniqueSlots.size >= 2,
+            enabled: twoPieceAvailable && selectedCount === 2,
           },
           fourPieceBonus: {
             ...gearSet.fourPieceBonus,
             available: fourPieceAvailable,
-            enabled: fourPieceAvailable && gearSet.fourPieceBonus.enabled,
+            ownedAvailable: uniqueSlots.size >= 4,
+            enabled: fourPieceAvailable && selectedCount === 4,
           },
         };
       })
@@ -188,7 +202,11 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
 
     gearSets.sort((a, b) => {
       const rank = (gearSet: GearSet) =>
-        gearSet.fourPieceBonus.available ? 0 : gearSet.twoPieceBonus.available ? 1 : 2;
+        (gearSet.fourPieceBonus.ownedAvailable ?? gearSet.fourPieceBonus.available)
+          ? 0
+          : (gearSet.twoPieceBonus.ownedAvailable ?? gearSet.twoPieceBonus.available)
+            ? 1
+            : 2;
 
       return rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
     });
@@ -200,10 +218,16 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
   /**
    * Refreshes the gearSets array from the database and sorts them by name.
    */
-  private async refreshGearSets(): Promise<void> {
-    if (this.refreshingGearsets) return;
-    this.refreshingGearsets = true;
+  private refreshGearSets(): Promise<void> {
+    if (!this.refreshingGearsets) {
+      this.refreshingGearsets = this.loadGearSets().finally(() => {
+        this.refreshingGearsets = undefined;
+      });
+    }
+    return this.refreshingGearsets;
+  }
 
+  private async loadGearSets(): Promise<void> {
     const gearsets = await this.db.equipableItemSetDefinition.toArray();
     gearsets.sort((a, b) => {
       // Sort by name, case-insensitive
@@ -265,7 +289,6 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
         this.gearSets.splice(insertIndex, 0, newEntry);
       }
     }
-    this.refreshingGearsets = false;
   }
 
   getAcquisitionSourceTooltip(gearSet: GearSet): string {

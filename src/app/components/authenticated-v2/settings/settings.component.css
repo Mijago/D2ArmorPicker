@@ -35,6 +35,13 @@
   margin-bottom: 4px;
 }
 
+#card-config.fit-container {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
 #content-char-selection {
   margin-bottom: 0;
 }

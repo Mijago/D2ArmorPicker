@@ -158,7 +158,7 @@
 </div>
 
 <div class="minispace"></div>
-<div>
+<div *ngIf="!config.isTheorizer">
   <mat-slide-toggle
     color="primary"
     [checked]="allowLegacyLegendaryArmor"
@@ -166,7 +166,7 @@
     Include legacy (Armor 2.0) <span class="legendary-label">legendary</span> armor
   </mat-slide-toggle>
 </div>
-<div>
+<div *ngIf="!config.isTheorizer">
   <mat-slide-toggle
     color="primary"
     [checked]="allowLegacyExoticArmor"
@@ -174,7 +174,7 @@
     Include legacy (Armor 2.0) <span class="exotic-label">exotic</span> armor
   </mat-slide-toggle>
 </div>
-<div>
+<div *ngIf="!config.isTheorizer">
   <mat-slide-toggle
     color="primary"
     [checked]="allowBlueArmorPieces"

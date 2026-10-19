@@ -16,7 +16,7 @@
   -->
 
 <div *ngFor="let category of fieldKeys">
-  <span class="category-header">{{ category }}</span>
+  <span *ngIf="section !== 'performance'" class="category-header">{{ category }}</span>
   <div *ngFor="let f of fields2[category]" class="adv-settings">
     <!-- Boolean toggle setting -->
     <div *ngIf="f.type === 'boolean'">
@@ -134,6 +134,6 @@
     mat-stroked-button
     matTooltip="Reset only the settings in this section to their defaults.">
     <mat-icon>restart_alt</mat-icon>
-    Reset advanced settings
+    {{ section === "performance" ? "Reset performance settings" : "Reset advanced settings" }}
   </button>
 </div>
