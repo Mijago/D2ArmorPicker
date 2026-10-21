@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ModInformation } from "../../../../data/ModInformation";
 import { ModifierType } from "../../../../data/enum/modifierType";
 import { Modifier, ModifierValue } from "../../../../data/modifier";
@@ -39,6 +39,8 @@ import { LoggingProxyService } from "../../../../services/logging-proxy.service"
       useValue: { disableToggleValue: false, disableDragValue: true },
     },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
   armorStats = Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[];

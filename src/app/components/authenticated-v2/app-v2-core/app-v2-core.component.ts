@@ -42,6 +42,7 @@ import { CharacterStatsService } from "../../../services/character-stats.service
   templateUrl: "./app-v2-core.component.html",
   styleUrls: ["./app-v2-core.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class AppV2CoreComponent implements OnInit, AfterViewInit, OnDestroy {
   version = environment.version;

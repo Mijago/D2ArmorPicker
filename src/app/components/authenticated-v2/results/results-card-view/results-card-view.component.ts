@@ -15,7 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from "@angular/core";
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Subject } from "rxjs";
 import { ResultDefinition, ResultItem } from "../results.component";
@@ -42,6 +49,8 @@ interface GearsetBonusDisplay {
   selector: "app-results-card-view",
   templateUrl: "./results-card-view.component.html",
   styleUrls: ["./results-card-view.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ResultsCardViewComponent implements OnChanges, OnDestroy {
   STAT_ORDER = Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[];

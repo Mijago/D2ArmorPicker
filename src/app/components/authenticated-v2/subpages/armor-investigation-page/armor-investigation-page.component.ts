@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import { Subject } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
@@ -47,6 +47,8 @@ type LocalArmorInfo = {
   selector: "app-armor-investigation-page",
   templateUrl: "./armor-investigation-page.component.html",
   styleUrls: ["./armor-investigation-page.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorInvestigationPageComponent implements OnInit, OnDestroy {
   minWeapon: number | null = 0;

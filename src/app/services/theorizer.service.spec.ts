@@ -14,6 +14,8 @@ import { ConfigurationService } from "./configuration.service";
 import { DatabaseService } from "./database.service";
 import type { T5TheorizerService, TheorizerViewState } from "./theorizer.service";
 import { UserInformationService } from "./user-information.service";
+import { TheorizerStatLimits } from "./theorizer-stat-limits";
+import type { StatLimitsState } from "./stat-reachability";
 
 describe("automatic theorizer calculation", () => {
   let TheorizerService: typeof T5TheorizerService;
@@ -24,6 +26,35 @@ describe("automatic theorizer calculation", () => {
 
   beforeEach(() => {
     spyOnProperty(navigator, "hardwareConcurrency", "get").and.returnValue(2);
+  });
+
+  it("runs exact live limits in a real worker without inventory or arrangement discovery", async () => {
+    const worker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
+      type: "module",
+    });
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 20;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 10;
+    try {
+      const reply = await new Promise<{ id: number; status: string; maximum: number[] }>(
+        (resolve, reject) => {
+          worker.onmessage = ({ data }) => resolve(data);
+          worker.onerror = (error) => reject(new Error(error.message));
+          worker.postMessage({
+            id: 7,
+            config,
+            validateOnly: false,
+            wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+          });
+        }
+      );
+      expect(reply.id).toBe(7);
+      expect(reply.status).toBe("feasible");
+      expect(reply.maximum[ArmorStat.StatGrenade]).toBe(200);
+      expect(reply.maximum[ArmorStat.StatHealth]).toBeLessThan(200);
+    } finally {
+      worker.terminate();
+    }
   });
 
   it("enables potential-match task priority by default and allows opting out", fakeAsync(() => {
@@ -301,12 +332,12 @@ describe("automatic theorizer calculation", () => {
     service.ngOnDestroy();
   }));
 
-  it("keeps full theorizer slider maxima until new reachability results arrive", fakeAsync(() => {
+  it("refreshes slider limits independently of search and ignores stale replies", fakeAsync(() => {
     const config = BuildConfiguration.buildEmptyConfiguration();
     const configuration = new BehaviorSubject(config);
     const worker = {
-      postMessage: () => undefined,
-      terminate: () => undefined,
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: jasmine.createSpy("terminate"),
       onmessage: undefined as ((event: MessageEvent) => void) | undefined,
     };
     spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
@@ -326,30 +357,119 @@ describe("automatic theorizer calculation", () => {
       maxima = values;
     });
     expect(maxima).toEqual([20, 20, 20, 20, 20, 20]);
-    service.setSearchOptions(false, 600000, 1);
-    void service.search(false, 600000);
-    tick(200);
+    const search = spyOn(service, "search");
+    tick(20);
+    const initialId = worker.postMessage.calls.mostRecent().args[0].id;
     worker.onmessage!({
       data: {
-        results: [],
-        checked: 0,
-        total: 1,
-        feasible: 0,
-        evaluations: 0,
-        complete: false,
-        done: false,
-        warnings: [],
-        maximumPossibleStats: [80, 100, 200, 125, 25, 25],
-        maximaComplete: true,
+        id: initialId,
+        status: "feasible",
+        maximum: [80, 100, 200, 125, 25, 25],
       },
     } as MessageEvent);
     expect(maxima[0]).toBe(8);
     const changedTarget = BuildConfiguration.buildEmptyConfiguration();
     changedTarget.minimumStatTiers[ArmorStat.StatHealth].value = 10;
     configuration.next(changedTarget);
-    expect(maxima).toEqual([20, 20, 20, 20, 20, 20]);
+    tick(20);
+    const nextId = worker.postMessage.calls.mostRecent().args[0].id;
+    worker.onmessage!({
+      data: { id: initialId, status: "feasible", maximum: [200, 200, 200, 200, 200, 200] },
+    } as MessageEvent);
+    expect(maxima[0]).toBe(8);
+    service.cancel();
+    expect(worker.terminate).not.toHaveBeenCalled();
+    worker.onmessage!({
+      data: { id: nextId, status: "feasible", maximum: [150, 100, 200, 100, 25, 25] },
+    } as MessageEvent);
+    expect(maxima[0]).toBe(15);
+    expect(search).not.toHaveBeenCalled();
     service.ngOnDestroy();
+    expect(worker.terminate).toHaveBeenCalled();
     tick(200);
+  }));
+
+  it("keeps unknown limits unverified and recovers on retry without discarding prior maxima", fakeAsync(() => {
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const limits = new TheorizerStatLimits();
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    limits.configure(config);
+    let state!: StatLimitsState;
+    limits.state.subscribe((value) => {
+      state = value;
+    });
+    const reply = (status: string, maximum: number[]) =>
+      worker.onmessage!({
+        data: { id: worker.postMessage.calls.mostRecent().args[0].id, status, maximum },
+      } as MessageEvent);
+    tick(20);
+    reply("feasible", [150, 150, 200, 150, 150, 150]);
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 20;
+    limits.configure(config);
+    expect(state.pending).toBeTrue();
+    expect(state.feasible).toBeFalse();
+    tick(20);
+    reply("unknown", Array(6).fill(0));
+    expect(state.feasible).toBeFalse();
+    expect(state.pending).toBeFalse();
+    expect(state.maximum[0]).toBe(150);
+    expect(state.error).toBeDefined();
+    limits.refresh();
+    tick(20);
+    reply("feasible", [100, 100, 200, 140, 140, 100]);
+    expect(state.feasible).toBeTrue();
+    expect(state.maximum[0]).toBe(100);
+    expect(state.error).toBeUndefined();
+    limits.destroy();
+  }));
+
+  it("resumes current limits after rejecting a proposal during a pending refresh", fakeAsync(() => {
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const limits = new TheorizerStatLimits();
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    limits.configure(config);
+    let state!: StatLimitsState;
+    limits.state.subscribe((value) => {
+      state = value;
+    });
+    tick(20);
+    const proposed = structuredClone(config);
+    proposed.minimumStatTiers[ArmorStat.StatHealth] = { value: 0.1, fixed: true };
+    let accepted: boolean | undefined;
+    void limits.validate(proposed).then((valid) => {
+      accepted = valid;
+    });
+    worker.onmessage!({
+      data: {
+        id: worker.postMessage.calls.mostRecent().args[0].id,
+        status: "infeasible",
+        maximum: [],
+      },
+    } as MessageEvent);
+    tick(20);
+    expect(accepted).toBeFalse();
+    expect(state.pending).toBeTrue();
+    expect(worker.postMessage.calls.mostRecent().args[0].validateOnly).toBeFalse();
+    worker.onmessage!({
+      data: {
+        id: worker.postMessage.calls.mostRecent().args[0].id,
+        status: "feasible",
+        maximum: Array(6).fill(200),
+      },
+    } as MessageEvent);
+    expect(state.pending).toBeFalse();
+    expect(state.feasible).toBeTrue();
+    limits.destroy();
   }));
 
   it("only cancels discovery for target or subclass stat-modifier changes", () => {
@@ -543,6 +663,13 @@ describe("automatic theorizer calculation", () => {
       ArmorStat.StatMelee,
     ].map((tertiary) => ({ archetype: "Grenedier", tertiary }) as T5Candidate);
     const arrangement = t5ArrangementFromPieces(pieces);
+    arrangement.inventoryMatch = {
+      covered: 4,
+      owned: 4,
+      proven: true,
+      feasible: true,
+      pieces: [],
+    };
     workers[0].onmessage!({
       data: {
         arrangements: [arrangement],
@@ -611,7 +738,14 @@ describe("automatic theorizer calculation", () => {
     const secondArrangement = t5ArrangementFromPieces(
       pieces.map((piece) => ({ ...piece, tertiary: ArmorStat.StatHealth }))
     );
-    const build = { key: "first-build", pieces: [], covered: 3, owned: 3 } as unknown as T5Solution;
+    secondArrangement.inventoryMatch = {
+      covered: 4,
+      owned: 4,
+      proven: true,
+      feasible: true,
+      pieces: [],
+    };
+    const build = { key: "first-build", pieces: [], covered: 4, owned: 4 } as unknown as T5Solution;
     workers[3].onmessage!({
       data: {
         delta: true,
@@ -1166,29 +1300,30 @@ describe("automatic theorizer calculation", () => {
         inventoryMatches: [
           {
             key: useful.key,
-            match: { covered: 3, owned: 3, feasible: true, proven: true, pieces: [] },
+            match: { covered: 4, owned: 4, feasible: true, proven: true, pieces: [] },
           },
           {
             key: low.key,
-            match: { covered: 2, owned: 2, feasible: true, proven: true, pieces: [] },
+            match: { covered: 3, owned: 3, feasible: true, proven: true, pieces: [] },
           },
         ],
       },
     } as MessageEvent);
     expect(state.arrangements?.map((entry) => entry.key)).toEqual([useful.key, low.key]);
-    expect(state.arrangements?.[1].inventoryMatch?.covered).toBe(2);
+    expect(state.arrangements?.[1].inventoryMatch?.covered).toBe(3);
     expect(create.calls.count()).toBe(3);
     expect(state.buildWorkersActive).toBe(3);
     expect(state.buildTasksQueued).toBe(0);
+    expect(state.arrangements?.find((entry) => entry.key === low.key)?.buildState).toBe("queued");
     const build = {
       key: "covered-build",
       pieces: [],
-      covered: 3,
-      owned: 3,
+      covered: 4,
+      owned: 4,
     } as unknown as T5Solution;
     workers[0].onmessage!({ data: { ...finished, delta: true, results: [build] } } as MessageEvent);
     expect(state.buildWorkersActive).toBe(2);
-    expect(state.arrangementsPaused).toBeTrue();
+    expect(state.arrangementsPaused).toBeFalse();
     tick(1000);
     expect(state.buildWorkersActive).toBe(0);
     expect(state.arrangements?.[0].buildState).toBe("partial");
@@ -1197,7 +1332,7 @@ describe("automatic theorizer calculation", () => {
       useful.key,
       low.key,
     ]);
-    service.loadBuildGroup([low]);
+    expect(state.arrangements?.find((entry) => entry.key === low.key)?.buildState).toBe("queued");
     expect(state.buildWorkersActive).toBe(0);
     expect(state.buildTasksQueued).toBe(0);
     service.cancel();

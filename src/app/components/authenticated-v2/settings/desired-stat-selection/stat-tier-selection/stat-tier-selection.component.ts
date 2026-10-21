@@ -26,6 +26,9 @@ import {
   ViewChild,
   ElementRef,
   AfterViewChecked,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Optional,
 } from "@angular/core";
 import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { ArmorStat } from "../../../../../data/enum/armor-stat";
@@ -34,6 +37,8 @@ import { ArmorStat } from "../../../../../data/enum/armor-stat";
   selector: "app-stat-tier-selection",
   templateUrl: "./stat-tier-selection.component.html",
   styleUrls: ["./stat-tier-selection.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy, AfterViewChecked {
   readonly TierRange = new Array(11);
@@ -41,6 +46,9 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Input() statsByMods: number = 0;
   @Input() maximumAvailableTier: number = 20;
   @Input() allowUnreachableSelection = false;
+  @Input() verifySelection = false;
+  @Input() selectionPending = false;
+  @Input() selectionVerified = true;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
   @Input() tabIndexOffset: number = 0;
@@ -49,6 +57,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Output() sliderInteractionStart = new EventEmitter<void>();
 
   @ViewChild("valueInput") valueInput!: ElementRef<HTMLInputElement>;
+  @ViewChild("sliderInput") private sliderInput?: ElementRef<HTMLInputElement>;
 
   selectedValue: number = 0;
   public hoveredValue: number | null = null;
@@ -63,10 +72,15 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   private hoveredStatLine: HTMLElement | null = null;
 
   get effectiveMaximumTier(): number {
+    if (this.verifySelection && (this.selectionPending || !this.selectionVerified))
+      return this.selectedTier;
     return this.allowUnreachableSelection ? 20 : this.maximumAvailableTier;
   }
 
-  constructor(private logger: LoggingProxyService) {}
+  constructor(
+    private logger: LoggingProxyService,
+    @Optional() private changeDetector: ChangeDetectorRef | null = null
+  ) {}
 
   ngOnInit(): void {
     // Generate values from 0 to 200
@@ -99,9 +113,10 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   }
 
   setValue(newValue: number) {
-    if (newValue <= (this.allowUnreachableSelection ? 20 : this.maximumAvailableTier)) {
+    if (this.verifySelection && this.selectionPending && this.locked) return;
+    if (Number.isFinite(newValue) && newValue >= 0 && newValue <= this.effectiveMaximumTier) {
       this.logger.debug("StatTierSelectionComponent", "setValue", "Setting value to: " + newValue);
-      this.selectedTier = newValue;
+      if (!this.verifySelection) this.selectedTier = newValue;
       this.selectedTierChange.emit(newValue);
     }
   }
@@ -114,13 +129,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
 
   setValueFromSlider(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = Math.max(
-      0,
-      Math.min(
-        Number(input.value),
-        this.allowUnreachableSelection ? 200 : this.maximumAvailableTier * 10
-      )
-    );
+    const value = Math.max(0, Math.min(Number(input.value), this.effectiveMaximumTier * 10));
     this.selectedValue = value;
     this.pendingSliderValue = value;
     input.value = value.toString();
@@ -133,8 +142,11 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     this.pendingSliderValue = null;
     if (value === this.selectedTier * 10) return;
 
-    this.selectedTier = value / 10;
-    this.selectedTierChange.emit(this.selectedTier);
+    if (this.verifySelection) {
+      this.selectedValue = this.selectedTier * 10;
+      if (this.sliderInput) this.sliderInput.nativeElement.value = String(this.selectedValue);
+    }
+    this.setValue(value / 10);
   }
 
   startSliderPointer(): void {
@@ -181,8 +193,10 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   }
 
   toggleLockState() {
-    this.locked = !this.locked;
-    this.lockedChange.emit(this.locked);
+    if (this.verifySelection && this.selectionPending) return;
+    const locked = !this.locked;
+    if (!this.verifySelection) this.locked = locked;
+    this.lockedChange.emit(locked);
   }
 
   /**
@@ -221,9 +235,8 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     }
     num = Math.round(num);
     num = Math.max(0, Math.min(num, this.effectiveMaximumTier * 10));
-    this.selectedValue = num;
-    this.selectedTier = num / 10;
-    this.selectedTierChange.emit(this.selectedTier);
+    this.selectedValue = this.verifySelection ? this.selectedTier * 10 : num;
+    this.setValue(num / 10);
     this.editingValue = false;
     this.shouldSelectText = false;
   }
@@ -282,9 +295,7 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
     for (let i = 1; i <= steps; i++) {
       const timeout = window.setTimeout(() => {
         this.currentAnimatedMaxValue = startValue + direction * i;
-
-        // Force change detection to update the UI
-        // This will trigger the CSS class updates through the template bindings
+        this.changeDetector?.markForCheck();
       }, stepDelay * i);
 
       this.animationTimeouts.add(timeout);

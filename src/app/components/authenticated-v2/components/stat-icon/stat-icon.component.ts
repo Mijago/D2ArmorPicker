@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { ArmorStat, ArmorStatIconUrls, ArmorStatNames } from "../../../../data/enum/armor-stat";
 
 @Component({
   selector: "app-stat-icon",
   templateUrl: "./stat-icon.component.html",
   styleUrls: ["./stat-icon.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class StatIconComponent {
   ArmorStatNames = ArmorStatNames;

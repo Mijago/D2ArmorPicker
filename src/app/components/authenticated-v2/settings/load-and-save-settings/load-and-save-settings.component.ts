@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import {
   BuildConfiguration,
@@ -48,6 +48,8 @@ import { Clipboard } from "@angular/cdk/clipboard";
   selector: "app-load-and-save-settings",
   templateUrl: "./load-and-save-settings.component.html",
   styleUrls: ["./load-and-save-settings.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class LoadAndSaveSettingsComponent implements OnInit, OnDestroy {
   ArmorStat = ArmorStat;

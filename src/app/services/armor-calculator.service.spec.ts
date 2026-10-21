@@ -9,10 +9,23 @@ import type { ArmorCalculatorService } from "./armor-calculator.service";
 
 describe("armor pruning power preference", () => {
   let calculator: typeof ArmorCalculatorService;
+  let formatWorkerErrorEvent: (workerIndex: number, event: ErrorEvent) => string;
 
   beforeAll(async () => {
     spyOn(Tracker.prototype, "start").and.stub();
-    calculator = (await import("./armor-calculator.service")).ArmorCalculatorService;
+    const serviceModule = await import("./armor-calculator.service");
+    calculator = serviceModule.ArmorCalculatorService;
+    formatWorkerErrorEvent = serviceModule.formatWorkerErrorEvent;
+  });
+
+  it("logs worker error details when ErrorEvent location fields are blank", () => {
+    const event = new ErrorEvent("error", {
+      error: new TypeError("invalid worker request"),
+    });
+
+    expect(formatWorkerErrorEvent(0, event)).toContain(
+      "Worker 0 error: TypeError: invalid worker request"
+    );
   });
 
   function armor(id: number, powerLevel?: number): IInventoryArmor {

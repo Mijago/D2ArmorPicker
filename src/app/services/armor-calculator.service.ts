@@ -77,6 +77,7 @@ interface PreparedInventoryArmorItems {
 }
 
 interface WorkerMessageData {
+  error?: { name: string; message: string; stack?: string };
   // Progress update properties
   checkedCalculations: number;
   estimatedCalculations: number;
@@ -101,6 +102,23 @@ interface WorkerMessageData {
     itemCount: number;
     totalTime: number;
   };
+}
+
+export function formatWorkerErrorEvent(workerIndex: number, event: ErrorEvent): string {
+  const error = event.error as
+    | { name?: unknown; message?: unknown; stack?: unknown }
+    | null
+    | undefined;
+  const errorName = typeof error?.name === "string" ? error.name : "";
+  const errorMessage = typeof error?.message === "string" ? error.message : "";
+  const message =
+    [errorName, errorMessage].filter(Boolean).join(": ") ||
+    event.message ||
+    String(event.error ?? "Unknown worker error");
+  const location = event.filename ? ` at ${event.filename}:${event.lineno}:${event.colno}` : "";
+  const stack = typeof error?.stack === "string" ? `\n${error.stack}` : "";
+
+  return `Worker ${workerIndex} error: ${message}${location}${stack}`;
 }
 
 @Injectable({
@@ -740,6 +758,19 @@ export class ArmorCalculatorService implements OnDestroy {
     totalThreads: number,
     inventoryArmorItems: IInventoryArmor[]
   ): void {
+    if (data.error) {
+      const detail = `${data.error.name}: ${data.error.message}${data.error.stack ? `\n${data.error.stack}` : ""}`;
+      this.logger.error(
+        "ArmorCalculatorService",
+        "updateResults",
+        `Worker ${workerIndex} error: ${detail}`
+      );
+      this.killWorkers();
+      this.status.modifyStatus((status) => (status.calculatingResults = false));
+      this._calculationProgress.next(0);
+      return;
+    }
+
     // Update calculation progress tracking (available in all message types)
     ArmorCalculatorService.threadCalculationDoneArr[workerIndex] = data.checkedCalculations;
     ArmorCalculatorService.threadCalculationAmountArr[workerIndex] = data.estimatedCalculations;
@@ -890,35 +921,37 @@ export class ArmorCalculatorService implements OnDestroy {
         statsNoMods: armorSet.statsWithoutMods,
         tiers: getSkillTier(armorSet.statsWithMods),
         waste: getWaste(armorSet.statsWithMods),
-        items: items.map((instance): ResultItem => ({
-          tuningStat: instance.tuningStat,
-          energyLevel: instance.energyLevel,
-          powerLevel: instance.powerLevel,
-          hash: instance.hash,
-          itemInstanceId: instance.itemInstanceId,
-          gearSetHash: instance.gearSetHash,
-          name: instance.name,
-          exotic: !!instance.isExotic,
-          exoticPerkHash: instance.exoticPerkHash,
-          masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-          archetypeStats: instance.archetypeStats,
-          armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
-          masterworkLevel: instance.masterworkLevel,
-          slot: instance.slot,
-          perk: instance.perk,
-          transferState: 0, // TRANSFER_NONE
-          tier: instance.tier,
-          stats: [
-            instance.resilience,
-            instance.strength,
-            instance.discipline,
-            instance.intellect,
-            instance.recovery,
-            instance.mobility,
-          ],
-          source: instance.source,
-          statsNoMods: [],
-        })),
+        items: items.map(
+          (instance): ResultItem => ({
+            tuningStat: instance.tuningStat,
+            energyLevel: instance.energyLevel,
+            powerLevel: instance.powerLevel,
+            hash: instance.hash,
+            itemInstanceId: instance.itemInstanceId,
+            gearSetHash: instance.gearSetHash,
+            name: instance.name,
+            exotic: !!instance.isExotic,
+            exoticPerkHash: instance.exoticPerkHash,
+            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+            archetypeStats: instance.archetypeStats,
+            armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
+            masterworkLevel: instance.masterworkLevel,
+            slot: instance.slot,
+            perk: instance.perk,
+            transferState: 0, // TRANSFER_NONE
+            tier: instance.tier,
+            stats: [
+              instance.resilience,
+              instance.strength,
+              instance.discipline,
+              instance.intellect,
+              instance.recovery,
+              instance.mobility,
+            ],
+            source: instance.source,
+            statsNoMods: [],
+          })
+        ),
         usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
         usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
       };
@@ -987,35 +1020,37 @@ export class ArmorCalculatorService implements OnDestroy {
         statsNoMods: armorSet.statsWithoutMods,
         tiers: getSkillTier(armorSet.statsWithMods),
         waste: getWaste(armorSet.statsWithMods),
-        items: items.map((instance): ResultItem => ({
-          tuningStat: instance.tuningStat,
-          energyLevel: instance.energyLevel,
-          powerLevel: instance.powerLevel,
-          hash: instance.hash,
-          itemInstanceId: instance.itemInstanceId,
-          gearSetHash: instance.gearSetHash,
-          name: instance.name,
-          exotic: !!instance.isExotic,
-          exoticPerkHash: instance.exoticPerkHash,
-          masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-          archetypeStats: instance.archetypeStats,
-          armorSystem: instance.armorSystem,
-          masterworkLevel: instance.masterworkLevel,
-          slot: instance.slot,
-          perk: instance.perk,
-          transferState: 0,
-          tier: instance.tier,
-          stats: [
-            instance.resilience,
-            instance.strength,
-            instance.discipline,
-            instance.intellect,
-            instance.recovery,
-            instance.mobility,
-          ],
-          source: instance.source,
-          statsNoMods: [],
-        })),
+        items: items.map(
+          (instance): ResultItem => ({
+            tuningStat: instance.tuningStat,
+            energyLevel: instance.energyLevel,
+            powerLevel: instance.powerLevel,
+            hash: instance.hash,
+            itemInstanceId: instance.itemInstanceId,
+            gearSetHash: instance.gearSetHash,
+            name: instance.name,
+            exotic: !!instance.isExotic,
+            exoticPerkHash: instance.exoticPerkHash,
+            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
+            archetypeStats: instance.archetypeStats,
+            armorSystem: instance.armorSystem,
+            masterworkLevel: instance.masterworkLevel,
+            slot: instance.slot,
+            perk: instance.perk,
+            transferState: 0,
+            tier: instance.tier,
+            stats: [
+              instance.resilience,
+              instance.strength,
+              instance.discipline,
+              instance.intellect,
+              instance.recovery,
+              instance.mobility,
+            ],
+            source: instance.source,
+            statsNoMods: [],
+          })
+        ),
         usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
         usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
       };
@@ -1819,6 +1854,7 @@ export class ArmorCalculatorService implements OnDestroy {
           new URL("./results-builder.worker", import.meta.url),
           {
             name: n.toString(),
+            type: "module",
           }
         );
         ArmorCalculatorService.workers[n].onmessage = (ev: MessageEvent) => {
@@ -1828,7 +1864,7 @@ export class ArmorCalculatorService implements OnDestroy {
           this.logger.error(
             "ArmorCalculatorService",
             "updateResults",
-            `Worker ${n} error: ${ev.message} at ${ev.filename}:${ev.lineno}:${ev.colno}`
+            formatWorkerErrorEvent(n, ev)
           );
           ArmorCalculatorService.workers[n].terminate();
         };

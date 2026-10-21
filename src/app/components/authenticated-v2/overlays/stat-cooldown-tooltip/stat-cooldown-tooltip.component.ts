@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { formatTimeMMMSS, formatTimeSplit } from "../../../../data/cooldowns/cooldown_definitions";
 import { ConfigurationService } from "../../../../services/configuration.service";
@@ -43,6 +43,8 @@ function reformatTimeSplit(time: number) {
   selector: "app-stat-cooldown-tooltip",
   templateUrl: "./stat-cooldown-tooltip.component.html",
   styleUrls: ["./stat-cooldown-tooltip.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class StatCooldownTooltipComponent implements OnInit {
   public ArmorStatNames = ArmorStatNames;

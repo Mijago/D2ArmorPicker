@@ -15,12 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 @Component({
   selector: "app-slot-limitation-title",
   templateUrl: "./slot-limitation-title.component.html",
   styleUrls: ["./slot-limitation-title.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class SlotLimitationTitleComponent {
   constructor() {}

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
@@ -24,6 +24,8 @@ import { ItemIconServiceService } from "../../../../services/item-icon-service.s
   selector: "app-exotic-perk-tooltip",
   templateUrl: "./exotic-perk-tooltip.component.html",
   styleUrls: ["./exotic-perk-tooltip.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ExoticPerkTooltipComponent implements OnInit {
   @Input() armor: IManifestArmor | undefined;

@@ -112,6 +112,23 @@ type TuningBaseCache = {
   accumulator: Map<number, Tuning> | null;
 };
 
+export interface SerializedWorkerError {
+  name: string;
+  message: string;
+  stack?: string;
+}
+
+export function serializeWorkerError(error: unknown): SerializedWorkerError {
+  if (error instanceof Error) {
+    return {
+      name: error.name || "Error",
+      message: error.message || error.name || "Unknown worker error",
+      stack: error.stack,
+    };
+  }
+  return { name: "Error", message: String(error ?? "Unknown worker error") };
+}
+
 export function isFlexibleExotic(i: IPermutatorArmor): boolean {
   return i.isExotic === 1 && i.armorSystem === ArmorSystem.Armor3;
 }
@@ -932,28 +949,32 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
 }
 
 addEventListener("message", async ({ data }) => {
-  switch (data.type) {
-    case "builderRequest":
-      await handleArmorBuilderRequest(data);
-      break;
-    case "siblingUpdate":
-      // Update maximumPossibleTiers from other workers' discoveries
-      if (data.maximumPossibleTiers && Array.isArray(data.maximumPossibleTiers)) {
-        for (let i = 0; i < 6; i++) {
-          runtime.maximumPossibleTiers[i] = Math.max(
-            runtime.maximumPossibleTiers[i],
-            data.maximumPossibleTiers[i] || 0
-          );
+  try {
+    switch (data.type) {
+      case "builderRequest":
+        await handleArmorBuilderRequest(data);
+        break;
+      case "siblingUpdate":
+        // Update maximumPossibleTiers from other workers' discoveries
+        if (data.maximumPossibleTiers && Array.isArray(data.maximumPossibleTiers)) {
+          for (let i = 0; i < 6; i++) {
+            runtime.maximumPossibleTiers[i] = Math.max(
+              runtime.maximumPossibleTiers[i],
+              data.maximumPossibleTiers[i] || 0
+            );
+          }
         }
-      }
-      break;
-    case "cancel":
-      // Request graceful cancellation; the main loop checks this flag
-      cancelRequested = true;
-      break;
-    default:
-      console.warn(`Unknown message type: ${data.type}`);
-      break;
+        break;
+      case "cancel":
+        // Request graceful cancellation; the main loop checks this flag
+        cancelRequested = true;
+        break;
+      default:
+        console.warn(`Unknown message type: ${data.type}`);
+        break;
+    }
+  } catch (error) {
+    postMessage({ type: "workerError", error: serializeWorkerError(error) });
   }
 });
 // endregion Main Worker Event Handler

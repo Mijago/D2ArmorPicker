@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { LoggingProxyService } from "../../services/logging-proxy.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { HttpClientService } from "../../services/http-client.service";
@@ -25,6 +25,8 @@ import { UserInformationService } from "../../services/user-information.service"
   selector: "app-handle-bungie-login",
   templateUrl: "./handle-bungie-login.component.html",
   styleUrls: ["./handle-bungie-login.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HandleBungieLoginComponent implements OnInit {
   constructor(

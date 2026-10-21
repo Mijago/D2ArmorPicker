@@ -32,6 +32,7 @@ import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 
 @Directive({
   selector: "[gearsetTooltip]",
+  standalone: false,
 })
 export class GearsetcTooltipDirective implements OnInit, OnDestroy {
   /**

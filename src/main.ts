@@ -29,14 +29,11 @@ if (environment.sentryDsn && environment.sentryDsn.trim() !== "") {
     Sentry.init({
       dsn: environment.sentryDsn,
       environment: environment.version,
-      // Setting this option to true will send default PII data to Sentry.
-      // For example, automatic IP address collection on events
-      sendDefaultPii: true,
+      dataCollection: { userInfo: true },
       integrations: [
         // send console.log, console.warn, and console.error calls as logs to Sentry
         Sentry.consoleLoggingIntegration({ levels: ["warn", "error", "log", "info", "debug"] }), // Reduced log levels
       ],
-      enableLogs: true,
       // Add transport options to help with CORS
     });
   } catch (error) {

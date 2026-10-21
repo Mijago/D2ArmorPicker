@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
@@ -102,6 +102,8 @@ const TUNING_MOD_STATS: Record<number, [ArmorStat, ArmorStat]> = {
   selector: "app-table-mod-display",
   templateUrl: "./table-mod-display.component.html",
   styleUrls: ["./table-mod-display.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TableModDisplayComponent {
   artificeUrl = ArmorPerkOrSlotIcons[ArmorPerkOrSlot.SlotArtifice];

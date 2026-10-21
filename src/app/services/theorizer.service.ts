@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, merge, Subject, Subscription, timer } from "rxjs";
-import { filter, map, take, takeUntil } from "rxjs/operators";
+import { filter, take, takeUntil } from "rxjs/operators";
 import {
   applyT5Update,
   createT5SavedRun,
@@ -20,8 +20,13 @@ import { BuildConfiguration } from "../data/buildConfiguration";
 import { ConfigurationService } from "./configuration.service";
 import { DatabaseService } from "./database.service";
 import { UserInformationService } from "./user-information.service";
-import { buildT5Domains, t5ArrangementRequest } from "./theorizer-search";
+import {
+  buildT5Domains,
+  prioritizeT5InventoryMatches,
+  t5ArrangementRequest,
+} from "./theorizer-search";
 import { calculateCPUConcurrency } from "../data/commonFunctions";
+import { TheorizerStatLimits } from "./theorizer-stat-limits";
 
 function arrangementSettingsKey(config: BuildConfiguration): string {
   return JSON.stringify({
@@ -99,13 +104,9 @@ export class T5TheorizerService implements OnDestroy {
   private readonly destroyed = new Subject<void>();
   private readonly view = new BehaviorSubject<TheorizerViewState>(emptyState());
   readonly state = this.view.asObservable();
-  readonly reachableTiers = this.state.pipe(
-    map((state) =>
-      state.maximaComplete && state.maximumPossibleStats
-        ? state.maximumPossibleStats.map((value) => Math.max(0, Math.min(200, value)) / 10)
-        : Array(6).fill(20)
-    )
-  );
+  private readonly targetLimits = new TheorizerStatLimits();
+  readonly reachableTiers = this.targetLimits.reachableTiers;
+  readonly limitsState = this.targetLimits.state;
   private workers: Worker[] = [];
   private generation = 0;
   private responseTimeouts: ReturnType<typeof setTimeout>[] = [];
@@ -136,6 +137,7 @@ export class T5TheorizerService implements OnDestroy {
   private inventoryMatchingStarted = false;
   private inventoryMatches = new Map<string, NonNullable<T5Arrangement["inventoryMatch"]>>();
   private matchingQueue: T5Arrangement[] = [];
+  private pendingBuilds = new Map<string, T5Arrangement>();
   private matchingTotal = 0;
   private matchingWatchdog?: ReturnType<typeof setTimeout>;
   private restoring = false;
@@ -167,6 +169,7 @@ export class T5TheorizerService implements OnDestroy {
       this.fitSettingsSnapshot = fitSettingsKey(initialConfiguration);
     }
     this.config.configuration.pipe(takeUntil(this.destroyed)).subscribe((configuration) => {
+      this.targetLimits.configure(configuration);
       const arrangementKey = arrangementSettingsKey(configuration);
       const fitKey = fitSettingsKey(configuration);
       const arrangementChanged =
@@ -186,6 +189,14 @@ export class T5TheorizerService implements OnDestroy {
         takeUntil(this.destroyed)
       )
       .subscribe(() => void this.refreshFit());
+  }
+
+  validateTargets(config: BuildConfiguration): Promise<boolean> {
+    return this.targetLimits.validate(config);
+  }
+
+  retryLimits(): void {
+    this.targetLimits.refresh();
   }
 
   setSearchOptions(
@@ -277,6 +288,7 @@ export class T5TheorizerService implements OnDestroy {
     this.inventoryMatchingStarted = false;
     this.inventoryMatches.clear();
     this.matchingQueue = [];
+    this.pendingBuilds.clear();
     this.matchingTotal = 0;
     clearTimeout(this.matchingWatchdog);
     this.buildJobs.clear();
@@ -495,6 +507,7 @@ export class T5TheorizerService implements OnDestroy {
       const deferredTasks = new Set<number>();
       const requestedWorkers = this.options.value.workerLimit || calculateCPUConcurrency();
       const workerCount = group ? 1 : Math.min(requestedWorkers, Math.max(1, tasks.length));
+      const workerResponseTimeoutMs = Math.min(60_000, Math.max(15_000, workerCount * 2_000));
       const maximaUpdates: (T5SearchUpdate | undefined)[] = Array(workerCount).fill(undefined);
       const taskUpdates: (T5SearchUpdate | undefined)[] = Array(tasks.length).fill(undefined);
       const assignments: (number | null)[] = Array(workerCount).fill(null);
@@ -615,6 +628,7 @@ export class T5TheorizerService implements OnDestroy {
       for (let index = 0; index < workerCount; index++) {
         const worker = new Worker(new URL("./theorizer.worker", import.meta.url), {
           name: `theorizer-${index + 1}`,
+          type: "module",
         });
         this.workers.push(worker);
         const fail = (message: string) => {
@@ -646,8 +660,11 @@ export class T5TheorizerService implements OnDestroy {
         const watchResponse = () => {
           clearTimeout(this.responseTimeouts[index]);
           this.responseTimeouts[index] = setTimeout(
-            () => fail("A theorizer worker stopped responding. Partial results are retained."),
-            15000
+            () =>
+              fail(
+                `A theorizer worker stopped responding after ${workerResponseTimeoutMs / 1000}s. Partial results are retained.`
+              ),
+            workerResponseTimeoutMs
           );
         };
         const dispatch = () => {
@@ -810,7 +827,7 @@ export class T5TheorizerService implements OnDestroy {
       return {
         ...arrangement,
         inventoryMatch: this.inventoryMatches.get(arrangement.key) ?? arrangement.inventoryMatch,
-        buildState: job?.state ?? "idle",
+        buildState: job?.state ?? (this.pendingBuilds.has(arrangement.key) ? "queued" : "idle"),
         buildError: job?.error,
       } as T5Arrangement;
     });
@@ -838,7 +855,10 @@ export class T5TheorizerService implements OnDestroy {
     const arrangements = this.searchState.arrangements ?? [];
     if (!arrangements.length) return;
     this.inventoryMatchingStarted = true;
-    this.matchingQueue = arrangements.map((arrangement) => ({ ...arrangement, builds: [] }));
+    const fitDomains = buildT5Domains(this.cachedRequest);
+    this.matchingQueue = prioritizeT5InventoryMatches(arrangements, fitDomains).map(
+      (arrangement) => ({ ...arrangement, builds: [] })
+    );
     this.matchingTotal = arrangements.length;
     this.searchState = {
       ...this.searchState,
@@ -868,6 +888,7 @@ export class T5TheorizerService implements OnDestroy {
         this.buildWorker ??
         new Worker(new URL("./theorizer.worker", import.meta.url), {
           name: "theorizer-inventory-fit",
+          type: "module",
         });
       this.buildWorker = worker;
       const fail = (message: string) => {
@@ -893,8 +914,16 @@ export class T5TheorizerService implements OnDestroy {
       };
       worker.onmessage = ({ data }: MessageEvent<T5SearchUpdate>) => {
         if (generation !== this.generation || fitGeneration !== this.fitGeneration) return;
-        for (const entry of data.inventoryMatches ?? [])
+        for (const entry of data.inventoryMatches ?? []) {
           this.inventoryMatches.set(entry.key, entry.match);
+          const pending = this.pendingBuilds.get(entry.key);
+          if (pending && entry.match.covered >= 4) {
+            this.pendingBuilds.delete(entry.key);
+            this.enqueueBuild(pending);
+          } else if (pending && entry.match.covered < 3) {
+            this.pendingBuilds.delete(entry.key);
+          }
+        }
         const rejected = new Set(
           (data.inventoryMatches ?? [])
             .filter((entry) => entry.match.covered < 3)
@@ -908,6 +937,7 @@ export class T5TheorizerService implements OnDestroy {
           matchingTotal: this.matchingTotal,
         };
         this.publishBuilds();
+        this.startNextBuild();
         if (data.error) fail(data.error);
         else if (data.done) {
           clearTimeout(this.matchingWatchdog);
@@ -955,38 +985,56 @@ export class T5TheorizerService implements OnDestroy {
     let added = false;
     for (const arrangement of arrangements) {
       if (this.buildJobs.has(arrangement.key)) continue;
-      const match = this.inventoryMatches.get(arrangement.key) ?? arrangement.inventoryMatch;
-      if (match && match.covered < 3) continue;
-      const count = this.options.value.workerLimit || calculateCPUConcurrency();
-      this.buildJobs.set(arrangement.key, {
-        state: "queued",
-        results: [],
-        partitions: new Map(),
-        remaining: count,
-        partial: false,
-      });
-      for (let index = 0; index < count; index++) {
-        this.buildQueue.push({
-          arrangement: { ...arrangement, builds: [] },
-          partition: { index, count },
-        });
+      const pending = this.pendingBuilds.get(arrangement.key);
+      const candidate = pending ?? arrangement;
+      const match = this.inventoryMatches.get(arrangement.key) ?? candidate.inventoryMatch;
+      if (pending && (!this.searchState.matchingComplete || !match)) continue;
+      if (match && match.covered < 3) {
+        this.pendingBuilds.delete(arrangement.key);
+        continue;
       }
-      added = true;
+      if (pending) this.pendingBuilds.delete(arrangement.key);
+      if (this.searchState.running || this.searchState.matching) {
+        if (!match || match.covered < 4) {
+          this.pendingBuilds.set(arrangement.key, { ...candidate, builds: [] });
+          added = true;
+          continue;
+        }
+      }
+      added = this.enqueueBuild(candidate) || added;
     }
     if (!added) return;
-    this.discoveryPaused = true;
     this.publishBuilds();
     this.startNextBuild();
   }
 
+  private enqueueBuild(arrangement: T5Arrangement): boolean {
+    if (this.buildJobs.has(arrangement.key)) return false;
+    const match = this.inventoryMatches.get(arrangement.key) ?? arrangement.inventoryMatch;
+    if (match && match.covered < 3) return false;
+    const count = this.options.value.workerLimit || calculateCPUConcurrency();
+    this.buildJobs.set(arrangement.key, {
+      state: "queued",
+      results: [],
+      partitions: new Map(),
+      remaining: count,
+      partial: false,
+    });
+    for (let index = 0; index < count; index++) {
+      this.buildQueue.push({
+        arrangement: { ...arrangement, builds: [] },
+        partition: { index, count },
+      });
+    }
+    if (this.searchState.running) this.discoveryPaused = true;
+    return true;
+  }
+
   private startNextBuild(): void {
-    if (
-      !this.cachedRequest ||
-      this.searchState.matching ||
-      (this.searchState.workersActive ?? 0) > 0
-    )
-      return;
-    const limit = this.options.value.workerLimit || calculateCPUConcurrency();
+    if (!this.cachedRequest || (this.searchState.workersActive ?? 0) > 0) return;
+    const selectedWorkers = this.options.value.workerLimit || calculateCPUConcurrency();
+    const fitWorkerReservation = this.searchState.matching ? 1 : 0;
+    const limit = Math.max(0, selectedWorkers - fitWorkerReservation);
     while (
       this.buildQueue.length &&
       this.buildWorkers.filter((slot) => !!slot.task).length < limit
@@ -1046,7 +1094,7 @@ export class T5TheorizerService implements OnDestroy {
       this.startNextBuild();
     };
     try {
-      if (!slot.worker && this.buildWorker) {
+      if (!slot.worker && this.buildWorker && !this.searchState.matching) {
         slot.worker = this.buildWorker;
         slot.initialized = true;
         this.buildWorker = undefined;
@@ -1056,6 +1104,7 @@ export class T5TheorizerService implements OnDestroy {
         slot.worker ??
         new Worker(new URL("./theorizer.worker", import.meta.url), {
           name: "theorizer-arrangement-builds",
+          type: "module",
         });
       slot.worker = worker;
       const watch = () => {
@@ -1138,6 +1187,7 @@ export class T5TheorizerService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.cancel();
+    this.targetLimits.destroy();
     this.destroyed.next();
     this.destroyed.complete();
     this.options.complete();

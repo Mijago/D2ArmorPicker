@@ -15,12 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Inject, OnDestroy, OnInit, Optional } from "@angular/core";
+import {
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from "@angular/core";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { StatusProviderService } from "../../../../services/status-provider.service";
 import { EnumDictionary } from "../../../../data/types/EnumDictionary";
-import { FixableSelection, getDefaultStatDict } from "../../../../data/buildConfiguration";
+import {
+  BuildConfiguration,
+  FixableSelection,
+  getDefaultStatDict,
+} from "../../../../data/buildConfiguration";
 import { ArmorCalculatorService } from "../../../../services/armor-calculator.service";
 import { ModInformation } from "../../../../data/ModInformation";
 import { Subject } from "rxjs";
@@ -32,6 +44,8 @@ import { STAT_REACHABILITY, StatReachability } from "../../../../services/stat-r
   selector: "app-desired-stat-selection",
   templateUrl: "./desired-stat-selection.component.html",
   styleUrls: ["./desired-stat-selection.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   readonly stats: { name: string; value: ArmorStat }[];
@@ -41,6 +55,12 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   config_zero_waste = false;
   config_mod_strategy = ModOptimizationStrategy.None;
   config_reduce_waste = false;
+  limitsPending = true;
+  limitsFeasible = false;
+  limitsError?: string;
+  selectionError?: string;
+  validatingSelection = false;
+  private selectionVersion = 0;
 
   constructor(
     public config: ConfigurationService,
@@ -48,7 +68,8 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
     private status: StatusProviderService,
     @Optional()
     @Inject(STAT_REACHABILITY)
-    private theorizerReachability: StatReachability | null = null
+    private theorizerReachability: StatReachability | null = null,
+    @Optional() private changeDetector: ChangeDetectorRef | null = null
   ) {
     this.stats = (
       Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
@@ -59,6 +80,9 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
+      this.selectionVersion++;
+      this.validatingSelection = false;
+      this.selectionError = undefined;
       const tmpStatsByMods = [0, 0, 0, 0, 0, 0];
       for (let enabledMod of c.enabledMods) {
         for (let bonus of ModInformation[enabledMod].bonus) {
@@ -70,13 +94,23 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       this.config_zero_waste = c.onlyShowResultsWithNoWastedStats;
       this.config_mod_strategy = c.modOptimizationStrategy;
       this.config_reduce_waste = c.tryLimitWastedStats;
+      this.changeDetector?.markForCheck();
     });
 
     if (this.config.isTheorizer) {
+      this.theorizerReachability?.limitsState
+        ?.pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe((state) => {
+          this.limitsPending = state.pending;
+          this.limitsFeasible = state.feasible;
+          this.limitsError = state.error;
+          this.changeDetector?.markForCheck();
+        });
       this.theorizerReachability?.reachableTiers
         .pipe(takeUntil(this.ngUnsubscribe))
         .subscribe((tiers) => {
           this.maximumPossibleTiers = tiers;
+          this.changeDetector?.markForCheck();
         });
       return;
     }
@@ -99,9 +133,27 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   setSelectedTier(stat: ArmorStat, value: number) {
-    //if (this.config.readonlyConfigurationSnapshot.minimumStatTiers[stat].value == value)
-    //return;
-
+    if (this.config.isTheorizer) {
+      if (!Number.isFinite(value) || value < 0 || value > 20) return;
+      const selected = this.minimumStatTiers[stat];
+      if (this.validatingSelection) return;
+      if ((this.limitsPending || !this.limitsFeasible) && value > selected.value) return;
+      if (
+        this.limitsFeasible &&
+        !this.limitsPending &&
+        !selected.fixed &&
+        value <= this.maximumPossibleTiers[stat]
+      ) {
+        this.config.modifyConfiguration((c) => {
+          c.minimumStatTiers[stat].value = value;
+        });
+      } else if (value <= this.maximumPossibleTiers[stat] || value < selected.value) {
+        void this.proposeTargets((c) => {
+          c.minimumStatTiers[stat].value = value;
+        });
+      }
+      return;
+    }
     this.config.modifyConfiguration((c) => {
       c.minimumStatTiers[stat].value = value;
     });
@@ -119,6 +171,13 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   clearStatSelection() {
+    if (this.config.isTheorizer) {
+      void this.proposeTargets((c) => {
+        for (const { value: stat } of this.stats)
+          c.minimumStatTiers[stat] = { fixed: false, value: 0 };
+      });
+      return;
+    }
     this.config.modifyConfiguration((c) => {
       for (let stat of this.stats.map(({ value }) => value)) {
         c.minimumStatTiers[stat] = { fixed: false, value: 0 };
@@ -127,6 +186,12 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   useStatPreset(d: ArmorStat[]) {
+    if (this.config.isTheorizer) {
+      void this.proposeTargets((c) => {
+        for (const stat of d) c.minimumStatTiers[stat].value = 10;
+      });
+      return;
+    }
     if (
       d.filter((k) => this.config.readonlyConfigurationSnapshot.minimumStatTiers[k].value != 10)
         .length == 0
@@ -141,6 +206,13 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   }
 
   setLockState(stat: ArmorStat, value: boolean) {
+    if (this.config.isTheorizer) {
+      if (this.limitsPending || this.validatingSelection) return;
+      void this.proposeTargets((c) => {
+        c.minimumStatTiers[stat].fixed = value;
+      });
+      return;
+    }
     this.config.modifyConfiguration((c) => {
       c.minimumStatTiers[stat].fixed = value;
     });
@@ -148,7 +220,34 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe = new Subject();
 
+  private async proposeTargets(change: (config: BuildConfiguration) => void): Promise<void> {
+    const validate = this.theorizerReachability?.validateTargets;
+    if (!validate) return;
+    const proposed = structuredClone(this.config.currentConfiguration);
+    change(proposed);
+    const version = ++this.selectionVersion;
+    this.validatingSelection = true;
+    this.selectionError = undefined;
+    const valid = await validate.call(this.theorizerReachability, proposed);
+    if (version !== this.selectionVersion) return;
+    this.validatingSelection = false;
+    if (valid) {
+      this.config.modifyConfiguration((c) => {
+        c.minimumStatTiers = structuredClone(proposed.minimumStatTiers);
+      });
+    } else {
+      this.selectionError =
+        "This target change could not be verified. The previous targets are unchanged.";
+    }
+    this.changeDetector?.markForCheck();
+  }
+
+  retryLimits(): void {
+    this.theorizerReachability?.retryLimits?.();
+  }
+
   ngOnDestroy() {
+    this.selectionVersion++;
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

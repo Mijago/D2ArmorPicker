@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { DatabaseService } from "../../../../services/database.service";
 import {
@@ -31,6 +31,8 @@ import { ArmorSlot } from "src/app/data/enum/armor-slot";
   selector: "app-ignored-items-list",
   templateUrl: "./ignored-items-list.component.html",
   styleUrls: ["./ignored-items-list.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class IgnoredItemsListComponent implements OnInit, OnDestroy {
   disabledItems: IDisplayInventoryArmor[][] = [];

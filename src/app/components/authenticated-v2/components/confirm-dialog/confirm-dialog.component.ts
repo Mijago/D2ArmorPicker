@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Inject } from "@angular/core";
+import { Component, Inject, ChangeDetectionStrategy } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
 
 export interface ConfirmDialogData {
@@ -26,6 +26,8 @@ export interface ConfirmDialogData {
   selector: "app-confirm-dialog",
   templateUrl: "./confirm-dialog.component.html",
   styleUrls: ["./confirm-dialog.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ConfirmDialogComponent {
   constructor(

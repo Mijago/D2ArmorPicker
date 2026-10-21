@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ArmorSlot } from "src/app/data/enum/armor-slot";
 import { ConfigurationService } from "src/app/services/configuration.service";
@@ -9,6 +9,8 @@ import { ArmorPoolItemView } from "src/app/services/armor-calculator.service";
   selector: "app-armor-pool-panel",
   templateUrl: "./armor-pool-panel.component.html",
   styleUrls: ["./armor-pool-panel.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorPoolPanelComponent implements OnInit {
   @Input() armorPoolItems: ArmorPoolItemView[] = [];

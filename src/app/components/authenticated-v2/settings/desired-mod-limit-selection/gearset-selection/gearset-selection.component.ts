@@ -15,7 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Optional,
+} from "@angular/core";
 import { LoggingProxyService } from "../../../../../services/logging-proxy.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
 import { merge, Subject } from "rxjs";
@@ -113,6 +120,8 @@ const SYNERGY_DISPLAY_ORDER: readonly ArmorSetSynergy[] = [
   selector: "app-gearset-selection",
   templateUrl: "./gearset-selection.component.html",
   styleUrls: ["./gearset-selection.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class GearsetSelectionComponent implements OnInit, OnDestroy {
   private refreshingGearsets?: Promise<void>;
@@ -121,7 +130,8 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     private inventoryService: UserInformationService,
     private db: DatabaseService,
     public config: ConfigurationService,
-    private logger: LoggingProxyService
+    private logger: LoggingProxyService,
+    @Optional() private changeDetector: ChangeDetectorRef | null = null
   ) {}
   ngOnInit(): void {
     merge(this.inventoryService.inventory, this.inventoryService.manifest)
@@ -213,6 +223,7 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     this.gearSets = gearSets;
 
     this.updateConfiguration();
+    this.changeDetector?.markForCheck();
   }
 
   /**
@@ -289,6 +300,7 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
         this.gearSets.splice(insertIndex, 0, newEntry);
       }
     }
+    this.changeDetector?.markForCheck();
   }
 
   getAcquisitionSourceTooltip(gearSet: GearSet): string {

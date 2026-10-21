@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { CHANGELOG_DATA } from "../../../../data/changelog";
 
 @Component({
   selector: "app-help-page",
   templateUrl: "./help-page.component.html",
   styleUrls: ["./help-page.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class HelpPageComponent {
   knownIssues: string[] = [

@@ -2,7 +2,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "types": ["jasmine", "node"],
+    "types": [
+      "jasmine",
+      "node"
+    ],
+    "esModuleInterop": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "noImplicitThis": true,

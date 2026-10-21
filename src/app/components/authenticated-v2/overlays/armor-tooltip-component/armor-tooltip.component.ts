@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ResultItem } from "../../results/results.component";
 import { ArmorStat, ArmorStatNames } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "src/app/data/enum/armor-source";
@@ -32,6 +32,8 @@ import {
   selector: "app-armor-tooltip-component",
   templateUrl: "./armor-tooltip.component.html",
   styleUrls: ["./armor-tooltip.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorTooltipComponent implements OnInit {
   @Input() itemTooltip: ResultItem | undefined;

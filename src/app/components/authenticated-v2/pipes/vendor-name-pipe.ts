@@ -4,6 +4,7 @@ import { DatabaseService } from "src/app/services/database.service";
 @Pipe({
   name: "getVendorName",
   pure: true,
+  standalone: false,
 })
 export class VendorNamePipe implements PipeTransform {
   constructor(private database: DatabaseService) {}
@@ -23,6 +24,7 @@ export class VendorNamePipe implements PipeTransform {
 @Pipe({
   name: "getVendorIdFromItemId",
   pure: true,
+  standalone: false,
 })
 export class VendorIdFromItemIdPipe implements PipeTransform {
   constructor() {}

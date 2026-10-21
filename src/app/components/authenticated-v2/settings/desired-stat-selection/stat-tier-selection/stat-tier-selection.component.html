@@ -49,12 +49,14 @@
       </ng-container>
     </div>
     <input
+      #sliderInput
       class="stat-slider-input"
       type="range"
       min="0"
       max="200"
       step="1"
       [value]="selectedValue"
+      [disabled]="verifySelection && selectionPending && locked"
       [attr.tabindex]="tabIndexOffset"
       aria-label="Adjust minimum stat value"
       (pointerdown)="startSliderPointer()"
@@ -125,6 +127,7 @@
         [min]="0"
         [max]="effectiveMaximumTier * 10"
         [value]="selectedValue"
+        [disabled]="verifySelection && selectionPending && locked"
         (blur)="commitValueEdit(valueInput.value)"
         (keydown.enter)="commitValueEdit(valueInput.value)"
         (keydown.escape)="cancelValueEdit()"
@@ -143,6 +146,7 @@
   <button
     mat-icon-button
     (click)="toggleLockState()"
+    [disabled]="verifySelection && selectionPending"
     matTooltip="Locking a stat enforces this stat to have exactly this value. Use this for example to get exact T3 of Mobility on a Titan."
     [attr.tabindex]="tabIndexOffset + 4">
     <mat-icon *ngIf="!locked">lock_open</mat-icon>

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { Subject } from "rxjs";
@@ -96,6 +96,8 @@ const inventorySettings: InventorySetting[] = [
   selector: "app-advanced-settings",
   templateUrl: "./advanced-settings.component.html",
   styleUrls: ["./advanced-settings.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   @Input() section: "advanced" | "performance" = "advanced";

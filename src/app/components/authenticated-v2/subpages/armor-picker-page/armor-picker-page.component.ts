@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import {
@@ -28,6 +28,8 @@ import { ResultDefinition } from "src/app/components/authenticated-v2/results/re
   selector: "app-armor-picker-page",
   templateUrl: "./armor-picker-page.component.html",
   styleUrls: ["./armor-picker-page.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorPickerPageComponent implements OnInit, OnDestroy {
   hasResults = false;

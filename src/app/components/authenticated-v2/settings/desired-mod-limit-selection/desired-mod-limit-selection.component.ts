@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
 import { ConfigurationService } from "../../../../services/configuration.service";
 
@@ -23,6 +23,8 @@ import { ConfigurationService } from "../../../../services/configuration.service
   selector: "app-desired-mod-selection",
   templateUrl: "./desired-mod-limit-selection.component.html",
   styleUrls: ["./desired-mod-limit-selection.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DesiredModLimitSelectionComponent {
   constructor(public config: ConfigurationService) {}

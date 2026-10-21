@@ -31,6 +31,7 @@ import { ModDescriptionTooltipComponent } from "./mod-description-tooltip.compon
 
 @Directive({
   selector: "[modTooltip]",
+  standalone: false,
 })
 export class ModTooltipDirective implements OnInit, OnDestroy {
   //If this is specified then specified text will be show in in the tooltip

@@ -32,6 +32,7 @@ import { ResultItem } from "../../results/results.component";
 
 @Directive({
   selector: "[itemTooltip]",
+  standalone: false,
 })
 export class ItemTooltipRendererDirective implements OnInit, OnDestroy {
   /**

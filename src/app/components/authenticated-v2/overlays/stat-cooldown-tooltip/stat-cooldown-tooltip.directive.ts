@@ -32,6 +32,7 @@ import { ArmorStat } from "../../../../data/enum/armor-stat";
 
 @Directive({
   selector: "[statCooldownTooltip]",
+  standalone: false,
 })
 export class StatCooldownTooltipDirective implements OnInit, OnDestroy {
   /**

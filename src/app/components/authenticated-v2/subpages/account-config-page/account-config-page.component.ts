@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { DatabaseService } from "../../../../services/database.service";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { AuthService } from "../../../../services/auth.service";
@@ -26,6 +26,8 @@ import { environment } from "../../../../../environments/environment";
   selector: "app-account-config-page",
   templateUrl: "./account-config-page.component.html",
   styleUrls: ["./account-config-page.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AccountConfigPageComponent {
   isDevEnvironment = !environment.production && !environment.beta && !environment.canary;

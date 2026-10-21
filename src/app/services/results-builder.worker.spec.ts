@@ -10,8 +10,27 @@ import {
   generate_tunings,
   get_mods_recursive,
   prioritizeTuningsByTotalStats,
+  serializeWorkerError,
   t5Improvement,
 } from "./results-builder.worker";
+
+describe("results builder worker errors", () => {
+  it("serializes Error details for the main thread", () => {
+    const error = new TypeError("invalid armor input");
+    expect(serializeWorkerError(error)).toEqual({
+      name: "TypeError",
+      message: "invalid armor input",
+      stack: error.stack,
+    });
+  });
+
+  it("provides a fallback message for non-Error rejections", () => {
+    expect(serializeWorkerError(undefined)).toEqual({
+      name: "Error",
+      message: "Unknown worker error",
+    });
+  });
+});
 
 describe("results builder tuning cache", () => {
   const legendary = (tuningStat: ArmorStat, balancedBonus: number[]): t5Improvement => ({

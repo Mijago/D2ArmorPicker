@@ -18,7 +18,7 @@
  *  bhollis (adaption of the DIM links)
  */
 
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import {
   ArmorStat,
@@ -47,6 +47,8 @@ import { ArmorSystem } from "src/app/data/types/IManifestArmor";
   selector: "app-expanded-result-content",
   templateUrl: "./expanded-result-content.component.html",
   styleUrls: ["./expanded-result-content.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ExpandedResultContentComponent implements OnInit, OnDestroy {
   public MAXIMUM_MASTERWORK_LEVEL = MAXIMUM_MASTERWORK_LEVEL;

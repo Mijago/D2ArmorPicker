@@ -648,6 +648,49 @@ export function inventoryFitT5(
   };
 }
 
+export function t5FitCoverageUpperBound(
+  arrangement: T5Arrangement,
+  domains: readonly Map<string, T5Candidate[]>[]
+): number {
+  const candidates = domains.flatMap((domain) => [...domain.values()].flat());
+  const archetypeCoverage = arrangement.archetypes.reduce(
+    (total, requirement) =>
+      total +
+      Math.min(
+        requirement.count,
+        candidates.filter((candidate) => candidate.archetype === requirement.name).length
+      ),
+    0
+  );
+  const tertiaryCoverage = arrangement.tertiaries.reduce(
+    (total, requirement) =>
+      total +
+      Math.min(
+        requirement.count,
+        candidates.filter((candidate) => candidate.tertiary === requirement.stat).length
+      ),
+    0
+  );
+  return Math.min(5, archetypeCoverage, tertiaryCoverage);
+}
+
+export function prioritizeT5InventoryMatches(
+  arrangements: readonly T5Arrangement[],
+  domains: readonly Map<string, T5Candidate[]>[]
+): T5Arrangement[] {
+  return arrangements
+    .map((arrangement) => ({
+      arrangement,
+      coverageUpperBound: t5FitCoverageUpperBound(arrangement, domains),
+    }))
+    .sort(
+      (first, second) =>
+        second.coverageUpperBound - first.coverageUpperBound ||
+        first.arrangement.key.localeCompare(second.arrangement.key)
+    )
+    .map(({ arrangement }) => arrangement);
+}
+
 export function* matchT5Inventory(
   request: T5SearchRequest,
   prepared: PreparedT5Search

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { Subject } from "rxjs";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { takeUntil } from "rxjs/operators";
@@ -26,6 +26,8 @@ import { DestinyClass } from "bungie-api-ts/destiny2";
   selector: "app-desired-class-selection",
   templateUrl: "./desired-class-selection.component.html",
   styleUrls: ["./desired-class-selection.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DesiredClassSelectionComponent implements OnInit, OnDestroy {
   itemCounts: (null | number)[] = [null, null, null];

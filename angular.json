@@ -15,12 +15,15 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/D2ArmorPicker",
+            "outputPath": {
+              "base": "dist/D2ArmorPicker"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
@@ -49,7 +52,8 @@
               }
             ],
             "scripts": [],
-            "webWorkerTsConfig": "tsconfig.worker.json"
+            "webWorkerTsConfig": "tsconfig.worker.json",
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
@@ -67,8 +71,7 @@
               ],
               "fileReplacements": [],
               "outputHashing": "all",
-              "sourceMap": true,
-              "vendorChunk": true
+              "sourceMap": true
             },
             "beta": {
               "budgets": [
@@ -85,8 +88,7 @@
               ],
               "fileReplacements": [],
               "outputHashing": "all",
-              "sourceMap": true,
-              "vendorChunk": true
+              "sourceMap": true
             },
             "canary": {
               "budgets": [
@@ -115,13 +117,10 @@
                 }
               ],
               "outputHashing": "all",
-              "sourceMap": true,
-              "vendorChunk": true
+              "sourceMap": true
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true,
@@ -145,17 +144,17 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "D2ArmorPicker:build:production"
+              "buildTarget": "D2ArmorPicker:build:production"
             },
             "beta": {
-              "browserTarget": "D2ArmorPicker:build:beta"
+              "buildTarget": "D2ArmorPicker:build:beta"
             },
             "canary": {
-              "browserTarget": "D2ArmorPicker:build:canary"
+              "buildTarget": "D2ArmorPicker:build:canary"
             },
             "development": {
-              "browserTarget": "D2ArmorPicker:build:development",
-              "host": "192.168.100.15"
+              "host": "192.168.100.15",
+              "buildTarget": "D2ArmorPicker:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -163,7 +162,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "D2ArmorPicker:build"
+            "buildTarget": "D2ArmorPicker:build"
           }
         },
         "test": {
@@ -227,6 +226,30 @@
     },
     "@angular-eslint/schematics:library": {
       "setParserOptionsProject": true
+    },
+    "@schematics/angular:component": {
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
     }
   }
 }

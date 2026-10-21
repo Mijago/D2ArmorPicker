@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component } from "@angular/core";
+import { AfterViewInit, Component, ChangeDetectionStrategy } from "@angular/core";
 import { IInventoryArmor, InventoryArmorSource } from "../../../../data/types/IInventoryArmor";
 import { DatabaseService } from "../../../../services/database.service";
 import { MatSnackBar } from "@angular/material/snack-bar";
@@ -29,6 +29,8 @@ import { ArmorStat, ArmorStatNames } from "src/app/data/enum/armor-stat";
   selector: "app-armor-cluster-page",
   templateUrl: "./armor-cluster-page.component.html",
   styleUrls: ["./armor-cluster-page.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorClusterPageComponent implements AfterViewInit {
   clusterInformation: any[] = [];

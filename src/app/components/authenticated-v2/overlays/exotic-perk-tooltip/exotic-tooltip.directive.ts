@@ -32,6 +32,7 @@ import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 
 @Directive({
   selector: "[exoticTooltip]",
+  standalone: false,
 })
 export class ExoticTooltipDirective implements OnInit, OnDestroy {
   /**

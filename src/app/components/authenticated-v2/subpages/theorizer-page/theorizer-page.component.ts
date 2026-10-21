@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, SkipSelf } from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Component,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  SkipSelf,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { merge, Subject } from "rxjs";
 import { skip, takeUntil } from "rxjs/operators";
@@ -49,6 +57,8 @@ import { UserInformationService } from "../../../../services/user-information.se
       deps: [[new SkipSelf(), ConfigurationService]],
     },
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class TheorizerPageComponent implements OnInit, OnDestroy {
   private readonly destroyed = new Subject<void>();

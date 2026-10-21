@@ -21,6 +21,7 @@ import { NgxLoggerLevel } from "ngx-logger";
 @Pipe({
   name: "logLevel",
   pure: true,
+  standalone: false,
 })
 export class LogLevelPipe implements PipeTransform {
   transform(value: NgxLoggerLevel): string {

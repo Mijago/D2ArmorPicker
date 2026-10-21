@@ -385,7 +385,13 @@
                     aria-label="Concrete builds for this arrangement">
                     <h3>Builds</h3>
                     <button
-                      *ngIf="!arrangement.buildState || arrangement.buildState === 'idle'"
+                      *ngIf="
+                        !arrangement.buildState ||
+                        arrangement.buildState === 'idle' ||
+                        (arrangement.buildState === 'queued' &&
+                          view.matchingComplete &&
+                          arrangement.inventoryMatch?.covered === 3)
+                      "
                       mat-stroked-button
                       (click)="theorizer.loadBuilds(arrangement)"
                       [disabled]="
@@ -400,9 +406,16 @@
                       class="calculate-builds">
                       <mat-icon>calculate</mat-icon> Calculate builds
                     </button>
-                    <p *ngIf="arrangement.buildState === 'queued'"
-                      >Waiting for running arrangement tasks to finish.</p
-                    >
+                    <p *ngIf="arrangement.buildState === 'queued'">
+                      <ng-container
+                        *ngIf="
+                          view.matchingComplete && arrangement.inventoryMatch?.covered === 3;
+                          else waitingForFit
+                        ">
+                        3/5 build pending. Calculate it when ready.
+                      </ng-container>
+                      <ng-template #waitingForFit>Waiting for armor fit.</ng-template>
+                    </p>
                     <mat-progress-bar
                       *ngIf="arrangement.buildState === 'loading'"
                       mode="indeterminate"

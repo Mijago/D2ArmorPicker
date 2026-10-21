@@ -43,16 +43,32 @@ export const CHANGELOG_DATA: {
         text: "Added armor theorizer for T5 armor.",
       },
       {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Upgraded Angular and Angular Material from version 16 to version 22.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved settings panels with selected stat boost summaries and section-specific reset controls.",
+      },
+      {
         type: ChangelogEntryType.ADD,
-        text: "Added configurable search budgets and worker counts, live progress reporting, and prioritization of potential inventory matches to the armor theorizer.",
+        text: "Armor theorizer has configurable search budgets and worker counts, live progress reporting, and prioritization of potential inventory matches to the armor theorizer.",
       },
       {
         type: ChangelogEntryType.ADD,
         text: "Armor theorizer results can now be saved and restored, including partial runs.",
       },
       {
+        type: ChangelogEntryType.ADD,
+        text: "Armor theorizer shows attainable stat limits and validates target combinations before applying them.",
+      },
+      {
         type: ChangelogEntryType.MODIFIED,
-        text: "Improved settings panels with selected stat boost summaries and section-specific reset controls.",
+        text: "Armor theorizer prioritizes likely fits of armor matches",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor theorizer allows requested builds to wait for matching to finish.",
       },
     ],
   },

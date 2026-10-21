@@ -1,4 +1,11 @@
-import { Component, EventEmitter, HostListener, Input, Output } from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ChangeDetectionStrategy,
+} from "@angular/core";
 import { IInventoryArmor } from "src/app/data/types/IInventoryArmor";
 import { ResultItem } from "src/app/components/authenticated-v2/results/results.component";
 
@@ -6,6 +13,8 @@ import { ResultItem } from "src/app/components/authenticated-v2/results/results.
   selector: "app-armor-item-tile",
   templateUrl: "./armor-item-tile.component.html",
   styleUrls: ["./armor-item-tile.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorItemTileComponent {
   @Input() item!: IInventoryArmor;

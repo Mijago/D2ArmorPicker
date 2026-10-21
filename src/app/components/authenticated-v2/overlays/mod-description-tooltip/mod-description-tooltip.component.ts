@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { Modifier } from "../../../../data/modifier";
 
 @Component({
   selector: "app-mod-description-tooltip",
   templateUrl: "./mod-description-tooltip.component.html",
   styleUrls: ["./mod-description-tooltip.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ModDescriptionTooltipComponent {
   @Input() mod: Modifier | undefined;

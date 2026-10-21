@@ -1,10 +1,12 @@
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 import { ConfigurationService } from "../../../../../services/configuration.service";
 
 @Component({
   selector: "app-mod-limit-segmented",
   templateUrl: "./mod-limit-segmented.component.html",
   styleUrls: ["./mod-limit-segmented.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ModLimitSegmentedComponent {
   get total() {

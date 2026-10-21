@@ -15,7 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Optional,
+} from "@angular/core";
 import { LoggingProxyService } from "../../../../services/logging-proxy.service";
 import { ClassExoticInfo, UserInformationService } from "src/app/services/user-information.service";
 import { ConfigurationService } from "../../../../services/configuration.service";
@@ -48,6 +55,8 @@ export const listAnimation = trigger("listAnimation", [
   templateUrl: "./desired-exotic-selection.component.html",
   styleUrls: ["./desired-exotic-selection.component.scss"],
   animations: [listAnimation],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   readonly eventArmorOptions = [
@@ -103,7 +112,8 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
     public inventory: UserInformationService,
     public config: ConfigurationService,
     private bungieApi: BungieApiService,
-    private logger: LoggingProxyService
+    private logger: LoggingProxyService,
+    @Optional() private changeDetector: ChangeDetectorRef | null = null
   ) {}
 
   ngOnInit(): void {
@@ -123,6 +133,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       this.enforceFeaturedLegendaryArmor = c.enforceFeaturedLegendaryArmor;
       this.enforceFeaturedExoticArmor = c.enforceFeaturedExoticArmor;
       this.syncSelectedExoticVariants();
+      this.changeDetector?.markForCheck();
     });
 
     this.inventory.manifest
@@ -130,12 +141,14 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       .subscribe(async () => {
         await this.updateExoticsForClass();
         this.syncSelectedExoticVariants();
+        this.changeDetector?.markForCheck();
       });
     this.inventory.inventory
       .pipe(debounceTime(10), takeUntil(this.ngUnsubscribe))
       .subscribe(async () => {
         await this.updateExoticsForClass();
         this.syncSelectedExoticVariants();
+        this.changeDetector?.markForCheck();
       });
   }
 
@@ -354,6 +367,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       await this.inventory.refreshInventory();
     } finally {
       this.refreshInventoryInProgress = false;
+      this.changeDetector?.markForCheck();
     }
   }
 
@@ -369,6 +383,7 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
       );
     } finally {
       this.importEquippedExoticInProgress = false;
+      this.changeDetector?.markForCheck();
     }
   }
 

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnChanges } from "@angular/core";
+import { Component, Input, OnChanges, ChangeDetectionStrategy } from "@angular/core";
 import {
   ArmorPerkOrSlot,
   ArmorPerkOrSlotIcons,
@@ -26,6 +26,8 @@ import {
   selector: "app-armor-perk-icon",
   templateUrl: "./armor-perk-icon.component.html",
   styleUrls: ["./armor-perk-icon.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ArmorPerkIconComponent implements OnChanges {
   ArmorPerkOrSlot = ArmorPerkOrSlot;

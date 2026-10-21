@@ -1,4 +1,5 @@
 import Tracker from "@openreplay/tracker";
+import type { ChangeDetectorRef } from "@angular/core";
 import { BuildConfiguration } from "../../../../../data/buildConfiguration";
 import { ArmorSystem } from "../../../../../data/types/IManifestArmor";
 import { InventoryArmorSource } from "../../../../../data/types/IInventoryArmor";
@@ -48,7 +49,16 @@ describe("theorizer gearset ownership", () => {
     const db = {
       inventoryArmor: { where: () => ({ toArray: async () => items }) },
     } as unknown as DatabaseService;
-    const component = new Gearsets({} as UserInformationService, db, config, logger);
+    const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>("changeDetector", [
+      "markForCheck",
+    ]);
+    const component = new Gearsets(
+      {} as UserInformationService,
+      db,
+      config,
+      logger,
+      changeDetector
+    );
     component.gearSets = [
       [10, "A unowned"],
       [20, "B two pieces"],
@@ -67,6 +77,7 @@ describe("theorizer gearset ownership", () => {
     expect(
       component.gearSets.every((set) => set.twoPieceBonus.available && set.fourPieceBonus.available)
     ).toBeTrue();
+    expect(changeDetector.markForCheck).toHaveBeenCalled();
   });
 
   it("waits for an existing manifest load and preserves copied gearset requirements", async () => {
@@ -83,14 +94,26 @@ describe("theorizer gearset ownership", () => {
       sandboxPerkDefinition: { where: () => ({ first: async () => undefined }) },
       inventoryArmor: { where: () => ({ toArray: async () => [] }) },
     } as unknown as DatabaseService;
-    const component = new Gearsets({} as UserInformationService, db, config, logger);
+    const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>("changeDetector", [
+      "markForCheck",
+    ]);
+    const component = new Gearsets(
+      {} as UserInformationService,
+      db,
+      config,
+      logger,
+      changeDetector
+    );
     const first = component["refreshGearSets"]();
     const overlapping = component["refreshGearSets"]();
     expect(overlapping).toBe(first);
     expect(load).toHaveBeenCalledTimes(1);
     release([{ hash: 30, displayProperties: { name: "Selected set" }, setPerks: [] }]);
     await Promise.all([first, overlapping]);
+    expect(changeDetector.markForCheck).toHaveBeenCalled();
+    changeDetector.markForCheck.calls.reset();
     await component.refreshGearsetAvailability();
+    expect(changeDetector.markForCheck).toHaveBeenCalled();
     expect(component.gearSets[0].fourPieceBonus.enabled).toBeTrue();
     expect(config.currentConfiguration.armorRequirements).toEqual(initial.armorRequirements);
   });

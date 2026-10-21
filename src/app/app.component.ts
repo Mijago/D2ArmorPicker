@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AfterViewInit, Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { environment } from "../environments/environment";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { LoggingProxyService, LogEntry } from "./services/logging-proxy.service";
@@ -26,6 +26,8 @@ import { Observable } from "rxjs";
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AppComponent implements AfterViewInit, OnInit {
   title = "D2ArmorPicker";

@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectionStrategy } from "@angular/core";
 import { ChangelogService } from "../../../../services/changelog.service";
 
 @Component({
   selector: "app-changelog-dialog",
   templateUrl: "./changelog-dialog.component.html",
   styleUrls: ["./changelog-dialog.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ChangelogDialogComponent implements OnInit {
   showChangelogList = false;

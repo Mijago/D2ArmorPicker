@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, OnDestroy, OnInit, NgZone } from "@angular/core";
+import { Component, OnDestroy, OnInit, NgZone, ChangeDetectionStrategy } from "@angular/core";
 import { LoggingProxyService } from "../../../services/logging-proxy.service";
 import { ArmorCalculatorService } from "../../../services/armor-calculator.service";
 import { ConfigurationService } from "../../../services/configuration.service";
@@ -93,6 +93,8 @@ export interface ResultItem {
   selector: "app-results",
   templateUrl: "./results.component.html",
   styleUrls: ["./results.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ResultsComponent implements OnInit, OnDestroy {
   ArmorStat = ArmorStat;

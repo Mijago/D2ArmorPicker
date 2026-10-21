@@ -10,11 +10,114 @@ import {
   t5OptimizationSolution,
   t5StatBounds,
   t5StatCeilings,
+  createT5TargetModel,
+  t5TargetLimits,
 } from "./theorizer-model";
 import { T5_ARCHETYPES, t5BaseStats, t5Tertiaries } from "../data/theorizer";
 
 describe("dedicated T5 maxima model", () => {
   beforeAll(() => initializeT5Optimizer("/assets/highs.wasm"));
+  it("keeps the live target model compact and its masterworked rolls at 90 or 93", () => {
+    const model = createT5TargetModel(BuildConfiguration.buildEmptyConfiguration());
+    expect(Object.keys(model.variables).length).toBe(120);
+    const rolls = Object.entries(model.variables).filter(([name]) => name.startsWith("roll_"));
+    expect(rolls.length).toBe(96);
+    for (const [name, values] of rolls) {
+      const stats = Array.from({ length: 6 }, (_, stat) => values[`stat_${stat}`]);
+      expect(stats.slice().sort((first, second) => second - first)).toEqual(
+        name.endsWith("_1") ? [30, 25, 20, 6, 6, 6] : [30, 25, 20, 5, 5, 5]
+      );
+    }
+  });
+
+  it("updates exact target limits without arrangement discovery", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    const started = performance.now();
+    const initial = t5TargetLimits(config);
+    expect(initial.status).toBe("feasible");
+    expect(initial.maximum).toEqual([200, 200, 200, 200, 200, 200]);
+    config.minimumStatTiers[ArmorStat.StatGrenade].value = 20;
+    config.minimumStatTiers[ArmorStat.StatClass].value = 10;
+    const constrained = t5TargetLimits(config);
+    expect(constrained.status).toBe("feasible");
+    expect(constrained.maximum[ArmorStat.StatGrenade]).toBe(200);
+    expect(constrained.maximum[ArmorStat.StatHealth]).toBeLessThan(200);
+    console.info("T5 live limit benchmark (two requests)", performance.now() - started);
+    for (const stat of [0, 1, 2, 3, 4, 5]) config.minimumStatTiers[stat as ArmorStat].value = 20;
+    expect(t5TargetLimits(config).status).toBe("infeasible");
+  });
+
+  it("rejects holes in locked exact values and honors minor-only mod budgets", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.statModLimits = { maxMods: 0, maxMajorMods: 0 };
+    config.minimumStatTiers[ArmorStat.StatHealth] = { value: 0.1, fixed: true };
+    expect(t5TargetLimits(config, true).status).toBe("infeasible");
+    config.minimumStatTiers[ArmorStat.StatHealth] = { value: 0, fixed: false };
+    expect(t5TargetLimits(config).maximum).toEqual([175, 175, 175, 175, 175, 175]);
+    config.statModLimits = { maxMods: 1, maxMajorMods: 0 };
+    expect(t5TargetLimits(config).maximum).toEqual([180, 180, 180, 180, 180, 180]);
+  });
+
+  it("matches the per-piece model for mixed rolls and competing targets", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.calculateTierFiveTuning = true;
+    config.statModLimits = { maxMods: 2, maxMajorMods: 1 };
+    const selected = [
+      { index: 0, tertiary: ArmorStat.StatSuper },
+      { index: 4, tertiary: ArmorStat.StatHealth },
+    ];
+    const choices = selected.map(({ index, tertiary }) => {
+      const archetype = T5_ARCHETYPES[index];
+      const stats = t5BaseStats(archetype, tertiary);
+      return {
+        resilience: stats[0],
+        strength: stats[1],
+        discipline: stats[2],
+        intellect: stats[3],
+        recovery: stats[4],
+        mobility: stats[5],
+        archetypeStats: [archetype.primary, archetype.secondary, tertiary],
+        masterworkLevel: 5,
+        isExotic: 0,
+        perk: 0,
+        hypotheticalTuning: true,
+        tuningStat: 0,
+        gearSetHash: null,
+        gearSetPerkSelectable: false,
+      } as T5Candidate;
+    });
+    for (const health of [0, 10, 15]) {
+      config.minimumStatTiers[ArmorStat.StatHealth].value = health;
+      const compact = createT5TargetModel(config);
+      for (const name of Object.keys(compact.variables)) {
+        if (
+          name.startsWith("roll_") &&
+          !selected.some(({ index, tertiary }) => name.startsWith(`roll_${index}_${tertiary}_`))
+        ) {
+          delete compact.variables[name];
+          delete compact.ints![name];
+        }
+      }
+      const reference = createT5OptimizationModel(
+        Array.from({ length: 5 }, () => choices),
+        config
+      );
+      reference.model.options = { timeout: 1000 };
+      for (const stat of [ArmorStat.StatHealth, ArmorStat.StatGrenade, ArmorStat.StatClass]) {
+        compact.optimize = `stat_${stat}`;
+        reference.model.optimize = `stat_${stat}`;
+        const expected = solveT5Optimization(reference);
+        const actual = solveT5Optimization({ ...reference, model: compact });
+        expect(actual.feasible).toBe(expected.feasible);
+        expect(actual["optimal"]).toBeTrue();
+        expect(expected["optimal"]).toBeTrue();
+        expect(actual.result)
+          .withContext(`health ${health}, stat ${stat}`)
+          .toBeCloseTo(expected.result, 5);
+      }
+    }
+  });
+
   it("rejects irrelevant Weapon-primary choices from cheap stat bounds", () => {
     const config = BuildConfiguration.buildEmptyConfiguration();
     config.calculateTierFiveTuning = true;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input } from "@angular/core";
+import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
@@ -29,6 +29,8 @@ import {
   selector: "app-gearset-tooltip",
   templateUrl: "./gearset-tooltip.component.html",
   styleUrls: ["./gearset-tooltip.component.css"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class GearsetTooltipComponent {
   private gearsetValue: DestinySandboxPerkDefinition | undefined;

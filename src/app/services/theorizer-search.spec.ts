@@ -23,9 +23,11 @@ import {
   matchT5Pattern,
   missingT5Gearsets,
   prepareT5Search,
+  prioritizeT5InventoryMatches,
   searchT5,
   T5_SLOTS,
   t5ArrangementConfiguration,
+  t5FitCoverageUpperBound,
   t5SourceAllowed,
 } from "./theorizer-search";
 import { initializeT5Optimizer, solveT5Optimization, T5OptimizationModel } from "./theorizer-model";
@@ -501,6 +503,56 @@ describe("T5 theorizer search", () => {
       "instance-2",
     ]);
     expect(arrangement.builds).toEqual([]);
+  });
+
+  it("prioritizes arrangements with 4/5+ possible armor fit coverage", () => {
+    const candidate = (slot: number, tertiary: ArmorStat): T5Candidate => ({
+      ...item(slot, tertiary),
+      archetype: "Grenedier",
+      tertiary,
+      instanceId: `fit-${slot}`,
+    });
+    const highPotential = t5ArrangementFromPieces([
+      ...Array.from(
+        { length: 4 },
+        () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatClass }) as T5Candidate
+      ),
+      { archetype: "Grenedier", tertiary: ArmorStat.StatHealth } as T5Candidate,
+    ]);
+    const lowerPotential = t5ArrangementFromPieces([
+      ...Array.from(
+        { length: 2 },
+        () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatClass }) as T5Candidate
+      ),
+      ...Array.from(
+        { length: 3 },
+        () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatHealth }) as T5Candidate
+      ),
+    ]);
+    const domains = [
+      new Map([
+        [
+          "Grenedier",
+          [
+            candidate(0, ArmorStat.StatClass),
+            candidate(1, ArmorStat.StatClass),
+            candidate(2, ArmorStat.StatClass),
+            candidate(3, ArmorStat.StatClass),
+            candidate(4, ArmorStat.StatHealth),
+            candidate(0, ArmorStat.StatMelee),
+            candidate(1, ArmorStat.StatMelee),
+            candidate(2, ArmorStat.StatMelee),
+          ],
+        ],
+      ]),
+    ];
+
+    expect(t5FitCoverageUpperBound(highPotential, domains)).toBe(5);
+    expect(t5FitCoverageUpperBound(lowerPotential, domains)).toBe(3);
+    expect(prioritizeT5InventoryMatches([lowerPotential, highPotential], domains)).toEqual([
+      highPotential,
+      lowerPotential,
+    ]);
   });
 
   it("reuses prepared domains without reading raw inventory or manifest for each task", () => {

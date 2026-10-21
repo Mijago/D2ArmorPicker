@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from "@angular/core";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
@@ -31,6 +31,8 @@ export interface SlotInformation {
   selector: "app-modslot-visualization",
   templateUrl: "./modslot-visualization.component.html",
   styleUrls: ["./modslot-visualization.component.scss"],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class ModslotVisualizationComponent implements OnInit, OnDestroy {
   hoveredPerkIndex: number | null = null;
