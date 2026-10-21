@@ -14,50 +14,120 @@
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
-<div *ngFor="let itemGroup of exotics; let i = index" [@listAnimation]="itemGroup.length">
-  <img
-    class="exoticIcon {{ selectedExotics.indexOf(-2) > -1 ? 'selected' : '' }}"
-    *ngIf="i === 0"
-    src="assets/icons/exotic_helmet.jpg"
-    matTooltip="Force to use ANY exotic (that is NOT a class item)"
-    #tooltip="matTooltip"
-    (click)="selectExotic([-2], $event)" />
-  <img
-    class="exoticIcon {{ selectedExotics.indexOf(-1) > -1 ? 'selected' : '' }}"
-    *ngIf="i === 0"
-    src="assets/icons/empty_modslot.png"
-    matTooltip="Force to use NO exotic at all"
-    #tooltip="matTooltip"
-    (click)="selectExotic([-1], $event)" />
-  <span class="container" *ngFor="let exotic of itemGroup">
-    <app-item-icon
-      [itemHash]="exotic.items[0].hash"
-      [ngClass]="{
-        exoticIcon: true,
-        selected: selectedExotics.indexOf(exotic.items[0].hash) > -1,
-        'vendor-item': !exotic.inInventory && includeVendorRolls && exotic.inVendor,
-        'collection-item': !exotic.inInventory && includeCollectionRolls && exotic.inCollection,
-        disabled: !(
-          exotic.inInventory ||
-          (includeCollectionRolls && exotic.inCollection) ||
-          (includeVendorRolls && exotic.inVendor)
-        ),
-      }"
-      [exoticTooltip]="exotic.items[0]"
-      [exoticTooltipInVendor]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
-      [exoticTooltipInCollection]="
-        !exotic.inInventory && includeCollectionRolls && exotic.inCollection
-      "
-      (click)="
-        (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
-          selectExotic(getHashesForExotic(exotic), $event)
-      "></app-item-icon>
-    <div
-      class="item-source-overlay"
-      *ngIf="!exotic.inInventory"
-      [class.vendor-item]="includeVendorRolls && exotic.inVendor"
-      [class.collection-item]="includeCollectionRolls && exotic.inCollection"></div>
-  </span>
+
+<div class="armor-controls">
+  <mat-form-field appearance="outline" class="event-select" subscriptSizing="dynamic">
+    <mat-label>Use Event armor</mat-label>
+    <mat-select
+      aria-label="Use Event armor"
+      [value]="useEventArmor"
+      (selectionChange)="setUseEventArmor($event.value)">
+      <mat-option *ngFor="let event of eventArmorOptions" [value]="event.value">
+        {{ event.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="exotic-actions">
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="refreshInventoryInProgress"
+      matTooltip="Reload your inventory from the API."
+      (click)="refreshInventory()">
+      <mat-spinner
+        *ngIf="refreshInventoryInProgress"
+        diameter="18"
+        class="button-spinner"></mat-spinner>
+      <mat-icon *ngIf="!refreshInventoryInProgress">refresh</mat-icon>
+      Refresh Inventory
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="importEquippedExoticInProgress"
+      matTooltip="Select the exotic currently equipped on your character."
+      (click)="importEquippedExotic()">
+      <mat-spinner
+        *ngIf="importEquippedExoticInProgress"
+        diameter="18"
+        class="button-spinner"></mat-spinner>
+      <mat-icon *ngIf="!importEquippedExoticInProgress">input</mat-icon>
+      Import Equipped Exotic
+    </button>
+  </div>
+</div>
+
+<section class="universal-exotic-choice" aria-label="Universal exotic selection">
+  <button
+    type="button"
+    class="exotic-special-choice"
+    [class.selected]="selectedExotics.indexOf(-2) > -1"
+    [attr.aria-pressed]="selectedExotics.indexOf(-2) > -1"
+    matTooltip="Allow any exotic armor except a class item."
+    (click)="selectExotic([-2], $event)">
+    <img src="assets/icons/exotic_helmet.jpg" alt="" />
+    <span>Any exotic</span>
+  </button>
+  <button
+    type="button"
+    class="exotic-special-choice"
+    [class.selected]="selectedExotics.indexOf(-1) > -1"
+    [attr.aria-pressed]="selectedExotics.indexOf(-1) > -1"
+    matTooltip="Do not use an exotic."
+    (click)="selectExotic([-1], $event)">
+    <img src="assets/icons/empty_modslot.png" alt="" />
+    <span>No exotic</span>
+  </button>
+</section>
+
+<div class="exotic-slot-groups">
+  <ng-container *ngFor="let itemGroup of exotics; let i = index">
+    <section
+      class="exotic-slot-group"
+      *ngIf="i > 0 && itemGroup.length > 0"
+      [@listAnimation]="itemGroup.length">
+      <div class="exotic-slot-heading">
+        <h3>{{ exoticSlotNames[i] }}</h3>
+      </div>
+      <div class="exotic-icon-grid">
+        <span class="container" *ngFor="let exotic of itemGroup">
+          <app-item-icon
+            [itemHash]="exotic.items[0].hash"
+            [ngClass]="{
+              exoticIcon: true,
+              selected: selectedExotics.indexOf(exotic.items[0].hash) > -1,
+              disabled:
+                isEventRestrictedExotic(exotic) ||
+                !(
+                  exotic.inInventory ||
+                  (includeCollectionRolls && exotic.inCollection) ||
+                  (includeVendorRolls && exotic.inVendor)
+                ),
+              'vendor-item': !exotic.inInventory && includeVendorRolls && exotic.inVendor,
+              'collection-item':
+                !exotic.inInventory && includeCollectionRolls && exotic.inCollection,
+            }"
+            [attr.aria-disabled]="isEventRestrictedExotic(exotic) ? 'true' : null"
+            [exoticTooltip]="exotic.items[0]"
+            [exoticTooltipInVendor]="!exotic.inInventory && includeVendorRolls && exotic.inVendor"
+            [exoticTooltipInCollection]="
+              !exotic.inInventory && includeCollectionRolls && exotic.inCollection
+            "
+            (click)="
+              !isEventRestrictedExotic(exotic) &&
+                (exotic.inInventory || (includeCollectionRolls && exotic.inCollection)) &&
+                selectExotic(getHashesForExotic(exotic), $event)
+            "></app-item-icon>
+          <div
+            class="item-source-overlay"
+            *ngIf="!exotic.inInventory"
+            [class.vendor-item]="includeVendorRolls && exotic.inVendor"
+            [class.collection-item]="includeCollectionRolls && exotic.inCollection"></div>
+        </span>
+      </div>
+    </section>
+  </ng-container>
 </div>
 
 <!-- Exotic Class Item Perk Selection -->
@@ -88,105 +158,4 @@
       </mat-select>
     </mat-form-field>
   </div>
-</div>
-
-<div class="exotic-actions">
-  <button
-    mat-raised-button
-    color="primary"
-    [disabled]="refreshInventoryInProgress"
-    matTooltip="Reload your inventory from the API."
-    (click)="refreshInventory()">
-    <mat-spinner
-      *ngIf="refreshInventoryInProgress"
-      diameter="18"
-      class="button-spinner"></mat-spinner>
-    <mat-icon *ngIf="!refreshInventoryInProgress">refresh</mat-icon>
-    Refresh Inventory
-  </button>
-
-  <button
-    mat-raised-button
-    color="primary"
-    [disabled]="importEquippedExoticInProgress"
-    matTooltip="Select the exotic currently equipped on your character."
-    (click)="importEquippedExotic()">
-    <mat-spinner
-      *ngIf="importEquippedExoticInProgress"
-      diameter="18"
-      class="button-spinner"></mat-spinner>
-    <mat-icon *ngIf="!importEquippedExoticInProgress">input</mat-icon>
-    Import Equipped Exotic
-  </button>
-</div>
-<br />
-<div>
-  <mat-slide-toggle
-    color="warn"
-    [checked]="enforceFeaturedLegendaryArmor"
-    (change)="setEnforceFeaturedLegendaryArmor($event.checked)">
-    Enforce featured <span class="legendary-label">legendary</span> armor only
-  </mat-slide-toggle>
-</div>
-
-<div>
-  <mat-slide-toggle
-    color="warn"
-    [checked]="enforceFeaturedExoticArmor"
-    (change)="setEnforceFeaturedExoticArmor($event.checked)">
-    Enforce featured <span class="exotic-label">exotic</span> armor only
-  </mat-slide-toggle>
-</div>
-
-<div class="minispace"></div>
-
-<div>
-  <mat-slide-toggle
-    color="primary"
-    [checked]="includeCollectionRolls"
-    (change)="setAllowCollectionRolls($event.checked)">
-    Include <u>exotic</u> collection rolls
-  </mat-slide-toggle>
-</div>
-<div>
-  <mat-slide-toggle
-    color="primary"
-    [checked]="includeVendorRolls"
-    (change)="setAllowVendorItems($event.checked)">
-    Include <u>legendary and exotic</u> vendor armor (slower)
-  </mat-slide-toggle>
-</div>
-
-<div class="minispace"></div>
-<div *ngIf="!config.isTheorizer">
-  <mat-slide-toggle
-    color="primary"
-    [checked]="allowLegacyLegendaryArmor"
-    (change)="setAllowLegacyLegendaryArmor($event.checked)">
-    Include legacy (Armor 2.0) <span class="legendary-label">legendary</span> armor
-  </mat-slide-toggle>
-</div>
-<div *ngIf="!config.isTheorizer">
-  <mat-slide-toggle
-    color="primary"
-    [checked]="allowLegacyExoticArmor"
-    (change)="setAllowLegacyExoticArmor($event.checked)">
-    Include legacy (Armor 2.0) <span class="exotic-label">exotic</span> armor
-  </mat-slide-toggle>
-</div>
-<div *ngIf="!config.isTheorizer">
-  <mat-slide-toggle
-    color="primary"
-    [checked]="allowBlueArmorPieces"
-    (change)="setAllowBlueArmorPieces($event.checked)">
-    Include white, blue and green items
-  </mat-slide-toggle>
-</div>
-<div>
-  <mat-slide-toggle
-    color="primary"
-    [checked]="!ignoreSunsetArmor"
-    (change)="setIgnoreSunsetArmor(!$event.checked)">
-    Include sunset armor
-  </mat-slide-toggle>
 </div>

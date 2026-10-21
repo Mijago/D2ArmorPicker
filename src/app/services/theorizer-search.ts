@@ -20,9 +20,12 @@ import {
 } from "../data/theorizer";
 import {
   constrainT5Arrangement,
+  constrainT5ArchetypeCounts,
+  constrainT5TertiaryCounts,
   createT5OptimizationModel,
   excludeT5Arrangement,
   excludeT5Pattern,
+  partitionT5Builds,
   solveT5Optimization,
   t5BoundsCanReach,
   t5MaximumStatUpdates,
@@ -63,7 +66,6 @@ export function t5SourceAllowed(item: IInventoryArmor, config: BuildConfiguratio
     item.clazz === config.characterClass &&
     item.armorSystem === ArmorSystem.Armor3 &&
     (item.isExotic === 1 || item.tier === 5) &&
-    !config.disabledItems.includes(item.itemInstanceId) &&
     (item.source !== InventoryArmorSource.Collections || config.includeCollectionRolls) &&
     (item.source !== InventoryArmorSource.Vendor || config.includeVendorRolls) &&
     (!config.ignoreSunsetArmor || !item.isSunset) &&
@@ -72,6 +74,46 @@ export function t5SourceAllowed(item: IInventoryArmor, config: BuildConfiguratio
     (!(item.isExotic ? config.onlyUseMasterworkedExotics : config.onlyUseMasterworkedLegendaries) ||
       item.masterworkLevel === 5)
   );
+}
+
+export function t5ArrangementConfiguration(config: BuildConfiguration): BuildConfiguration {
+  const arrangementConfig = BuildConfiguration.buildEmptyConfiguration();
+  arrangementConfig.characterClass = config.characterClass;
+  arrangementConfig.selectedModElement = config.selectedModElement;
+  arrangementConfig.minimumStatTiers = structuredClone(config.minimumStatTiers);
+  arrangementConfig.statModLimits = { ...config.statModLimits };
+  arrangementConfig.enabledMods = [...config.enabledMods];
+  arrangementConfig.assumeLegendariesMasterworked = true;
+  arrangementConfig.assumeExoticsMasterworked = true;
+  arrangementConfig.calculateTierFiveTuning = true;
+  arrangementConfig.includeCollectionRolls = true;
+  arrangementConfig.includeVendorRolls = true;
+  arrangementConfig.ignoreSunsetArmor = false;
+  return arrangementConfig;
+}
+
+export function t5ArrangementRequest(request: T5SearchRequest): T5SearchRequest {
+  const config = request.arrangementConfig ?? t5ArrangementConfiguration(request.config);
+  return {
+    ...request,
+    config,
+    arrangementConfig: config,
+    achievableOnly: false,
+    inventory: request.inventory.filter(
+      (item) =>
+        item.clazz === config.characterClass &&
+        item.slot === ArmorSlot.ArmorSlotClass &&
+        item.isExotic === 1 &&
+        item.armorSystem === ArmorSystem.Armor3
+    ),
+    manifest: request.manifest.filter(
+      (item) =>
+        item.clazz === config.characterClass &&
+        item.slot === ArmorSlot.ArmorSlotClass &&
+        item.isExotic === 1 &&
+        item.armorSystem === ArmorSystem.Armor3
+    ),
+  };
 }
 
 function perksAllowed(
@@ -206,6 +248,21 @@ export function eligibleT5Inventory(
   );
 }
 
+function deduplicateT5Domains(domains: Map<string, T5Candidate[]>[]): void {
+  for (const domain of domains) {
+    for (const [key, choices] of domain) {
+      const unique = new Map<string, T5Candidate>();
+      for (const item of choices.sort(
+        (first, second) => Number(isOwned(second)) - Number(isOwned(first))
+      )) {
+        const signature = `${t5ItemStats(item)}:${!!item.instanceId}:${isOwned(item)}:${item.isExotic}:${item.hash}:${item.tuningStat}:${item.hypotheticalTuning}:${item.masterworkLevel}:${item.perk}:${item.gearSetHash}:${item.gearSetPerkSelectable}:${item.exoticPerkHash}`;
+        if (!unique.has(signature)) unique.set(signature, item);
+      }
+      domain.set(key, [...unique.values()]);
+    }
+  }
+}
+
 export function buildT5Domains(request: T5SearchRequest): Map<string, T5Candidate[]>[] {
   const { config } = request;
   let nextId = 1;
@@ -221,7 +278,10 @@ export function buildT5Domains(request: T5SearchRequest): Map<string, T5Candidat
     const candidate = candidateFromItem(item, nextId++);
     if (candidate) add(candidate);
   }
-  if (request.achievableOnly) return domains;
+  if (request.achievableOnly) {
+    deduplicateT5Domains(domains);
+    return domains;
+  }
 
   const legendarySets = new Set(
     config.armorRequirements.flatMap((requirement) =>
@@ -322,18 +382,7 @@ export function buildT5Domains(request: T5SearchRequest): Map<string, T5Candidat
       }
     }
   }
-  for (const domain of domains) {
-    for (const [key, choices] of domain) {
-      const unique = new Map<string, T5Candidate>();
-      for (const item of choices.sort(
-        (first, second) => Number(isOwned(second)) - Number(isOwned(first))
-      )) {
-        const signature = `${t5ItemStats(item)}:${!!item.instanceId}:${isOwned(item)}:${item.isExotic}:${item.hash}:${item.tuningStat}:${item.hypotheticalTuning}:${item.masterworkLevel}:${item.perk}:${item.gearSetHash}:${item.gearSetPerkSelectable}:${item.exoticPerkHash}`;
-        if (!unique.has(signature)) unique.set(signature, item);
-      }
-      domain.set(key, [...unique.values()]);
-    }
-  }
+  deduplicateT5Domains(domains);
   return domains;
 }
 
@@ -513,24 +562,44 @@ function generationRolls(choices: readonly T5Candidate[], achievableOnly: boolea
 
 export interface PreparedT5Search {
   domains: Map<string, T5Candidate[]>[];
+  arrangementDomains: Map<string, T5Candidate[]>[];
   theoryDomains: Map<string, T5Candidate[]>[];
+  archetypeDomains: Map<string, T5Candidate[]>;
   warnings: string[];
 }
 
 export function prepareT5Search(request: T5SearchRequest): PreparedT5Search {
   const domains = buildT5Domains(request);
-  const theoryDomains = domains.map(
+  const arrangementRequest = t5ArrangementRequest(request);
+  const arrangementDomains = buildT5Domains(arrangementRequest);
+  const warnings: string[] = [];
+  const arrangementTheoryDomains = arrangementDomains.map(
     (domain) =>
       new Map(
         [...domain].map(([name, choices]) => [
           name,
-          generationRolls(choices, request.achievableOnly),
+          generationRolls(choices, arrangementRequest.achievableOnly),
         ])
       )
   );
-  const warnings: string[] = [];
+  const pooled = new Map<string, T5Candidate[]>();
+  for (const domain of arrangementTheoryDomains)
+    for (const [name, choices] of domain)
+      pooled.set(name, [...(pooled.get(name) ?? []), ...choices]);
+  const archetypeDomains = new Map(
+    [...pooled].map(([name, choices]) => [
+      name,
+      generationRolls(choices, request.achievableOnly).map((piece) => ({
+        ...piece,
+        slot:
+          piece.isExotic && piece.slot === ArmorSlot.ArmorSlotClass
+            ? ArmorSlot.ArmorSlotClass
+            : ArmorSlot.ArmorSlotNone,
+      })),
+    ])
+  );
   if (
-    !request.achievableOnly &&
+    !arrangementRequest.achievableOnly &&
     request.manifest.some(
       (item) =>
         item.isExotic &&
@@ -542,7 +611,13 @@ export function prepareT5Search(request: T5SearchRequest): PreparedT5Search {
       "Exotic class-item theory uses known perk-defined rolls from your loaded inventory/source data; unobserved Spirit pairs are not enumerated."
     );
   }
-  return { domains, theoryDomains, warnings };
+  return {
+    domains,
+    arrangementDomains,
+    theoryDomains: arrangementTheoryDomains,
+    archetypeDomains,
+    warnings,
+  };
 }
 
 export function inventoryFitT5(
@@ -609,9 +684,14 @@ export function* matchT5Inventory(
 export function* searchT5(
   request: T5SearchRequest,
   solve = solveT5Optimization,
-  prepared?: PreparedT5Search
+  prepared?: PreparedT5Search,
+  slice?: { maxRetriesWithoutProgress: number }
 ): Generator<T5SearchUpdate> {
-  const errors = t5CompatibilityErrors(request.config);
+  const arrangeOnly = request.stage !== "builds";
+  const config = arrangeOnly
+    ? (request.arrangementConfig ?? t5ArrangementConfiguration(request.config))
+    : request.config;
+  const errors = t5CompatibilityErrors(config);
   if (errors.length) {
     yield {
       results: [],
@@ -626,13 +706,15 @@ export function* searchT5(
     };
     return;
   }
-  const { config } = request;
   const cache = prepared ?? prepareT5Search(request);
-  const domains = cache.domains;
+  const domains = arrangeOnly ? cache.arrangementDomains : cache.domains;
   const keys = domains.map((domain, slot) =>
     [...domain.keys()].filter((key) => !request.group || key === request.group[slot])
   );
-  if (request.task) {
+  if (request.task?.archetypeCounts) {
+    for (let slot = 0; slot < keys.length; slot++)
+      keys[slot] = keys[slot].filter((key) => request.task!.archetypes.includes(key));
+  } else if (request.task) {
     request.task.archetypes.forEach((archetype, slot) => {
       keys[slot] = keys[slot].filter((key) => key === archetype);
     });
@@ -648,12 +730,8 @@ export function* searchT5(
       product * new Set(choices.map((item) => t5ItemStats(item).join(","))).size,
     1
   );
-  const theoryRolls = cache.theoryDomains.map((domain, slot) =>
-    keys[slot].flatMap((key) => domain.get(key)!)
-  );
   const results: T5Solution[] = [];
   const arrangements: T5Arrangement[] = [];
-  const arrangeOnly = request.stage !== "builds";
   const warnings = [...cache.warnings];
   const limit = Math.max(1, config.parsedResultLimit || 30000);
   let started = Date.now();
@@ -728,27 +806,91 @@ export function* searchT5(
 
   started = Date.now();
   lastUpdate = started;
-  const relevantRolls = theoryRolls.map((choices, slot) =>
+  const generationRollsBySlot =
+    arrangeOnly && request.task?.archetypeCounts
+      ? request.task.archetypes.map((name) =>
+          (cache.archetypeDomains.get(name) ?? []).filter(
+            (item) =>
+              !request.task!.tertiaries ||
+              request.task!.tertiaries.some((entry) => entry.stat === item.tertiary)
+          )
+        )
+      : arrangeOnly
+        ? cache.theoryDomains.map((domain, slot) => keys[slot].flatMap((key) => domain.get(key)!))
+        : allRolls;
+  const generationDomains = generationRollsBySlot.map((choices) =>
+    request.arrangement
+      ? choices.filter(
+          (item) =>
+            request.arrangement!.archetypes.some((entry) => entry.name === item.archetype) &&
+            request.arrangement!.tertiaries.some((entry) => entry.stat === item.tertiary)
+        )
+      : choices
+  );
+  const relevantRolls = generationDomains.map((choices, slot) =>
     choices.filter((candidate) => {
-      const partial = theoryRolls.map((other, index) => (index === slot ? [candidate] : other));
+      const partial = generationDomains.map((other, index) =>
+        index === slot ? [candidate] : other
+      );
       return t5BoundsCanReach(t5StatBounds(partial, config), config);
     })
   );
   const problem = createT5OptimizationModel(relevantRolls, config);
+  if (request.task?.archetypeCounts && !arrangeOnly) {
+    const counts = new Map<string, number>();
+    for (const name of request.task.archetypes) counts.set(name, (counts.get(name) ?? 0) + 1);
+    constrainT5ArchetypeCounts(
+      problem,
+      [...counts].map(([name, count]) => ({ name, count }))
+    );
+  }
+  if (!arrangeOnly) problem.model.constraints["covered"] = { min: 3 };
   if (request.arrangement) constrainT5Arrangement(problem, request.arrangement);
+  if (request.task?.tertiaries) constrainT5TertiaryCounts(problem, request.task.tertiaries);
+  if (!arrangeOnly && request.buildPartition) partitionT5Builds(problem, request.buildPartition);
   const visitedGroups = new Set<string>();
   const retainedPatterns = new Set<string>();
   let exhausted = false;
   let patternIndex = 0;
+  for (const arrangement of request.task?.excludedArrangements ?? [])
+    excludeT5Arrangement(problem, arrangement, patternIndex++);
   let solverRetries = 0;
-  while (!exhausted && !timedOutNow() && relevantRolls.every((choices) => choices.length > 0)) {
+  let retriesWithoutProgress = 0;
+  let solveTimeoutMs = problem.model.options?.timeout ?? 150;
+  while (!exhausted && relevantRolls.every((choices) => choices.length > 0)) {
+    const deferred = !!slice && retriesWithoutProgress >= slice.maxRetriesWithoutProgress;
+    if (timedOutNow() || deferred) {
+      if (!slice) break;
+      yield {
+        results: results.slice(0, limit),
+        arrangements: [...arrangements],
+        checked,
+        total,
+        feasible,
+        evaluations,
+        complete: false,
+        done: true,
+        warnings,
+        maximumPossibleStats,
+        possibleRollCombinations,
+        maximaChecked: 6,
+        maximaComplete,
+        solverRetries,
+        stopReason: "slice",
+        taskDeferred: deferred,
+      };
+      started = Date.now();
+      lastUpdate = started;
+      timedOut = false;
+      retriesWithoutProgress = 0;
+    }
     const remainingMs =
       request.timeLimitMs > 0
         ? Math.max(1, request.timeLimitMs - (Date.now() - started))
         : Infinity;
     problem.model.options = {
       ...problem.model.options,
-      timeout: Math.min(problem.model.options?.timeout ?? 150, remainingMs),
+      timeout: Math.min(solveTimeoutMs, remainingMs),
     };
     const solved = solve(problem);
     evaluations++;
@@ -759,7 +901,8 @@ export function* searchT5(
         break;
       }
       solverRetries++;
-      problem.model.options.timeout = Math.min(4000, (problem.model.options.timeout ?? 150) * 2);
+      retriesWithoutProgress++;
+      solveTimeoutMs = Math.min(4000, solveTimeoutMs * 2);
       results.sort(compareT5Solutions);
       yield {
         results: results.slice(0, limit),
@@ -780,6 +923,7 @@ export function* searchT5(
       lastUpdate = Date.now();
       continue;
     }
+    retriesWithoutProgress = 0;
     const patternKey = JSON.stringify(
       pattern.pieces.map((piece, slot) => [
         piece.archetype,
@@ -835,7 +979,7 @@ export function* searchT5(
       ? null
       : matchT5Pattern(pattern, domains, config, request.achievableOnly);
     retainedPatterns.add(patternKey);
-    if (solution) {
+    if (solution && solution.covered >= 3) {
       feasible++;
       results.push(solution);
       if (results.length > limit + 100) {

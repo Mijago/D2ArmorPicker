@@ -73,6 +73,16 @@ describe("dedicated T5 maxima model", () => {
     );
     expect(model.rolls.length).toBe(10);
     expect(model.model.options?.timeout).toBe(150);
+    const samples: Parameters<NonNullable<Parameters<typeof solveT5Optimization>[1]>>[0][] = [];
+    solveT5Optimization(model, (sample) => samples.push(sample));
+    expect(samples.length).toBe(1);
+    expect(samples[0].status.length).toBeGreaterThan(0);
+    expect(samples[0].variables).toBe(Object.keys(model.model.variables).length);
+    expect(samples[0].constraints).toBe(Object.keys(model.model.constraints).length);
+    expect(samples[0].lpBytes).toBeGreaterThan(0);
+    expect(samples[0].serializeMs).toBeGreaterThanOrEqual(0);
+    expect(samples[0].solveMs).toBeGreaterThanOrEqual(0);
+    expect(samples[0].validateMs).toBeGreaterThanOrEqual(0);
   });
 
   it("maximizes fixed T5 stats without enumerating five-piece permutations", () => {

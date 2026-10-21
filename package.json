@@ -12,6 +12,7 @@
     "deploy-nznaza": "set \"RELEASE=DEV\" && npm run config && ng deploy D2ArmorPicker --build-target D2ArmorPicker:build:beta --no-silent --repo=https://github.com/nznaza/D2ArmorPicker.git --base-href=/D2ArmorPicker/ --cname=nznaza.github.io/D2ArmorPicker/",
     "watch": "npm run config && ng build --watch --configuration development",
     "test": "ng test",
+    "profile:theorizer": "node scripts/profile-theorizer.cjs",
     "prepare": "husky install",
     "lint": "ng lint --fix --max-warnings=0",
     "format": "prettier . --write",
@@ -69,6 +70,7 @@
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.2",
     "dotenv": "^16.4.5",
+    "esbuild": "^0.28.2",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.10.0",
     "husky": "^8.0.0",
@@ -79,8 +81,9 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-html-reporter": "^2.1.0",
     "lint-staged": "^15.2.10",
+    "playwright": "^1.64.1",
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "^4.6.4"
+    "typescript": "~5.1.6"
   }
 }

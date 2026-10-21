@@ -44,6 +44,82 @@ D2ArmorPicker is a powerful web-based tool designed for Destiny 2 players who wa
 
 Then you can use `npm run build`.
 
+### Theorizer Profiling
+
+Use the download icon beside **Calculate arrangements** to export `theorizer-profile-input.json`.
+The export preserves solver settings, rolls, sources, gearsets, and disabled-item behavior, but
+replaces instance IDs and omits authentication data, item names, and raw manifest records.
+Treat it as inventory/build information, not as a public diagnostic upload.
+
+Run the local profiler with the exported input:
+
+```sh
+npm run profile:theorizer -- --input "path/to/theorizer-profile-input.json" --seconds 30 --workers 1,4,8 --repeat 2 --output theorizer-profile-report.json
+```
+
+For a quick synthetic smoke test:
+
+```sh
+npm run profile:theorizer -- --fixture --seconds 5 --workers 1,4 --variants current
+```
+
+The runner uses a fresh headless Edge browser and a temporary loopback-only server; no login,
+Bungie API access, development server, or credentials are required. With Playwright Chromium
+installed, `--browser chromium` is also supported. Each case gets the same wall-clock discovery
+budget after worker initialization. Warm-up costs are reported separately. Repetitions alternate
+variant order to reduce order bias; synthetic results do not represent your inventory.
+
+Options:
+
+- `--variants current,ordered-prefixes`: compare slot-independent archetype/tertiary-count
+  discovery with the previous physical-slot-prefix scheduler. These are the defaults.
+- `no-task-priority` disables the potential-3/5 queue heuristic for both initial tasks and
+  new tertiary subtasks; the solver and feasible arrangement space remain unchanged.
+- `inventory-priority` adds the previous inventory-profile objective bonus; `no-resume` restarts leaf
+  solves instead of retaining their state.
+- `shared-exclusions`: an experimental profiler-only variant sharing discovered arrangement
+  exclusions across workers. It can reduce duplicates while increasing model cost; measure it
+  rather than assuming duplicate reduction improves throughput.
+- `no-inventory-priority` remains accepted as an alias for `current` for older commands.
+- `archetype-counts` is also accepted as an alias for `current`. Discovery positions are anonymous;
+  physical armor slots are used only during fitting/builds, with observed exotic class-item rolls
+  retaining their perk-defined stat restrictions. Slow count tasks split into disjoint floating
+  tertiary-count subtasks and inherit exclusions for parent discoveries.
+- `--slice-ms 4000 --retry-limit 3`: compare leaf slice duration and consecutive retry limits.
+- `--trace`: include per-solve samples; reports can become large.
+- `--task Grenedier,Grenedier,Grenedier,Grenedier,Grenedier`: replay one three-to-five-slot
+  archetype prefix, for example from `topTasks` in a report. Use one worker for an isolated task.
+  Current/count discovery requires all five archetype names; order does not assign them to slots.
+- `--help`: show all command options.
+
+The JSON report includes unique arrangements/second, duplicate discoveries, queued/deferred
+tasks, resumes, slowest tasks, solver statuses, retry reasons, timeout histograms, model sizes,
+and LP serialization/HiGHS/validation timings. Worker time outside those phases is reported as
+search overhead. Each run also includes threshold-based `signals` suggesting which costs to
+investigate; these are diagnostic hints, not statistically proven optimization recommendations.
+`deferredTasks` lists all queued deferred prefixes for targeted replay; input and bundle hashes
+identify comparisons made with different settings or uncommitted solver code.
+Reports are written after each case so completed comparisons survive a later
+failure. Inputs and credentials are not embedded in reports.
+
+A **solver retry** means no usable five-piece witness was extracted and the solve did not prove
+exhaustion. It is not synonymous with infeasibility. The timeout target backs off from 150ms up
+to 4000ms, limited by the remaining slice. A **deferred task** is unfinished work requeued after
+repeated retries or a slice with no new arrangements. It is not a proven-impossible task and is
+not discarded. A deferred count is a queue snapshot, not the cumulative retry count.
+Discovery retains up to four leaf contexts per worker. With 32 workers, one running and three
+paused contexts each can account for 96 queued contexts. `workerContexts` distinguishes retained
+state and deferred queue entries from active tasks; this count alone does not establish a stall.
+
+This tool measures discovery, not slider maxima, inventory fitting, retained-build generation,
+or Angular rendering. At the wall-clock deadline, workers are terminated; an in-flight solve's
+last metrics may not have arrived. Inspect `activeAtDeadline` and compare sufficiently long runs.
+Timing totals sum across workers and can exceed elapsed wall-clock time. The presence of primal
+column values is reported separately from passing integer/constraint validation; it does not
+by itself mean a valid incumbent exists.
+Use repeated measurements and investigate high retry time, duplicate rates, serialization,
+or search overhead before changing the production algorithm.
+
 ### Deployment
 
 You can also deploy the page to a "github pages" page. Please note that I strongly discourage hosting alternative D2AP installations, let's make this one as awesome as possible.

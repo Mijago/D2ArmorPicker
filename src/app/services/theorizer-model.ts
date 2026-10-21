@@ -37,6 +37,20 @@ interface SolveResult {
 let highs: Awaited<ReturnType<(typeof import("highs"))["default"]>> | undefined;
 let highsLoading: Promise<void> | undefined;
 
+export interface T5SolveProfile {
+  status: string;
+  serializeMs: number;
+  solveMs: number;
+  validateMs: number;
+  timeoutMs: number;
+  variables: number;
+  constraints: number;
+  lpBytes: number;
+  hasPrimal: boolean;
+  integral: boolean;
+  feasible: boolean;
+}
+
 export function initializeT5Optimizer(
   wasmUrl = new URL("assets/highs.wasm", globalThis.location.href).href
 ): Promise<void> {
@@ -47,8 +61,12 @@ export function initializeT5Optimizer(
   })());
 }
 
-function solveModel(model: ModelDefinition): SolveResult {
+function solveModel(
+  model: ModelDefinition,
+  profile?: (sample: T5SolveProfile) => void
+): SolveResult {
   if (!highs) throw new Error("The T5 optimizer has not initialized.");
+  const started = profile ? performance.now() : 0;
   const variables = Object.keys(model.variables);
   const expression = (attribute: string) =>
     variables
@@ -81,10 +99,13 @@ function solveModel(model: ModelDefinition): SolveResult {
   if (integers.length) lines.push("General", ` ${integers.join(" ")}`);
   if (binaries.length) lines.push("Binary", ` ${binaries.join(" ")}`);
   lines.push("End");
-  const solution = highs.solve(lines.join("\n"), {
+  const lp = lines.join("\n");
+  const serialized = profile ? performance.now() : 0;
+  const solution = highs.solve(lp, {
     time_limit: (model.options?.timeout ?? 150) / 1000,
     output_flag: false,
   });
+  const solvedAt = profile ? performance.now() : 0;
   const values: Record<string, number> = {};
   if ("Columns" in solution) {
     for (const [name, column] of Object.entries(solution.Columns)) {
@@ -116,6 +137,19 @@ function solveModel(model: ModelDefinition): SolveResult {
     isIntegral: integral,
     optimal: solution.Status === "Optimal" || solution.Status === "Infeasible",
   };
+  profile?.({
+    status: solution.Status,
+    serializeMs: serialized - started,
+    solveMs: solvedAt - serialized,
+    validateMs: performance.now() - solvedAt,
+    timeoutMs: model.options?.timeout ?? 150,
+    variables: variables.length,
+    constraints: Object.keys(model.constraints).length,
+    lpBytes: lp.length,
+    hasPrimal: Object.keys(values).length > 0,
+    integral,
+    feasible,
+  });
   return result;
 }
 
@@ -291,6 +325,7 @@ export function createT5OptimizationModel(
             item.source === InventoryArmorSource.Postmaster);
         const coefficients: Record<string, number> = {
           [`slot_${slot}`]: 1,
+          covered: item.instanceId ? 1 : 0,
           exotic: item.isExotic,
           artifice: item.perk === ArmorPerkOrSlot.SlotArtifice ? -1 : 0,
           artificeRequired: item.perk === ArmorPerkOrSlot.SlotArtifice ? 1 : 0,
@@ -326,8 +361,32 @@ export function createT5OptimizationModel(
   return { model, rolls, bonuses, config };
 }
 
-export function solveT5Optimization(problem: T5OptimizationModel): SolveResult {
-  return solveModel(problem.model);
+export function solveT5Optimization(
+  problem: T5OptimizationModel,
+  profile?: (sample: T5SolveProfile) => void
+): SolveResult {
+  return solveModel(problem.model, profile);
+}
+
+export function partitionT5Builds(
+  problem: T5OptimizationModel,
+  partition: { index: number; count: number }
+): void {
+  const signature = (roll: RollVariable) =>
+    `${roll.item.archetype}:${roll.item.tertiary}:${Number(roll.balanced)}`;
+  let multiplier = 1;
+  for (const slot of [0, 1, 2]) {
+    const rolls = problem.rolls.filter((roll) => roll.slot === slot);
+    const keys = [...new Set(rolls.map(signature))];
+    for (const roll of rolls) {
+      problem.model.variables[roll.name]["buildPartition"] =
+        multiplier * keys.indexOf(signature(roll));
+    }
+    multiplier *= keys.length;
+  }
+  problem.model.constraints["buildPartition"] = { equal: partition.index };
+  problem.model.variables["buildPartitionIndex"] = { buildPartition: -partition.count };
+  problem.model.ints!["buildPartitionIndex"] = 1;
 }
 
 export function excludeT5Pattern(
@@ -596,24 +655,25 @@ export function t5BoundsCanReach(bounds: readonly number[], config: BuildConfigu
   return true;
 }
 
-export function constrainT5Arrangement(
+export function constrainT5ArchetypeCounts(
   problem: T5OptimizationModel,
-  arrangement: T5Arrangement
+  archetypes: readonly { name: string; count: number }[]
 ): void {
-  for (let index = 0; index < arrangement.archetypes.length; index++) {
-    const entry = arrangement.archetypes[index];
+  for (let index = 0; index < archetypes.length; index++) {
+    const entry = archetypes[index];
     const name = `required_archetype_${index}`;
     problem.model.constraints[name] = { equal: entry.count };
     for (const roll of problem.rolls)
       if (roll.item.archetype === entry.name) problem.model.variables[roll.name][name] = 1;
   }
-  for (let index = 0; index < arrangement.tertiaries.length; index++) {
-    const entry = arrangement.tertiaries[index];
-    const name = `required_tertiary_${index}`;
-    problem.model.constraints[name] = { equal: entry.count };
-    for (const roll of problem.rolls)
-      if ((roll.item.tertiary ?? null) === entry.stat) problem.model.variables[roll.name][name] = 1;
-  }
+}
+
+export function constrainT5Arrangement(
+  problem: T5OptimizationModel,
+  arrangement: T5Arrangement
+): void {
+  constrainT5ArchetypeCounts(problem, arrangement.archetypes);
+  constrainT5TertiaryCounts(problem, arrangement.tertiaries);
   const directionalCount = arrangement.tunings.reduce(
     (sum, entry) => sum + (entry.stat === null ? 0 : entry.count),
     0
@@ -630,6 +690,19 @@ export function constrainT5Arrangement(
       if (arrangement.tunings.some((entry) => entry.stat === stat))
         coefficients[`required_tuning_${stat}`] = 1;
     }
+  }
+}
+
+export function constrainT5TertiaryCounts(
+  problem: T5OptimizationModel,
+  tertiaries: readonly { stat: ArmorStat | null; count: number }[]
+): void {
+  for (let index = 0; index < tertiaries.length; index++) {
+    const entry = tertiaries[index];
+    const name = `required_tertiary_${index}`;
+    problem.model.constraints[name] = { equal: entry.count };
+    for (const roll of problem.rolls)
+      if ((roll.item.tertiary ?? null) === entry.stat) problem.model.variables[roll.name][name] = 1;
   }
 }
 

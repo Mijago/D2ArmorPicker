@@ -134,6 +134,10 @@
     mat-stroked-button
     matTooltip="Reset only the settings in this section to their defaults.">
     <mat-icon>restart_alt</mat-icon>
-    {{ section === "performance" ? "Reset performance settings" : "Reset advanced settings" }}
+    {{
+      section === "performance"
+        ? "Reset calculation performance & results"
+        : "Reset build constraints & assumptions"
+    }}
   </button>
 </div>

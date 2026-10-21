@@ -20,7 +20,7 @@ import {
   DestinyItemInvestmentStatDefinition,
   DestinyItemSocketEntryDefinition,
   TierType,
-} from "bungie-api-ts/destiny2/interfaces";
+} from "bungie-api-ts/destiny2";
 import { ArmorSlot } from "../enum/armor-slot";
 import { ArmorPerkOrSlot } from "../enum/armor-stat";
 

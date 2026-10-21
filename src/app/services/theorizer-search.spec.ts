@@ -4,6 +4,8 @@ import { FORCE_USE_NO_EXOTIC } from "../data/constants";
 import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES } from "../data/enum/armor-stat";
 import {
   canAssignT5Tertiaries,
+  createT5ArchetypeCountTasks,
+  createT5TertiaryTasks,
   T5_ARCHETYPES,
   T5Candidate,
   T5SearchRequest,
@@ -23,12 +25,158 @@ import {
   prepareT5Search,
   searchT5,
   T5_SLOTS,
+  t5ArrangementConfiguration,
   t5SourceAllowed,
 } from "./theorizer-search";
-import { initializeT5Optimizer } from "./theorizer-model";
+import { initializeT5Optimizer, solveT5Optimization, T5OptimizationModel } from "./theorizer-model";
 
 describe("T5 theorizer search", () => {
   beforeAll(() => initializeT5Optimizer("/assets/highs.wasm"));
+  it("partitions canonical archetype groups without losing floating slot assignments or duplicating arrangements", () => {
+    const input = request();
+    input.group = undefined;
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 10000;
+    input.arrangementConfig = t5ArrangementConfiguration(input.config);
+    input.arrangementConfig.calculateTierFiveTuning = false;
+    const prepared = prepareT5Search(input);
+    const narrow = (domains: typeof prepared.domains) =>
+      domains.map(
+        (domain) =>
+          new Map(
+            [...domain]
+              .filter(([name]) => name === "Grenedier" || name === "Demolitionist")
+              .map(([name, pieces]) => [
+                name,
+                pieces.filter((piece) => piece.tertiary === ArmorStat.StatHealth),
+              ])
+          )
+      );
+    prepared.arrangementDomains = narrow(prepared.arrangementDomains);
+    prepared.theoryDomains = narrow(prepared.theoryDomains);
+    prepared.archetypeDomains = narrow([prepared.archetypeDomains])[0];
+    const full = [...searchT5(input, undefined, prepared)].pop()!;
+    expect(full.complete).toBeTrue();
+    const keys = new Set<string>();
+    for (const task of createT5ArchetypeCountTasks([...prepared.archetypeDomains.keys()])) {
+      const result = [...searchT5({ ...input, task }, undefined, prepared)].pop()!;
+      expect(result.complete).toBeTrue();
+      for (const arrangement of result.arrangements!) {
+        expect(keys.has(arrangement.key)).toBeFalse();
+        keys.add(arrangement.key);
+        for (const entry of arrangement.archetypes)
+          expect(entry.count).toBe(task.archetypes.filter((name) => name === entry.name).length);
+      }
+    }
+    expect(keys.size).toBe(6);
+    expect([...keys].sort()).toEqual(
+      full.arrangements!.map((arrangement) => arrangement.key).sort()
+    );
+  });
+
+  it("keeps discovery unchanged when ordinary armor slots are relabeled", () => {
+    const input = request();
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 10000;
+    input.task = { archetypes: Array(5).fill("Grenedier"), archetypeCounts: true };
+    input.arrangementConfig = t5ArrangementConfiguration(input.config);
+    input.arrangementConfig.calculateTierFiveTuning = false;
+    input.inventory = [0, 1, 2, 3, 4].map((slot) => item(slot, ArmorStat.StatHealth));
+    const run = (request: T5SearchRequest) => {
+      const prepared = prepareT5Search(request);
+      expect(
+        [...prepared.archetypeDomains.values()].flat().every((piece) => piece.slot === 0)
+      ).toBeTrue();
+      prepared.archetypeDomains.set(
+        "Grenedier",
+        prepared.archetypeDomains
+          .get("Grenedier")!
+          .filter((piece) => piece.tertiary === ArmorStat.StatHealth)
+      );
+      const final = [...searchT5(request, undefined, prepared)].pop()!;
+      expect(final.complete).toBeTrue();
+      return final.arrangements!.map((arrangement) => arrangement.key).sort();
+    };
+    expect(
+      run({
+        ...input,
+        inventory: input.inventory.map((piece) => ({
+          ...piece,
+          slot: T5_SLOTS[(T5_SLOTS.indexOf(piece.slot) + 2) % 5],
+        })),
+      })
+    ).toEqual(run(input));
+  });
+
+  it("applies exotic class-item perk selections after arrangement discovery", () => {
+    const input = request();
+    const exotic = { ...item(4, ArmorStat.StatClass, true), exoticPerkHash: [11, 22] };
+    input.config.selectedExotics = [exotic.hash];
+    input.config.selectedExoticPerks = [11, 22];
+    input.inventory = [exotic];
+    input.manifest = [exotic];
+    const prepared = prepareT5Search(input);
+    const arrangementClassItems = [...prepared.archetypeDomains.values()]
+      .flat()
+      .filter((piece) => piece.isExotic && piece.slot === T5_SLOTS[4]);
+    expect(arrangementClassItems.length).toBe(1);
+    expect(arrangementClassItems[0].tertiary).toBe(ArmorStat.StatClass);
+    expect(arrangementClassItems[0].exoticPerkHash).toEqual([11, 22]);
+    const fitClassItems = [...prepared.domains[4].values()]
+      .flat()
+      .filter((piece) => piece.isExotic);
+    const observedFitClassItem = fitClassItems.find((piece) => !!piece.instanceId);
+    expect(observedFitClassItem).toBeDefined();
+    expect(observedFitClassItem?.tertiary).toBe(ArmorStat.StatClass);
+    expect(observedFitClassItem?.exoticPerkHash).toEqual([11, 22]);
+    expect(observedFitClassItem?.slot).toBe(T5_SLOTS[4]);
+
+    const otherPerks = {
+      ...input,
+      config: structuredClone(input.config),
+    };
+    otherPerks.config.selectedExoticPerks = [33, 44] as never;
+    const filtered = prepareT5Search(otherPerks);
+    expect(filtered.archetypeDomains).toEqual(prepared.archetypeDomains);
+    expect([...filtered.domains[4].values()].flat().filter((piece) => piece.isExotic)).toEqual([]);
+  });
+
+  it("generates unique floating tertiary tasks and routes parent exclusions only to the matching child", () => {
+    const task = { archetypes: Array(5).fill("Grenedier"), archetypeCounts: true };
+    const parent = t5ArrangementFromPieces(
+      Array.from(
+        { length: 5 },
+        (_, index) =>
+          ({
+            archetype: "Grenedier",
+            tertiary: index === 0 ? ArmorStat.StatHealth : ArmorStat.StatClass,
+          }) as T5Candidate
+      )
+    );
+    const children = createT5TertiaryTasks(
+      { ...task, excludedArrangements: [parent] },
+      new Map([["Grenedier", [ArmorStat.StatClass, ArmorStat.StatHealth]]])
+    );
+    const keys = children.map((child) => JSON.stringify(child.tertiaries));
+    expect(children.length).toBe(6);
+    expect(new Set(keys).size).toBe(children.length);
+    const matchingChild = children.find(
+      (child) => JSON.stringify(child.tertiaries) === JSON.stringify(parent.tertiaries)
+    );
+    expect(matchingChild?.excludedArrangements).toEqual([parent]);
+    expect(
+      children
+        .filter((child) => child !== matchingChild)
+        .every((child) => !child.excludedArrangements?.length)
+    ).toBeTrue();
+    expect(
+      children.every(
+        (child) => child.tertiaries?.reduce((sum, tertiary) => sum + tertiary.count, 0) === 5
+      )
+    ).toBeTrue();
+  });
   function request(): T5SearchRequest {
     const config = BuildConfiguration.buildEmptyConfiguration();
     config.characterClass = DestinyClass.Titan;
@@ -87,13 +235,158 @@ describe("T5 theorizer search", () => {
     };
   }
 
-  it("retains hypothetical patterns without claiming any inventory coverage", () => {
-    const updates = [...searchT5(request())];
+  it("does not retain builds with fewer than three available armor pieces", () => {
+    const input = request();
+    input.skipMaxima = true;
+    input.inventory = [item(0, ArmorStat.StatClass), item(1, ArmorStat.StatClass)];
+    const updates = [...searchT5(input)];
     const final = updates[updates.length - 1];
-    expect(final.feasible).toBeGreaterThan(0);
-    expect(final.results[0].covered).toBe(0);
-    expect(final.results[0].pieces.length).toBe(5);
-    expect(final.results[0].result.statsWithMods[ArmorStat.StatGrenade]).toBe(150);
+    expect(final.feasible).toBe(0);
+    expect(final.results).toEqual([]);
+    expect(final.complete).toBeTrue();
+  });
+
+  it("keeps low-coverage arrangements discoverable and reports their actual fit", () => {
+    for (const covered of [0, 1, 2, 3]) {
+      const input = request();
+      input.stage = "arrangements";
+      input.skipMaxima = true;
+      input.inventory = Array.from({ length: covered }, (_, slot) =>
+        item(slot, ArmorStat.StatClass)
+      );
+      const updates = [...searchT5(input)];
+      const final = updates[updates.length - 1];
+      expect(final.arrangements!.length).toBeGreaterThan(0);
+      const prepared = prepareT5Search(input);
+      const first = inventoryFitT5(final.arrangements![0], input, prepared);
+      expect(first.covered).toBeLessThanOrEqual(covered);
+      const compatible = t5ArrangementFromPieces(
+        Array.from(
+          { length: 5 },
+          () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatClass }) as T5Candidate
+        ),
+        Array(5).fill(null)
+      );
+      expect(inventoryFitT5(compatible, input, prepared).covered).toBe(covered);
+      expect(final.results).toEqual([]);
+    }
+  });
+
+  it("keeps discovery compact regardless of duplicate inventory and gearset identities", () => {
+    const counts: number[] = [];
+    const priorities: number[][] = [];
+    for (const copies of [1, 30]) {
+      const input = request();
+      input.stage = "arrangements";
+      input.skipMaxima = true;
+      input.inventory = [0, 1, 2].flatMap((slot) =>
+        Array.from({ length: copies }, (_, copy) => ({
+          ...item(slot, ArmorStat.StatClass),
+          itemInstanceId: `owned-${slot}-${copy}`,
+          gearSetHash: copy + 1,
+        }))
+      );
+      const solve = (problem: T5OptimizationModel) => {
+        counts.push(problem.rolls.length);
+        priorities.push(problem.rolls.map((roll) => problem.model.variables[roll.name]["score"]));
+        expect(problem.rolls.every((roll) => roll.item.instanceId === null)).toBeTrue();
+        expect(problem.model.constraints["covered"]).toBeUndefined();
+        return { feasible: false, result: 0, optimal: true };
+      };
+      [...searchT5(input, solve)];
+    }
+    expect(counts).toEqual([40, 40]);
+    expect(priorities[1]).toEqual(priorities[0]);
+    expect(priorities[0].every((score) => score < 1000)).toBeTrue();
+  });
+
+  it("keeps arrangement domains independent from armor, gearset, and class-item perk filters", () => {
+    const input = request();
+    input.stage = "arrangements";
+    const exotic = { ...item(4, ArmorStat.StatClass, true), exoticPerkHash: [11, 22] };
+    const legendary = { ...item(0, ArmorStat.StatClass), gearSetHash: 123 };
+    input.inventory = [legendary, exotic];
+    input.manifest = [exotic];
+    const selected = {
+      ...input,
+      config: structuredClone(input.config),
+    };
+    selected.config.selectedExotics = [exotic.hash];
+    selected.config.selectedExoticPerks = [11, 22];
+    selected.config.armorRequirements = Array.from({ length: 4 }, () => ({ gearSetHash: 999 }));
+
+    const basePrepared = prepareT5Search(input);
+    const selectedPrepared = prepareT5Search(selected);
+    const domainSnapshot = (domains: ReadonlyMap<string, readonly T5Candidate[]>) =>
+      [...domains]
+        .map(([name, pieces]) => [
+          name,
+          pieces.map((piece) => [piece.tertiary, piece.isExotic, piece.hash, piece.exoticPerkHash]),
+        ])
+        .sort(([first], [second]) => String(first).localeCompare(String(second)));
+
+    expect(domainSnapshot(selectedPrepared.archetypeDomains)).toEqual(
+      domainSnapshot(basePrepared.archetypeDomains)
+    );
+    const ownedDomainCandidates = (pieces: T5Candidate[]) =>
+      pieces.filter((piece) => !!piece.instanceId);
+    expect(
+      ownedDomainCandidates(selectedPrepared.domains[0].get("Grenedier") ?? []).length
+    ).toBeLessThan(ownedDomainCandidates(basePrepared.domains[0].get("Grenedier") ?? []).length);
+  });
+
+  it("retains only three-, four- and five-piece covered builds", () => {
+    for (const covered of [3, 4, 5]) {
+      const input = request();
+      input.skipMaxima = true;
+      input.inventory = Array.from({ length: covered }, (_, slot) =>
+        item(slot, ArmorStat.StatClass)
+      );
+      const updates = [...searchT5(input)];
+      const final = updates[updates.length - 1];
+      expect(final.results.length).withContext(`${covered} available pieces`).toBeGreaterThan(0);
+      expect(final.results[0].covered).toBe(covered);
+      expect(
+        final.results.every((result) => result.covered >= 3 && result.covered <= covered)
+      ).toBeTrue();
+    }
+  });
+
+  it("splits builds into disjoint, exhaustive worker partitions", () => {
+    const input = request();
+    input.skipMaxima = true;
+    input.timeLimitMs = 10000;
+    input.inventory = [
+      item(2, ArmorStat.StatClass),
+      item(3, ArmorStat.StatClass),
+      item(4, ArmorStat.StatClass),
+    ];
+    input.arrangement = t5ArrangementFromPieces(
+      [
+        ArmorStat.StatClass,
+        ArmorStat.StatClass,
+        ArmorStat.StatClass,
+        ArmorStat.StatHealth,
+        ArmorStat.StatMelee,
+      ].map((tertiary) => ({ archetype: "Grenedier", tertiary }) as T5Candidate)
+    );
+    const full = [...searchT5(input)].pop()!;
+    expect(full.complete).toBeTrue();
+    expect(full.results.length).toBeGreaterThan(0);
+    const keys = new Set<string>();
+    let busy = 0;
+    for (let index = 0; index < 3; index++) {
+      const partition = [...searchT5({ ...input, buildPartition: { index, count: 3 } })].pop()!;
+      expect(partition.complete).toBeTrue();
+      if (partition.results.length) busy++;
+      for (const result of partition.results) {
+        expect(keys.has(result.key)).toBeFalse();
+        keys.add(result.key);
+        expect(result.covered).toBeGreaterThanOrEqual(3);
+      }
+    }
+    expect(busy).toBeGreaterThan(1);
+    expect([...keys].sort()).toEqual(full.results.map((result) => result.key).sort());
   });
 
   it("exposes the same eligible inventory to the armor pool and calculation domains", () => {
@@ -112,15 +405,12 @@ describe("T5 theorizer search", () => {
       item(1, ArmorStat.StatClass, true),
       { ...owned, resilience: 19 },
     ];
-    expect(eligibleT5Inventory(input.inventory, input.config)).toEqual([owned]);
+    expect(eligibleT5Inventory(input.inventory, input.config)).toEqual([owned, disabled]);
     input.achievableOnly = true;
-    expect(
-      buildT5Domains(input)
-        .flatMap((domain) => [...domain.values()].flat())
-        .map((piece) => piece.instanceId)
-    ).toEqual([owned.itemInstanceId]);
+    const domainPieces = buildT5Domains(input).flatMap((domain) => [...domain.values()].flat());
+    expect(domainPieces.map((piece) => piece.instanceId)).toEqual([owned.itemInstanceId]);
     input.config.includeVendorRolls = true;
-    expect(eligibleT5Inventory(input.inventory, input.config)).toEqual([owned, vendor]);
+    expect(eligibleT5Inventory(input.inventory, input.config)).toEqual([owned, vendor, disabled]);
   });
 
   it("filters armor-pool gear to selected gearsets when all five slots are constrained", () => {
@@ -185,7 +475,11 @@ describe("T5 theorizer search", () => {
 
   it("fits available armor directly into a floating arrangement without enumerating retained builds", () => {
     const input = request();
-    input.inventory = [item(0, ArmorStat.StatClass), item(2, ArmorStat.StatMelee)];
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatMelee),
+    ];
     const arrangement = t5ArrangementFromPieces(
       [
         ArmorStat.StatClass,
@@ -199,9 +493,13 @@ describe("T5 theorizer search", () => {
     const match = inventoryFitT5(arrangement, input, prepareT5Search(input));
     expect(match.feasible).toBeTrue();
     expect(match.proven).toBeTrue();
-    expect(match.covered).toBe(2);
-    expect(match.owned).toBe(2);
-    expect(match.pieces.map((piece) => piece.instanceId)).toEqual(["instance-0", "instance-2"]);
+    expect(match.covered).toBe(3);
+    expect(match.owned).toBe(3);
+    expect(match.pieces.map((piece) => piece.instanceId)).toEqual([
+      "instance-0",
+      "instance-1",
+      "instance-2",
+    ]);
     expect(arrangement.builds).toEqual([]);
   });
 
@@ -229,6 +527,11 @@ describe("T5 theorizer search", () => {
 
   it("publishes archetype and floating tertiary arrangements before calculating retained builds", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     input.stage = "arrangements";
     const iterator = searchT5(input);
     let update = iterator.next().value!;
@@ -249,6 +552,11 @@ describe("T5 theorizer search", () => {
 
   it("publishes the feasible stat mod allocation with an arrangement before builds are calculated", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     input.stage = "arrangements";
     input.config.minimumStatTiers[ArmorStat.StatGrenade].value = 20;
     const iterator = searchT5(input);
@@ -257,12 +565,12 @@ describe("T5 theorizer search", () => {
     const allocation = update.arrangements[0].modAllocation;
     expect(update.results).toEqual([]);
     expect(update.arrangements[0].builds).toEqual([]);
-    expect(allocation.usedMods.length).toBe(5);
+    expect(allocation.usedMods.length).toBeGreaterThan(0);
+    expect(allocation.usedMods.length).toBeLessThanOrEqual(input.config.statModLimits.maxMods);
     expect(
       allocation.usedMods.every(
         (modifier: keyof typeof STAT_MOD_VALUES) =>
-          STAT_MOD_VALUES[modifier][0] === ArmorStat.StatGrenade &&
-          STAT_MOD_VALUES[modifier][1] === 10
+          STAT_MOD_VALUES[modifier][0] === ArmorStat.StatGrenade
       )
     ).toBeTrue();
     expect(allocation.usedArtifice).toEqual([]);
@@ -271,6 +579,11 @@ describe("T5 theorizer search", () => {
 
   it("retained builds honor the arrangement tertiary multiset without fixing it to slots", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatHealth),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     input.arrangement = t5ArrangementFromPieces(
       [
         ArmorStat.StatHealth,
@@ -301,6 +614,11 @@ describe("T5 theorizer search", () => {
 
   it("publishes the first arrangement before completion, even before the throttle interval", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     const iterator = searchT5(input);
     let update = iterator.next().value!;
     while (!update.results.length && !update.done) update = iterator.next().value!;
@@ -325,6 +643,92 @@ describe("T5 theorizer search", () => {
     expect(next.done).toBeFalse();
     expect(solve.calls.count()).toBe(2);
     iterator.return(undefined);
+  });
+
+  it("pauses retry-heavy discovery and resumes the same model with its backoff intact", () => {
+    const input = request();
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 2000;
+    const problems = new Set<T5OptimizationModel>();
+    const timeouts: number[] = [];
+    const solve = (problem: T5OptimizationModel) => {
+      problems.add(problem);
+      timeouts.push(problem.model.options!.timeout!);
+      return { feasible: false, result: 0, optimal: false };
+    };
+    const iterator = searchT5(input, solve, undefined, { maxRetriesWithoutProgress: 2 });
+    let update = iterator.next().value!;
+    while (update.stopReason !== "slice") update = iterator.next().value!;
+    expect(update.taskDeferred).toBeTrue();
+    expect(update.complete).toBeFalse();
+    expect(update.solverRetries).toBe(2);
+    update = iterator.next().value!;
+    expect(update.done).toBeFalse();
+    expect(update.solverRetries).toBe(3);
+    expect(problems.size).toBe(1);
+    expect(timeouts).toEqual([150, 300, 600]);
+    iterator.return(undefined);
+  });
+
+  it("preserves exclusion cuts and complete enumeration across discovery slices", () => {
+    const input = request();
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 300;
+    input.arrangementConfig = t5ArrangementConfiguration(input.config);
+    input.arrangementConfig.calculateTierFiveTuning = false;
+    const prepared = prepareT5Search(input);
+    prepared.arrangementDomains = prepared.arrangementDomains.map(
+      (domain) =>
+        new Map(
+          [...domain].map(([key, pieces]) => [
+            key,
+            pieces.filter(
+              (piece) =>
+                piece.tertiary === ArmorStat.StatClass || piece.tertiary === ArmorStat.StatHealth
+            ),
+          ])
+        )
+    );
+    prepared.theoryDomains = prepared.theoryDomains.map(
+      (domain) =>
+        new Map(
+          [...domain].map(([key, pieces]) => [
+            key,
+            pieces.filter(
+              (piece) =>
+                piece.tertiary === ArmorStat.StatClass || piece.tertiary === ArmorStat.StatHealth
+            ),
+          ])
+        )
+    );
+    let now = 0;
+    spyOn(Date, "now").and.callFake(() => now);
+    const problems = new Set<T5OptimizationModel>();
+    const solve = (problem: T5OptimizationModel) => {
+      problems.add(problem);
+      const result = solveT5Optimization(problem);
+      now += 100;
+      return result;
+    };
+    const iterator = searchT5(input, solve, prepared, { maxRetriesWithoutProgress: 3 });
+    const snapshots = [];
+    let pauses = 0;
+    for (let next = iterator.next(); !next.done; next = iterator.next()) {
+      snapshots.push(next.value);
+      if (next.value.stopReason === "slice") {
+        pauses++;
+        now += 60000;
+      }
+    }
+    const final = snapshots[snapshots.length - 1];
+    expect(pauses).toBeGreaterThan(0);
+    expect(problems.size).toBe(1);
+    expect(final.complete).toBeTrue();
+    expect(final.arrangements!.length).toBe(6);
+    expect(new Set(final.arrangements!.map((arrangement) => arrangement.key)).size).toBe(6);
+    expect(final.evaluations).toBe(7);
   });
 
   it("ranks the existing class-tertiary helmet and melee-tertiary exotic chest as two covered slots", () => {
@@ -378,14 +782,43 @@ describe("T5 theorizer search", () => {
     ).toBeTrue();
   });
 
-  it("uses source flags and disabled items for coverage", () => {
+  it("uses source flags but ignores hidden disabled-item settings", () => {
     const input = request();
     const vendor = { ...item(0, ArmorStat.StatClass), source: InventoryArmorSource.Vendor };
     expect(t5SourceAllowed(vendor, input.config)).toBeFalse();
     input.config.includeVendorRolls = true;
     expect(t5SourceAllowed(vendor, input.config)).toBeTrue();
     input.config.disabledItems = [vendor.itemInstanceId];
-    expect(t5SourceAllowed(vendor, input.config)).toBeFalse();
+    expect(t5SourceAllowed(vendor, input.config)).toBeTrue();
+  });
+
+  it("normalizes arrangement discovery to target stats, mod limits, and subclass stat modifiers", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.minimumStatTiers[ArmorStat.StatHealth] = { fixed: true, value: 12 };
+    config.statModLimits = { maxMods: 3, maxMajorMods: 1 };
+    config.enabledMods = [1 as never, 2 as never];
+    config.selectedExotics = [123];
+    config.selectedExoticPerks = [11, 22] as never;
+    config.armorRequirements = [{ gearSetHash: 123 }];
+    config.disabledItems = ["disabled-item"];
+    config.includeVendorRolls = false;
+    config.ignoreSunsetArmor = true;
+
+    const arrangementConfig = t5ArrangementConfiguration(config);
+
+    expect(arrangementConfig.minimumStatTiers).toEqual(config.minimumStatTiers);
+    expect(arrangementConfig.statModLimits).toEqual(config.statModLimits);
+    expect(arrangementConfig.enabledMods).toEqual(config.enabledMods);
+    expect(arrangementConfig.selectedExotics).toEqual([]);
+    expect(arrangementConfig.selectedExoticPerks).toEqual([
+      ArmorPerkOrSlot.Any,
+      ArmorPerkOrSlot.Any,
+    ]);
+    expect(arrangementConfig.armorRequirements).toEqual([]);
+    expect(arrangementConfig.disabledItems).toEqual([]);
+    expect(arrangementConfig.includeVendorRolls).toBeTrue();
+    expect(arrangementConfig.ignoreSunsetArmor).toBeFalse();
+    expect(arrangementConfig.calculateTierFiveTuning).toBeTrue();
   });
 
   it("excludes legacy armor and lower-tier Armor 3.0 from every calculation domain", () => {
@@ -524,19 +957,29 @@ describe("T5 theorizer search", () => {
     expect(rolls).toBe(48 ** 5);
   });
 
-  it("can freely select the required tertiary in every hypothetical slot", () => {
+  it("can freely select the required tertiary in the remaining hypothetical slots", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     input.config.statModLimits = { maxMods: 0, maxMajorMods: 0 };
     input.config.minimumStatTiers[ArmorStat.StatClass].value = 10;
     const updates = [...searchT5(input)];
     const solution = updates[updates.length - 1].results[0];
     expect(solution.pieces.every((piece) => piece.tertiary === ArmorStat.StatClass)).toBeTrue();
     expect(solution.result.statsWithMods[ArmorStat.StatClass]).toBe(100);
-    expect(solution.covered).toBe(0);
+    expect(solution.covered).toBe(3);
   });
 
   it("retains distinct tertiary generations instead of one winner per archetype tuple", () => {
     const input = request();
+    input.inventory = [
+      item(0, ArmorStat.StatClass),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ];
     const updates = [...searchT5(input)];
     const results = updates[updates.length - 1].results;
     expect(results.length).toBeGreaterThan(1);
@@ -697,6 +1140,14 @@ describe("T5 theorizer search", () => {
   it("retains tuning-family totals while their piece assignments float", () => {
     const input = request();
     input.config.calculateTierFiveTuning = true;
+    input.inventory = [
+      item(0, ArmorStat.StatHealth),
+      item(1, ArmorStat.StatClass),
+      item(2, ArmorStat.StatClass),
+    ].map((piece, index) => ({
+      ...piece,
+      tuningStat: index === 0 ? ArmorStat.StatHealth : ArmorStat.StatGrenade,
+    }));
     const pieces = [
       ArmorStat.StatHealth,
       ArmorStat.StatClass,

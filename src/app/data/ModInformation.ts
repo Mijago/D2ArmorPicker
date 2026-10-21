@@ -20,7 +20,7 @@ import { ModOrAbility } from "./enum/modOrAbility";
 import { Modifier } from "./modifier";
 import { ModifierType } from "./enum/modifierType";
 import { ArmorStat, SpecialArmorStat } from "./enum/armor-stat";
-import { DestinyEnergyType } from "bungie-api-ts/destiny2/interfaces";
+import { DestinyEnergyType } from "bungie-api-ts/destiny2";
 
 export const ModInformation: EnumDictionary<ModOrAbility, Modifier> = {
   // region Stasis

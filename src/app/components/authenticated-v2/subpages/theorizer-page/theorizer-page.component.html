@@ -68,10 +68,23 @@
       <button mat-flat-button color="primary" (click)="search()" [disabled]="state?.running">
         <mat-icon>calculate</mat-icon> Calculate arrangements
       </button>
+      <mat-checkbox
+        [(ngModel)]="prioritizeMatches"
+        (ngModelChange)="searchOptionsChanged()"
+        matTooltip="Queue estimate based on available archetypes; exact inventory coverage is checked after discovery.">
+        Prioritize potential 3/5+ matches
+      </mat-checkbox>
+      <button
+        mat-icon-button
+        (click)="exportProfileInput()"
+        aria-label="Export profiling input"
+        matTooltip="Export profiling input">
+        <mat-icon>file_download</mat-icon>
+      </button>
       <button
         mat-icon-button
         (click)="theorizer.cancel()"
-        [disabled]="!state?.running"
+        [disabled]="!state?.running && !state?.buildWorkersActive && !state?.matching"
         aria-label="Cancel theorizer search"
         matTooltip="Cancel search">
         <mat-icon>stop</mat-icon>
@@ -173,6 +186,13 @@
           >{{ view.solverRetries | number }} solver retries · continuing within the search
           budget</span
         >
+        <span *ngIf="view.running && view.tasksDeferred"
+          >{{ view.tasksDeferred }} tasks deferred after no new arrangements</span
+        >
+        <span *ngIf="view.buildWorkersTotal">
+          {{ view.buildWorkersActive }} / {{ view.buildWorkersTotal }} build workers active ·
+          {{ view.buildTasksQueued }} build partitions queued
+        </span>
         <span *ngIf="view.possibleRollCombinations"
           >{{ view.possibleRollCombinations | number }} possible archetype/tertiary roll
           combinations</span
@@ -243,9 +263,7 @@
                     <div class="tertiary-counts"
                       ><span *ngFor="let tertiary of arrangement.tertiaries"
                         >{{ tertiary.count }} x
-                        {{
-                          tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat]
-                        }}
+                        {{ tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat] }}
                         tertiary</span
                       ></div
                     >
@@ -317,15 +335,48 @@
                     <section *ngIf="arrangement.inventoryMatch as match" class="inventory-fit">
                       <h4>Available armor matches</h4>
                       <p
-                        >{{ match.covered }}/5 covered · {{ 5 - match.covered }} missing{{
+                        >{{ match.covered }}/5 covered · {{ match.owned }} owned ·
+                        {{ 5 - match.covered }} missing{{
                           match.proven ? "" : " · provisional fit"
                         }}</p
                       >
                       <ul>
-                        <li *ngFor="let piece of match.pieces"
-                          >{{ slots[piece.slot - 1] }}: {{ piece.name }} · {{ piece.archetype }} ·
-                          {{ sources[piece.source] }}</li
-                        >
+                        <li *ngFor="let piece of match.pieces">
+                          <strong>{{ slots[piece.slot - 1] }}: {{ piece.name }}</strong>
+                          <div
+                            >{{ piece.archetype }} ·
+                            {{
+                              piece.tertiary === null
+                                ? "Perk-defined stats"
+                                : statNames[piece.tertiary] + " tertiary"
+                            }}</div
+                          >
+                          <div>Base stats: {{ baseStatsSummary(piece) }}</div>
+                          <div
+                            >{{
+                              piece.isExotic
+                                ? "Flexible tuning family"
+                                : piece.tuningStat === null
+                                  ? "No directional tuning family"
+                                  : statNames[piece.tuningStat] + " tuning family"
+                            }}
+                            ·
+                            {{
+                              piece.gearSetPerkSelectable
+                                ? "Selectable gearset"
+                                : piece.gearSetHash === null
+                                  ? "No gearset"
+                                  : gearsetName(piece.gearSetHash)
+                            }}</div
+                          >
+                          <div *ngIf="piece.isExotic && spiritNames(piece)">{{
+                            spiritNames(piece)
+                          }}</div>
+                          <div
+                            >Masterwork {{ piece.masterworkLevel }} ·
+                            {{ sources[piece.source] }}</div
+                          >
+                        </li>
                       </ul>
                     </section>
                   </section>
@@ -337,7 +388,15 @@
                       *ngIf="!arrangement.buildState || arrangement.buildState === 'idle'"
                       mat-stroked-button
                       (click)="theorizer.loadBuilds(arrangement)"
-                      [disabled]="view.stale"
+                      [disabled]="
+                        view.stale ||
+                        (!!arrangement.inventoryMatch && arrangement.inventoryMatch.covered < 3)
+                      "
+                      [matTooltip]="
+                        arrangement.inventoryMatch && arrangement.inventoryMatch.covered < 3
+                          ? 'Build calculation requires at least 3/5 coverage'
+                          : ''
+                      "
                       class="calculate-builds">
                       <mat-icon>calculate</mat-icon> Calculate builds
                     </button>

@@ -122,6 +122,24 @@ export class DesiredModsSelectionComponent implements OnInit, OnDestroy {
     });
   }
 
+  get selectedModifierOverview(): { modifier: Modifier; values: number[] }[] {
+    return this.selectedMods
+      .map((id) => ModInformation[id])
+      .filter((modifier): modifier is Modifier => !!modifier)
+      .map((modifier) => ({
+        modifier,
+        values: this.armorStats.map((stat) => this.getModifierTextForValue(modifier.bonus, stat)),
+      }));
+  }
+
+  get selectedModifierStatTotals(): { stat: ArmorStat; value: number }[] {
+    const overview = this.selectedModifierOverview;
+    return this.armorStats.map((stat, index) => ({
+      stat,
+      value: overview.reduce((total, selected) => total + selected.values[index], 0),
+    }));
+  }
+
   getModifierTextForValue(value: ModifierValue[], type: ArmorStat | SpecialArmorStat) {
     return value
       .filter((v) => {

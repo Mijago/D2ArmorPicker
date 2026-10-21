@@ -1,15 +1,17 @@
 import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, SkipSelf } from "@angular/core";
 import { PageEvent } from "@angular/material/paginator";
 import { merge, Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
+import { skip, takeUntil } from "rxjs/operators";
 import { ArmorStatNames, STAT_MOD_VALUES, StatModifier } from "../../../../data/enum/armor-stat";
 import { InventoryArmorSourceNames } from "../../../../data/enum/armor-source";
 import { ExoticClassItemPerkNames } from "../../../../data/exotic-class-item-spirits";
 import {
   DEFAULT_T5_SEARCH_BUDGET_MS,
+  createT5ProfileInput,
   groupT5Archetypes,
   groupT5Arrangements,
   reflectMainCalculationSettings,
+  suggestedT5RunName,
   T5ArchetypeGroup,
   T5Arrangement,
   T5Candidate,
@@ -26,9 +28,8 @@ import { T5TheorizerService, TheorizerViewState } from "../../../../services/the
 import { STAT_REACHABILITY } from "../../../../services/stat-reachability";
 import { calculateCPUConcurrency } from "../../../../data/commonFunctions";
 import { T5SavedRunsService } from "../../../../services/theorizer-saved-runs.service";
-import { suggestedConfigurationName } from "../../../../data/buildConfiguration";
 import type { ArmorPoolItemView } from "../../../../services/armor-calculator.service";
-import { eligibleT5Inventory } from "../../../../services/theorizer-search";
+import { eligibleT5Inventory, t5ItemStats } from "../../../../services/theorizer-search";
 import { UserInformationService } from "../../../../services/user-information.service";
 
 @Component({
@@ -65,6 +66,7 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
     ...new Set([1, 2, 3, 4, 6, 7, 8, 12, 15, 16, 24, 31, 32, this.automaticWorkers]),
   ].sort((first, second) => first - second);
   workerLimit = 0;
+  prioritizeMatches = true;
   pageIndex = 0;
   pageSize = 50;
   armorPoolItems: ArmorPoolItemView[] = [];
@@ -97,7 +99,7 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
     private savedRunStore: T5SavedRunsService,
     private inventory: UserInformationService
   ) {
-    this.main.configuration.pipe(takeUntil(this.destroyed)).subscribe((main) => {
+    this.main.configuration.pipe(skip(1), takeUntil(this.destroyed)).subscribe((main) => {
       this.config.modifyConfiguration((theorizer) =>
         reflectMainCalculationSettings(theorizer, main)
       );
@@ -105,9 +107,20 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const storedBudget = localStorage.getItem("t5-theorizer-budget");
+    const budget = storedBudget === null ? NaN : Number(storedBudget);
+    this.timeLimitMs = this.searchBudgets.some((option) => option.value === budget)
+      ? budget
+      : DEFAULT_T5_SEARCH_BUDGET_MS;
     const storedWorkers = Number(localStorage.getItem("t5-theorizer-workers") || 0);
     this.workerLimit = this.workerOptions.includes(storedWorkers) ? storedWorkers : 0;
-    this.theorizer.setSearchOptions(false, this.timeLimitMs, this.workerLimit);
+    this.prioritizeMatches = localStorage.getItem("t5-theorizer-prioritize-matches") !== "false";
+    this.theorizer.setSearchOptions(
+      false,
+      this.timeLimitMs,
+      this.workerLimit,
+      this.prioritizeMatches
+    );
     merge(this.config.configuration, this.inventory.inventory, this.inventory.manifest)
       .pipe(takeUntil(this.destroyed))
       .subscribe(() => {
@@ -154,10 +167,7 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
 
   private updateSuggestedRunName(): void {
     const configuration = this.config.currentConfiguration;
-    const exoticNames = configuration.selectedExotics
-      .map((hash) => this.modNames.get(hash))
-      .filter((name): name is string => !!name);
-    const suggestion = suggestedConfigurationName(configuration, exoticNames);
+    const suggestion = suggestedT5RunName(configuration);
     if (!this.savedRunName.trim() || this.savedRunName === this.suggestedRunName)
       this.savedRunName = suggestion;
     this.suggestedRunName = suggestion;
@@ -220,8 +230,10 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
       this.savedRunName = run.name;
       this.timeLimitMs = run.options.timeLimitMs;
       this.workerLimit = run.options.workerLimit;
+      this.prioritizeMatches = run.options.prioritizeMatches ?? true;
       this.pageIndex = 0;
       await this.theorizer.restoreRun(run);
+      this.persistSearchOptions();
     } catch (error) {
       this.savedRunError = error instanceof Error ? error.message : String(error);
     } finally {
@@ -252,14 +264,58 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
 
   search(): void {
     this.pageIndex = 0;
-    this.theorizer.setSearchOptions(false, this.timeLimitMs, this.workerLimit);
+    this.theorizer.setSearchOptions(
+      false,
+      this.timeLimitMs,
+      this.workerLimit,
+      this.prioritizeMatches
+    );
     void this.theorizer.search(false, this.timeLimitMs);
+  }
+
+  async exportProfileInput(): Promise<void> {
+    this.savedRunError = undefined;
+    try {
+      const config = structuredClone(this.config.currentConfiguration);
+      const [inventory, manifest] = await Promise.all([
+        this.db.inventoryArmor.where("clazz").equals(config.characterClass).toArray(),
+        this.db.manifestArmor.toArray(),
+      ]);
+      const input = createT5ProfileInput({
+        config,
+        inventory,
+        manifest,
+        achievableOnly: false,
+        prioritizeMatches: this.prioritizeMatches,
+      });
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(input)], { type: "application/json" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "theorizer-profile-input.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      this.savedRunError = error instanceof Error ? error.message : String(error);
+    }
   }
 
   searchOptionsChanged(): void {
     this.pageIndex = 0;
+    this.persistSearchOptions();
+    this.theorizer.setSearchOptions(
+      false,
+      this.timeLimitMs,
+      this.workerLimit,
+      this.prioritizeMatches
+    );
+  }
+
+  private persistSearchOptions(): void {
+    localStorage.setItem("t5-theorizer-budget", String(this.timeLimitMs));
     localStorage.setItem("t5-theorizer-workers", String(this.workerLimit));
-    this.theorizer.setSearchOptions(false, this.timeLimitMs, this.workerLimit);
+    localStorage.setItem("t5-theorizer-prioritize-matches", String(this.prioritizeMatches));
   }
 
   copyMain(): void {
@@ -337,6 +393,14 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
 
   gearset(piece: T5Candidate): string {
     return piece.gearSetHash === null ? "Any gearset" : this.gearsetName(piece.gearSetHash);
+  }
+
+  baseStatsSummary(piece: T5Candidate): string {
+    const values = t5ItemStats(piece);
+    return this.stats
+      .filter((stat) => values[stat] !== 0)
+      .map((stat) => `${values[stat]} ${ArmorStatNames[stat]}`)
+      .join(" / ");
   }
 
   gearsetName(hash: number): string {

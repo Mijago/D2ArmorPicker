@@ -26,11 +26,27 @@
   </mat-card>
   <mat-card appearance="outlined">
     <mat-card-header>
-      <mat-card-title>Select your desired stat distribution</mat-card-title>
-      <mat-card-subtitle> Select the stats one by one using the sliders below. </mat-card-subtitle>
+      <mat-card-title>Target Build Stats</mat-card-title>
+      <mat-card-subtitle>
+        Select the stats of your build with the sliders below.
+      </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <app-desired-stat-selection></app-desired-stat-selection>
+      <app-mod-limit-segmented></app-mod-limit-segmented>
+    </mat-card-content>
+  </mat-card>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Subclass Stat Modifiers</mat-card-title>
+      <mat-card-subtitle>
+        Select fragments that affect your overall stats.<br />
+        Please note that D2AP also allows impossible input.<br />
+        <b>Only fragments that affect stats are shown.</b>
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-desired-mods-selection></app-desired-mods-selection>
     </mat-card-content>
   </mat-card>
   <mat-card appearance="outlined">
@@ -49,40 +65,36 @@
   </mat-card>
   <mat-card appearance="outlined">
     <mat-card-header>
-      <mat-card-title>Gearset selection and Mod limitation</mat-card-title>
-      <mat-card-subtitle>
-        This section allows you to further specify what kind of armor and mods you want.
-      </mat-card-subtitle>
+      <mat-card-title>Gearset Selection</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       <app-desired-mod-selection></app-desired-mod-selection>
     </mat-card-content>
   </mat-card>
-  <mat-card appearance="outlined">
+  <mat-card appearance="outlined" *ngIf="!theorizer">
     <mat-card-header>
-      <mat-card-title>Stat-Boost Selection</mat-card-title>
+      <mat-card-title>Calculation Performance &amp; Results</mat-card-title>
       <mat-card-subtitle>
-        Select Mods and Skills that affect your overall stats.<br />
-        Please note that D2AP also allows theoretical, but impossible input.<br />
-        <b>Only fragments that affect stats are shown.</b>
+        Adjust tuning, result grouping, and result limits to balance calculation time and browser
+        memory.
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <app-desired-mods-selection></app-desired-mods-selection>
+      <app-advanced-settings section="performance"></app-advanced-settings>
     </mat-card-content>
   </mat-card>
-  <mat-card appearance="outlined">
+  <mat-card appearance="outlined" *ngIf="!theorizer">
     <mat-card-header>
-      <mat-card-title>Advanced Settings</mat-card-title>
+      <mat-card-title>Build Constraints &amp; Assumptions</mat-card-title>
       <mat-card-subtitle>
-        More settings! Use them to fine-tune your buildcrafting process.
+        Choose which armor can be used and how item properties are treated during buildcrafting.
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <app-advanced-settings></app-advanced-settings>
     </mat-card-content>
   </mat-card>
-  <mat-card appearance="outlined">
+  <mat-card appearance="outlined" *ngIf="!theorizer">
     <mat-card-header>
       <mat-card-title>Disabled Armor Pieces</mat-card-title>
       <mat-card-subtitle>
@@ -93,14 +105,6 @@
     </mat-card-header>
     <mat-card-content>
       <app-ignored-items-list></app-ignored-items-list>
-    </mat-card-content>
-  </mat-card>
-  <mat-card appearance="outlined" *ngIf="!theorizer">
-    <mat-card-header>
-      <mat-card-title>Performance Optimization</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <app-advanced-settings section="performance"></app-advanced-settings>
     </mat-card-content>
   </mat-card>
   <mat-card appearance="outlined" *ngIf="!theorizer">

@@ -1,0 +1,14 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^npx ng build --configuration development$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "npx prettier": true,
+        "npx tsc": true
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "*.ts": "$(capture).spec.ts, $(capture).d.ts, $(capture).js"
+    }
+}

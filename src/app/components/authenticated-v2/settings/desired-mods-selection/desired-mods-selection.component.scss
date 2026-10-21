@@ -21,6 +21,62 @@
   --mat-table-row-item-container-height: 32px !important;
 }
 
+.selection-panel {
+  margin-bottom: 12px;
+}
+
+.boost-overview {
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding-top: 12px;
+}
+
+.boost-overview-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  h3 {
+    margin: 0 0 8px;
+  }
+
+  > span {
+    opacity: 0.7;
+  }
+}
+
+.selected-boosts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.selected-boost {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.empty-boosts {
+  margin: 0;
+  opacity: 0.7;
+}
+
+.boost-stat-totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.boost-stat-total {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+}
+
 .subclass-fragments-table {
   max-width: 100%;
   overflow-x: auto;

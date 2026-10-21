@@ -20,7 +20,6 @@ import { MatDialog } from "@angular/material/dialog";
 import { ConfigurationService } from "../../../../services/configuration.service";
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
-import { EventArmorType } from "../../../../data/enum/event-armor-type";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
 import {
   ConfirmDialogComponent,
@@ -61,6 +60,38 @@ interface SliderSettingField extends AdvancedSettingFieldBase {
 
 type AdvancedSettingField = BooleanSettingField | DropdownSettingField | SliderSettingField;
 
+interface InventorySetting {
+  key: keyof Pick<
+    BuildConfiguration,
+    | "enforceFeaturedLegendaryArmor"
+    | "enforceFeaturedExoticArmor"
+    | "includeCollectionRolls"
+    | "includeVendorRolls"
+    | "allowLegacyLegendaryArmor"
+    | "allowLegacyExoticArmor"
+    | "allowBlueArmorPieces"
+    | "ignoreSunsetArmor"
+  >;
+  name: string;
+  legacy?: boolean;
+  inverse?: boolean;
+}
+
+const inventorySettings: InventorySetting[] = [
+  {
+    key: "allowLegacyLegendaryArmor",
+    name: "Include legacy (Armor 2.0) legendary armor",
+    legacy: true,
+  },
+  { key: "allowLegacyExoticArmor", name: "Include legacy (Armor 2.0) exotic armor", legacy: true },
+  { key: "allowBlueArmorPieces", name: "Include white, blue and green items", legacy: true },
+  { key: "ignoreSunsetArmor", name: "Include sunset armor", inverse: true },
+  { key: "includeCollectionRolls", name: "Include exotic collection rolls" },
+  { key: "includeVendorRolls", name: "Include legendary and exotic vendor armor (slower)" },
+  // { key: "enforceFeaturedLegendaryArmor", name: "Enforce featured legendary armor only" },
+  // { key: "enforceFeaturedExoticArmor", name: "Enforce featured exotic armor only" },
+];
+
 @Component({
   selector: "app-advanced-settings",
   templateUrl: "./advanced-settings.component.html",
@@ -82,8 +113,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
       data: {
         description:
           this.section === "performance"
-            ? "Reset Performance Optimization to its default values?"
-            : "Reset Advanced Settings to their default values?",
+            ? "Reset Calculation Performance & Results to its default values?"
+            : "Reset Build Constraints & Assumptions to their default values?",
       } as ConfirmDialogData,
     });
 
@@ -98,7 +129,10 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           configuration.parsedResultLimit = defaults.parsedResultLimit;
           return;
         }
-        configuration.useEventArmor = defaults.useEventArmor;
+        for (const field of inventorySettings) {
+          if (!field.legacy || !this.config.isTheorizer)
+            configuration[field.key] = defaults[field.key];
+        }
         configuration.assumeLegendariesMasterworked = defaults.assumeLegendariesMasterworked;
         configuration.assumeExoticsMasterworked = defaults.assumeExoticsMasterworked;
         configuration.onlyUseMasterworkedExotics = defaults.onlyUseMasterworkedExotics;
@@ -114,24 +148,23 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.fields2 = {
-        Events: [
-          {
-            name: "Use Event armor",
-            description: "Select event",
-            type: "dropdown",
-            value: c.useEventArmor,
-            onSelect: (v: EventArmorType) =>
-              this.config.modifyConfiguration((config) => (config.useEventArmor = v)),
-            options: [
-              { value: EventArmorType.None, label: "None" },
-              { value: EventArmorType.FestivalOfTheLost, label: "Festival of the Lost" },
-              { value: EventArmorType.GuardianGames, label: "Guardian Games" },
-            ],
-            disabled: false,
-            impactsResultCount: true,
-            help: "Restrict builds to specific event armor where supported.",
-          },
-        ],
+        Inventory: inventorySettings
+          .filter((field) => !field.legacy || !this.config.isTheorizer)
+          .map(
+            (field): BooleanSettingField => ({
+              name: field.name,
+              description: field.name,
+              help: undefined,
+              type: "boolean",
+              disabled: false,
+              impactsResultCount: true,
+              value: field.inverse ? !c[field.key] : c[field.key],
+              onToggle: (value: boolean) =>
+                this.config.modifyConfiguration((configuration) => {
+                  configuration[field.key] = field.inverse ? !value : value;
+                }),
+            })
+          ),
         Masterwork: [
           {
             name: "Assume all legendary items are masterworked",
@@ -213,7 +246,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             description: "Assume every legacy exotic has an artifice slot.",
           },
         ],
-        "Performance Optimization": [
+        "Calculation Performance & Results": [
           {
             name: "Use Tier 5 tuning for armor pieces.",
             type: "boolean",
@@ -265,6 +298,20 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           //     description: "High-Speed mode: Only check one class item for each permutation",
           //   },
         ],
+        "Data-Science": [
+          {
+            name: "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
+            type: "boolean",
+            onToggle: (v: boolean) =>
+              this.config.modifyConfiguration((c) => (c.addConstent1Health = v)),
+            value: c.addConstent1Health,
+            disabled: false,
+            impactsResultCount: false,
+            description:
+              "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
+            help: "You usually do not want to use this.",
+          },
+        ],
         // "Wasted Stats": [
         //   {
         //     name: "Try to optimize wasted stats (slower)",
@@ -289,50 +336,13 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         //     description: "Only show builds with no wasted stats",
         //   },
         // ],
-        "Data-Science": [
-          {
-            name: "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.addConstent1Health = v)),
-            value: c.addConstent1Health,
-            disabled: false,
-            impactsResultCount: false,
-            description:
-              "Add a constant +1 resilience to the results with non-exotic chests (resets on reload).",
-            help: "You usually do not want to use this.",
-          },
-          /*
-          {
-            name: "Assume the player has all Tier X class items.",
-            type: 'dropdown',
-            onSelect: (v: number) => {
-              this.config.modifyConfiguration((config) => (config.assumePlayerHasAllMaxClassItemsForTier = v));
-            },
-            value: 'option1',
-            disabled: false,
-            impactsResultCount: true,
-            help: "The tool will assume that the player has all class items of a certain tier. This is useful for testing purposes.",
-            isEnabled: c.assumePlayerHasAllMaxClassItemsForTierEnabled,
-            onToggle: (v: boolean) => {
-              this.config.modifyConfiguration((config) => (config.assumePlayerHasAllMaxClassItemsForTierEnabled = v));
-            },
-            options: [
-              { value: 1, label: 'Tier 1' },
-              { value: 2, label: 'Tier 2' },
-              { value: 3, label: 'Tier 3' },
-              { value: 4, label: 'Tier 4' },
-              { value: 5, label: 'Tier 5' },
-            ]
-          },
-          //*/
-        ],
       };
       this.fieldKeys = Object.keys(this.fields2).filter(
         (key) =>
           (this.section === "performance"
-            ? key === "Performance Optimization" && !this.config.isTheorizer
-            : key !== "Performance Optimization") &&
+            ? key === "Calculation Performance & Results" && !this.config.isTheorizer
+            : key !== "Calculation Performance & Results") &&
+          (!this.config.isTheorizer || key !== "Data-Science") &&
           (!this.config.isTheorizer || key !== "Artifice Slots (for legacy armor 2.0)")
       );
     });

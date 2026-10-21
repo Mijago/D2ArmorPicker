@@ -26,6 +26,84 @@ describe("automatic theorizer calculation", () => {
     spyOnProperty(navigator, "hardwareConcurrency", "get").and.returnValue(2);
   });
 
+  it("enables potential-match task priority by default and allows opting out", fakeAsync(() => {
+    const workers = Array.from({ length: 2 }, () => ({
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    }));
+    spyOn(window, "Worker").and.returnValues(
+      ...workers.map((worker) => worker as unknown as Worker)
+    );
+    for (const [index, enabled] of [false, true].entries()) {
+      const config = BuildConfiguration.buildEmptyConfiguration();
+      config.characterClass = 0;
+      const inventory = [1, 2, 3, 4, 5].map((slot) => ({
+        slot,
+        clazz: 0,
+        armorSystem: 3,
+        tier: 5,
+        isExotic: 0,
+        source: 0,
+        itemInstanceId: `owned-${slot}`,
+        resilience: 0,
+        strength: 0,
+        discipline: 30,
+        intellect: 25,
+        recovery: 20,
+        mobility: 0,
+        archetypeStats: [2, 3, 4],
+        gearSetHash: null,
+        gearSetPerkSelectable: false,
+        tuningStat: 0,
+        masterworkLevel: 5,
+        perk: 0,
+        isSunset: false,
+        isFeatured: false,
+        name: "Owned",
+        icon: "",
+        hash: slot,
+      }));
+      const service = new TheorizerService(
+        {
+          configuration: new BehaviorSubject(config),
+          currentConfiguration: config,
+        } as unknown as ConfigurationService,
+        {
+          inventoryArmor: { where: () => ({ equals: () => ({ toArray: async () => inventory }) }) },
+          manifestArmor: { toArray: async () => [{}] },
+        } as unknown as DatabaseService,
+        {
+          inventory: new Subject<null>(),
+          manifest: new Subject<null>(),
+        } as unknown as UserInformationService
+      );
+      if (enabled) service.setSearchOptions(false, 30000, 1);
+      else service.setSearchOptions(false, 30000, 1, false);
+      void service.search(false, 30000);
+      tick(0);
+      workers[index].onmessage!({
+        data: {
+          results: [],
+          arrangements: [],
+          checked: 0,
+          total: 1,
+          feasible: 0,
+          evaluations: 0,
+          complete: true,
+          done: true,
+          warnings: [],
+          maximaChecked: 6,
+          maximaComplete: true,
+        },
+      } as MessageEvent);
+      const task = workers[index].postMessage.calls.mostRecent().args[0].task;
+      expect(task.archetypeCounts).toBeTrue();
+      expect(task.archetypes.every((name: string) => name === "Grenedier")).toBe(enabled);
+      service.ngOnDestroy();
+    }
+  }));
+
   it("does not start calculations automatically on initialization or settings/inventory changes", fakeAsync(() => {
     const configuration = new BehaviorSubject(BuildConfiguration.buildEmptyConfiguration());
     const inventory = new Subject<null>();
@@ -135,13 +213,13 @@ describe("automatic theorizer calculation", () => {
         inventoryMatches: [
           {
             key: arrangement.key,
-            match: { covered: 2, owned: 2, proven: true, feasible: true, pieces: [] },
+            match: { covered: 3, owned: 3, proven: true, feasible: true, pieces: [] },
           },
         ],
       },
     } as MessageEvent);
     expect(state.matchingComplete).toBeTrue();
-    expect(state.arrangements?.[0].inventoryMatch?.covered).toBe(2);
+    expect(state.arrangements?.[0].inventoryMatch?.covered).toBe(3);
     tick(200);
     expect(discover).not.toHaveBeenCalled();
     expect(state.results).toEqual([]);
@@ -266,11 +344,65 @@ describe("automatic theorizer calculation", () => {
       },
     } as MessageEvent);
     expect(maxima[0]).toBe(8);
-    configuration.next(BuildConfiguration.buildEmptyConfiguration());
+    const changedTarget = BuildConfiguration.buildEmptyConfiguration();
+    changedTarget.minimumStatTiers[ArmorStat.StatHealth].value = 10;
+    configuration.next(changedTarget);
     expect(maxima).toEqual([20, 20, 20, 20, 20, 20]);
     service.ngOnDestroy();
     tick(200);
   }));
+
+  it("only cancels discovery for target or subclass stat-modifier changes", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    const configuration = new BehaviorSubject(config);
+    const inventory = new Subject<null>();
+    const manifest = new Subject<null>();
+    const service = new TheorizerService(
+      { configuration, currentConfiguration: config } as unknown as ConfigurationService,
+      {} as DatabaseService,
+      { inventory, manifest } as unknown as UserInformationService
+    );
+    const cancel = spyOn(service, "cancel").and.stub();
+    const refreshFit = spyOn(service as any, "refreshFit").and.stub();
+
+    const fitOnly = { ...config, armorRequirements: [{ gearSetHash: 123 }] };
+    configuration.next(fitOnly);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(refreshFit).toHaveBeenCalledTimes(1);
+
+    const exoticFitOnly = {
+      ...fitOnly,
+      selectedExotics: [456],
+      selectedExoticPerks: [11, 22],
+    };
+    configuration.next(exoticFitOnly);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(refreshFit).toHaveBeenCalledTimes(2);
+
+    const sourceFitOnly = { ...exoticFitOnly, includeVendorRolls: true };
+    configuration.next(sourceFitOnly);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(refreshFit).toHaveBeenCalledTimes(3);
+
+    inventory.next(null);
+    manifest.next(null);
+    expect(cancel).not.toHaveBeenCalled();
+    expect(refreshFit).toHaveBeenCalledTimes(5);
+
+    const changedTarget = {
+      ...sourceFitOnly,
+      minimumStatTiers: structuredClone(config.minimumStatTiers),
+    };
+    changedTarget.minimumStatTiers[ArmorStat.StatHealth].value = 10;
+    configuration.next(changedTarget);
+    expect(cancel).toHaveBeenCalledTimes(1);
+
+    const changedSubclass = { ...changedTarget, enabledMods: [1 as never] };
+    configuration.next(changedSubclass);
+    expect(cancel).toHaveBeenCalledTimes(2);
+
+    service.ngOnDestroy();
+  });
 
   it("merges disjoint workers, streams partial results and stops at the wall-clock budget", fakeAsync(() => {
     (
@@ -358,7 +490,7 @@ describe("automatic theorizer calculation", () => {
 
   it("queues explicit build requests behind arrangement slices, deduplicates them and resumes discovery", fakeAsync(() => {
     const config = BuildConfiguration.buildEmptyConfiguration();
-    const workers = Array.from({ length: 4 }, () => ({
+    const workers = Array.from({ length: 6 }, () => ({
       postMessage: jasmine.createSpy("postMessage"),
       terminate: () => undefined,
       onmessage: undefined as ((event: MessageEvent) => void) | undefined,
@@ -384,6 +516,7 @@ describe("automatic theorizer calculation", () => {
     service.state.subscribe((value) => {
       state = value;
     });
+    service.setSearchOptions(false, 600000, 3);
     void service.search(false, 600000);
     tick(200);
     expect(workers[0].postMessage.calls.mostRecent().args[0].stage).toBe("maxima");
@@ -452,7 +585,13 @@ describe("automatic theorizer calculation", () => {
     expect(create.calls.count()).toBe(3);
     workers[0].onmessage!({ data: { ...finished, delta: true } } as MessageEvent);
     tick(0);
-    expect(create.calls.count()).toBe(4);
+    expect(create.calls.count()).toBe(6);
+    workers.slice(3).forEach((worker, index) => {
+      expect(worker.postMessage.calls.mostRecent().args[0].buildPartition).toEqual({
+        index,
+        count: 3,
+      });
+    });
     const request = workers[3].postMessage.calls.mostRecent().args[0];
     expect(request.stage).toBe("builds");
     expect(request.skipMaxima).toBeTrue();
@@ -468,11 +607,11 @@ describe("automatic theorizer calculation", () => {
     expect(state.elapsedMs).toBe(discoveryElapsed);
     void service.loadBuilds(arrangement);
     tick(0);
-    expect(create.calls.count()).toBe(4);
+    expect(create.calls.count()).toBe(6);
     const secondArrangement = t5ArrangementFromPieces(
       pieces.map((piece) => ({ ...piece, tertiary: ArmorStat.StatHealth }))
     );
-    const build = { key: "first-build", pieces: [], covered: 0, owned: 0 } as unknown as T5Solution;
+    const build = { key: "first-build", pieces: [], covered: 3, owned: 3 } as unknown as T5Solution;
     workers[3].onmessage!({
       data: {
         delta: true,
@@ -489,7 +628,7 @@ describe("automatic theorizer calculation", () => {
     expect(state.results.map((result) => result.key)).toEqual(["first-build"]);
     service.loadBuildGroup([arrangement, secondArrangement, secondArrangement]);
     tick(0);
-    expect(create.calls.count()).toBe(4);
+    expect(create.calls.count()).toBe(6);
     expect(workers[3].postMessage.calls.count()).toBe(1);
     workers[3].onmessage!({
       data: {
@@ -510,8 +649,27 @@ describe("automatic theorizer calculation", () => {
     expect(reused.arrangement.key).toBe(secondArrangement.key);
     expect(reused.inventory).toBeUndefined();
     expect(reused.manifest).toBeUndefined();
-    expect(create.calls.count()).toBe(4);
+    expect(create.calls.count()).toBe(6);
+    expect(state.arrangementsPaused).toBeTrue();
+    expect(state.workersActive).toBe(0);
+    workers[4].onmessage!({
+      data: { ...finished, delta: true, results: [{ ...build, covered: 4 }] },
+    } as MessageEvent);
+    expect(state.results.length).toBe(1);
+    expect(state.results[0].covered).toBe(4);
+    workers[5].onmessage!({ data: { ...finished, delta: true } } as MessageEvent);
+    workers.slice(3).forEach((worker) => {
+      const next = worker.postMessage.calls.mostRecent().args[0];
+      expect(next.type).toBe("build");
+      expect(next.arrangement.key).toBe(secondArrangement.key);
+      expect(next.inventory).toBeUndefined();
+      expect(next.manifest).toBeUndefined();
+    });
     workers[3].onmessage!({ data: { ...finished, delta: true } } as MessageEvent);
+    expect(state.arrangementsPaused).toBeTrue();
+    workers[4].onmessage!({ data: { ...finished, delta: true } } as MessageEvent);
+    expect(state.arrangementsPaused).toBeTrue();
+    workers[5].onmessage!({ data: { ...finished, delta: true } } as MessageEvent);
     expect(state.arrangementsPaused).toBeFalse();
     expect(state.workersActive).toBe(3);
     expect(
@@ -572,19 +730,19 @@ describe("automatic theorizer calculation", () => {
       maximaComplete: true,
     };
     workers.forEach((worker) => worker.onmessage!({ data: finished } as MessageEvent));
-    expect(state.tasksQueued).toBe(1724);
+    expect(state.tasksQueued).toBe(4364);
     const initial = workers[0].postMessage.calls.mostRecent().args[0];
     workers[0].onmessage!({ data: finished } as MessageEvent);
     const reassigned = workers[0].postMessage.calls.mostRecent().args[0];
     expect(reassigned.type).toBe("task");
     expect(reassigned.task).not.toEqual(initial.task);
     expect(state.tasksFinished).toBe(1);
-    expect(state.tasksQueued).toBe(1723);
+    expect(state.tasksQueued).toBe(4363);
     expect(state.workersActive).toBe(4);
     expect(state.running).toBeTrue();
     expect(workers[0].terminate).not.toHaveBeenCalled();
     expect(create.calls.count()).toBe(4);
-    expect(reassigned.timeLimitMs).toBe(2000);
+    expect(reassigned.timeLimitMs).toBe(4000);
     const base = t5ArrangementFromPieces(
       Array.from(
         { length: 5 },
@@ -607,8 +765,8 @@ describe("automatic theorizer calculation", () => {
     workers[0].onmessage!({
       data: { ...finished, delta: true, arrangements: [], complete: false, stopReason: "budget" },
     } as MessageEvent);
-    expect(state.tasksTotal).toBe(1740);
-    expect(state.tasksQueued).toBe(1734);
+    expect(state.tasksTotal).toBe(4424);
+    expect(state.tasksQueued).toBe(4418);
     expect(state.workersActive).toBe(4);
     expect(state.arrangements?.length).toBe(1);
     expect(state.arrangements?.[0].key).toBe(base.key);
@@ -656,6 +814,214 @@ describe("automatic theorizer calculation", () => {
     }
   }));
 
+  it("time-slices full-prefix discovery and retains its discoveries when resuming", fakeAsync(() => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    const create = spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const service = new TheorizerService(
+      {
+        configuration: new BehaviorSubject(config),
+        currentConfiguration: config,
+      } as unknown as ConfigurationService,
+      {
+        inventoryArmor: { where: () => ({ equals: () => ({ toArray: async () => [] }) }) },
+        manifestArmor: { toArray: async () => [{}] },
+      } as unknown as DatabaseService,
+      {
+        inventory: new Subject<null>(),
+        manifest: new Subject<null>(),
+      } as unknown as UserInformationService
+    );
+    let state!: TheorizerViewState;
+    service.state.subscribe((value) => {
+      state = value;
+    });
+    const pieces = Array.from(
+      { length: 5 },
+      () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatClass }) as T5Candidate
+    );
+    service.setSearchOptions(false, 30000, 1);
+    void service.search(false, 30000, { pieces } as T5Solution);
+    tick(0);
+    const finished = {
+      results: [],
+      arrangements: [],
+      checked: 0,
+      total: 1,
+      feasible: 0,
+      evaluations: 0,
+      complete: true,
+      done: true,
+      warnings: [],
+      maximaChecked: 6,
+      maximaComplete: true,
+    };
+    worker.onmessage!({ data: finished } as MessageEvent);
+    expect(worker.postMessage.calls.mostRecent().args[0].task.archetypeCounts).toBeTrue();
+    worker.onmessage!({
+      data: { ...finished, complete: false, stopReason: "budget" },
+    } as MessageEvent);
+    const request = worker.postMessage.calls.mostRecent().args[0];
+    expect(request.task.archetypes.length).toBe(5);
+    expect(request.timeLimitMs).toBe(4000);
+    const arrangement = t5ArrangementFromPieces(pieces);
+    worker.onmessage!({
+      data: {
+        ...finished,
+        delta: true,
+        arrangements: [arrangement],
+        feasible: 1,
+        complete: false,
+        done: false,
+      },
+    } as MessageEvent);
+    worker.onmessage!({
+      data: { ...finished, delta: true, feasible: 1, complete: false, stopReason: "slice" },
+    } as MessageEvent);
+    let completedOther = 0;
+    while (
+      JSON.stringify(worker.postMessage.calls.mostRecent().args[0].task) !==
+        JSON.stringify(request.task) &&
+      completedOther < 60
+    ) {
+      worker.onmessage!({ data: finished } as MessageEvent);
+      completedOther++;
+    }
+    expect(worker.postMessage.calls.mostRecent().args[0].task).toEqual(request.task);
+    expect(worker.postMessage.calls.mostRecent().args[0].timeLimitMs).toBe(4000);
+    expect(state.tasksFinished).toBe(1 + completedOther);
+    expect(state.running).toBeTrue();
+    expect(state.arrangements?.map((entry) => entry.key)).toEqual([arrangement.key]);
+    worker.onmessage!({
+      data: {
+        ...finished,
+        delta: true,
+        feasible: 1,
+        complete: false,
+        stopReason: "slice",
+        taskDeferred: true,
+      },
+    } as MessageEvent);
+    expect(create.calls.count()).toBe(1);
+    expect(state.tasksFinished).toBe(1 + completedOther);
+    expect(state.arrangements?.length).toBe(1);
+    service.ngOnDestroy();
+  }));
+
+  it("queues other runnable leaf tasks ahead of a deferred retry-heavy task", fakeAsync(() => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.characterClass = 0;
+    const inventory = [1, 2, 3, 4, 5].map((slot) => ({
+      slot,
+      clazz: 0,
+      armorSystem: 3,
+      tier: 5,
+      isExotic: 0,
+      source: 0,
+      itemInstanceId: `owned-${slot}`,
+      resilience: 0,
+      strength: 0,
+      discipline: 30,
+      intellect: 25,
+      recovery: 20,
+      mobility: 0,
+      archetypeStats: [2, 3, 4],
+      gearSetHash: null,
+      gearSetPerkSelectable: false,
+      tuningStat: 0,
+      masterworkLevel: 5,
+      perk: 0,
+      isSunset: false,
+      isFeatured: false,
+      name: "Owned armor",
+      icon: "",
+      hash: slot,
+    }));
+    inventory.push({
+      ...inventory[0],
+      itemInstanceId: "owned-other",
+      resilience: 25,
+      strength: 30,
+      discipline: 0,
+      intellect: 0,
+      archetypeStats: [1, 0, 4],
+    });
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const service = new TheorizerService(
+      {
+        configuration: new BehaviorSubject(config),
+        currentConfiguration: config,
+      } as unknown as ConfigurationService,
+      {
+        inventoryArmor: { where: () => ({ equals: () => ({ toArray: async () => inventory }) }) },
+        manifestArmor: { toArray: async () => [{}] },
+      } as unknown as DatabaseService,
+      {
+        inventory: new Subject<null>(),
+        manifest: new Subject<null>(),
+      } as unknown as UserInformationService
+    );
+    let state!: TheorizerViewState;
+    service.state.subscribe((value) => {
+      state = value;
+    });
+    service.setSearchOptions(true, 30000, 1);
+    void service.search(true, 30000);
+    tick(0);
+    const finished = {
+      results: [],
+      arrangements: [],
+      checked: 0,
+      total: 1,
+      feasible: 0,
+      evaluations: 0,
+      complete: true,
+      done: true,
+      warnings: [],
+      maximaChecked: 6,
+      maximaComplete: true,
+    };
+    worker.onmessage!({ data: finished } as MessageEvent);
+    for (
+      let iteration = 0;
+      !worker.postMessage.calls.mostRecent().args[0].task?.tertiaries && iteration < 8;
+      iteration++
+    ) {
+      worker.onmessage!({
+        data: { ...finished, complete: false, stopReason: "budget" },
+      } as MessageEvent);
+    }
+    const first = worker.postMessage.calls.mostRecent().args[0].task;
+    expect(first.archetypes.length).toBe(5);
+    const completed = state.tasksFinished;
+    worker.onmessage!({
+      data: { ...finished, delta: true, complete: false, stopReason: "slice", taskDeferred: true },
+    } as MessageEvent);
+    const second = worker.postMessage.calls.mostRecent().args[0].task;
+    expect(second).not.toEqual(first);
+    expect(state.tasksDeferred).toBe(1);
+    expect(state.tasksFinished).toBe(completed);
+    worker.onmessage!({
+      data: { ...finished, delta: true, complete: false, stopReason: "slice", taskDeferred: true },
+    } as MessageEvent);
+    const third = worker.postMessage.calls.mostRecent().args[0].task;
+    expect(third).not.toEqual(first);
+    expect(third).not.toEqual(second);
+    expect(state.tasksDeferred).toBe(2);
+    expect(state.tasksFinished).toBe(completed);
+    expect(state.running).toBeTrue();
+    service.ngOnDestroy();
+  }));
+
   it("automatically fits inventory after discovery without calculating retained builds", fakeAsync(() => {
     const config = BuildConfiguration.buildEmptyConfiguration();
     const workers = Array.from({ length: 2 }, () => ({
@@ -689,6 +1055,7 @@ describe("automatic theorizer calculation", () => {
       () => ({ archetype: "Grenedier", tertiary: ArmorStat.StatClass }) as T5Candidate
     );
     const arrangement = t5ArrangementFromPieces(pieces);
+    service.setSearchOptions(false, 300000, 1);
     void service.search(false, 300000, { pieces } as T5Solution);
     tick(0);
     const finished = {
@@ -719,14 +1086,14 @@ describe("automatic theorizer calculation", () => {
         inventoryMatches: [
           {
             key: arrangement.key,
-            match: { covered: 2, owned: 2, proven: true, feasible: true, pieces: [] },
+            match: { covered: 3, owned: 3, proven: true, feasible: true, pieces: [] },
           },
         ],
       },
     } as MessageEvent);
     expect(state.matching).toBeFalse();
     expect(state.matchingComplete).toBeTrue();
-    expect(state.arrangements?.[0].inventoryMatch?.covered).toBe(2);
+    expect(state.arrangements?.[0].inventoryMatch?.covered).toBe(3);
     expect(state.results).toEqual([]);
     void service.loadBuilds(arrangement);
     tick(0);
@@ -734,5 +1101,111 @@ describe("automatic theorizer calculation", () => {
     expect(workers[1].postMessage.calls.mostRecent().args[0].type).toBe("build");
     service.ngOnDestroy();
     tick(200);
+  }));
+
+  it("keeps restored low matches out of builds, budgets parallel builds and cancels every worker", fakeAsync(() => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    const workers = Array.from({ length: 3 }, () => ({
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: jasmine.createSpy("terminate"),
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    }));
+    const create = spyOn(window, "Worker").and.returnValues(
+      ...workers.map((worker) => worker as unknown as Worker)
+    );
+    const service = new TheorizerService(
+      {
+        configuration: new BehaviorSubject(config),
+        currentConfiguration: config,
+        modifyConfiguration: (modify: (configuration: BuildConfiguration) => void) =>
+          modify(config),
+      } as unknown as ConfigurationService,
+      {
+        inventoryArmor: { where: () => ({ equals: () => ({ toArray: async () => [] }) }) },
+        manifestArmor: { toArray: async () => [{}] },
+      } as unknown as DatabaseService,
+      {
+        inventory: new Subject<null>(),
+        manifest: new Subject<null>(),
+      } as unknown as UserInformationService
+    );
+    const arrangement = (tertiary: ArmorStat) =>
+      t5ArrangementFromPieces(
+        Array.from({ length: 5 }, () => ({ archetype: "Grenedier", tertiary }) as T5Candidate)
+      );
+    const useful = arrangement(ArmorStat.StatClass);
+    const low = arrangement(ArmorStat.StatHealth);
+    let state!: TheorizerViewState;
+    service.state.subscribe((value) => {
+      state = value;
+    });
+    void service.restoreRun(
+      createT5SavedRun(
+        "Old run",
+        config,
+        { achievableOnly: false, timeLimitMs: 1000, workerLimit: 3 },
+        [useful, low],
+        true
+      )
+    );
+    tick(0);
+    service.loadBuildGroup([useful, low]);
+    const finished = {
+      results: [],
+      checked: 1,
+      total: 1,
+      feasible: 1,
+      evaluations: 1,
+      done: true,
+      complete: true,
+      warnings: [],
+    };
+    workers[0].onmessage!({
+      data: {
+        ...finished,
+        inventoryMatches: [
+          {
+            key: useful.key,
+            match: { covered: 3, owned: 3, feasible: true, proven: true, pieces: [] },
+          },
+          {
+            key: low.key,
+            match: { covered: 2, owned: 2, feasible: true, proven: true, pieces: [] },
+          },
+        ],
+      },
+    } as MessageEvent);
+    expect(state.arrangements?.map((entry) => entry.key)).toEqual([useful.key, low.key]);
+    expect(state.arrangements?.[1].inventoryMatch?.covered).toBe(2);
+    expect(create.calls.count()).toBe(3);
+    expect(state.buildWorkersActive).toBe(3);
+    expect(state.buildTasksQueued).toBe(0);
+    const build = {
+      key: "covered-build",
+      pieces: [],
+      covered: 3,
+      owned: 3,
+    } as unknown as T5Solution;
+    workers[0].onmessage!({ data: { ...finished, delta: true, results: [build] } } as MessageEvent);
+    expect(state.buildWorkersActive).toBe(2);
+    expect(state.arrangementsPaused).toBeTrue();
+    tick(1000);
+    expect(state.buildWorkersActive).toBe(0);
+    expect(state.arrangements?.[0].buildState).toBe("partial");
+    expect(state.results.map((entry) => entry.key)).toEqual([build.key]);
+    expect(service.snapshot("Filtered").arrangements.map((entry) => entry.key)).toEqual([
+      useful.key,
+      low.key,
+    ]);
+    service.loadBuildGroup([low]);
+    expect(state.buildWorkersActive).toBe(0);
+    expect(state.buildTasksQueued).toBe(0);
+    service.cancel();
+    workers.forEach((worker) => expect(worker.terminate).toHaveBeenCalled());
+    workers[1].onmessage!({
+      data: { ...finished, results: [{ ...build, key: "late-build" }] },
+    } as MessageEvent);
+    expect(state.results.map((entry) => entry.key)).toEqual([build.key]);
+    service.ngOnDestroy();
   }));
 });

@@ -27,10 +27,8 @@ import { ConfigurationService } from "../../../../services/configuration.service
 export class DesiredModLimitSelectionComponent {
   constructor(public config: ConfigurationService) {}
 
-  // New clear for statModLimits
   clear() {
     this.config.modifyConfiguration((c) => {
-      c.statModLimits = { maxMods: 5, maxMajorMods: 5 };
       c.armorRequirements = [];
     });
   }

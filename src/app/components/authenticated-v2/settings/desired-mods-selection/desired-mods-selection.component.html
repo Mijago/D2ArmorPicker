@@ -15,106 +15,134 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<span *ngFor="let d of data; let idx = index">
-  <ng-container *ngIf="idx === 0">
-    <br />
-    <mat-button-toggle-group [value]="selectedElement" class="mat-primary">
-      <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
-        Arc
-      </mat-button-toggle>
-      <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
-        Solar
-      </mat-button-toggle>
-      <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
-        Void
-      </mat-button-toggle>
-      <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
-        Stasis
-      </mat-button-toggle>
-      <mat-button-toggle (click)="setElement(ModifierType.Strand)" [value]="ModifierType.Strand">
-        Strand
-      </mat-button-toggle>
-      <mat-button-toggle
-        (click)="setElement(ModifierType.Prismatic)"
-        [value]="ModifierType.Prismatic">
-        Prismatic
-      </mat-button-toggle>
-    </mat-button-toggle-group>
-  </ng-container>
-  <ng-container *ngIf="!d.group || d.type === selectedElement">
-    <h3 class="stat-part-title" *ngIf="!d.group">{{ d.name }}</h3>
-    <span *ngIf="d.data.length === 0"
-      >There are no fragments configured yet. Please be patient.</span
-    >
-    <div class="subclass-fragments-table" *ngIf="d.data.length > 0">
-      <table [dataSource]="d.data" mat-table class="tSubclassFragments">
-        <!-- Position Column -->
-        <ng-container matColumnDef="name">
-          <th *matHeaderCellDef mat-header-cell>Name</th>
-          <td *matCellDef="let element" mat-cell [modTooltip]="element">
-            <mat-slide-toggle
-              [checked]="selectedMods.indexOf(element.id) > -1"
-              color="primary"
-              style="cursor: pointer !important; user-select: none">
-              <app-item-icon [itemHash]="element.hash"></app-item-icon>
-              {{ element.name }}
-            </mat-slide-toggle>
-          </td>
-        </ng-container>
+<mat-expansion-panel class="selection-panel" [expanded]="true">
+  <mat-expansion-panel-header>
+    <mat-panel-title>Mods and subclass fragments</mat-panel-title>
+    <mat-panel-description>{{ selectedMods.length }} selected</mat-panel-description>
+  </mat-expansion-panel-header>
 
-        <ng-container *ngFor="let stat of armorStats; let i = index">
-          <ng-container [matColumnDef]="ArmorStatNames[stat]">
-            <th *matHeaderCellDef mat-header-cell [matTooltip]="ArmorStatNames[stat]">
-              <app-stat-icon [stat]="stat"></app-stat-icon>
-            </th>
-            <td *matCellDef="let element" mat-cell>
-              <span *ngVar="getModifierTextForValue(element.bonus, stat) as value">
-                <span
-                  *ngIf="value > 0"
-                  class="stat-positive"
-                  [matTooltip]="'+' + value + ' ' + ArmorStatNames[stat]"
-                  >+{{ value }}</span
-                >
-                <span
-                  *ngIf="value < 0"
-                  class="stat-negative"
-                  [matTooltip]="value + ' ' + ArmorStatNames[stat]"
-                  >{{ value }}</span
-                >
-              </span>
+  <span *ngFor="let d of data; let idx = index">
+    <ng-container *ngIf="idx === 0">
+      <br />
+      <mat-button-toggle-group [value]="selectedElement" class="mat-primary">
+        <mat-button-toggle (click)="setElement(ModifierType.Arc)" [value]="ModifierType.Arc">
+          Arc
+        </mat-button-toggle>
+        <mat-button-toggle (click)="setElement(ModifierType.Solar)" [value]="ModifierType.Solar">
+          Solar
+        </mat-button-toggle>
+        <mat-button-toggle (click)="setElement(ModifierType.Void)" [value]="ModifierType.Void">
+          Void
+        </mat-button-toggle>
+        <mat-button-toggle (click)="setElement(ModifierType.Stasis)" [value]="ModifierType.Stasis">
+          Stasis
+        </mat-button-toggle>
+        <mat-button-toggle (click)="setElement(ModifierType.Strand)" [value]="ModifierType.Strand">
+          Strand
+        </mat-button-toggle>
+        <mat-button-toggle
+          (click)="setElement(ModifierType.Prismatic)"
+          [value]="ModifierType.Prismatic">
+          Prismatic
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </ng-container>
+    <ng-container *ngIf="!d.group || d.type === selectedElement">
+      <h3 class="stat-part-title" *ngIf="!d.group">{{ d.name }}</h3>
+      <span *ngIf="d.data.length === 0"
+        >There are no fragments configured yet. Please be patient.</span
+      >
+      <div class="subclass-fragments-table" *ngIf="d.data.length > 0">
+        <table [dataSource]="d.data" mat-table class="tSubclassFragments">
+          <!-- Position Column -->
+          <ng-container matColumnDef="name">
+            <th *matHeaderCellDef mat-header-cell>Name</th>
+            <td *matCellDef="let element" mat-cell [modTooltip]="element">
+              <mat-slide-toggle
+                [checked]="selectedMods.indexOf(element.id) > -1"
+                color="primary"
+                style="cursor: pointer !important; user-select: none">
+                <app-item-icon [itemHash]="element.hash"></app-item-icon>
+                {{ element.name }}
+              </mat-slide-toggle>
             </td>
           </ng-container>
-        </ng-container>
 
-        <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
-        <tr
-          (click)="handleRowClick(row)"
-          *matRowDef="let row; columns: displayedColumns"
-          [class.selected]="selectedMods.indexOf(row.id) > -1"
-          mat-row></tr>
-      </table>
+          <ng-container *ngFor="let stat of armorStats; let i = index">
+            <ng-container [matColumnDef]="ArmorStatNames[stat]">
+              <th *matHeaderCellDef mat-header-cell [matTooltip]="ArmorStatNames[stat]">
+                <app-stat-icon [stat]="stat"></app-stat-icon>
+              </th>
+              <td *matCellDef="let element" mat-cell>
+                <span *ngVar="getModifierTextForValue(element.bonus, stat) as value">
+                  <span
+                    *ngIf="value > 0"
+                    class="stat-positive"
+                    [matTooltip]="'+' + value + ' ' + ArmorStatNames[stat]"
+                    >+{{ value }}</span
+                  >
+                  <span
+                    *ngIf="value < 0"
+                    class="stat-negative"
+                    [matTooltip]="value + ' ' + ArmorStatNames[stat]"
+                    >{{ value }}</span
+                  >
+                </span>
+              </td>
+            </ng-container>
+          </ng-container>
+
+          <tr *matHeaderRowDef="displayedColumns" mat-header-row></tr>
+          <tr
+            (click)="handleRowClick(row)"
+            *matRowDef="let row; columns: displayedColumns"
+            [class.selected]="selectedMods.indexOf(row.id) > -1"
+            mat-row></tr>
+        </table>
+      </div>
+    </ng-container>
+  </span>
+
+  <div id="clear-container">
+    <button
+      (click)="importEquippedSubclass()"
+      [disabled]="isLoadingSubclass"
+      color="primary"
+      mat-raised-button
+      style="margin-right: 10px">
+      <mat-spinner
+        *ngIf="isLoadingSubclass"
+        diameter="18"
+        class="button-spinner"
+        aria-label="Importing subclass"></mat-spinner>
+      <mat-icon *ngIf="!isLoadingSubclass">input</mat-icon>
+      Import equipped Subclass & Fragments
+    </button>
+
+    <button (click)="clear()" [disabled]="isLoadingSubclass" color="warn" mat-stroked-button>
+      <mat-icon>delete_sweep</mat-icon>
+      Clear the whole selection
+    </button>
+  </div>
+</mat-expansion-panel>
+
+<section class="boost-overview" aria-label="Selected stat boosts overview">
+  <div class="boost-overview-header">
+    <h3>Overview</h3>
+    <span>{{ selectedMods.length }} selected</span>
+  </div>
+  <div class="selected-boosts" *ngIf="selectedModifierOverview.length > 0; else noSelectedBoosts">
+    <span class="selected-boost" *ngFor="let entry of selectedModifierOverview">
+      {{ entry.modifier.name }}
+    </span>
+  </div>
+  <ng-template #noSelectedBoosts><p class="empty-boosts">No stat boosts selected.</p></ng-template>
+  <div class="boost-stat-totals" aria-label="Combined stat effects">
+    <div class="boost-stat-total" *ngFor="let total of selectedModifierStatTotals">
+      <app-stat-icon [stat]="total.stat"></app-stat-icon>
+      <span [class.stat-positive]="total.value > 0" [class.stat-negative]="total.value < 0">
+        {{ total.value > 0 ? "+" : "" }}{{ total.value }}
+      </span>
     </div>
-  </ng-container>
-</span>
-
-<div id="clear-container">
-  <button
-    (click)="importEquippedSubclass()"
-    [disabled]="isLoadingSubclass"
-    color="primary"
-    mat-raised-button
-    style="margin-right: 10px">
-    <mat-spinner
-      *ngIf="isLoadingSubclass"
-      diameter="18"
-      class="button-spinner"
-      aria-label="Importing subclass"></mat-spinner>
-    <mat-icon *ngIf="!isLoadingSubclass">input</mat-icon>
-    Import equipped Subclass & Fragments
-  </button>
-
-  <button (click)="clear()" [disabled]="isLoadingSubclass" color="warn" mat-stroked-button>
-    <mat-icon>delete_sweep</mat-icon>
-    Clear the whole selection
-  </button>
-</div>
+  </div>
+</section>

@@ -97,7 +97,7 @@
         class="milestone-button max-button"
         style="left: 100%"
         *ngIf="selectedValue < 188 || selectedValue > 212"
-        (click)="setValueMob(effectiveMaximumTier * 10)"
+        (click)="setValueMob(maximumAvailableTier * 10)"
         mat-flat-button
         [attr.tabindex]="tabIndexOffset + 2">
         <span class="max-text">MAX</span>
@@ -131,7 +131,7 @@
         [attr.tabindex]="tabIndexOffset + 3" />
     </div>
     <div class="separator-section">/</div>
-    <div class="max-value-section">{{ effectiveMaximumTier * 10 }}</div>
+    <div class="max-value-section">{{ maximumAvailableTier * 10 }}</div>
     <!--
     <div
       *ngIf="hoveredValue !== null && hoveredValue <= effectiveMaximumTier * 10"

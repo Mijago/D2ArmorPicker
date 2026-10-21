@@ -62,6 +62,12 @@ aside,
   padding-left: 20px;
   line-height: 1.7;
 }
+.inventory-fit li {
+  overflow-wrap: anywhere;
+}
+.inventory-fit li + li {
+  margin-top: 12px;
+}
 .search-status {
   display: flex;
   gap: 8px;

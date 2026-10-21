@@ -27,7 +27,7 @@ import { ModifierType, SubclassNames } from "./enum/modifierType";
 import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "./constants";
 import { ModOptimizationStrategy } from "./enum/mod-optimization-strategy";
 import { EventArmorType } from "./enum/event-armor-type";
-import { DestinyClass } from "bungie-api-ts/destiny2/interfaces";
+import { DestinyClass } from "bungie-api-ts/destiny2";
 import { environment } from "src/environments/environment";
 
 export function getDefaultStatDict(

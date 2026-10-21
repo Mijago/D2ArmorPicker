@@ -27,6 +27,7 @@ import { debounceTime, takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
 import { DestinyClass } from "bungie-api-ts/destiny2";
 import { ArmorPerkOrSlot } from "../../../../data/enum/armor-stat";
+import { EventArmorType } from "../../../../data/enum/event-armor-type";
 import {
   ExoticClassItemPerkNames,
   ExoticClassItemSpirits,
@@ -49,6 +50,35 @@ export const listAnimation = trigger("listAnimation", [
   animations: [listAnimation],
 })
 export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
+  readonly eventArmorOptions = [
+    { value: EventArmorType.None, label: "None" },
+    { value: EventArmorType.FestivalOfTheLost, label: "Festival of the Lost" },
+    { value: EventArmorType.GuardianGames, label: "Guardian Games" },
+  ];
+  readonly exoticSlotNames = ["", "Helmet", "Gauntlets", "Chest", "Legs", "Class Items"];
+
+  get useEventArmor(): EventArmorType {
+    return this.config.currentConfiguration.useEventArmor;
+  }
+
+  setUseEventArmor(event: EventArmorType): void {
+    this.config.modifyConfiguration((configuration) => {
+      configuration.useEventArmor = event;
+      const selected = this.filterEventRestrictedExotics(configuration.selectedExotics, event);
+      configuration.selectedExotics = selected;
+      this.selectedExotics = selected;
+      if (!this.hasSelectedExoticClassItem()) {
+        configuration.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+        this.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+      }
+    });
+  }
+
+  isEventRestrictedExotic(exotic: ClassExoticInfo): boolean {
+    const slot = this.eventRestrictedExoticSlot(this.useEventArmor);
+    return slot !== undefined && exotic.items.some((item) => item.slot === slot);
+  }
+
   selectedExotics: number[] = [];
   selectedExoticPerks: ArmorPerkOrSlot[] = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
   includeCollectionRolls = false;
@@ -237,17 +267,40 @@ export class DesiredExoticSelectionComponent implements OnInit, OnDestroy {
   }
 
   private syncSelectedExoticVariants(): void {
-    const selected = this.config.readonlyConfigurationSnapshot.selectedExotics;
+    const configured = this.config.readonlyConfigurationSnapshot.selectedExotics;
+    const selected = this.filterEventRestrictedExotics(configured, this.useEventArmor);
     const normalized = this.expandSelectedExoticVariants(selected);
     this.selectedExotics = normalized;
     if (
-      normalized.length !== selected.length ||
-      normalized.some((hash, index) => hash !== selected[index])
+      normalized.length !== configured.length ||
+      normalized.some((hash, index) => hash !== configured[index])
     ) {
       this.config.modifyConfiguration((configuration) => {
         configuration.selectedExotics = normalized;
+        if (!this.hasSelectedExoticClassItem()) {
+          configuration.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+          this.selectedExoticPerks = [ArmorPerkOrSlot.Any, ArmorPerkOrSlot.Any];
+        }
       });
     }
+  }
+
+  private filterEventRestrictedExotics(selected: number[], event: EventArmorType): number[] {
+    const slot = this.eventRestrictedExoticSlot(event);
+    if (slot === undefined) return selected;
+
+    const restrictedHashes = new Set(
+      this.armors
+        .filter((exotic) => exotic.items.some((item) => item.slot === slot))
+        .flatMap((exotic) => this.getHashesForExotic(exotic))
+    );
+    return selected.filter((hash) => !restrictedHashes.has(hash));
+  }
+
+  private eventRestrictedExoticSlot(event: EventArmorType): ArmorSlot | undefined {
+    if (event === EventArmorType.FestivalOfTheLost) return ArmorSlot.ArmorSlotHelmet;
+    if (event === EventArmorType.GuardianGames) return ArmorSlot.ArmorSlotClass;
+    return undefined;
   }
 
   private expandSelectedExoticVariants(selected: number[]): number[] {

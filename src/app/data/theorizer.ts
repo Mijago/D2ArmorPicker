@@ -1,5 +1,7 @@
 import { ArmorStat } from "./enum/armor-stat";
 import { BuildConfiguration } from "./buildConfiguration";
+import { ModInformation } from "./ModInformation";
+import { SubclassNames } from "./enum/modifierType";
 import { IInventoryArmor } from "./types/IInventoryArmor";
 import { IManifestArmor } from "./types/IManifestArmor";
 import { IPermutatorArmor } from "./types/IPermutatorArmor";
@@ -25,6 +27,29 @@ export const T5_ARCHETYPES: readonly T5Archetype[] = [
   { name: "Gunner", primary: ArmorStat.StatWeapon, secondary: ArmorStat.StatGrenade },
   { name: "Powerhouse", primary: ArmorStat.StatWeapon, secondary: ArmorStat.StatSuper },
 ];
+
+export function suggestedT5RunName(config: BuildConfiguration): string {
+  const statTargets = (
+    Object.values(ArmorStat).filter((value) => typeof value === "number") as ArmorStat[]
+  ).map((stat) => {
+    const target = config.minimumStatTiers[stat];
+    return `${target.value * 10}${target.fixed ? "*" : ""}`;
+  });
+  const modifiers = [...new Set(config.enabledMods)]
+    .map((id) => ModInformation[id])
+    .filter((modifier) => modifier?.type === config.selectedModElement)
+    .map((modifier) => modifier.name);
+  const subclass =
+    (SubclassNames as Record<number, string>)[config.selectedModElement] ?? "Subclass";
+  const maximumMajor = Math.min(config.statModLimits.maxMods, config.statModLimits.maxMajorMods);
+  return [
+    statTargets.join("/"),
+    `Mods max ${config.statModLimits.maxMods} (${maximumMajor} major)`,
+    `${subclass}: ${modifiers.length ? modifiers.join(", ") : "No modifiers"}`,
+  ]
+    .join(" | ")
+    .slice(0, 120);
+}
 
 export function t5Tertiaries(archetype: T5Archetype): ArmorStat[] {
   return [0, 1, 2, 3, 4, 5].filter(
@@ -235,8 +260,15 @@ export function groupT5Arrangements(
     arrangement.owned = preferMatch ? match!.owned : (build?.owned ?? 0);
   }
   return [...groups.values()].sort(
-    (first, second) => first.archetypes.length - second.archetypes.length || rank(first, second)
+    (first, second) =>
+      Number(isLowCoverageT5Arrangement(first)) - Number(isLowCoverageT5Arrangement(second)) ||
+      first.archetypes.length - second.archetypes.length ||
+      rank(first, second)
   );
+}
+
+export function isLowCoverageT5Arrangement(arrangement: T5Arrangement): boolean {
+  return !!arrangement.inventoryMatch && arrangement.inventoryMatch.covered < 3;
 }
 
 export interface T5ArchetypeGroup {
@@ -275,7 +307,11 @@ export function groupT5Archetypes(
     }
     group.arrangements.push(arrangement);
     group.builds += arrangement.builds.length;
-    if (!arrangement.buildState || arrangement.buildState === "idle") group.uncalculated++;
+    if (
+      !isLowCoverageT5Arrangement(arrangement) &&
+      (!arrangement.buildState || arrangement.buildState === "idle")
+    )
+      group.uncalculated++;
     if (
       arrangement.covered > group.covered ||
       (arrangement.covered === group.covered && arrangement.owned > group.owned)
@@ -284,32 +320,168 @@ export function groupT5Archetypes(
       group.owned = arrangement.owned;
     }
   }
+  for (const group of groups.values()) {
+    group.arrangements.sort(
+      (first, second) =>
+        Number(isLowCoverageT5Arrangement(first)) - Number(isLowCoverageT5Arrangement(second)) ||
+        second.covered - first.covered ||
+        second.owned - first.owned
+    );
+  }
   return [...groups.values()].sort((first, second) => {
     const flexibility =
       second.arrangements.length - first.arrangements.length ||
       first.archetypes.length - second.archetypes.length;
     const matches = second.covered - first.covered || second.owned - first.owned;
     return (
+      Number(first.arrangements.every(isLowCoverageT5Arrangement)) -
+        Number(second.arrangements.every(isLowCoverageT5Arrangement)) ||
       (order === "matches" ? matches || flexibility : flexibility || matches) ||
       first.key.localeCompare(second.key)
     );
   });
 }
 
+export interface T5SearchTask {
+  archetypes: string[];
+  archetypeCounts?: boolean;
+  tertiaries?: { stat: ArmorStat | null; count: number }[];
+  excludedArrangements?: T5Arrangement[];
+}
+
+export function t5SearchTaskKey(task: T5SearchTask): string {
+  return JSON.stringify([!!task.archetypeCounts, task.archetypes, task.tertiaries ?? null]);
+}
+
+export function createT5TertiaryTasks(
+  task: T5SearchTask,
+  choices: ReadonlyMap<string, readonly (ArmorStat | null)[]>
+): T5SearchTask[] {
+  const tasks = new Map<string, T5SearchTask>();
+  const counts = new Map<ArmorStat | null, number>();
+  const generate = (index: number) => {
+    if (index === task.archetypes.length) {
+      const tertiaries = [...counts]
+        .filter(([, count]) => count > 0)
+        .sort(([first], [second]) => (first ?? 6) - (second ?? 6))
+        .map(([stat, count]) => ({ stat, count }));
+      const key = JSON.stringify(tertiaries);
+      if (!tasks.has(key))
+        tasks.set(key, {
+          ...task,
+          tertiaries,
+          excludedArrangements: task.excludedArrangements?.filter(
+            (arrangement) => JSON.stringify(arrangement.tertiaries) === key
+          ),
+        });
+      return;
+    }
+    for (const stat of choices.get(task.archetypes[index]) ?? []) {
+      counts.set(stat, (counts.get(stat) ?? 0) + 1);
+      generate(index + 1);
+      counts.set(stat, counts.get(stat)! - 1);
+    }
+  };
+  generate(0);
+  return [...tasks.values()];
+}
+
 export interface T5SearchRequest {
   wasmUrl?: string;
   config: BuildConfiguration;
+  arrangementConfig?: BuildConfiguration;
   inventory: IInventoryArmor[];
   manifest: IManifestArmor[];
   achievableOnly: boolean;
   timeLimitMs: number;
   group?: string[];
   partition?: { index: number; count: number };
+  buildPartition?: { index: number; count: number };
   arrangement?: T5Arrangement;
   stage?: "arrangements" | "builds" | "maxima" | "matches";
   skipMaxima?: boolean;
-  task?: { archetypes: string[] };
+  task?: T5SearchTask;
   matchArrangements?: T5Arrangement[];
+}
+
+export interface T5ProfileInput {
+  schemaVersion: 1;
+  request: Pick<T5SearchRequest, "config" | "inventory" | "manifest" | "achievableOnly"> & {
+    prioritizeMatches?: boolean;
+  };
+}
+
+export function createT5ProfileInput(request: T5ProfileInput["request"]): T5ProfileInput {
+  const config = Object.assign(
+    BuildConfiguration.buildEmptyConfiguration(),
+    Object.fromEntries(
+      Object.keys(BuildConfiguration.buildEmptyConfiguration()).map((key) => [
+        key,
+        structuredClone(request.config[key as keyof BuildConfiguration]),
+      ])
+    )
+  );
+  const ids = new Map(
+    request.inventory
+      .filter((item) => !!item.itemInstanceId)
+      .map((item, index) => [item.itemInstanceId, `profile-${index + 1}`])
+  );
+  config.disabledItems = request.config.disabledItems.flatMap((id) =>
+    id === "" ? [""] : ids.has(id) ? [ids.get(id)!] : []
+  );
+  const manifestItem = (item: IManifestArmor): IManifestArmor => ({
+    id: 0,
+    hash: item.hash,
+    name: "",
+    icon: "",
+    description: "",
+    slot: item.slot,
+    clazz: item.clazz,
+    isExotic: item.isExotic,
+    rarity: item.rarity,
+    armorSystem: item.armorSystem,
+    isFeatured: item.isFeatured,
+    gearSetHash: item.gearSetHash,
+    gearSetPerkSelectable: item.gearSetPerkSelectable,
+    watermarkIcon: "",
+    perk: item.perk,
+    exoticPerkHash: [...(item.exoticPerkHash ?? [])],
+    isSunset: item.isSunset,
+    itemType: item.itemType,
+    itemSubType: item.itemSubType,
+    investmentStats: [],
+    socketEntries: [],
+  });
+  return {
+    schemaVersion: 1,
+    request: {
+      config,
+      achievableOnly: request.achievableOnly,
+      prioritizeMatches: request.prioritizeMatches ?? true,
+      inventory: request.inventory.map((item, index) => ({
+        ...manifestItem(item),
+        id: index + 1,
+        itemInstanceId: ids.get(item.itemInstanceId) ?? "",
+        energyLevel: item.energyLevel,
+        masterworkLevel: item.masterworkLevel,
+        archetypeStats: [...item.archetypeStats],
+        tier: item.tier,
+        mobility: item.mobility,
+        resilience: item.resilience,
+        recovery: item.recovery,
+        discipline: item.discipline,
+        intellect: item.intellect,
+        strength: item.strength,
+        source: item.source,
+        tuningStat: item.tuningStat,
+        created_at: 0,
+        updated_at: 0,
+      })),
+      manifest: request.manifest
+        .filter((item) => item.clazz === config.characterClass)
+        .map(manifestItem),
+    },
+  };
 }
 
 export function createT5SearchTasks(
@@ -328,6 +500,56 @@ export function createT5SearchTasks(
       new Set(first.archetypes).size - new Set(second.archetypes).size ||
       first.archetypes.join("/").localeCompare(second.archetypes.join("/"))
   );
+}
+
+export function createT5ArchetypeCountTasks(
+  archetypes: readonly string[],
+  pieces = 5
+): T5SearchTask[] {
+  const names = [...new Set(archetypes)].sort();
+  const tasks: T5SearchTask[] = [];
+  const selected: string[] = [];
+  const generate = (start: number) => {
+    if (selected.length === pieces) {
+      tasks.push({ archetypes: [...selected], archetypeCounts: true });
+      return;
+    }
+    for (let index = start; index < names.length; index++) {
+      selected.push(names[index]);
+      generate(index);
+      selected.pop();
+    }
+  };
+  generate(0);
+  return tasks.sort(
+    (first, second) =>
+      new Set(first.archetypes).size - new Set(second.archetypes).size ||
+      first.archetypes.join("/").localeCompare(second.archetypes.join("/"))
+  );
+}
+
+export function prioritizeT5SearchTasks(
+  tasks: readonly T5SearchTask[],
+  sourceArchetypesBySlot: readonly ReadonlySet<string>[]
+): T5SearchTask[] {
+  return tasks
+    .map((task) => ({
+      task,
+      covered: sourceArchetypesBySlot.reduce(
+        (count, choices, slot) =>
+          count +
+          Number(
+            task.archetypeCounts
+              ? task.archetypes.some((name) => choices.has(name))
+              : task.archetypes[slot] === undefined
+                ? choices.size > 0
+                : choices.has(task.archetypes[slot])
+          ),
+        0
+      ),
+    }))
+    .sort((first, second) => Number(second.covered >= 3) - Number(first.covered >= 3))
+    .map(({ task }) => task);
 }
 
 export interface T5SearchUpdate {
@@ -354,7 +576,9 @@ export interface T5SearchUpdate {
   workersFinished?: number;
   workersActive?: number;
   solverRetries?: number;
-  stopReason?: "budget" | "exhausted" | "error";
+  stopReason?: "budget" | "exhausted" | "error" | "slice";
+  taskDeferred?: boolean;
+  tasksDeferred?: number;
   tasksTotal?: number;
   tasksFinished?: number;
   tasksQueued?: number;
@@ -508,10 +732,11 @@ export const T5_SEARCH_BUDGETS = [
   { value: 300000, label: "5 minutes" },
   { value: 600000, label: "10 minutes" },
   { value: 900000, label: "15 minutes" },
+  { value: 1200000, label: "20 minutes" },
   { value: 0, label: "Unlimited" },
 ] as const;
 
-export const DEFAULT_T5_SEARCH_BUDGET_MS = T5_SEARCH_BUDGETS[1].value;
+export const DEFAULT_T5_SEARCH_BUDGET_MS = T5_SEARCH_BUDGETS[2].value;
 
 export interface T5SavedRun {
   id?: number;
@@ -519,7 +744,12 @@ export interface T5SavedRun {
   name: string;
   createdAt: number;
   configuration: BuildConfiguration;
-  options: { achievableOnly: boolean; timeLimitMs: number; workerLimit: number };
+  options: {
+    achievableOnly: boolean;
+    timeLimitMs: number;
+    workerLimit: number;
+    prioritizeMatches?: boolean;
+  };
   complete: boolean;
   arrangements: Pick<
     T5Arrangement,
@@ -539,7 +769,7 @@ export function createT5SavedRun(
     name: name.trim(),
     createdAt: Date.now(),
     configuration: structuredClone(configuration),
-    options: { ...options },
+    options: { ...options, prioritizeMatches: options.prioritizeMatches ?? true },
     complete,
     arrangements: arrangements.map((arrangement) =>
       structuredClone({

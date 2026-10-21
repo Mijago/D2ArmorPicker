@@ -6,11 +6,14 @@ import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "./constants";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { T5Candidate, t5ArrangementFromPieces } from "./theorizer";
 import { groupT5Archetypes } from "./theorizer";
-import { createT5SavedRun, restoreT5Arrangements } from "./theorizer";
+import { createT5SavedRun, restoreT5Arrangements, suggestedT5RunName } from "./theorizer";
 import {
   applyT5Update,
   canAssignT5Tertiaries,
   createT5SearchTasks,
+  createT5ArchetypeCountTasks,
+  createT5ProfileInput,
+  prioritizeT5SearchTasks,
   createT5UpdateEncoder,
   DEFAULT_T5_SEARCH_BUDGET_MS,
   groupT5Arrangements,
@@ -26,6 +29,69 @@ import {
 } from "./theorizer";
 
 describe("T5 theorizer archetypes", () => {
+  it("defaults saved-run match priority on while preserving an explicit off choice", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    const options = { achievableOnly: false, timeLimitMs: 300000, workerLimit: 1 };
+    expect(
+      createT5SavedRun("Legacy options", config, options, [], true).options.prioritizeMatches
+    ).toBeTrue();
+    expect(
+      createT5SavedRun("Off", config, { ...options, prioritizeMatches: false }, [], true).options
+        .prioritizeMatches
+    ).toBeFalse();
+  });
+  it("creates unique slot-independent archetype-count tasks", () => {
+    const names = T5_ARCHETYPES.map((archetype) => archetype.name);
+    const tasks = createT5ArchetypeCountTasks(names);
+    expect(tasks.length).toBe(4368);
+    expect(new Set(tasks.map((task) => task.archetypes.join("/"))).size).toBe(4368);
+    expect(tasks.every((task) => task.archetypeCounts && task.archetypes.length === 5)).toBeTrue();
+    const restricted = createT5ArchetypeCountTasks(["Grenedier", "Brawler"]);
+    expect(restricted.length).toBe(6);
+    expect(
+      restricted.map((task) => task.archetypes.filter((name) => name === "Brawler").length).sort()
+    ).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(createT5ArchetypeCountTasks([])).toEqual([]);
+  });
+  it("exports profiling inputs without credentials or original item identifiers", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.characterClass = DestinyClass.Titan;
+    config.disabledItems = ["real-instance-id", ""];
+    const item = {
+      clazz: DestinyClass.Titan,
+      itemInstanceId: "real-instance-id",
+      name: "Personal item name",
+      rawData: "secret raw data",
+      archetypeStats: [0, 1, 2],
+      exoticPerkHash: [],
+      hash: 123,
+      gearSetHash: 456,
+      discipline: 20,
+      tier: 5,
+      source: 0,
+    };
+    const input = createT5ProfileInput({
+      config: { ...config, accessToken: "private-token" } as BuildConfiguration,
+      inventory: [item] as unknown as Parameters<typeof createT5ProfileInput>[0]["inventory"],
+      manifest: [item] as unknown as Parameters<typeof createT5ProfileInput>[0]["manifest"],
+      achievableOnly: false,
+    });
+    const serialized = JSON.stringify(input);
+    for (const secret of [
+      "real-instance-id",
+      "private-token",
+      "secret raw data",
+      "Personal item name",
+    ])
+      expect(serialized).not.toContain(secret);
+    expect(input.request.config.disabledItems).toEqual([
+      input.request.inventory[0].itemInstanceId,
+      "",
+    ]);
+    expect(input.request.inventory[0].discipline).toBe(20);
+    expect(input.request.inventory[0].gearSetHash).toBe(456);
+    expect(config.disabledItems).toEqual(["real-instance-id", ""]);
+  });
   it("names saved configurations consistently using subclass, exotic and class", () => {
     const config = BuildConfiguration.buildEmptyConfiguration();
     config.characterClass = DestinyClass.Titan;
@@ -40,6 +106,18 @@ describe("T5 theorizer archetypes", () => {
     );
     expect(suggestedConfigurationName(config, [])).toBe("Solar: (Selected Exotic) Titan");
     expect(suggestedConfigurationName(config, ["Long name ".repeat(20)]).length).toBe(80);
+  });
+  it("names theorizer runs from required stats, mod limits, and selected subclass modifiers", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.minimumStatTiers[ArmorStat.StatHealth] = { fixed: true, value: 10 };
+    config.minimumStatTiers[ArmorStat.StatSuper] = { fixed: false, value: 8 };
+    config.statModLimits = { maxMods: 3, maxMajorMods: 1 };
+    config.selectedModElement = ModifierType.Stasis;
+    config.enabledMods = [ModOrAbility.WhisperOfDurance];
+
+    expect(suggestedT5RunName(config)).toBe(
+      "100*/0/0/80/0/0 | Mods max 3 (1 major) | Stasis: Whisper of Durance"
+    );
   });
   it("groups tertiary and tuning arrangements beneath their archetype combination", () => {
     const base = (name: string, tertiary: ArmorStat) =>
@@ -77,6 +155,71 @@ describe("T5 theorizer archetypes", () => {
     expect(groupT5Archetypes([simple, ...flexible], "matches")[0].covered).toBe(5);
     const tie = [create(names, ArmorStat.StatHealth), simple];
     expect(groupT5Archetypes(tie)[0].archetypes.length).toBe(1);
+  });
+
+  it("retains low-coverage arrangements last and excludes them from build counts", () => {
+    const create = (name: string, tertiary: ArmorStat, covered: number) => {
+      const arrangement = t5ArrangementFromPieces(
+        Array.from({ length: 5 }, () => ({ archetype: name, tertiary }) as T5Candidate)
+      );
+      arrangement.inventoryMatch = {
+        covered,
+        owned: covered,
+        proven: true,
+        feasible: true,
+        pieces: [],
+      };
+      arrangement.covered = covered;
+      arrangement.owned = covered;
+      return arrangement;
+    };
+    const low = create("Grenedier", ArmorStat.StatHealth, 2);
+    const useful = create("Grenedier", ArmorStat.StatClass, 3);
+    const lowerGroup = [
+      create("Demolitionist", ArmorStat.StatHealth, 1),
+      create("Demolitionist", ArmorStat.StatMelee, 2),
+      create("Demolitionist", ArmorStat.StatWeapon, 0),
+    ];
+    for (const order of ["flexibility", "matches"] as const) {
+      const groups = groupT5Archetypes([low, ...lowerGroup, useful], order);
+      expect(groups.length).toBe(2);
+      expect(groups[0].arrangements.map((entry) => entry.key)).toEqual([useful.key, low.key]);
+      expect(groups[0].uncalculated).toBe(1);
+      expect(groups[1].uncalculated).toBe(0);
+    }
+    expect(groupT5Arrangements([], [low, useful]).map((entry) => entry.key)).toEqual([
+      useful.key,
+      low.key,
+    ]);
+  });
+
+  it("moves low-potential discovery tasks to the queue tail without dropping them", () => {
+    const high = { archetypes: ["Grenedier", "Grenedier", "Grenedier"] };
+    const middle = { archetypes: ["Grenedier", "Brawler", "Grenedier"] };
+    const low = { archetypes: ["Brawler", "Brawler", "Brawler"] };
+    const sources = Array.from({ length: 5 }, () => new Set(["Grenedier"]));
+    expect(prioritizeT5SearchTasks([low, middle, high], sources)).toEqual([middle, high, low]);
+    expect(
+      prioritizeT5SearchTasks(
+        [high, low],
+        sources.map(() => new Set<string>())
+      )
+    ).toEqual([high, low]);
+  });
+
+  it("does not let expanded five-match branches overtake queued three- and four-match work", () => {
+    const sources = Array.from({ length: 5 }, () => new Set(["Grenedier"]));
+    const three = { archetypes: ["Grenedier", "Brawler", "Brawler"] };
+    const four = { archetypes: ["Grenedier", "Grenedier", "Brawler"] };
+    const low = { archetypes: ["Brawler", "Brawler", "Brawler"] };
+    const child = { archetypes: ["Grenedier", "Grenedier", "Grenedier", "Grenedier"] };
+    const pending = prioritizeT5SearchTasks([low, three, four], sources);
+    expect(prioritizeT5SearchTasks([...pending, child], sources)).toEqual([
+      three,
+      four,
+      child,
+      low,
+    ]);
   });
   it("sends only newly found results and reconstructs the retained snapshot from deltas", () => {
     const first = { key: "first", covered: 0, owned: 0, pieces: [] } as unknown as T5Solution;
@@ -188,13 +331,16 @@ describe("T5 theorizer archetypes", () => {
     ]);
     expect(createT5SearchTasks([[], choices, choices])).toEqual([]);
   });
-  it("offers five, ten, fifteen minutes and unlimited, defaulting to ten minutes", () => {
-    expect(DEFAULT_T5_SEARCH_BUDGET_MS).toBe(600000);
-    expect(T5_SEARCH_BUDGETS.map((budget) => budget.value)).toEqual([300000, 600000, 900000, 0]);
+  it("offers five, ten, fifteen, twenty minutes and unlimited, defaulting to fifteen minutes", () => {
+    expect(DEFAULT_T5_SEARCH_BUDGET_MS).toBe(900000);
+    expect(T5_SEARCH_BUDGETS.map((budget) => budget.value)).toEqual([
+      300000, 600000, 900000, 1200000, 0,
+    ]);
     expect(T5_SEARCH_BUDGETS.map((budget) => budget.label)).toEqual([
       "5 minutes",
       "10 minutes",
       "15 minutes",
+      "20 minutes",
       "Unlimited",
     ]);
   });

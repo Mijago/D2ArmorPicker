@@ -2,13 +2,16 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "types": ["jasmine", "node"],
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": false,
-    "baseUrl": "./",
+    "paths": {
+      "src/*": ["./src/*"]
+    },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -18,9 +21,8 @@
     "sourceMap": true,
     "inlineSources": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "es2020",

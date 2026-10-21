@@ -183,7 +183,8 @@ export class DimService implements OnDestroy {
         config.characterClass != DestinyClass.Unknown &&
         config.selectedModElement != ModifierType.CombatStyleMod
       ) {
-        const cl = SubclassHashes[config.characterClass];
+        const classKey = config.characterClass as keyof typeof SubclassHashes;
+        const cl = SubclassHashes[classKey];
         const subclassHash = cl[config.selectedModElement];
         if (subclassHash) {
           loadout.equipped.push({

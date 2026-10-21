@@ -42,6 +42,18 @@ export const CHANGELOG_DATA: {
         type: ChangelogEntryType.ADD,
         text: "Added armor theorizer for T5 armor.",
       },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Added configurable search budgets and worker counts, live progress reporting, and prioritization of potential inventory matches to the armor theorizer.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Armor theorizer results can now be saved and restored, including partial runs.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Improved settings panels with selected stat boost summaries and section-specific reset controls.",
+      },
     ],
   },
   {
