@@ -79,6 +79,24 @@ describe("theorizer stat tier selection", () => {
     expect(component.selectedValue).toBe(100);
   });
 
+  it("limits a pending selection to the preview maximum instead of the current value", () => {
+    const logger = jasmine.createSpyObj<LoggingProxyService>("LoggingProxyService", ["debug"]);
+    const component = new StatTierSelectionComponent(logger);
+    component.verifySelection = true;
+    component.selectionPending = true;
+    component.selectionVerified = false;
+    component.selectionPreview = true;
+    component.maximumAvailableTier = 8;
+    component.selectedTier = 7.5;
+    const selected = jasmine.createSpy("selectedTierChange");
+    component.selectedTierChange.subscribe(selected);
+    component.setValueMob(80);
+    expect(selected).toHaveBeenCalledWith(8);
+    selected.calls.reset();
+    component.setValueMob(81);
+    expect(selected).not.toHaveBeenCalled();
+  });
+
   it("updates the displayed maximum and MAX action from calculated reachability", () => {
     const logger = jasmine.createSpyObj<LoggingProxyService>("LoggingProxyService", ["debug"]);
     TestBed.configureTestingModule({

@@ -8,6 +8,7 @@ import {
   t5BoundsCanReach,
   t5MaximumStats,
   t5OptimizationSolution,
+  t5PreviewLimits,
   t5StatBounds,
   t5StatCeilings,
   createT5TargetModel,
@@ -45,6 +46,76 @@ describe("dedicated T5 maxima model", () => {
     console.info("T5 live limit benchmark (two requests)", performance.now() - started);
     for (const stat of [0, 1, 2, 3, 4, 5]) config.minimumStatTiers[stat as ArmorStat].value = 20;
     expect(t5TargetLimits(config).status).toBe("infeasible");
+  });
+
+  it("keeps limits verified when one 60-tier target is raised to 70", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    for (let stat = 0; stat < 6; stat++) {
+      config.minimumStatTiers[stat as ArmorStat] = { value: 6, fixed: false };
+    }
+    expect(t5TargetLimits(config).status).toBe("feasible");
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 7;
+    const updated = t5TargetLimits(config);
+    expect(updated.status).toBe("feasible");
+  });
+
+  it("previews maxima from the balanced-free model as lower bounds of the exact limits", () => {
+    for (const [targets, mods] of [
+      [[6, 6, 6, 6, 6, 6], { maxMods: 5, maxMajorMods: 3 }],
+      [[7, 7, 7, 7, 7, 7], { maxMods: 5, maxMajorMods: 5 }],
+    ] as const) {
+      const config = BuildConfiguration.buildEmptyConfiguration();
+      config.statModLimits = { ...mods };
+      targets.forEach((value, stat) => {
+        config.minimumStatTiers[stat as ArmorStat].value = value;
+      });
+      const preview = t5PreviewLimits(config)!;
+      const exact = t5TargetLimits(config).maximum;
+      expect(preview).withContext(targets.join("/")).not.toBeNull();
+      preview.forEach((value, stat) => {
+        expect(value).toBeLessThanOrEqual(exact[stat]);
+        expect(value).toBeGreaterThan(exact[stat] - 5);
+      });
+    }
+  });
+
+  it("computes exact maxima for 90/90/90/90/0/90 with five major mods", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.statModLimits = { maxMods: 5, maxMajorMods: 5 };
+    [9, 9, 9, 9, 0, 9].forEach((value, stat) => {
+      config.minimumStatTiers[stat as ArmorStat].value = value;
+    });
+    const limits = t5TargetLimits(config);
+    expect(limits.status).toBe("feasible");
+    expect(limits.maximumComplete).toBeTrue();
+    expect(limits.maximum).toEqual([140, 140, 140, 140, 54, 140]);
+  });
+
+  it("computes exact maxima when every stat is balanced near the point budget", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    [7, 7, 7, 7, 7, 7].forEach((value, stat) => {
+      config.minimumStatTiers[stat as ArmorStat].value = value;
+    });
+    const limits = t5TargetLimits(config);
+    expect(limits.maximumComplete).toBeTrue();
+    expect(limits.maximum).toEqual([152, 152, 152, 152, 152, 152]);
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 20;
+    expect(t5TargetLimits(config).status).toBe("infeasible");
+  });
+
+  it("keeps combined Health and Weapon 70-tier targets feasible with complete maxima", () => {
+    for (const targets of [
+      [7, 6, 6, 6, 6, 7],
+      [6, 6, 6, 6, 6, 7],
+    ]) {
+      const config = BuildConfiguration.buildEmptyConfiguration();
+      targets.forEach((value, stat) => {
+        config.minimumStatTiers[stat as ArmorStat] = { value, fixed: false };
+      });
+      const limits = t5TargetLimits(config);
+      expect(limits.status).withContext(targets.join("/")).toBe("feasible");
+      expect(limits.maximumComplete).withContext(targets.join("/")).toBeTrue();
+    }
   });
 
   it("rejects holes in locked exact values and honors minor-only mod budgets", () => {

@@ -57,6 +57,8 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
   config_reduce_waste = false;
   limitsPending = true;
   limitsFeasible = false;
+  limitsMaximumComplete = false;
+  limitsPreview = false;
   limitsError?: string;
   selectionError?: string;
   validatingSelection = false;
@@ -103,6 +105,8 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
         .subscribe((state) => {
           this.limitsPending = state.pending;
           this.limitsFeasible = state.feasible;
+          this.limitsMaximumComplete = state.maximumComplete;
+          this.limitsPreview = !!state.preview;
           this.limitsError = state.error;
           this.changeDetector?.markForCheck();
         });
@@ -137,17 +141,34 @@ export class DesiredStatSelectionComponent implements OnInit, OnDestroy {
       if (!Number.isFinite(value) || value < 0 || value > 20) return;
       const selected = this.minimumStatTiers[stat];
       if (this.validatingSelection) return;
+      if (
+        this.limitsPreview &&
+        this.limitsPending &&
+        !selected.fixed &&
+        value <= this.maximumPossibleTiers[stat]
+      ) {
+        // The preview maximum is achievable, so the exact run can be dropped.
+        this.config.modifyConfiguration((c) => {
+          c.minimumStatTiers[stat].value = value;
+        });
+        return;
+      }
       if ((this.limitsPending || !this.limitsFeasible) && value > selected.value) return;
       if (
         this.limitsFeasible &&
         !this.limitsPending &&
+        this.limitsMaximumComplete &&
         !selected.fixed &&
         value <= this.maximumPossibleTiers[stat]
       ) {
         this.config.modifyConfiguration((c) => {
           c.minimumStatTiers[stat].value = value;
         });
-      } else if (value <= this.maximumPossibleTiers[stat] || value < selected.value) {
+      } else if (
+        value <= this.maximumPossibleTiers[stat] ||
+        value < selected.value ||
+        !this.limitsMaximumComplete
+      ) {
         void this.proposeTargets((c) => {
           c.minimumStatTiers[stat].value = value;
         });

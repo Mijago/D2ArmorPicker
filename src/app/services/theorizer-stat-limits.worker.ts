@@ -1,4 +1,4 @@
-import { initializeT5Optimizer, t5TargetLimits } from "./theorizer-model";
+import { initializeT5Optimizer, t5PreviewLimits, t5TargetLimits } from "./theorizer-model";
 import type { T5LimitsReply, T5LimitsRequest } from "./theorizer-model";
 
 let queue = Promise.resolve();
@@ -9,8 +9,23 @@ addEventListener("message", ({ data }: MessageEvent<T5LimitsRequest>) => {
   queue = queue.then(async () => {
     if (data.id !== latest) return;
     try {
-      await initializeT5Optimizer(data.wasmUrl);
+      // The exact solver needs no optimizer; a failed load only costs the quick preview.
+      const ready = await initializeT5Optimizer(data.wasmUrl).then(
+        () => true,
+        () => false
+      );
       if (data.id !== latest) return;
+      if (ready && !data.validateOnly) {
+        const preview = t5PreviewLimits(data.config);
+        if (preview)
+          postMessage({
+            id: data.id,
+            status: "feasible",
+            maximum: preview,
+            maximumComplete: false,
+            preview: true,
+          } satisfies T5LimitsReply);
+      }
       postMessage({
         id: data.id,
         ...t5TargetLimits(data.config, data.validateOnly),
@@ -20,6 +35,7 @@ addEventListener("message", ({ data }: MessageEvent<T5LimitsRequest>) => {
         id: data.id,
         status: "unknown",
         maximum: [],
+        maximumComplete: false,
         error: error instanceof Error ? error.message : String(error),
       } satisfies T5LimitsReply);
     }

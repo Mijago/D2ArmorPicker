@@ -6,6 +6,9 @@ export interface StatLimitsState {
   pending: boolean;
   feasible: boolean;
   maximum: number[];
+  maximumComplete: boolean;
+  /** The maximums are achievable lower bounds for the current targets, though not yet final. */
+  preview?: boolean;
   error?: string;
 }
 

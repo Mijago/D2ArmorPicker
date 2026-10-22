@@ -48,6 +48,8 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   @Input() allowUnreachableSelection = false;
   @Input() verifySelection = false;
   @Input() selectionPending = false;
+  /** Pending, but the shown maximum is already an achievable bound. */
+  @Input() selectionPreview = false;
   @Input() selectionVerified = true;
   @Input() selectedTier: number = 0;
   @Input() locked: boolean = false;
@@ -72,7 +74,11 @@ export class StatTierSelectionComponent implements OnInit, OnChanges, OnDestroy,
   private hoveredStatLine: HTMLElement | null = null;
 
   get effectiveMaximumTier(): number {
-    if (this.verifySelection && (this.selectionPending || !this.selectionVerified))
+    if (
+      this.verifySelection &&
+      !this.selectionPreview &&
+      (this.selectionPending || !this.selectionVerified)
+    )
       return this.selectedTier;
     return this.allowUnreachableSelection ? 20 : this.maximumAvailableTier;
   }

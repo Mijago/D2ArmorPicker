@@ -57,6 +57,70 @@ describe("automatic theorizer calculation", () => {
     }
   });
 
+  it("validates the reported target combinations in a real worker", async () => {
+    const worker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
+      type: "module",
+    });
+    try {
+      for (const [id, targets] of [
+        [1, [7, 6, 6, 6, 6, 7]],
+        [2, [6, 6, 6, 6, 6, 7]],
+        [3, [9, 9, 9, 9, 9, 0]],
+      ] as const) {
+        const config = BuildConfiguration.buildEmptyConfiguration();
+        targets.forEach((value, stat) => {
+          config.minimumStatTiers[stat as ArmorStat] = { value, fixed: false };
+        });
+        const reply = await new Promise<{ id: number; status: string }>((resolve, reject) => {
+          worker.onmessage = ({ data }) => resolve(data);
+          worker.onerror = (error) => reject(new Error(error.message));
+          worker.postMessage({
+            id,
+            config,
+            validateOnly: true,
+            wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+          });
+        });
+        expect(reply.id).toBe(id);
+        expect(reply.status).withContext(targets.join("/")).toBe("feasible");
+      }
+    } finally {
+      worker.terminate();
+    }
+  });
+
+  it("calculates full limits for 90/90/90/90/0/90 with five major mods in a real worker", async () => {
+    const worker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
+      type: "module",
+    });
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.statModLimits = { maxMods: 5, maxMajorMods: 5 };
+    [9, 9, 9, 9, 0, 9].forEach((value, stat) => {
+      config.minimumStatTiers[stat as ArmorStat].value = value;
+    });
+    try {
+      const reply = await new Promise<{
+        id: number;
+        status: string;
+        maximum: number[];
+        maximumComplete: boolean;
+      }>((resolve, reject) => {
+        worker.onmessage = ({ data }) => resolve(data);
+        worker.onerror = (error) => reject(new Error(error.message));
+        worker.postMessage({
+          id: 4,
+          config,
+          validateOnly: false,
+          wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+        });
+      });
+      console.info("T5 five-major worker maxima", reply);
+      expect(reply.status).toBe("feasible");
+    } finally {
+      worker.terminate();
+    }
+  }, 45000);
+
   it("enables potential-match task priority by default and allows opting out", fakeAsync(() => {
     const workers = Array.from({ length: 2 }, () => ({
       postMessage: jasmine.createSpy("postMessage"),
@@ -389,6 +453,103 @@ describe("automatic theorizer calculation", () => {
     tick(200);
   }));
 
+  it("shows preview maxima while the exact limits are still pending", fakeAsync(() => {
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const limits = new TheorizerStatLimits();
+    limits.configure(BuildConfiguration.buildEmptyConfiguration());
+    let state!: StatLimitsState;
+    limits.state.subscribe((value) => {
+      state = value;
+    });
+    tick(20);
+    const id = worker.postMessage.calls.mostRecent().args[0].id;
+    worker.onmessage!({
+      data: { id, status: "feasible", maximum: [150, 150, 150, 150, 150, 150], preview: true },
+    } as MessageEvent);
+    expect(state.pending).toBeTrue();
+    expect(state.feasible).toBeFalse();
+    expect(state.maximum).toEqual([150, 150, 150, 150, 150, 150]);
+    worker.onmessage!({
+      data: {
+        id,
+        status: "feasible",
+        maximum: [152, 152, 152, 152, 152, 152],
+        maximumComplete: true,
+      },
+    } as MessageEvent);
+    expect(state.pending).toBeFalse();
+    expect(state.feasible).toBeTrue();
+    expect(state.maximum[0]).toBe(152);
+    limits.destroy();
+  }));
+
+  it("drops the exact run when a new request supersedes it", fakeAsync(() => {
+    const workers = Array.from({ length: 2 }, () => ({
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: jasmine.createSpy("terminate"),
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    }));
+    spyOn(window, "Worker").and.returnValues(...workers.map((w) => w as unknown as Worker));
+    const limits = new TheorizerStatLimits();
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    limits.configure(config);
+    let state!: StatLimitsState;
+    limits.state.subscribe((value) => {
+      state = value;
+    });
+    tick(20);
+    workers[0].onmessage!({
+      data: {
+        id: workers[0].postMessage.calls.mostRecent().args[0].id,
+        status: "feasible",
+        maximum: [150, 150, 150, 150, 150, 150],
+        preview: true,
+      },
+    } as MessageEvent);
+    expect(state.preview).toBeTrue();
+    config.minimumStatTiers[ArmorStat.StatHealth].value = 10;
+    limits.configure(config);
+    expect(workers[0].terminate).toHaveBeenCalled();
+    expect(state.preview).toBeFalse();
+    tick(20);
+    expect(workers[1].postMessage).toHaveBeenCalled();
+    limits.destroy();
+  }));
+
+  it("keeps feasible targets verified when only some maxima are available", fakeAsync(() => {
+    const worker = {
+      postMessage: jasmine.createSpy("postMessage"),
+      terminate: () => undefined,
+      onmessage: undefined as ((event: MessageEvent) => void) | undefined,
+    };
+    spyOn(window, "Worker").and.returnValue(worker as unknown as Worker);
+    const limits = new TheorizerStatLimits();
+    limits.configure(BuildConfiguration.buildEmptyConfiguration());
+    let state!: StatLimitsState;
+    limits.state.subscribe((value) => {
+      state = value;
+    });
+    tick(20);
+    worker.onmessage!({
+      data: {
+        id: worker.postMessage.calls.mostRecent().args[0].id,
+        status: "feasible",
+        maximum: [191, 181, 0, 0, 0, 0],
+        maximumComplete: false,
+      },
+    } as MessageEvent);
+    expect(state.feasible).toBeTrue();
+    expect(state.maximumComplete).toBeFalse();
+    expect(state.maximum).toEqual([191, 181, 200, 200, 200, 200]);
+    expect(state.error).toContain("Target checks remain available");
+    limits.destroy();
+  }));
+
   it("keeps unknown limits unverified and recovers on retry without discarding prior maxima", fakeAsync(() => {
     const worker = {
       postMessage: jasmine.createSpy("postMessage"),
@@ -405,7 +566,12 @@ describe("automatic theorizer calculation", () => {
     });
     const reply = (status: string, maximum: number[]) =>
       worker.onmessage!({
-        data: { id: worker.postMessage.calls.mostRecent().args[0].id, status, maximum },
+        data: {
+          id: worker.postMessage.calls.mostRecent().args[0].id,
+          status,
+          maximum,
+          maximumComplete: status === "feasible",
+        },
       } as MessageEvent);
     tick(20);
     reply("feasible", [150, 150, 200, 150, 150, 150]);

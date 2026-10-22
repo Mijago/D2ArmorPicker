@@ -70,6 +70,10 @@ export const CHANGELOG_DATA: {
         type: ChangelogEntryType.MODIFIED,
         text: "Armor theorizer allows requested builds to wait for matching to finish.",
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor theorizer stat limits are calculated exactly, including balanced tuning.",
+      },
     ],
   },
   {

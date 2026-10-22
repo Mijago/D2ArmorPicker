@@ -20,6 +20,7 @@ import {
 } from "../data/theorizer";
 import { InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { Tuning } from "../data/types/IPermutatorArmorSet";
+import { t5ExactLimits } from "./theorizer-exact-limits";
 
 interface ModelDefinition {
   optimize: string;
@@ -173,6 +174,7 @@ export function t5StatBonuses(config: BuildConfiguration): number[] {
 export interface T5TargetLimits {
   status: "feasible" | "infeasible" | "unknown";
   maximum: number[];
+  maximumComplete: boolean;
 }
 
 export interface T5LimitsRequest {
@@ -185,9 +187,14 @@ export interface T5LimitsRequest {
 export interface T5LimitsReply extends T5TargetLimits {
   id: number;
   error?: string;
+  /** Fast lower bounds from a model without balanced rolls; the exact reply follows. */
+  preview?: boolean;
 }
 
-export function createT5TargetModel(config: BuildConfiguration): ModelDefinition {
+export function createT5TargetModel(
+  config: BuildConfiguration,
+  includeBalanced = true
+): ModelDefinition {
   const bonuses = t5StatBonuses(config);
   const model: ModelDefinition = {
     optimize: "score",
@@ -203,6 +210,18 @@ export function createT5TargetModel(config: BuildConfiguration): ModelDefinition
     ints: {},
     options: { timeout: 1000 },
   };
+  const maxMods = Math.max(0, config.statModLimits.maxMods);
+  const maxMajorMods = Math.max(0, Math.min(maxMods, config.statModLimits.maxMajorMods));
+  // Five balanced, masterworked pieces contribute 465 points; mods add 5 per slot plus 5 per major.
+  const totalStatBudget = 465 + 5 * maxMods + 5 * maxMajorMods;
+  const targetMinimums = Array.from({ length: 6 }, (_, stat) =>
+    Math.max(0, Math.round(config.minimumStatTiers[stat as ArmorStat].value * 10) - bonuses[stat])
+  );
+  const targetMaximums = targetMinimums.map(
+    (_, stat) =>
+      totalStatBudget -
+      targetMinimums.reduce((sum, minimum, other) => sum + (other === stat ? 0 : minimum), 0)
+  );
   const add = (name: string, values: Record<string, number>) => {
     model.variables[name] = values;
     model.ints![name] = 1;
@@ -210,7 +229,7 @@ export function createT5TargetModel(config: BuildConfiguration): ModelDefinition
   for (const [index, archetype] of T5_ARCHETYPES.entries()) {
     for (const tertiary of t5Tertiaries(archetype)) {
       const base = t5BaseStats(archetype, tertiary);
-      for (const balanced of [false, true]) {
+      for (const balanced of includeBalanced ? [false, true] : [false]) {
         const values: Record<string, number> = { pieces: 1, tuningSlots: Number(balanced) };
         base.forEach((value, stat) => {
           values[`stat_${stat}`] = value || 5 + Number(balanced);
@@ -222,8 +241,14 @@ export function createT5TargetModel(config: BuildConfiguration): ModelDefinition
   for (let stat = 0; stat < 6; stat++) {
     const target = config.minimumStatTiers[stat as ArmorStat];
     model.constraints[`stat_${stat}`] = target.fixed
-      ? { equal: Math.round(target.value * 10) - bonuses[stat] }
-      : { min: Math.round(target.value * 10) - bonuses[stat] };
+      ? {
+          equal: Math.round(target.value * 10) - bonuses[stat],
+          max: targetMaximums[stat],
+        }
+      : {
+          min: Math.round(target.value * 10) - bonuses[stat],
+          max: targetMaximums[stat],
+        };
     model.constraints[`distinct_${stat}`] = { max: 0 };
     const up: Record<string, number> = { [`stat_${stat}`]: 5, tuningSlots: 1, directions: 1 };
     for (let other = 0; other < 6; other++) up[`distinct_${other}`] = other === stat ? 0 : -1;
@@ -232,27 +257,93 @@ export function createT5TargetModel(config: BuildConfiguration): ModelDefinition
     add(`minor_${stat}`, { [`stat_${stat}`]: 5, mods: 1 });
     add(`major_${stat}`, { [`stat_${stat}`]: 10, mods: 1, major: 1 });
   }
+  for (const variable of Object.values(model.variables)) {
+    variable["totalStatPoints"] = Array.from(
+      { length: 6 },
+      (_, stat) => variable[`stat_${stat}`] ?? 0
+    ).reduce((sum, value) => sum + value, 0);
+  }
+  model.constraints["totalStatPoints"] = { max: totalStatBudget };
   return model;
 }
 
-export function t5TargetLimits(config: BuildConfiguration, validateOnly = false): T5TargetLimits {
-  const model = createT5TargetModel(config);
+export function t5PreviewLimits(config: BuildConfiguration): number[] | null {
+  const model = createT5TargetModel(config, false);
   const bonuses = t5StatBonuses(config);
   const maximum = Array<number>(6).fill(0);
-  const feasible = solveModel(model);
-  if (!feasible.feasible)
-    return { status: feasible["optimal"] ? "infeasible" : "unknown", maximum };
-  if (validateOnly) return { status: "feasible", maximum };
+  const deadline = performance.now() + 600;
+  model.options = { ...model.options, timeout: 300 };
   for (let stat = 0; stat < 6; stat++) {
+    const selectedTarget = config.minimumStatTiers[stat as ArmorStat];
+    if (selectedTarget.fixed) {
+      maximum[stat] = Math.round(selectedTarget.value * 10);
+      continue;
+    }
     const constraint = model.constraints[`stat_${stat}`];
-    model.constraints[`stat_${stat}`] = { min: -bonuses[stat] };
+    model.constraints[`stat_${stat}`] = { min: -bonuses[stat], max: constraint.max };
     model.optimize = `stat_${stat}`;
     const solved = solveModel(model);
     model.constraints[`stat_${stat}`] = constraint;
-    if (!solved.feasible || !solved["optimal"]) return { status: "unknown", maximum };
+    if (!solved.feasible || !solved["optimal"] || performance.now() > deadline) return null;
     maximum[stat] = Math.max(0, Math.min(200, Math.round(solved.result + bonuses[stat])));
   }
-  return { status: "feasible", maximum };
+  return maximum;
+}
+
+export function t5TargetLimits(config: BuildConfiguration, validateOnly = false): T5TargetLimits {
+  const bonuses = t5StatBonuses(config);
+  const stats = [0, 1, 2, 3, 4, 5] as ArmorStat[];
+  const exact = t5ExactLimits(
+    {
+      minimums: stats.map(
+        (stat) => Math.round(config.minimumStatTiers[stat].value * 10) - bonuses[stat]
+      ),
+      fixed: stats.map((stat) => config.minimumStatTiers[stat].fixed),
+      maxMods: config.statModLimits.maxMods,
+      maxMajorMods: config.statModLimits.maxMajorMods,
+    },
+    bonuses,
+    stats.map((stat) => Math.round(config.minimumStatTiers[stat].value * 10)),
+    validateOnly
+  );
+  if (exact)
+    return {
+      status: exact.feasible ? "feasible" : "infeasible",
+      maximum: exact.maximum,
+      maximumComplete: exact.feasible && !validateOnly,
+    };
+  const model = createT5TargetModel(config);
+  if (validateOnly) model.options = { ...model.options, timeout: 5000 };
+  const maximum = Array<number>(6).fill(0);
+  const feasible = solveModel(model);
+  if (!feasible.feasible)
+    return {
+      status: feasible["optimal"] ? "infeasible" : "unknown",
+      maximum,
+      maximumComplete: false,
+    };
+  if (validateOnly) return { status: "feasible", maximum, maximumComplete: false };
+  for (let stat = 0; stat < 6; stat++) {
+    const constraint = model.constraints[`stat_${stat}`];
+    const selectedTarget = config.minimumStatTiers[stat as ArmorStat];
+    if (selectedTarget.fixed) {
+      maximum[stat] = Math.round(selectedTarget.value * 10);
+      continue;
+    }
+    model.constraints[`stat_${stat}`] = { min: -bonuses[stat], max: constraint.max };
+    model.optimize = `stat_${stat}`;
+    model.options = {
+      ...model.options,
+      timeout: config.statModLimits.maxMods > 0 && selectedTarget.value === 0 ? 30000 : 1000,
+    };
+    const solved = solveModel(model);
+    model.options = { ...model.options, timeout: 1000 };
+    model.constraints[`stat_${stat}`] = constraint;
+    if (!solved.feasible || !solved["optimal"])
+      return { status: "feasible", maximum, maximumComplete: false };
+    maximum[stat] = Math.max(0, Math.min(200, Math.round(solved.result + bonuses[stat])));
+  }
+  return { status: "feasible", maximum, maximumComplete: true };
 }
 
 export function t5RollStats(item: T5Candidate, config: BuildConfiguration): number[] {

@@ -22,6 +22,7 @@ describe("verified theorizer target selection", () => {
       pending: false,
       feasible: true,
       maximum: [150, 150, 200, 150, 150, 150],
+      maximumComplete: true,
     });
     const validateTargets = jasmine.createSpy("validateTargets").and.resolveTo(false);
     const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>("changeDetector", [
@@ -78,6 +79,28 @@ describe("verified theorizer target selection", () => {
     limits.next({ ...limits.value, pending: true });
     component.setSelectedTier(ArmorStat.StatMelee, 10);
     expect(configuration.value.minimumStatTiers[ArmorStat.StatMelee].value).toBe(0);
+    component.ngOnDestroy();
+  });
+
+  it("validates target increases against the worker when maxima are incomplete", async () => {
+    const { component, configuration, limits, validateTargets } = create();
+    limits.next({ ...limits.value, maximumComplete: false });
+    component.setSelectedTier(ArmorStat.StatHealth, 16);
+    await Promise.resolve();
+    expect(validateTargets).toHaveBeenCalled();
+    expect(configuration.value.minimumStatTiers[ArmorStat.StatHealth].value).toBe(0);
+    expect(component.selectionError).toBeDefined();
+    component.ngOnDestroy();
+  });
+
+  it("accepts increases within a preview maximum without waiting for the exact limits", () => {
+    const { component, configuration, limits, validateTargets } = create();
+    limits.next({ ...limits.value, pending: true, feasible: false, preview: true });
+    component.setSelectedTier(ArmorStat.StatMelee, 15);
+    expect(configuration.value.minimumStatTiers[ArmorStat.StatMelee].value).toBe(15);
+    expect(validateTargets).not.toHaveBeenCalled();
+    component.setSelectedTier(ArmorStat.StatMelee, 16);
+    expect(configuration.value.minimumStatTiers[ArmorStat.StatMelee].value).toBe(15);
     component.ngOnDestroy();
   });
 
