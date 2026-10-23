@@ -52,6 +52,10 @@ let runtime: {
 // Cancellation flag, controlled via messages from the main thread
 let cancelRequested = false;
 
+// Per-stat ceiling from the theoretical T5 pieces; arrives asynchronously after the request starts.
+let theoreticalMaximumTiers: number[] | null = null;
+const currentTheoreticalMaximum = () => theoreticalMaximumTiers;
+
 // Module-level configuration to avoid passing around
 let assumeEveryLegendaryIsArtifice: boolean;
 let assumeEveryExoticIsArtifice: boolean;
@@ -666,6 +670,8 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
 
   // Reset runtime state for this calculation
   runtime.maximumPossibleTiers = [0, 0, 0, 0, 0, 0];
+  theoreticalMaximumTiers = null;
+  const stopAtTheoreticalMaximum = config.stopAtTheoreticalMaximum !== false;
 
   // Initialize module-level constants directly from config
   enabledModBonuses = computeEnabledModBonuses(config);
@@ -809,15 +815,20 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       break;
     }
 
-    if (
-      resultLimitReached &&
-      (noTargetMaximumTiers || runtime.maximumPossibleTiers.every((tier) => tier >= 200))
-    ) {
-      stoppedEarlyAtMaxTier = runtime.maximumPossibleTiers.every((tier) => tier >= 200);
-      console.log(
-        `Thread #${threadSplit.current} reached result limit and maximum possible tiers are all 200, stopping calculation early.`
-      );
-      break;
+    if (resultLimitReached) {
+      const theoretical = currentTheoreticalMaximum();
+      const atTheoreticalMaximum =
+        stopAtTheoreticalMaximum &&
+        theoretical !== null &&
+        runtime.maximumPossibleTiers.every((tier, stat) => tier >= theoretical[stat]);
+      const atMaximumTier = runtime.maximumPossibleTiers.every((tier) => tier >= 200);
+      if (noTargetMaximumTiers || atMaximumTier || atTheoreticalMaximum) {
+        stoppedEarlyAtMaxTier = atMaximumTier || atTheoreticalMaximum;
+        console.log(
+          `Thread #${threadSplit.current} reached result limit and every stat is at its maximum possible value, stopping calculation early.`
+        );
+        break;
+      }
     }
 
     checkedCalculations++;
@@ -968,6 +979,10 @@ addEventListener("message", async ({ data }) => {
       case "cancel":
         // Request graceful cancellation; the main loop checks this flag
         cancelRequested = true;
+        break;
+      case "theoreticalMaximum":
+        if (Array.isArray(data.tiers) && data.tiers.length === 6)
+          theoreticalMaximumTiers = data.tiers;
         break;
       default:
         console.warn(`Unknown message type: ${data.type}`);

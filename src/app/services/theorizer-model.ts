@@ -182,6 +182,10 @@ export interface T5LimitsRequest {
   config: BuildConfiguration;
   validateOnly: boolean;
   wasmUrl: string;
+  /** Skip the HiGHS preview and optimizer load; only the exact limits are computed. */
+  exactOnly?: boolean;
+  /** Defaults to true; false models builds without T5 tuning. */
+  tuning?: boolean;
 }
 
 export interface T5LimitsReply extends T5TargetLimits {
@@ -290,7 +294,11 @@ export function t5PreviewLimits(config: BuildConfiguration): number[] | null {
   return maximum;
 }
 
-export function t5TargetLimits(config: BuildConfiguration, validateOnly = false): T5TargetLimits {
+export function t5TargetLimits(
+  config: BuildConfiguration,
+  validateOnly = false,
+  tuning = true
+): T5TargetLimits {
   const bonuses = t5StatBonuses(config);
   const stats = [0, 1, 2, 3, 4, 5] as ArmorStat[];
   const exact = t5ExactLimits(
@@ -301,6 +309,7 @@ export function t5TargetLimits(config: BuildConfiguration, validateOnly = false)
       fixed: stats.map((stat) => config.minimumStatTiers[stat].fixed),
       maxMods: config.statModLimits.maxMods,
       maxMajorMods: config.statModLimits.maxMajorMods,
+      tuning,
     },
     bonuses,
     stats.map((stat) => Math.round(config.minimumStatTiers[stat].value * 10)),

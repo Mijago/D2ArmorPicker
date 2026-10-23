@@ -12,6 +12,8 @@ export interface T5ExactInput {
   fixed: boolean[];
   maxMods: number;
   maxMajorMods: number;
+  /** Defaults to true; false removes directional +5/-5 tuning but keeps balanced pieces. */
+  tuning?: boolean;
 }
 
 interface PieceType {
@@ -55,7 +57,8 @@ function allocate(
   if (forced > tunings) return -Infinity;
   let required = 0;
   for (const { need } of deficits) required += need;
-  if (required > mods + majors + Math.min(tunings, forced + donors)) return -Infinity;
+  // The maximized stat can also donate tunings, so only mods and tunings bound the deficit.
+  if (required > mods + majors + tunings) return -Infinity;
   const jSize = majors + 1;
   const uSize = tunings + 1;
   let current = new Uint8Array((mods + 1) * jSize * uSize);
@@ -117,6 +120,7 @@ export function t5ExactMaximum(
   const picked = [0, 0, 0, 0, 0];
   const needs = [0, 0, 0, 0, 0];
   const otherFixed = others.map((other) => input.fixed[other]);
+  const directionalSlots = input.tuning === false ? 0 : 5;
   let best = -Infinity;
 
   const bonus = new Int32Array(6);
@@ -139,7 +143,7 @@ export function t5ExactMaximum(
         const base = picked[piece] * 6;
         for (let low = 0; low < 6; low++) bonus[low] += lowFlat[base + low];
       }
-      const tunings = 5 - balanced;
+      const tunings = directionalSlots > 0 ? directionalSlots - balanced : 0;
       let key = tunings;
       let valid = true;
       let deficit = 0;
@@ -162,8 +166,8 @@ export function t5ExactMaximum(
         else donors += Math.min(tunings, -need);
       }
       if (!valid) continue;
+      if (deficit > mods + majors + tunings) continue;
       const supply = mods + majors + Math.min(tunings, donors);
-      if (deficit > supply) continue;
       if (sums[stat] + bonus[stat] + 5 * (supply - deficit) <= best) continue;
       let units = cache.get(key);
       if (units === undefined) {
@@ -194,7 +198,7 @@ export function t5ExactMaximum(
     for (let index = 0; index < 5; index++) key = key * span + needs[index] + 6;
     let units = optimistic[key];
     if (units === UNKNOWN) {
-      const solved = allocate(needs, unfixed, 5, mods, majors);
+      const solved = allocate(needs, unfixed, directionalSlots, mods, majors);
       units = solved === -Infinity ? IMPOSSIBLE : solved;
       optimistic[key] = units;
     }

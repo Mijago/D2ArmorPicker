@@ -127,6 +127,31 @@ describe("advanced and performance settings", () => {
     component.ngOnDestroy();
   });
 
+  it("offers a max workers dropdown only for the main calculator and resets it", () => {
+    const main = create("performance");
+    const theorizer = create("performance", true);
+    const field = main.component.fields2["Calculation Performance & Results"].find(
+      (entry) => entry.name === "Max workers to use"
+    )!;
+    expect(field.type).toBe("dropdown");
+    if (field.type === "dropdown") {
+      expect(field.value).toBe(0);
+      expect(field.options[0].label).toMatch(/^Auto \(\d+\)$/);
+      expect(field.options.slice(1).every((option) => option.value > 0)).toBeTrue();
+      field.onSelect(4);
+    }
+    expect(main.configuration.maxWorkers).toBe(4);
+    main.component.resetAdvancedSettings();
+    expect(main.configuration.maxWorkers).toBe(0);
+    expect(
+      (theorizer.component.fields2["Calculation Performance & Results"] ?? []).some(
+        (entry) => entry.name === "Max workers to use"
+      )
+    ).toBeFalse();
+    main.component.ngOnDestroy();
+    theorizer.component.ngOnDestroy();
+  });
+
   it("resets each section without resetting the other section", () => {
     const defaults = BuildConfiguration.buildEmptyConfiguration();
     for (const section of ["advanced", "performance"] as const) {
@@ -136,6 +161,7 @@ describe("advanced and performance settings", () => {
       configuration.calculateTierFiveTuning = !defaults.calculateTierFiveTuning;
       configuration.foldSameStatDifferentGearSets = !defaults.foldSameStatDifferentGearSets;
       configuration.parsedResultLimit = defaults.parsedResultLimit + 10000;
+      configuration.stopAtTheoreticalMaximum = !defaults.stopAtTheoreticalMaximum;
       configuration.addConstent1Health = !defaults.addConstent1Health;
       component.resetAdvancedSettings();
       expect(configuration.useEventArmor).toBe(EventArmorType.GuardianGames);
@@ -155,6 +181,9 @@ describe("advanced and performance settings", () => {
       );
       expect(configuration.parsedResultLimit).toBe(
         defaults.parsedResultLimit + (performanceReset ? 0 : 10000)
+      );
+      expect(configuration.stopAtTheoreticalMaximum).toBe(
+        performanceReset ? defaults.stopAtTheoreticalMaximum : !defaults.stopAtTheoreticalMaximum
       );
       expect(configuration.addConstent1Health).toBe(
         performanceReset ? !defaults.addConstent1Health : defaults.addConstent1Health

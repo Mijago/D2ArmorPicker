@@ -10,10 +10,12 @@ addEventListener("message", ({ data }: MessageEvent<T5LimitsRequest>) => {
     if (data.id !== latest) return;
     try {
       // The exact solver needs no optimizer; a failed load only costs the quick preview.
-      const ready = await initializeT5Optimizer(data.wasmUrl).then(
-        () => true,
-        () => false
-      );
+      const ready = data.exactOnly
+        ? false
+        : await initializeT5Optimizer(data.wasmUrl).then(
+            () => true,
+            () => false
+          );
       if (data.id !== latest) return;
       if (ready && !data.validateOnly) {
         const preview = t5PreviewLimits(data.config);
@@ -28,7 +30,7 @@ addEventListener("message", ({ data }: MessageEvent<T5LimitsRequest>) => {
       }
       postMessage({
         id: data.id,
-        ...t5TargetLimits(data.config, data.validateOnly),
+        ...t5TargetLimits(data.config, data.validateOnly, data.tuning ?? true),
       } satisfies T5LimitsReply);
     } catch (error) {
       postMessage({

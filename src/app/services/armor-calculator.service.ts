@@ -46,6 +46,8 @@ import { calculateCPUConcurrency } from "../data/commonFunctions";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 import { EventArmorType } from "../data/enum/event-armor-type";
 import { ArmorSystem } from "../data/types/IManifestArmor";
+import { environment } from "../../environments/environment";
+import type { T5LimitsReply, T5LimitsRequest } from "./theorizer-model";
 import { combineLatest, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, catchError, startWith } from "rxjs/operators";
 import { of } from "rxjs";
@@ -146,6 +148,7 @@ export class ArmorCalculatorService implements OnDestroy {
 
   // Static properties for calculation state
   private static workers: Worker[] = [];
+  private static theoreticalWorker?: Worker;
   private static results: IPermutatorArmorSet[] = [];
   private static savedResultsCount = 0;
   private static totalPermutationsCount = 0;
@@ -377,6 +380,8 @@ export class ArmorCalculatorService implements OnDestroy {
   }
 
   private killWorkers() {
+    ArmorCalculatorService.theoreticalWorker?.terminate();
+    ArmorCalculatorService.theoreticalWorker = undefined;
     if (ArmorCalculatorService.workers.length > 0) {
       this.logger.debug("ArmorCalculatorService", "killWorkers", "Terminating all workers");
       ArmorCalculatorService.workers.forEach((w) => {
@@ -456,6 +461,62 @@ export class ArmorCalculatorService implements OnDestroy {
     }, 10000);
   }
 
+  // Armor that can add artifice mods may legitimately exceed the theoretical T5 maximum.
+  private static theoreticalSlack(config: BuildConfiguration, items: IPermutatorArmor[]): number {
+    const artificeSlots = new Set<ArmorSlot>();
+    for (const item of items) {
+      const assumed =
+        item.armorSystem === ArmorSystem.Armor2 &&
+        (item.isExotic
+          ? config.assumeEveryExoticIsArtifice
+          : config.assumeEveryLegendaryIsArtifice ||
+            (item.slot === ArmorSlot.ArmorSlotClass && config.assumeClassItemIsArtifice));
+      if (item.perk === ArmorPerkOrSlot.SlotArtifice || assumed) artificeSlots.add(item.slot);
+    }
+    return 3 * artificeSlots.size + (config.addConstent1Health ? 1 : 0);
+  }
+
+  private static startTheoreticalMaximum(
+    config: BuildConfiguration,
+    items: IPermutatorArmor[],
+    builders: Worker[]
+  ): void {
+    ArmorCalculatorService.theoreticalWorker?.terminate();
+    const limitsWorker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
+      type: "module",
+    });
+    ArmorCalculatorService.theoreticalWorker = limitsWorker;
+    const slack = ArmorCalculatorService.theoreticalSlack(config, items);
+    const finish = () => {
+      limitsWorker.terminate();
+      if (ArmorCalculatorService.theoreticalWorker === limitsWorker)
+        ArmorCalculatorService.theoreticalWorker = undefined;
+    };
+    limitsWorker.onmessage = ({ data }: MessageEvent<T5LimitsReply>) => {
+      if (data.status === "feasible" && data.maximumComplete && !data.preview) {
+        const tiers = data.maximum.map((value) => Math.min(200, value + slack));
+        for (const builder of builders) {
+          // Only the builders of this run; a newer run replaces the array.
+          if (ArmorCalculatorService.workers.includes(builder))
+            builder.postMessage({ type: "theoreticalMaximum", tiers });
+        }
+      }
+      finish();
+    };
+    limitsWorker.onerror = finish;
+    limitsWorker.postMessage({
+      id: 1,
+      // The builders ignore the mod-slot limits while this feature flag is off.
+      config: environment.featureFlags.enableModslotLimitation
+        ? config
+        : { ...config, statModLimits: { maxMods: 5, maxMajorMods: 5 } },
+      validateOnly: false,
+      exactOnly: true,
+      tuning: config.calculateTierFiveTuning,
+      wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+    } satisfies T5LimitsRequest);
+  }
+
   private static estimateRequiredThreads(
     config: BuildConfiguration,
     permutatorArmorItems: IPermutatorArmor[]
@@ -493,7 +554,10 @@ export class ArmorCalculatorService implements OnDestroy {
     const nthreads = Math.min(
       Math.max(1, Math.ceil(estimatedCalculations / minimumCalculationPerThread)),
       Math.ceil(estimatedCalculations / maximumCalculationPerThread),
-      calculateCPUConcurrency(), // estimated physical cores minus 1, minimum of 3 for desktop
+      // A selected worker count replaces the estimate of physical cores minus one.
+      Math.floor(config.maxWorkers) > 0
+        ? Math.min(64, Math.floor(config.maxWorkers))
+        : calculateCPUConcurrency(),
       largestArmorBucket // limit it to the largest armor bucket, as we will split the work by this value
     );
 
@@ -1881,6 +1945,10 @@ export class ArmorCalculatorService implements OnDestroy {
           selectedExotics: ArmorCalculatorService.selectedExotics,
         });
       }
+      if (config.stopAtTheoreticalMaximum !== false)
+        ArmorCalculatorService.startTheoreticalMaximum(config, permutatorArmorItems, [
+          ...ArmorCalculatorService.workers,
+        ]);
     } catch (error) {
       this.logger.error(
         "ArmorCalculatorService",

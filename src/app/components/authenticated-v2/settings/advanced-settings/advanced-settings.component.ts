@@ -21,6 +21,7 @@ import { ConfigurationService } from "../../../../services/configuration.service
 import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { BuildConfiguration } from "../../../../data/buildConfiguration";
+import { calculateCPUConcurrency } from "../../../../data/commonFunctions";
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -129,6 +130,8 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           configuration.calculateTierFiveTuning = defaults.calculateTierFiveTuning;
           configuration.foldSameStatDifferentGearSets = defaults.foldSameStatDifferentGearSets;
           configuration.parsedResultLimit = defaults.parsedResultLimit;
+          configuration.stopAtTheoreticalMaximum = defaults.stopAtTheoreticalMaximum;
+          configuration.maxWorkers = defaults.maxWorkers;
           return;
         }
         for (const field of inventorySettings) {
@@ -148,6 +151,10 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    const automaticWorkers = calculateCPUConcurrency();
+    const workerOptions = [
+      ...new Set([1, 2, 3, 4, 6, 7, 8, 12, 15, 16, 24, 31, 32, automaticWorkers]),
+    ].sort((first, second) => first - second);
     this.config.configuration.pipe(takeUntil(this.ngUnsubscribe)).subscribe((c) => {
       this.fields2 = {
         Inventory: inventorySettings
@@ -288,6 +295,41 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             help: "Limits how many results are retained to reduce calculation time and prevent Out-Of-Memory crashes. Unlimited may crash your browser. You will not miss the most significant results with a set limit.",
             description: "Maximum number of results retained.",
           },
+          ...(this.config.isTheorizer
+            ? []
+            : [
+                {
+                  name: "Max workers to use",
+                  type: "dropdown" as const,
+                  description: "Workers",
+                  value: Number.isFinite(c.maxWorkers) ? c.maxWorkers : 0,
+                  options: [
+                    { value: 0, label: `Auto (${automaticWorkers})` },
+                    ...workerOptions.map((count) => ({ value: count, label: String(count) })),
+                  ],
+                  onSelect: (value: number) =>
+                    this.config.modifyConfiguration((config) => (config.maxWorkers = value)),
+                  disabled: false,
+                  impactsResultCount: false,
+                  help: `The most worker threads used for the calculation. Auto uses ${automaticWorkers} (the browser reports ${navigator.hardwareConcurrency || 4} logical processors). Fewer workers keep the machine responsive; more can be faster on powerful CPUs.`,
+                },
+              ]),
+          ...(this.config.isTheorizer
+            ? []
+            : [
+                {
+                  name: "Stop additional maximum armor calculation if it matches theoretical max",
+                  type: "boolean" as const,
+                  onToggle: (v: boolean) =>
+                    this.config.modifyConfiguration((c) => (c.stopAtTheoreticalMaximum = v)),
+                  value: c.stopAtTheoreticalMaximum,
+                  disabled: false,
+                  impactsResultCount: false,
+                  help: "After the result limit is reached, the calculation keeps searching your armor for the highest possible stat values. When enabled, it finishes early once those values equal the maximum the theoretical T5 armor could reach. Disable this if your inventory contains armor that can exceed the theoretical maximum.",
+                  description:
+                    "Stop searching for higher stat maximums once the theoretical maximum is matched.",
+                },
+              ]),
           //   {
           //     name: "High-Speed mode: Only check one class item for each permutation",
           //     type: "boolean",

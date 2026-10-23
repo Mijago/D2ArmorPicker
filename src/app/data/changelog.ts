@@ -74,6 +74,14 @@ export const CHANGELOG_DATA: {
         type: ChangelogEntryType.MODIFIED,
         text: "Armor theorizer stat limits are calculated exactly, including balanced tuning.",
       },
+      {
+        type: ChangelogEntryType.ADD,
+        text: 'Added the setting "Stop additional maximum armor calculation if it matches theoretical max" (enabled by default). Once the result limit is reached, the calculator finishes early when the maximum stats found for your armor equal the theoretical T5 maximum.',
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: 'Added a "Max workers to use" setting to Calculation Performance & Results to choose how many worker threads the calculator uses.',
+      },
     ],
   },
   {

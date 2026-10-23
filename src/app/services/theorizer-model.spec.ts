@@ -79,6 +79,31 @@ describe("dedicated T5 maxima model", () => {
     }
   });
 
+  it("models builds without directional tuning but keeps balanced pieces", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    config.statModLimits = { maxMods: 0, maxMajorMods: 0 };
+    expect(t5TargetLimits(config).maximum).toEqual(Array(6).fill(175));
+    expect(t5TargetLimits(config, false, false).maximum).toEqual(Array(6).fill(150));
+    [7.5, 7.5, 7.5, 7.5, 7.5, 7.5].forEach((value, stat) => {
+      config.minimumStatTiers[stat as ArmorStat].value = value;
+    });
+    // Balanced pieces alone cannot lift every stat past 75, and without tuning no stat can be traded.
+    expect(t5TargetLimits(config, false, false).status).toBe("infeasible");
+  });
+
+  it("keeps maxima and feasibility consistent when the free stat must donate tunings", () => {
+    const config = BuildConfiguration.buildEmptyConfiguration();
+    [0, 0, 7, 10, 7, 20].forEach((value, stat) => {
+      config.minimumStatTiers[stat as ArmorStat].value = value;
+    });
+    const limits = t5TargetLimits(config);
+    expect(limits.maximum[ArmorStat.StatMelee]).toBe(60);
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 6;
+    expect(t5TargetLimits(config, true).status).toBe("feasible");
+    config.minimumStatTiers[ArmorStat.StatMelee].value = 7;
+    expect(t5TargetLimits(config, true).status).toBe("infeasible");
+  });
+
   it("computes exact maxima for 90/90/90/90/0/90 with five major mods", () => {
     const config = BuildConfiguration.buildEmptyConfiguration();
     config.statModLimits = { maxMods: 5, maxMajorMods: 5 };

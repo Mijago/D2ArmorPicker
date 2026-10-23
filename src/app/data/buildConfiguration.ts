@@ -144,6 +144,8 @@ export class BuildConfiguration {
   modOptimizationStrategy: ModOptimizationStrategy = ModOptimizationStrategy.None;
   parsedResultLimit = 30_000; // Zero disables the limit and resets to 30,000 on reload.
   earlyAbortClassItems = true; // High-Speed setting
+  stopAtTheoreticalMaximum = true; // Stop the maximum-stat search once the theoretical pieces' maximum is found.
+  maxWorkers = 0; // Zero uses the automatic worker count.
   foldSameStatDifferentGearSets = true;
   tryLimitWastedStats = false;
   onlyShowResultsWithNoWastedStats = false;
@@ -184,6 +186,8 @@ export class BuildConfiguration {
       assumeExoticsMasterworked: true,
       parsedResultLimit: 30_000,
       earlyAbortClassItems: true,
+      stopAtTheoreticalMaximum: true,
+      maxWorkers: 0,
       modOptimizationStrategy: ModOptimizationStrategy.None,
       foldSameStatDifferentGearSets: true,
       tryLimitWastedStats: false,
