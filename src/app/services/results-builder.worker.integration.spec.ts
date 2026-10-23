@@ -5,6 +5,7 @@ import { ArmorPerkOrSlot, ArmorStat } from "../data/enum/armor-stat";
 import { ArmorSystem } from "../data/types/IManifestArmor";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "../data/constants";
+import { unpackArmorSets } from "./packed-armor-sets";
 
 function rng(seed: number) {
   return () => {
@@ -119,15 +120,6 @@ const CONFIGS: [string, BuildConfiguration][] = [
     }),
   ],
   [
-    "artifice assumptions",
-    configure((c) => {
-      c.assumeEveryLegendaryIsArtifice = true;
-      c.assumeClassItemIsArtifice = true;
-      tier(c, ArmorStat.StatSuper, 12);
-      tier(c, ArmorStat.StatWeapon, 8);
-    }),
-  ],
-  [
     "any exotic",
     configure((c) => {
       c.selectedExotics = [FORCE_USE_ANY_EXOTIC];
@@ -169,7 +161,7 @@ async function run(config: BuildConfiguration, items: IPermutatorArmor[]) {
   let last: any = null;
   const finished = new Promise<void>((resolve, reject) => {
     worker.onmessage = ({ data }) => {
-      if (data.results) sets.push(...data.results);
+      if (data.packed) sets.push(...unpackArmorSets(data.packed));
       if (data.done) {
         last = data;
         resolve();
@@ -194,8 +186,6 @@ async function run(config: BuildConfiguration, items: IPermutatorArmor[]) {
 const EXPECTED: Record<string, string> = {
   "1 any exotic":
     "count=2560 hash=ba848aae checked=2560/2560 computed=2560 tiers=188,200,200,184,198,182",
-  "1 artifice assumptions":
-    "count=2883 hash=71781d9b checked=3584/3584 computed=2883 tiers=190,163,169,193,178,153",
   "1 fixed":
     "count=3526 hash=d39ae41 checked=3584/3584 computed=3526 tiers=178,199,200,175,189,103",
   "1 high targets":
@@ -212,8 +202,6 @@ const EXPECTED: Record<string, string> = {
     "count=3584 hash=9f9932f1 checked=3584/3584 computed=3584 tiers=175,200,200,174,189,179",
   "2 any exotic":
     "count=2560 hash=ad3fa54e checked=2560/2560 computed=2560 tiers=171,170,193,188,194,200",
-  "2 artifice assumptions":
-    "count=3218 hash=c08fd57c checked=3584/3584 computed=3218 tiers=169,154,163,199,171,174",
   "2 fixed":
     "count=2349 hash=5e313445 checked=3584/3584 computed=2349 tiers=167,160,185,183,186,109",
   "2 high targets":

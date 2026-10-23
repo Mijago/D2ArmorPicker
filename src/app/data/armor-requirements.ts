@@ -1,8 +1,6 @@
 import type { BuildConfiguration } from "./buildConfiguration";
-import { ArmorSlot } from "./enum/armor-slot";
 import { ArmorPerkOrSlot, ArmorPerkSocketHashes } from "./enum/armor-stat";
 import type { IPermutatorArmor } from "./types/IPermutatorArmor";
-import { ArmorSystem } from "./types/IManifestArmor";
 
 // Perk requirements and gear set requirements share one numeric key space; only perks are enum values.
 const armorPerkValues = new Set<number>(
@@ -39,9 +37,6 @@ export class ArmorRequirementMatcher {
   private readonly isPerk: boolean[] = [];
   private readonly initial: Int32Array;
   private readonly remaining: Int32Array;
-  private readonly everyLegendaryArtifice: boolean;
-  private readonly everyExoticArtifice: boolean;
-  private readonly classItemArtifice: boolean;
   private selectableGearSetItems = 0;
 
   constructor(config: BuildConfiguration) {
@@ -55,9 +50,6 @@ export class ArmorRequirementMatcher {
       this.isPerk.push(armorPerkValues.has(key));
       this.initial[position++] = count;
     }
-    this.everyLegendaryArtifice = !!config.assumeEveryLegendaryIsArtifice;
-    this.everyExoticArtifice = !!config.assumeEveryExoticIsArtifice;
-    this.classItemArtifice = !!config.assumeClassItemIsArtifice;
   }
 
   matches(
@@ -87,18 +79,7 @@ export class ArmorRequirementMatcher {
   }
 
   private tally(item: IPermutatorArmor): void {
-    let effectivePerk = item.perk;
-    if (
-      item.armorSystem === ArmorSystem.Armor2 &&
-      ((item.isExotic && this.everyExoticArtifice) ||
-        (!item.isExotic &&
-          (this.everyLegendaryArtifice ||
-            (item.slot == ArmorSlot.ArmorSlotClass && this.classItemArtifice))))
-    ) {
-      effectivePerk = ArmorPerkOrSlot.SlotArtifice;
-    }
-
-    const perkPosition = this.index.get(effectivePerk);
+    const perkPosition = this.index.get(item.perk);
     if (perkPosition !== undefined) this.remaining[perkPosition]--;
 
     // A selectable gear set piece can fulfil any single gear set requirement.

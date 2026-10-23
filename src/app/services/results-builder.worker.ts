@@ -33,6 +33,7 @@ import {
   StatModifier,
 } from "../data/enum/armor-stat";
 import { ArmorRequirementMatcher } from "../data/armor-requirements";
+import { packArmorSets } from "./packed-armor-sets";
 
 import { environment } from "../../environments/environment";
 
@@ -57,8 +58,6 @@ let theoreticalMaximumTiers: number[] | null = null;
 const currentTheoreticalMaximum = () => theoreticalMaximumTiers;
 
 // Module-level configuration to avoid passing around
-let assumeEveryLegendaryIsArtifice: boolean;
-let assumeEveryExoticIsArtifice: boolean;
 let calculateTierFiveTuning: boolean;
 let onlyShowResultsWithNoWastedStats: boolean;
 let tryLimitWastedStats: boolean;
@@ -209,7 +208,7 @@ function annotateArmor(pieces: IPermutatorArmor[], config: BuildConfiguration): 
 
     piece._mw = masterworkedStats;
     piece._tune = tuningReach;
-    piece._art = pieceArtificeCapable(piece, config) ? 1 : 0;
+    piece._art = pieceArtificeCapable(piece) ? 1 : 0;
     piece._tuneTot = hasTuning ? 3 : 0;
     piece._sum = masterworkedStats.reduce((sum, value) => sum + value, 0);
   }
@@ -298,10 +297,7 @@ function applyMWAndCheckArtifice(item: IPermutatorArmor, stats: number[]): boole
       stats[4] += 2;
       stats[5] += 2;
     }
-    return (
-      item.perk === ArmorPerkOrSlot.SlotArtifice ||
-      (item.isExotic ? assumeEveryExoticIsArtifice : assumeEveryLegendaryIsArtifice)
-    );
+    return item.perk === ArmorPerkOrSlot.SlotArtifice;
   }
   if (item.armorSystem === ArmorSystem.Armor3) {
     let mult = item.masterworkLevel;
@@ -554,6 +550,12 @@ function computeNoTargetMaximumTiers(
 // endregion Validation and Preparation Functions
 
 // region Main Worker Event Handler
+function postResultsMessage(message: object, sets: IPermutatorArmorSet[]): void {
+  const packed = packArmorSets(sets);
+  // @ts-ignore - worker globals are typed for the window overload
+  postMessage({ ...message, packed }, [packed.fixed.buffer, packed.variable.buffer]);
+}
+
 async function handleArmorBuilderRequest(data: any): Promise<void> {
   // Reset cancellation flag at the beginning of each run
   cancelRequested = false;
@@ -607,8 +609,6 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   maxMajorMods = config.statModLimits?.maxMajorMods || 0;
   maxMods = config.statModLimits?.maxMods || 0;
   possibleIncreaseByMod = 10 * maxMajorMods + 5 * Math.max(0, maxMods - maxMajorMods);
-  assumeEveryLegendaryIsArtifice = !!config.assumeEveryLegendaryIsArtifice;
-  assumeEveryExoticIsArtifice = !!config.assumeEveryExoticIsArtifice;
   calculateTierFiveTuning = !!config.calculateTierFiveTuning;
   onlyShowResultsWithNoWastedStats = !!config.onlyShowResultsWithNoWastedStats;
   tryLimitWastedStats = !!config.tryLimitWastedStats;
@@ -676,21 +676,23 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
     return reach < target;
   });
   if (globallyInfeasible) {
-    postMessage({
-      runtime,
-      results: [],
-      done: true,
-      checkedCalculations: estimatedCalculations,
-      estimatedCalculations,
-      computedPermutations: 0,
-      resultLimitReached: false,
-      stats: {
-        savedResults: 0,
+    postResultsMessage(
+      {
+        runtime,
+        done: true,
+        checkedCalculations: estimatedCalculations,
+        estimatedCalculations,
         computedPermutations: 0,
-        itemCount: items.length - classItems.length,
-        totalTime: Date.now() - startTime,
+        resultLimitReached: false,
+        stats: {
+          savedResults: 0,
+          computedPermutations: 0,
+          itemCount: items.length - classItems.length,
+          totalTime: Date.now() - startTime,
+        },
       },
-    });
+      []
+    );
     return;
   }
 
@@ -805,16 +807,17 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
         bestResultSent = true;
       }
 
-      // @ts-ignore
-      postMessage({
-        runtime,
-        results,
-        done: false,
-        checkedCalculations,
-        estimatedCalculations,
-        computedPermutations: computedResults,
-        resultLimitReached,
-      });
+      postResultsMessage(
+        {
+          runtime,
+          done: false,
+          checkedCalculations,
+          estimatedCalculations,
+          computedPermutations: computedResults,
+          resultLimitReached,
+        },
+        results
+      );
       results = [];
       resultsLength = 0;
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -851,23 +854,24 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
     );
   }
 
-  // @ts-ignore
-  postMessage({
-    runtime,
-    results,
-    done: true,
-    checkedCalculations,
-    estimatedCalculations,
-    computedPermutations: computedResults,
-    resultLimitReached,
-    stoppedEarlyAtMaxTier,
-    stats: {
-      savedResults: resultsSent,
+  postResultsMessage(
+    {
+      runtime,
+      done: true,
+      checkedCalculations,
+      estimatedCalculations,
       computedPermutations: computedResults,
-      itemCount: items.length - classItems.length,
-      totalTime: Date.now() - startTime,
+      resultLimitReached,
+      stoppedEarlyAtMaxTier,
+      stats: {
+        savedResults: resultsSent,
+        computedPermutations: computedResults,
+        itemCount: items.length - classItems.length,
+        totalTime: Date.now() - startTime,
+      },
     },
-  });
+    results
+  );
 }
 
 addEventListener("message", async ({ data }) => {
@@ -1282,13 +1286,8 @@ function pieceStatsWithMasterwork(piece: IPermutatorArmor, config: BuildConfigur
   return stats;
 }
 
-function pieceArtificeCapable(piece: IPermutatorArmor, config: BuildConfiguration): boolean {
-  if (piece.perk === ArmorPerkOrSlot.SlotArtifice) return true;
-  if (piece.armorSystem !== ArmorSystem.Armor2) return false;
-  if (piece.slot === ArmorSlot.ArmorSlotClass && config.assumeClassItemIsArtifice) return true;
-  return piece.isExotic
-    ? config.assumeEveryExoticIsArtifice
-    : config.assumeEveryLegendaryIsArtifice;
+function pieceArtificeCapable(piece: IPermutatorArmor): boolean {
+  return piece.perk === ArmorPerkOrSlot.SlotArtifice;
 }
 
 function pieceMixSet(piece: IPermutatorArmor, config: BuildConfiguration): number[][] {
@@ -1305,7 +1304,7 @@ function pieceMixSet(piece: IPermutatorArmor, config: BuildConfiguration): numbe
 function maximumSlotReach(pieces: IPermutatorArmor[], config: BuildConfiguration): number[] {
   const maximum = [0, 0, 0, 0, 0, 0];
   for (const piece of pieces) {
-    const artificeBonus = pieceArtificeCapable(piece, config) ? 3 : 0;
+    const artificeBonus = pieceArtificeCapable(piece) ? 3 : 0;
     for (const mix of pieceMixSet(piece, config)) {
       for (let stat = 0; stat < 6; stat++) {
         const reach = mix[stat] + artificeBonus;

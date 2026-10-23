@@ -146,20 +146,6 @@
           </mat-chip-option>
           <mat-chip-option
             #tooltip="matTooltip"
-            *ngIf="
-              (_config_assumeEveryLegendaryIsArtifice && _config_legacyArmor) ||
-              _config_assumeEveryExoticIsArtifice
-            "
-            disableRipple
-            matTooltip="Some legacy items are assumed to have an artifice slot."
-            color="warn">
-            <mat-icon inline style="height: 100%">report_problem</mat-icon>
-            &nbsp;Legacy Artifice Assumptions&nbsp;
-            <mat-icon inline style="height: 100%">report_problem</mat-icon>
-          </mat-chip-option>
-
-          <mat-chip-option
-            #tooltip="matTooltip"
             *ngIf="_config_onlyUseMasterworkedExotics"
             disableRipple
             matTooltip="This setting means that only exotic armor pieces that are already masterworked are used."

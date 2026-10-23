@@ -43,6 +43,7 @@ import {
   mergeResultEntries,
   updateSharedBuildCounts,
 } from "./armor-result-entries";
+import { PackedArmorSets, unpackArmorSets } from "./packed-armor-sets";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { calculateCPUConcurrency } from "../data/commonFunctions";
@@ -97,7 +98,7 @@ interface WorkerMessageData {
   };
 
   // Results data (available when results are sent)
-  results?: IPermutatorArmorSet[];
+  packed?: PackedArmorSets;
   done?: boolean;
 
   // Statistics (available in final completion message)
@@ -469,13 +470,7 @@ export class ArmorCalculatorService implements OnDestroy {
   private static theoreticalSlack(config: BuildConfiguration, items: IPermutatorArmor[]): number {
     const artificeSlots = new Set<ArmorSlot>();
     for (const item of items) {
-      const assumed =
-        item.armorSystem === ArmorSystem.Armor2 &&
-        (item.isExotic
-          ? config.assumeEveryExoticIsArtifice
-          : config.assumeEveryLegendaryIsArtifice ||
-            (item.slot === ArmorSlot.ArmorSlotClass && config.assumeClassItemIsArtifice));
-      if (item.perk === ArmorPerkOrSlot.SlotArtifice || assumed) artificeSlots.add(item.slot);
+      if (item.perk === ArmorPerkOrSlot.SlotArtifice) artificeSlots.add(item.slot);
     }
     return 3 * artificeSlots.size + (config.addConstent1Health ? 1 : 0);
   }
@@ -677,16 +672,8 @@ export class ArmorCalculatorService implements OnDestroy {
     return stats;
   }
 
-  private static pieceArtificeCapable(
-    piece: IPermutatorArmor,
-    config: BuildConfiguration
-  ): boolean {
-    if (piece.perk === ArmorPerkOrSlot.SlotArtifice) return true;
-    if (piece.armorSystem !== ArmorSystem.Armor2) return false;
-    if (piece.slot === ArmorSlot.ArmorSlotClass && config.assumeClassItemIsArtifice) return true;
-    return piece.isExotic
-      ? config.assumeEveryExoticIsArtifice
-      : config.assumeEveryLegendaryIsArtifice;
+  private static pieceArtificeCapable(piece: IPermutatorArmor): boolean {
+    return piece.perk === ArmorPerkOrSlot.SlotArtifice;
   }
 
   private static pieceTuningOptions(piece: IPermutatorArmor): number[][] {
@@ -753,7 +740,7 @@ export class ArmorCalculatorService implements OnDestroy {
       piece.gearSetPerkSelectable ? "selectable" : "fixed",
       piece.armorSystem,
       piece.tier >= 5 ? "T5" : "low",
-      ArmorCalculatorService.pieceArtificeCapable(piece, config) ? "artifice" : "standard",
+      ArmorCalculatorService.pieceArtificeCapable(piece) ? "artifice" : "standard",
     ].join("|");
   }
 
@@ -933,7 +920,7 @@ export class ArmorCalculatorService implements OnDestroy {
     }
 
     // Add partial results to the collection
-    const partialResults = data.results ?? [];
+    const partialResults = data.packed ? unpackArmorSets(data.packed) : [];
     ArmorCalculatorService.ingestResults(partialResults);
     if (partialResults.length > 0 && !data.done) {
       this.processIntermediateResults(inventoryArmorItems);
@@ -1235,25 +1222,6 @@ export class ArmorCalculatorService implements OnDestroy {
         }
       }
 
-      // Apply artifice assumptions for Armor 2.0 class items
-      if (
-        config.assumeEveryLegendaryIsArtifice ||
-        config.assumeEveryExoticIsArtifice ||
-        config.assumeClassItemIsArtifice
-      ) {
-        filteredClassItems = filteredClassItems.map((item) => {
-          if (
-            item.armorSystem === ArmorSystem.Armor2 &&
-            ((config.assumeEveryLegendaryIsArtifice && !item.isExotic) ||
-              (config.assumeEveryExoticIsArtifice && item.isExotic) ||
-              (config.assumeClassItemIsArtifice && !item.isExotic))
-          ) {
-            return { ...item, perk: ArmorPerkOrSlot.SlotArtifice };
-          }
-          return item;
-        });
-      }
-
       inventoryArmorItems = [
         ...filteredHelmets,
         ...gauntlets,
@@ -1320,11 +1288,7 @@ export class ArmorCalculatorService implements OnDestroy {
       }
       return true;
     };
-    const isArtificeCapable = (item: IInventoryArmor) =>
-      ArmorCalculatorService.pieceArtificeCapable(
-        ArmorCalculatorService.convertInventoryArmorToPermutatorArmor(item),
-        config
-      );
+    const isArtificeCapable = (item: IInventoryArmor) => item.perk === ArmorPerkOrSlot.SlotArtifice;
     // Only items with an identical stat profile can be duplicates, so compare within buckets.
     const profileBuckets = new Map<string, number[]>();
     const profileKey = (item: IInventoryArmor) =>

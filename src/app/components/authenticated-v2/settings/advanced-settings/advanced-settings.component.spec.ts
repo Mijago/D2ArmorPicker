@@ -39,7 +39,6 @@ describe("advanced and performance settings", () => {
     expect(advanced.component.fieldKeys).not.toContain("Events");
     expect(performance.component.fieldKeys).toEqual(["Calculation Performance & Results"]);
     expect(theorizer.component.fieldKeys).not.toContain("Calculation Performance & Results");
-    expect(theorizer.component.fieldKeys).not.toContain("Artifice Slots (for legacy armor 2.0)");
     expect(hiddenPerformance.component.fieldKeys).toEqual([]);
     [advanced, performance, theorizer, hiddenPerformance].forEach(({ component }) =>
       component.ngOnDestroy()

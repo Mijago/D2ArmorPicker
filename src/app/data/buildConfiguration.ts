@@ -105,10 +105,6 @@ export class BuildConfiguration {
   // Add constant +1 strength
   addConstent1Health = false;
 
-  assumeClassItemIsArtifice = false;
-  assumeEveryLegendaryIsArtifice = false;
-  assumeEveryExoticIsArtifice = false;
-
   // contains a list of item instances IDs that shall not be used in builds
   disabledItems: string[] = [];
 
@@ -167,9 +163,6 @@ export class BuildConfiguration {
       disabledItems: [],
       addConstent1Health: false,
       calculateTierFiveTuning: !environment.production,
-      assumeEveryLegendaryIsArtifice: false,
-      assumeEveryExoticIsArtifice: false,
-      assumeClassItemIsArtifice: false,
       putArtificeMods: true,
       useEventArmor: EventArmorType.None,
       onlyUseMasterworkedExotics: false,

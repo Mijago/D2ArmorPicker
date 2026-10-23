@@ -142,9 +142,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
         configuration.assumeExoticsMasterworked = defaults.assumeExoticsMasterworked;
         configuration.onlyUseMasterworkedExotics = defaults.onlyUseMasterworkedExotics;
         configuration.onlyUseMasterworkedLegendaries = defaults.onlyUseMasterworkedLegendaries;
-        configuration.assumeClassItemIsArtifice = defaults.assumeClassItemIsArtifice;
-        configuration.assumeEveryLegendaryIsArtifice = defaults.assumeEveryLegendaryIsArtifice;
-        configuration.assumeEveryExoticIsArtifice = defaults.assumeEveryExoticIsArtifice;
         configuration.addConstent1Health = defaults.addConstent1Health;
       });
     });
@@ -218,41 +215,6 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
             impactsResultCount: true,
             help: undefined,
             description: "Only use already masterworked legendary items.",
-          },
-        ],
-        "Artifice Slots (for legacy armor 2.0)": [
-          {
-            name: "Assume every legacy legendary class item is an artifice armor.",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.assumeClassItemIsArtifice = v)),
-            value: c.assumeClassItemIsArtifice || c.assumeEveryLegendaryIsArtifice,
-            disabled: c.assumeEveryLegendaryIsArtifice || !c.allowLegacyLegendaryArmor,
-            impactsResultCount: true,
-            help: "This is for debugging purposes. No support if you enable this.",
-            description: "Assume every legacy legendary class item is an artifice armor.",
-          },
-          {
-            name: "Assume every legacy legendary is an artifice armor.",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.assumeEveryLegendaryIsArtifice = v)),
-            value: c.assumeEveryLegendaryIsArtifice,
-            disabled: !c.allowLegacyLegendaryArmor,
-            impactsResultCount: true,
-            help: "This is for debugging purposes. No support if you enable this.",
-            description: "Assume every legacy legendary is an artifice armor.",
-          },
-          {
-            name: "Assume every legacy exotic has an artifice slot.",
-            type: "boolean",
-            onToggle: (v: boolean) =>
-              this.config.modifyConfiguration((c) => (c.assumeEveryExoticIsArtifice = v)),
-            value: c.assumeEveryExoticIsArtifice,
-            disabled: !c.allowLegacyExoticArmor,
-            impactsResultCount: true,
-            help: "Preparation for the upcoming Artifice Mod Slot for exotics.",
-            description: "Assume every legacy exotic has an artifice slot.",
           },
         ],
         "Calculation Performance & Results": [
@@ -386,8 +348,7 @@ export class AdvancedSettingsComponent implements OnInit, OnDestroy {
           (this.section === "performance"
             ? key === "Calculation Performance & Results" && !this.config.isTheorizer
             : key !== "Calculation Performance & Results") &&
-          (!this.config.isTheorizer || key !== "Data-Science") &&
-          (!this.config.isTheorizer || key !== "Artifice Slots (for legacy armor 2.0)")
+          (!this.config.isTheorizer || key !== "Data-Science")
       );
     });
   }
