@@ -22,15 +22,12 @@ import { DatabaseService } from "./database.service";
 import { IManifestArmor } from "../data/types/IManifestArmor";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { BuildConfiguration } from "../data/buildConfiguration";
-import { ArmorPerkOrSlot, ArmorStat, STAT_MOD_VALUES, StatModifier } from "../data/enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorStat } from "../data/enum/armor-stat";
 import { StatusProviderService } from "./status-provider.service";
 import { ConfigurationService } from "./configuration.service";
 import { UserInformationService } from "./user-information.service";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import {
-  ResultDefinition,
-  ResultItem,
-} from "../components/authenticated-v2/results/results.component";
+import { ResultDefinition } from "../components/authenticated-v2/results/results.component";
 import {
   IInventoryArmor,
   InventoryArmorSource,
@@ -39,7 +36,13 @@ import {
 } from "../data/types/IInventoryArmor";
 import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import { IPermutatorArmorSet } from "../data/types/IPermutatorArmorSet";
-import { getSkillTier, getWaste } from "./results-builder.worker";
+import {
+  ResultEntry,
+  buildResultEntry,
+  compareResultEntries,
+  mergeResultEntries,
+  updateSharedBuildCounts,
+} from "./armor-result-entries";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { calculateCPUConcurrency } from "../data/commonFunctions";
@@ -49,7 +52,7 @@ import { ArmorSystem } from "../data/types/IManifestArmor";
 import { environment } from "../../environments/environment";
 import type { T5LimitsReply, T5LimitsRequest } from "./theorizer-model";
 import { combineLatest, Subscription } from "rxjs";
-import { debounceTime, distinctUntilChanged, catchError, startWith } from "rxjs/operators";
+import { debounceTime, catchError, startWith } from "rxjs/operators";
 import { of } from "rxjs";
 
 export interface PrunedArmorItemView {
@@ -149,7 +152,8 @@ export class ArmorCalculatorService implements OnDestroy {
   // Static properties for calculation state
   private static workers: Worker[] = [];
   private static theoreticalWorker?: Worker;
-  private static results: IPermutatorArmorSet[] = [];
+  private static freshEntries: ResultEntry[] = [];
+  private static inventoryById = new Map<number, IInventoryArmor>();
   private static savedResultsCount = 0;
   private static totalPermutationsCount = 0;
   private static resultMaximumTiers: number[][] = [];
@@ -282,7 +286,6 @@ export class ArmorCalculatorService implements OnDestroy {
       ])
         .pipe(
           debounceTime(100),
-          distinctUntilChanged(),
           catchError((error) => {
             this.logger.error(
               "ArmorCalculatorService",
@@ -363,6 +366,7 @@ export class ArmorCalculatorService implements OnDestroy {
 
   private clearResults(force: boolean = false) {
     ArmorCalculatorService.prePruneArmorItems = [];
+    ArmorCalculatorService.freshEntries = [];
     if (force || ArmorCalculatorService.endResults.length > 0) {
       ArmorCalculatorService.endResults = [];
       this._armorResults.next({
@@ -919,7 +923,7 @@ export class ArmorCalculatorService implements OnDestroy {
     ) {
       console.log("All threads have reached their local result limit");
       console.log(
-        ArmorCalculatorService.results.length +
+        ArmorCalculatorService.freshEntries.length +
           " results found, " +
           sumDone +
           " calculations done out of estimated " +
@@ -930,7 +934,7 @@ export class ArmorCalculatorService implements OnDestroy {
 
     // Add partial results to the collection
     const partialResults = data.results ?? [];
-    ArmorCalculatorService.results.push(...partialResults);
+    ArmorCalculatorService.ingestResults(partialResults);
     if (partialResults.length > 0 && !data.done) {
       this.processIntermediateResults(inventoryArmorItems);
     }
@@ -954,82 +958,8 @@ export class ArmorCalculatorService implements OnDestroy {
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this._calculationProgress.next(0);
 
-    ArmorCalculatorService.endResults = [];
-    ArmorCalculatorService.sortArmorSets(ArmorCalculatorService.results, inventoryArmorItems);
-
-    for (let armorSet of ArmorCalculatorService.results) {
-      let items = armorSet.armor.map((x) =>
-        inventoryArmorItems.find((y) => y.id == x)
-      ) as IInventoryArmor[];
-      let exotic = items.find((x) => x.isExotic);
-      let v: ResultDefinition = {
-        loaded: false, // TODO check if loaded is even needed
-        sharedArmorHash: ArmorCalculatorService.getSharedArmorHash(items),
-        sharedBuildCount: 1,
-        tuningStats: armorSet.tuning,
-        exotic:
-          exotic == null
-            ? undefined
-            : {
-                icon: exotic?.icon,
-                watermark: exotic?.watermarkIcon,
-                name: exotic?.name,
-                hash: exotic?.hash,
-              },
-        artifice: armorSet.usedArtifice,
-        tuningMods: armorSet.usedTuningMods,
-        modCount: armorSet.usedMods.length,
-        modCost: armorSet.usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
-        mods: armorSet.usedMods,
-        stats: armorSet.statsWithMods,
-        statsNoMods: armorSet.statsWithoutMods,
-        tiers: getSkillTier(armorSet.statsWithMods),
-        waste: getWaste(armorSet.statsWithMods),
-        items: items.map(
-          (instance): ResultItem => ({
-            tuningStat: instance.tuningStat,
-            energyLevel: instance.energyLevel,
-            powerLevel: instance.powerLevel,
-            hash: instance.hash,
-            itemInstanceId: instance.itemInstanceId,
-            gearSetHash: instance.gearSetHash,
-            name: instance.name,
-            exotic: !!instance.isExotic,
-            exoticPerkHash: instance.exoticPerkHash,
-            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-            archetypeStats: instance.archetypeStats,
-            armorSystem: instance.armorSystem, // 2 = Armor 2.0, 3 = Armor 3.0
-            masterworkLevel: instance.masterworkLevel,
-            slot: instance.slot,
-            perk: instance.perk,
-            transferState: 0, // TRANSFER_NONE
-            tier: instance.tier,
-            stats: [
-              instance.resilience,
-              instance.strength,
-              instance.discipline,
-              instance.intellect,
-              instance.recovery,
-              instance.mobility,
-            ],
-            source: instance.source,
-            statsNoMods: [],
-          })
-        ),
-        usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
-        usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-      };
-      ArmorCalculatorService.endResults.push(v);
-    }
-    ArmorCalculatorService.updateSharedBuildCounts(ArmorCalculatorService.endResults);
-
-    this._armorResults.next({
-      results: ArmorCalculatorService.endResults,
+    ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
       savedResults: ArmorCalculatorService.savedResultsCount, // Total amount of results, differs from the real amount if the memory save setting is active
-      totalPermutations: ArmorCalculatorService.totalPermutationsCount,
-      resultLimitReached: ArmorCalculatorService.allThreadsResultLimitReached,
-      stoppedEarlyAtMaxTier: ArmorCalculatorService.stoppedEarlyAtMaxTier,
-      itemCount: inventoryArmorItems.length,
       totalTime: performance.now() - ArmorCalculatorService.updateResultsStart,
       maximumPossibleTiers: ArmorCalculatorService.resultMaximumTiers
         .reduce(
@@ -1040,7 +970,6 @@ export class ArmorCalculatorService implements OnDestroy {
           [0, 0, 0, 0, 0, 0]
         )
         .map((k) => Math.min(200, k) / 10),
-      prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
     });
     const updateResultsEnd = performance.now();
     this.logger.info(
@@ -1052,88 +981,12 @@ export class ArmorCalculatorService implements OnDestroy {
 
   private processIntermediateResults(inventoryArmorItems: IInventoryArmor[]): void {
     // Do not toggle calculatingResults or reset progress; workers are still running.
-
-    ArmorCalculatorService.endResults = [];
-    ArmorCalculatorService.sortArmorSets(ArmorCalculatorService.results, inventoryArmorItems);
-
-    for (let armorSet of ArmorCalculatorService.results) {
-      const items = armorSet.armor.map((x) =>
-        inventoryArmorItems.find((y) => y.id == x)
-      ) as IInventoryArmor[];
-      const exotic = items.find((x) => x.isExotic);
-      const v: ResultDefinition = {
-        loaded: false,
-        sharedArmorHash: ArmorCalculatorService.getSharedArmorHash(items),
-        sharedBuildCount: 1,
-        tuningStats: armorSet.tuning,
-        exotic:
-          exotic == null
-            ? undefined
-            : {
-                icon: exotic.icon,
-                watermark: exotic.watermarkIcon,
-                name: exotic.name,
-                hash: exotic.hash,
-              },
-        artifice: armorSet.usedArtifice,
-        tuningMods: armorSet.usedTuningMods,
-        modCount: armorSet.usedMods.length,
-        modCost: armorSet.usedMods.reduce((p, d: StatModifier) => p + STAT_MOD_VALUES[d][2], 0),
-        mods: armorSet.usedMods,
-        stats: armorSet.statsWithMods,
-        statsNoMods: armorSet.statsWithoutMods,
-        tiers: getSkillTier(armorSet.statsWithMods),
-        waste: getWaste(armorSet.statsWithMods),
-        items: items.map(
-          (instance): ResultItem => ({
-            tuningStat: instance.tuningStat,
-            energyLevel: instance.energyLevel,
-            powerLevel: instance.powerLevel,
-            hash: instance.hash,
-            itemInstanceId: instance.itemInstanceId,
-            gearSetHash: instance.gearSetHash,
-            name: instance.name,
-            exotic: !!instance.isExotic,
-            exoticPerkHash: instance.exoticPerkHash,
-            masterworked: instance.masterworkLevel == MAXIMUM_MASTERWORK_LEVEL,
-            archetypeStats: instance.archetypeStats,
-            armorSystem: instance.armorSystem,
-            masterworkLevel: instance.masterworkLevel,
-            slot: instance.slot,
-            perk: instance.perk,
-            transferState: 0,
-            tier: instance.tier,
-            stats: [
-              instance.resilience,
-              instance.strength,
-              instance.discipline,
-              instance.intellect,
-              instance.recovery,
-              instance.mobility,
-            ],
-            source: instance.source,
-            statsNoMods: [],
-          })
-        ),
-        usesCollectionRoll: items.some((y) => y.source === InventoryArmorSource.Collections),
-        usesVendorRoll: items.some((y) => y.source === InventoryArmorSource.Vendor),
-      };
-      ArmorCalculatorService.endResults.push(v);
-    }
-    ArmorCalculatorService.updateSharedBuildCounts(ArmorCalculatorService.endResults);
-
-    this._armorResults.next({
-      results: ArmorCalculatorService.endResults,
-      savedResults: ArmorCalculatorService.results.length,
-      totalPermutations: ArmorCalculatorService.totalPermutationsCount,
-      resultLimitReached: ArmorCalculatorService.allThreadsResultLimitReached,
-      stoppedEarlyAtMaxTier: ArmorCalculatorService.stoppedEarlyAtMaxTier,
-      itemCount: inventoryArmorItems.length,
+    ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
+      savedResults: ArmorCalculatorService.freshEntries.length,
       totalTime: null,
       maximumPossibleTiers: ArmorCalculatorService.globalMaximumPossibleTiers.map(
         (k) => Math.min(200, k) / 10
       ),
-      prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
     });
 
     this.logger.info(
@@ -1141,6 +994,42 @@ export class ArmorCalculatorService implements OnDestroy {
       "processIntermediateResults",
       "Published intermediate results after all workers reached result limit"
     );
+  }
+
+  private static ingestResults(armorSets: IPermutatorArmorSet[]): void {
+    if (armorSets.length === 0) return;
+    const batch = armorSets.map((armorSet) =>
+      buildResultEntry(
+        armorSet,
+        ArmorCalculatorService.inventoryById,
+        ArmorCalculatorService.sharedArmorExcludedSlots
+      )
+    );
+    batch.sort(compareResultEntries);
+    ArmorCalculatorService.freshEntries = mergeResultEntries(
+      ArmorCalculatorService.freshEntries,
+      batch
+    );
+  }
+
+  private static publishResults(
+    subject: BehaviorSubject<info>,
+    itemCount: number,
+    summary: Pick<info, "savedResults" | "totalTime" | "maximumPossibleTiers">
+  ): void {
+    ArmorCalculatorService.endResults = ArmorCalculatorService.freshEntries.map(
+      (entry) => entry.definition
+    );
+    updateSharedBuildCounts(ArmorCalculatorService.endResults);
+    subject.next({
+      results: ArmorCalculatorService.endResults,
+      totalPermutations: ArmorCalculatorService.totalPermutationsCount,
+      resultLimitReached: ArmorCalculatorService.allThreadsResultLimitReached,
+      stoppedEarlyAtMaxTier: ArmorCalculatorService.stoppedEarlyAtMaxTier,
+      itemCount,
+      prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
+      ...summary,
+    });
   }
 
   // Manual trigger method for testing
@@ -1412,68 +1301,82 @@ export class ArmorCalculatorService implements OnDestroy {
         .filter((requirement): requirement is { perk: ArmorPerkOrSlot } => "perk" in requirement)
         .map((requirement) => requirement.perk)
     );
+    const capabilityCache = new Map<IInventoryArmor, Set<string>>();
     const getSelectedCapabilities = (item: IInventoryArmor) => {
-      const capabilities = new Set<string>();
+      let capabilities = capabilityCache.get(item);
+      if (capabilities) return capabilities;
+      capabilities = new Set<string>();
       if (item.gearSetHash != null && selectedGearSetHashes.has(item.gearSetHash)) {
         capabilities.add(`gearset:${item.gearSetHash}`);
       }
       if (selectedPerks.has(item.perk)) capabilities.add(`perk:${item.perk}`);
+      capabilityCache.set(item, capabilities);
       return capabilities;
     };
     const coversCapabilities = (candidate: IInventoryArmor, item: IInventoryArmor) => {
       const candidateCapabilities = getSelectedCapabilities(candidate);
-      return [...getSelectedCapabilities(item)].every((capability) =>
-        candidateCapabilities.has(capability)
-      );
+      for (const capability of getSelectedCapabilities(item)) {
+        if (!candidateCapabilities.has(capability)) return false;
+      }
+      return true;
     };
     const isArtificeCapable = (item: IInventoryArmor) =>
       ArmorCalculatorService.pieceArtificeCapable(
         ArmorCalculatorService.convertInventoryArmorToPermutatorArmor(item),
         config
       );
+    // Only items with an identical stat profile can be duplicates, so compare within buckets.
+    const profileBuckets = new Map<string, number[]>();
+    const profileKey = (item: IInventoryArmor) =>
+      [
+        item.slot,
+        item.isExotic,
+        item.mobility,
+        item.resilience,
+        item.recovery,
+        item.discipline,
+        item.intellect,
+        item.strength,
+        item.armorSystem,
+        item.tier,
+        item.tuningStat,
+        JSON.stringify(item.archetypeStats),
+        item.source,
+        item.gearSetPerkSelectable,
+        (item.isExotic ? config.assumeExoticsMasterworked : config.assumeLegendariesMasterworked)
+          ? "*"
+          : item.masterworkLevel,
+      ]
+        .map(String)
+        .join("|");
     for (const item of inventoryArmorItems) {
-      const duplicateIndex = distinctItems.findIndex((candidate) => {
-        const sameStatProfile =
-          candidate.slot === item.slot &&
-          candidate.isExotic === item.isExotic &&
-          candidate.mobility === item.mobility &&
-          candidate.resilience === item.resilience &&
-          candidate.recovery === item.recovery &&
-          candidate.discipline === item.discipline &&
-          candidate.intellect === item.intellect &&
-          candidate.strength === item.strength &&
-          candidate.armorSystem === item.armorSystem &&
-          candidate.tier === item.tier &&
-          candidate.tuningStat === item.tuningStat &&
-          JSON.stringify(candidate.archetypeStats) === JSON.stringify(item.archetypeStats) &&
-          candidate.source === item.source &&
-          ((item.isExotic && config.assumeExoticsMasterworked) ||
-            (!item.isExotic && config.assumeLegendariesMasterworked) ||
-            candidate.masterworkLevel === item.masterworkLevel);
-        if (!sameStatProfile || candidate.gearSetPerkSelectable !== item.gearSetPerkSelectable)
-          return false;
+      const key = profileKey(item);
+      let bucket = profileBuckets.get(key);
+      const bucketPosition =
+        bucket?.findIndex((index) => {
+          const candidate = distinctItems[index];
+          if (candidate.isExotic || item.isExotic) {
+            return (
+              candidate.hash === item.hash &&
+              JSON.stringify(candidate.exoticPerkHash ?? []) ===
+                JSON.stringify(item.exoticPerkHash ?? []) &&
+              candidate.perk === item.perk &&
+              candidate.gearSetHash === item.gearSetHash
+            );
+          }
 
-        if (candidate.isExotic || item.isExotic) {
-          return (
-            candidate.hash === item.hash &&
-            JSON.stringify(candidate.exoticPerkHash ?? []) ===
-              JSON.stringify(item.exoticPerkHash ?? []) &&
-            candidate.perk === item.perk &&
-            candidate.gearSetHash === item.gearSetHash
-          );
-        }
+          if (!config.foldSameStatDifferentGearSets) {
+            return (
+              candidate.hash === item.hash &&
+              candidate.perk === item.perk &&
+              candidate.gearSetHash === item.gearSetHash
+            );
+          }
 
-        if (!config.foldSameStatDifferentGearSets) {
-          return (
-            candidate.hash === item.hash &&
-            candidate.perk === item.perk &&
-            candidate.gearSetHash === item.gearSetHash
-          );
-        }
-
-        return coversCapabilities(candidate, item) || coversCapabilities(item, candidate);
-      });
-      if (duplicateIndex >= 0) {
+          return coversCapabilities(candidate, item) || coversCapabilities(item, candidate);
+        }) ?? -1;
+      if (bucket && bucketPosition >= 0) {
+        const duplicateIndex = bucket[bucketPosition];
         const duplicate = distinctItems[duplicateIndex];
         const itemCoversDuplicate = coversCapabilities(item, duplicate);
         const duplicateCoversItem = coversCapabilities(duplicate, item);
@@ -1498,6 +1401,11 @@ export class ArmorCalculatorService implements OnDestroy {
         duplicatePruners.set(item.id, duplicate);
       } else {
         distinctItems.push(item);
+        if (bucket) bucket.push(distinctItems.length - 1);
+        else {
+          bucket = [distinctItems.length - 1];
+          profileBuckets.set(key, bucket);
+        }
       }
     }
     return { items: distinctItems, duplicates, duplicatePruners };
@@ -1571,147 +1479,6 @@ export class ArmorCalculatorService implements OnDestroy {
     return stats.reduce((sum, stat) => sum + stat, 0);
   }
 
-  private static gearSetRank(
-    armorSet: IPermutatorArmorSet,
-    inventoryById: Map<number, IInventoryArmor>
-  ): number {
-    const gearSetCounts = new Map<number, number>();
-    let selectableItems = 0;
-
-    for (const itemId of armorSet.armor) {
-      const item = inventoryById.get(itemId);
-      if (item?.gearSetPerkSelectable) selectableItems++;
-      if (item?.gearSetHash != null) {
-        gearSetCounts.set(item.gearSetHash, (gearSetCounts.get(item.gearSetHash) ?? 0) + 1);
-      }
-    }
-
-    const counts = Array.from(gearSetCounts.values());
-    if (Math.max(0, ...counts) + selectableItems >= 4) return 3;
-
-    const pairDeficits = [...counts.map((count) => Math.max(0, 2 - count)), 2, 2].sort(
-      (a, b) => a - b
-    );
-    if (pairDeficits[0] + pairDeficits[1] <= selectableItems) return 2;
-    if (pairDeficits[0] <= selectableItems) return 1;
-    return 0;
-  }
-
-  private static sortArmorSets(
-    armorSets: IPermutatorArmorSet[],
-    inventoryArmorItems: IInventoryArmor[]
-  ): void {
-    const inventoryById = new Map(inventoryArmorItems.map((item) => [item.id, item]));
-    const similarityHashes = new Map<IPermutatorArmorSet, string>();
-    const similarityCounts = new Map<string, number>();
-    for (const armorSet of armorSets) {
-      const items = armorSet.armor
-        .map((itemId) => inventoryById.get(itemId))
-        .filter((item): item is IInventoryArmor => !!item);
-      const similarityHash = ArmorCalculatorService.getSharedArmorHash(items);
-      similarityHashes.set(armorSet, similarityHash);
-      similarityCounts.set(similarityHash, (similarityCounts.get(similarityHash) ?? 0) + 1);
-    }
-
-    const gearSetRanks = new Map(
-      armorSets.map((armorSet) => [
-        armorSet,
-        ArmorCalculatorService.gearSetRank(armorSet, inventoryById),
-      ])
-    );
-    const masterworkedItemCounts = new Map(
-      armorSets.map((armorSet) => [
-        armorSet,
-        armorSet.armor.filter(
-          (itemId) => inventoryById.get(itemId)?.masterworkLevel === MAXIMUM_MASTERWORK_LEVEL
-        ).length,
-      ])
-    );
-
-    const armorPower = new Map(
-      armorSets.map((armorSet) => [
-        armorSet,
-        armorSet.armor.reduce(
-          (sum, itemId) => sum + (inventoryById.get(itemId)?.powerLevel ?? 0),
-          0
-        ),
-      ])
-    );
-
-    armorSets.sort((a, b) => {
-      return ArmorCalculatorService.compareArmorSets(
-        a,
-        b,
-        similarityHashes,
-        similarityCounts,
-        gearSetRanks,
-        masterworkedItemCounts,
-        armorPower
-      );
-    });
-  }
-
-  private static getSharedArmorHash(items: IInventoryArmor[]): string {
-    return items
-      .filter(
-        (item) => !item.isExotic && !ArmorCalculatorService.sharedArmorExcludedSlots.has(item.slot)
-      )
-      .map((item) => item.itemInstanceId)
-      .sort()
-      .join("|");
-  }
-
-  private static updateSharedBuildCounts(results: ResultDefinition[]): void {
-    const sharedBuildCounts = new Map<string, number>();
-    for (const result of results) {
-      const hash = result.sharedArmorHash ?? "";
-      sharedBuildCounts.set(hash, (sharedBuildCounts.get(hash) ?? 0) + 1);
-    }
-    for (const result of results) {
-      result.sharedBuildCount = sharedBuildCounts.get(result.sharedArmorHash ?? "") ?? 1;
-    }
-  }
-
-  private static compareArmorSets(
-    a: IPermutatorArmorSet,
-    b: IPermutatorArmorSet,
-    similarityHashes: Map<IPermutatorArmorSet, string>,
-    similarityCounts: Map<string, number>,
-    gearSetRanks: Map<IPermutatorArmorSet, number>,
-    masterworkedItemCounts: Map<IPermutatorArmorSet, number>,
-    armorPower: Map<IPermutatorArmorSet, number>
-  ): number {
-    const totalStatsDiff =
-      ArmorCalculatorService.sumStats(b.statsWithMods) -
-      ArmorCalculatorService.sumStats(a.statsWithMods);
-    if (totalStatsDiff !== 0) return totalStatsDiff;
-
-    const gearSetRankDiff = (gearSetRanks.get(b) ?? 0) - (gearSetRanks.get(a) ?? 0);
-    if (gearSetRankDiff !== 0) return gearSetRankDiff;
-
-    const similarityHashDiff = similarityHashes.get(a)!.localeCompare(similarityHashes.get(b)!);
-    if (similarityHashDiff !== 0) return similarityHashDiff;
-
-    const similarityCountDiff =
-      (similarityCounts.get(similarityHashes.get(b)!) ?? 0) -
-      (similarityCounts.get(similarityHashes.get(a)!) ?? 0);
-    if (similarityCountDiff !== 0) return similarityCountDiff;
-
-    const modCountDiff = a.usedMods.length - b.usedMods.length;
-    if (modCountDiff !== 0) return modCountDiff;
-
-    const modCost = (armorSet: IPermutatorArmorSet) =>
-      armorSet.usedMods.reduce((sum, mod) => sum + STAT_MOD_VALUES[mod][2], 0);
-    const modCostDiff = modCost(a) - modCost(b);
-    if (modCostDiff !== 0) return modCostDiff;
-
-    const masterworkedItemCountDiff =
-      (masterworkedItemCounts.get(b) ?? 0) - (masterworkedItemCounts.get(a) ?? 0);
-    if (masterworkedItemCountDiff !== 0) return masterworkedItemCountDiff;
-
-    return (armorPower.get(b) ?? 0) - (armorPower.get(a) ?? 0);
-  }
-
   async calculateArmorSetResults(
     config: BuildConfiguration,
     currentClass: DestinyClass,
@@ -1741,7 +1508,7 @@ export class ArmorCalculatorService implements OnDestroy {
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       this.status.modifyStatus((s) => (s.cancelledCalculation = false));
 
-      ArmorCalculatorService.results = [];
+      ArmorCalculatorService.freshEntries = [];
       ArmorCalculatorService.savedResultsCount = 0;
       ArmorCalculatorService.totalPermutationsCount = 0;
       this._computedPermutations.next(0);
@@ -1828,6 +1595,7 @@ export class ArmorCalculatorService implements OnDestroy {
       for (const armor of inventoryArmorItems) {
         inventoryById.set(armor.id, armor);
       }
+      ArmorCalculatorService.inventoryById = inventoryById;
 
       const prunedByMap = new Map(preparedInventoryArmor.duplicatePruners);
       const prePruneArmorItems = ArmorCalculatorService.markPrunedArmorItems(
