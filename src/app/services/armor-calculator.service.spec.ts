@@ -157,6 +157,37 @@ describe("armor pruning power preference", () => {
     expect(worker.terminate).not.toHaveBeenCalled();
   });
 
+  it("shows retained results until the same armor sets are recomputed", () => {
+    const entry = (key: string, total: number) =>
+      ({
+        key,
+        total,
+        gearSetRank: 0,
+        sharedHash: key,
+        modCount: 0,
+        modCost: 0,
+        masterworkedCount: 0,
+        power: 0,
+      }) as any;
+    const retained = [entry("a", 9), entry("b", 7)];
+    calculator["retainedEntries"] = retained;
+    calculator["freshKeys"].clear();
+    calculator["freshEntries"] = [];
+
+    expect(calculator["currentEntries"]()).toEqual(retained);
+
+    const recomputed = entry("a", 8);
+    calculator["freshEntries"] = [recomputed];
+    calculator["freshKeys"].add("a");
+
+    expect(calculator["currentEntries"]().map((e: any) => e.key)).toEqual(["a", "b"]);
+    expect(calculator["currentEntries"]()[0]).toBe(recomputed);
+
+    calculator["retainedEntries"] = [];
+    calculator["freshKeys"].clear();
+    calculator["freshEntries"] = [];
+  });
+
   it("terminates idle workers on teardown", () => {
     const worker = { terminate: jasmine.createSpy("terminate") } as unknown as Worker;
     calculator["releaseWorker"](worker);

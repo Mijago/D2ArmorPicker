@@ -44,6 +44,7 @@ import {
   updateSharedBuildCounts,
 } from "./armor-result-entries";
 import { PackedArmorSets, unpackArmorSets } from "./packed-armor-sets";
+import { retainMatchingResults } from "./armor-result-retention";
 import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { FORCE_USE_NO_EXOTIC, MAXIMUM_MASTERWORK_LEVEL } from "../data/constants";
 import { calculateCPUConcurrency } from "../data/commonFunctions";
@@ -158,6 +159,13 @@ export class ArmorCalculatorService implements OnDestroy {
   private static readonly IDLE_WORKER_LIFETIME_MS = 60000;
   private static theoreticalWorker?: Worker;
   private static freshEntries: ResultEntry[] = [];
+  // Results of the previous run that still match the current settings; shown until the new run
+  // finishes and replaced entry by entry as the same armor sets are recomputed.
+  private static retainedEntries: ResultEntry[] = [];
+  private static freshKeys = new Set<string>();
+  // Settings the entries above are valid for.
+  private static entriesConfig: BuildConfiguration | null = null;
+  private static runCounter = 0;
   private static inventoryById = new Map<number, IInventoryArmor>();
   private static savedResultsCount = 0;
   private static totalPermutationsCount = 0;
@@ -369,9 +377,40 @@ export class ArmorCalculatorService implements OnDestroy {
     );
   }
 
+  private keepMatchingResults(
+    config: BuildConfiguration,
+    pool: IPermutatorArmor[],
+    inventoryById: Map<number, IInventoryArmor>
+  ) {
+    const previousConfig = ArmorCalculatorService.entriesConfig;
+    const kept = previousConfig
+      ? retainMatchingResults(
+          ArmorCalculatorService.currentEntries(),
+          previousConfig,
+          config,
+          new Map(pool.map((item) => [item.id, item]))
+        )
+      : [];
+
+    ArmorCalculatorService.retainedEntries = kept
+      .map((entry) =>
+        buildResultEntry(entry.set, inventoryById, ArmorCalculatorService.sharedArmorExcludedSlots)
+      )
+      .sort(compareResultEntries);
+    ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.freshKeys.clear();
+    ArmorCalculatorService.allThreadsResultLimitReached = false;
+    ArmorCalculatorService.stoppedEarlyAtMaxTier = false;
+    // Snapshot: the live configuration object may be mutated in place.
+    ArmorCalculatorService.entriesConfig = JSON.parse(JSON.stringify(config));
+  }
+
   private clearResults(force: boolean = false) {
     ArmorCalculatorService.prePruneArmorItems = [];
     ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.retainedEntries = [];
+    ArmorCalculatorService.freshKeys.clear();
+    ArmorCalculatorService.entriesConfig = null;
     if (force || ArmorCalculatorService.endResults.length > 0) {
       ArmorCalculatorService.endResults = [];
       this._armorResults.next({
@@ -990,6 +1029,10 @@ export class ArmorCalculatorService implements OnDestroy {
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this._calculationProgress.next(0);
 
+    // The finished run replaces everything kept from the previous one.
+    ArmorCalculatorService.retainedEntries = [];
+    ArmorCalculatorService.freshKeys.clear();
+
     ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
       savedResults: ArmorCalculatorService.savedResultsCount, // Total amount of results, differs from the real amount if the memory save setting is active
       totalTime: performance.now() - ArmorCalculatorService.updateResultsStart,
@@ -1014,7 +1057,6 @@ export class ArmorCalculatorService implements OnDestroy {
   private processIntermediateResults(inventoryArmorItems: IInventoryArmor[]): void {
     // Do not toggle calculatingResults or reset progress; workers are still running.
     ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
-      savedResults: ArmorCalculatorService.freshEntries.length,
       totalTime: null,
       maximumPossibleTiers: ArmorCalculatorService.globalMaximumPossibleTiers.map(
         (k) => Math.min(200, k) / 10
@@ -1028,6 +1070,16 @@ export class ArmorCalculatorService implements OnDestroy {
     );
   }
 
+  private static currentEntries(): ResultEntry[] {
+    const retained =
+      ArmorCalculatorService.freshKeys.size === 0
+        ? ArmorCalculatorService.retainedEntries
+        : ArmorCalculatorService.retainedEntries.filter(
+            (entry) => !ArmorCalculatorService.freshKeys.has(entry.key)
+          );
+    return mergeResultEntries(retained, ArmorCalculatorService.freshEntries);
+  }
+
   private static ingestResults(armorSets: IPermutatorArmorSet[]): void {
     if (armorSets.length === 0) return;
     const batch = armorSets.map((armorSet) =>
@@ -1038,6 +1090,7 @@ export class ArmorCalculatorService implements OnDestroy {
       )
     );
     batch.sort(compareResultEntries);
+    for (const entry of batch) ArmorCalculatorService.freshKeys.add(entry.key);
     ArmorCalculatorService.freshEntries = mergeResultEntries(
       ArmorCalculatorService.freshEntries,
       batch
@@ -1047,11 +1100,10 @@ export class ArmorCalculatorService implements OnDestroy {
   private static publishResults(
     subject: BehaviorSubject<info>,
     itemCount: number,
-    summary: Pick<info, "savedResults" | "totalTime" | "maximumPossibleTiers">
+    summary: Pick<info, "totalTime" | "maximumPossibleTiers"> & { savedResults?: number }
   ): void {
-    ArmorCalculatorService.endResults = ArmorCalculatorService.freshEntries.map(
-      (entry) => entry.definition
-    );
+    const entries = ArmorCalculatorService.currentEntries();
+    ArmorCalculatorService.endResults = entries.map((entry) => entry.definition);
     updateSharedBuildCounts(ArmorCalculatorService.endResults);
     subject.next({
       results: ArmorCalculatorService.endResults,
@@ -1061,6 +1113,7 @@ export class ArmorCalculatorService implements OnDestroy {
       itemCount,
       prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
       ...summary,
+      savedResults: summary.savedResults ?? entries.length,
     });
   }
 
@@ -1501,9 +1554,9 @@ export class ArmorCalculatorService implements OnDestroy {
       );
       return;
     }
-    this.clearResults();
     this._totalPossibleCombinations.next(0);
     this.killWorkers();
+    const runId = ++ArmorCalculatorService.runCounter;
 
     // Reset cancellation state for the new calculation
     ArmorCalculatorService.cancellationRequested = false;
@@ -1517,7 +1570,6 @@ export class ArmorCalculatorService implements OnDestroy {
       this.status.modifyStatus((s) => (s.calculatingResults = true));
       this.status.modifyStatus((s) => (s.cancelledCalculation = false));
 
-      ArmorCalculatorService.freshEntries = [];
       ArmorCalculatorService.savedResultsCount = 0;
       ArmorCalculatorService.totalPermutationsCount = 0;
       this._computedPermutations.next(0);
@@ -1539,6 +1591,7 @@ export class ArmorCalculatorService implements OnDestroy {
       ArmorCalculatorService.selectedExotics = tempSelectedExotics.filter(
         (i: IManifestArmor) => !!i
       );
+      if (runId !== ArmorCalculatorService.runCounter) return;
       const selectedExoticSlots = new Set(
         ArmorCalculatorService.selectedExotics.map((exotic) => exotic.slot)
       );
@@ -1548,23 +1601,13 @@ export class ArmorCalculatorService implements OnDestroy {
           : new Set<ArmorSlot>();
 
       const preparedInventoryArmor = await this.filterAndPrepareInventoryItems(config);
+      // A newer calculation started while this one was loading; it owns the shared state now.
+      if (runId !== ArmorCalculatorService.runCounter) return;
       const inventoryArmorItems = preparedInventoryArmor.items;
       const armorPoolInventoryItems = [
         ...inventoryArmorItems,
         ...preparedInventoryArmor.duplicates,
       ];
-
-      this._armorResults.next({
-        results: [],
-        savedResults: 0,
-        totalPermutations: 0,
-        resultLimitReached: false,
-        stoppedEarlyAtMaxTier: false,
-        itemCount: inventoryArmorItems.length,
-        totalTime: null,
-        maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-        prePruneArmorItems: [],
-      });
 
       let permutatorArmorItems: IPermutatorArmor[] = inventoryArmorItems.map((armor) =>
         ArmorCalculatorService.convertInventoryArmorToPermutatorArmor(armor)
@@ -1586,6 +1629,10 @@ export class ArmorCalculatorService implements OnDestroy {
           armorPoolInventoryItems,
           permutatorArmorItems
         );
+        ArmorCalculatorService.retainedEntries = [];
+        ArmorCalculatorService.freshEntries = [];
+        ArmorCalculatorService.freshKeys.clear();
+        ArmorCalculatorService.entriesConfig = null;
         this._armorResults.next({
           results: [],
           savedResults: 0,
@@ -1624,16 +1671,10 @@ export class ArmorCalculatorService implements OnDestroy {
         permutatorArmorItems,
         prunedByMap
       );
-      this._armorResults.next({
-        results: [],
-        savedResults: 0,
-        totalPermutations: 0,
-        resultLimitReached: false,
-        stoppedEarlyAtMaxTier: false,
-        itemCount: inventoryArmorItems.length,
+      this.keepMatchingResults(config, permutatorArmorItems, inventoryById);
+      ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
         totalTime: null,
         maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
-        prePruneArmorItems: ArmorCalculatorService.prePruneArmorItems,
       });
       nthreads = ArmorCalculatorService.estimateRequiredThreads(config, permutatorArmorItems);
       this.logger.info("ArmorCalculatorService", "updateResults", "Estimated threads: " + nthreads);
