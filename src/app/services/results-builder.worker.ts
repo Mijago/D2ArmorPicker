@@ -27,12 +27,12 @@ import {
 import { ModInformation } from "../data/ModInformation";
 import {
   ArmorPerkOrSlot,
-  ArmorPerkSocketHashes,
   ArmorStat,
   SpecialArmorStat,
   STAT_MOD_VALUES,
   StatModifier,
 } from "../data/enum/armor-stat";
+import { ArmorRequirementMatcher } from "../data/armor-requirements";
 
 import { environment } from "../../environments/environment";
 
@@ -59,7 +59,6 @@ const currentTheoreticalMaximum = () => theoreticalMaximumTiers;
 // Module-level configuration to avoid passing around
 let assumeEveryLegendaryIsArtifice: boolean;
 let assumeEveryExoticIsArtifice: boolean;
-let assumeClassItemIsArtifice: boolean;
 let calculateTierFiveTuning: boolean;
 let onlyShowResultsWithNoWastedStats: boolean;
 let tryLimitWastedStats: boolean;
@@ -72,18 +71,11 @@ let minimumStatTierValues: number[];
 
 // Module-level constants for performance
 let enabledModBonuses: number[];
-let requiredPerkSlotCounts: Map<number, number>;
+let requirementMatcher: ArmorRequirementMatcher;
 let targetVals: number[];
 let targetFixed: boolean[];
 let possibleIncreaseByMod: number;
 let resultLimitReached: boolean = false;
-
-// Precompute the numeric ArmorPerkOrSlot values so we can distinguish
-// between regular perk requirements and numeric gearSetHash requirements
-// inside the shared requirements map.
-const armorPerkValues = new Set<number>(
-  Object.values(ArmorPerkOrSlot).filter((v) => typeof v === "number") as number[]
-);
 
 export type t5Improvement = {
   tuningStat: ArmorStat | null;
@@ -185,58 +177,68 @@ function annotateArmor(pieces: IPermutatorArmor[], config: BuildConfiguration): 
   }
 }
 
-function groupCanReachTargets(
-  baseItems: readonly IPermutatorArmor[],
-  variableCandidates: readonly IPermutatorArmor[]
-): boolean {
-  if (variableCandidates.length === 0) return false;
+/**
+ * Optimistic reach of a partially chosen armor set: chosen pieces plus the best remaining piece per
+ * slot and stat. A failed check means no completion can meet the targets.
+ */
+class PartialReachBound {
+  private readonly prefix: Int32Array;
+  private readonly prefixArtifice: Int32Array;
+  private readonly suffix: Int32Array;
+  private readonly suffixArtifice: Int32Array;
+  /** Number of leaf combinations below a node that has chosen `level` pieces. */
+  readonly suffixCount: number[];
 
-  const baseStats = [0, 0, 0, 0, 0, 0];
-  const baseTuning = [0, 0, 0, 0, 0, 0];
-  let baseArtifice = 0;
-  for (const item of baseItems as readonly AnnotatedArmor[]) {
-    baseArtifice += item._art;
-    for (let stat = 0; stat < 6; stat++) {
-      baseStats[stat] += item._mw[stat];
-      baseTuning[stat] += item._tune[stat];
+  constructor(
+    pools: readonly IPermutatorArmor[][],
+    private readonly healthConstant: number
+  ) {
+    const levels = pools.length;
+    this.prefix = new Int32Array((levels + 1) * 6);
+    this.prefixArtifice = new Int32Array(levels + 1);
+    this.suffix = new Int32Array((levels + 1) * 6);
+    this.suffixArtifice = new Int32Array(levels + 1);
+    this.suffixCount = new Array<number>(levels + 1).fill(1);
+    for (let level = levels - 1; level >= 0; level--) {
+      let artifice = 0;
+      for (let stat = 0; stat < 6; stat++) {
+        let reach = 0;
+        for (const item of pools[level] as AnnotatedArmor[]) {
+          reach = Math.max(reach, item._mw[stat] + item._tune[stat]);
+        }
+        this.suffix[level * 6 + stat] = this.suffix[(level + 1) * 6 + stat] + reach;
+      }
+      for (const item of pools[level] as AnnotatedArmor[]) artifice = Math.max(artifice, item._art);
+      this.suffixArtifice[level] = this.suffixArtifice[level + 1] + artifice;
+      this.suffixCount[level] = this.suffixCount[level + 1] * pools[level].length;
     }
   }
 
-  const candidateReach = [0, 0, 0, 0, 0, 0];
-  let candidateArtifice = 0;
-  for (const item of variableCandidates as readonly AnnotatedArmor[]) {
-    candidateArtifice = Math.max(candidateArtifice, item._art);
+  /** Chooses `item` as piece number `level` (0-based) and reports whether a completion can still work. */
+  descend(level: number, item: IPermutatorArmor): boolean {
+    const annotated = item as AnnotatedArmor;
+    const next = level + 1;
     for (let stat = 0; stat < 6; stat++) {
-      candidateReach[stat] = Math.max(candidateReach[stat], item._mw[stat] + item._tune[stat]);
+      this.prefix[next * 6 + stat] =
+        this.prefix[level * 6 + stat] + annotated._mw[stat] + annotated._tune[stat];
     }
-  }
+    this.prefixArtifice[next] = this.prefixArtifice[level] + annotated._art;
 
-  const sharedBudget = possibleIncreaseByMod + 3 * (baseArtifice + candidateArtifice);
-  const baseChest = baseItems.find((item) => item.slot === ArmorSlot.ArmorSlotChest);
-  const minimumHealthBonus = addConstent1Health
-    ? baseChest
-      ? baseChest.isExotic
-        ? 0
-        : 1
-      : variableCandidates.some((item) => item.isExotic)
-        ? 0
-        : 1
-    : 0;
-  let residualGap = 0;
-  for (let stat = 0; stat < 6; stat++) {
-    const constantHealth = stat === ArmorStat.StatHealth ? minimumHealthBonus : 0;
-    if (targetVals[stat] <= 0) continue;
-    const reachWithoutSharedBudget =
-      enabledModBonuses[stat] +
-      baseStats[stat] +
-      baseTuning[stat] +
-      candidateReach[stat] +
-      constantHealth;
-    if (reachWithoutSharedBudget + sharedBudget < targetVals[stat]) return false;
-    residualGap += Math.max(0, targetVals[stat] - reachWithoutSharedBudget);
+    const sharedBudget =
+      possibleIncreaseByMod + 3 * (this.prefixArtifice[next] + this.suffixArtifice[next]);
+    let residualGap = 0;
+    for (let stat = 0; stat < 6; stat++) {
+      if (targetVals[stat] <= 0) continue;
+      const reach =
+        enabledModBonuses[stat] +
+        this.prefix[next * 6 + stat] +
+        this.suffix[next * 6 + stat] +
+        (stat === ArmorStat.StatHealth ? this.healthConstant : 0);
+      if (reach + sharedBudget < targetVals[stat]) return false;
+      residualGap += Math.max(0, targetVals[stat] - reach);
+    }
+    return residualGap <= sharedBudget;
   }
-
-  return residualGap <= sharedBudget;
 }
 
 /**
@@ -285,68 +287,6 @@ function applyMWAndCheckArtifice(item: IPermutatorArmor, stats: number[]): boole
 }
 
 // region Validation and Preparation Functions
-function checkSlots(
-  helmet: IPermutatorArmor,
-  gauntlet: IPermutatorArmor,
-  chest: IPermutatorArmor,
-  leg: IPermutatorArmor,
-  classItem: IPermutatorArmor
-): boolean {
-  let requirements = new Map(requiredPerkSlotCounts);
-  const items = [helmet, gauntlet, chest, leg, classItem];
-
-  // Items with gearSetPerkSelectable can fulfill any single gear set
-  // requirement (their gearSetHash will be null), so we track how many
-  // such wildcard items we have and apply them after normal counting.
-  let selectableGearSetItems = 0;
-
-  for (let item of items) {
-    let effectivePerk = item.perk;
-
-    if (item.armorSystem === ArmorSystem.Armor2) {
-      if (
-        (item.isExotic && assumeEveryExoticIsArtifice) ||
-        (!item.isExotic &&
-          (assumeEveryLegendaryIsArtifice ||
-            (item.slot == ArmorSlot.ArmorSlotClass && assumeClassItemIsArtifice)))
-      ) {
-        effectivePerk = ArmorPerkOrSlot.SlotArtifice;
-      }
-    }
-
-    requirements.set(effectivePerk, (requirements.get(effectivePerk) ?? 0) - 1);
-
-    if (item.gearSetPerkSelectable) {
-      selectableGearSetItems++;
-    }
-
-    if (item.gearSetHash != null)
-      requirements.set(item.gearSetHash, (requirements.get(item.gearSetHash) ?? 0) - 1);
-  }
-
-  let remainingPerkRequirements = 0;
-  let remainingGearSetRequirements = 0;
-
-  for (let [key, value] of requirements) {
-    if (key == ArmorPerkOrSlot.Any || key == ArmorPerkOrSlot.None) continue;
-    const remaining = Math.max(0, value ?? 0);
-    if (remaining === 0) continue;
-
-    if (armorPerkValues.has(key)) {
-      remainingPerkRequirements += remaining;
-    } else {
-      // Treat non-perk numeric keys as gear set requirements
-      remainingGearSetRequirements += remaining;
-    }
-  }
-
-  // Each selectable gear set item can satisfy one remaining gear set
-  // requirement, regardless of which specific gear set hash it is.
-  remainingGearSetRequirements = Math.max(0, remainingGearSetRequirements - selectableGearSetItems);
-
-  return remainingPerkRequirements + remainingGearSetRequirements === 0;
-}
-
 function computeEnabledModBonuses(config: BuildConfiguration) {
   const enabledModBonuses = [0, 0, 0, 0, 0, 0];
   // Apply configurated mods to the stat value
@@ -363,140 +303,79 @@ function computeEnabledModBonuses(config: BuildConfiguration) {
   return enabledModBonuses;
 }
 
-function calculateRequiredPerkCounts(config: BuildConfiguration) {
-  let constantPerkRequirement = new Map<ArmorPerkOrSlot, number>();
+/** Marks a point where the consumer may report progress; carries no armor combination. */
+const COMBINATION_TICK = [] as unknown as ArmorCombination;
+// Leaf combinations skipped by pruning that the consumer has not yet counted as checked.
+let skippedCombinations = 0;
+const TICK_INTERVAL = 2048;
 
-  for (let [key] of constantPerkRequirement) {
-    constantPerkRequirement.set(key, 0);
-  }
-
-  for (const requirement of config.armorRequirements) {
-    if ("perk" in requirement) {
-      let perk = requirement.perk;
-
-      const e = Object.entries(ArmorPerkSocketHashes).find(([, value]) => value == perk);
-      if (e) perk = Number.parseInt(e[0]) as any as ArmorPerkOrSlot;
-
-      if (perk != ArmorPerkOrSlot.Any && perk != ArmorPerkOrSlot.None) {
-        constantPerkRequirement.set(perk, (constantPerkRequirement.get(perk) ?? 0) + 1);
-      }
-    } else if ("gearSetHash" in requirement) {
-      // Gear set requirement
-      constantPerkRequirement.set(
-        requirement.gearSetHash,
-        (constantPerkRequirement.get(requirement.gearSetHash) ?? 0) + 1
-      );
-    }
-  }
-  return constantPerkRequirement;
-}
-
+/**
+ * Enumerates armor combinations in the same order as nested loops would: for each exotic slot (then
+ * all-legendary) the remaining slots in canonical order, with the varying slot innermost. Subtrees
+ * that cannot reach the targets are skipped. The yielded array is reused between iterations.
+ */
 function* generateArmorCombinations(
-  helmets: IPermutatorArmor[],
-  gauntlets: IPermutatorArmor[],
-  chests: IPermutatorArmor[],
-  legs: IPermutatorArmor[],
-  classItems: IPermutatorArmor[],
+  slots: readonly IPermutatorArmor[][],
   yieldExoticCombinations: boolean,
   yieldAllLegendary: boolean
 ): Generator<ArmorCombination> {
-  const legendaryHelmets = helmets.filter((h) => !h.isExotic);
-  const legendaryGauntlets = gauntlets.filter((g) => !g.isExotic);
-  const legendaryChests = chests.filter((c) => !c.isExotic);
-  const legendaryLegs = legs.filter((l) => !l.isExotic);
-  const legendaryClassItems = classItems.filter((d) => !d.isExotic);
+  const legendary = slots.map((slot) => slot.filter((item) => !item.isExotic));
+  const exotic = slots.map((slot) => slot.filter((item) => item.isExotic));
+  const combination: unknown[] = new Array(8);
+  const useBound = targetVals.some((target) => target > 0);
+  let prunedNodes = 0;
 
-  // Yield combinations with exactly one exotic item and legendaries in all other slots
+  const blocks: { exoticSlot: number; variableSlot: number }[] = [];
   if (yieldExoticCombinations) {
-    const exoticHelmets = helmets.filter((h) => h.isExotic);
-    const exoticGauntlets = gauntlets.filter((g) => g.isExotic);
-    const exoticChests = chests.filter((c) => c.isExotic);
-    const exoticLegs = legs.filter((l) => l.isExotic);
-    const exoticClassItems = classItems.filter((d) => d.isExotic);
-
-    for (const gauntlet of legendaryGauntlets)
-      for (const chest of legendaryChests)
-        for (const leg of legendaryLegs)
-          for (const classItem of legendaryClassItems) {
-            const base = [gauntlet, chest, leg, classItem] as const;
-            for (const helmet of exoticHelmets)
-              yield [helmet, gauntlet, chest, leg, classItem, base, helmet, exoticHelmets] as const;
-          }
-
-    for (const helmet of legendaryHelmets)
-      for (const chest of legendaryChests)
-        for (const leg of legendaryLegs)
-          for (const classItem of legendaryClassItems) {
-            const base = [helmet, chest, leg, classItem] as const;
-            for (const gauntlet of exoticGauntlets)
-              yield [
-                helmet,
-                gauntlet,
-                chest,
-                leg,
-                classItem,
-                base,
-                gauntlet,
-                exoticGauntlets,
-              ] as const;
-          }
-
-    for (const helmet of legendaryHelmets)
-      for (const gauntlet of legendaryGauntlets)
-        for (const leg of legendaryLegs)
-          for (const classItem of legendaryClassItems) {
-            const base = [helmet, gauntlet, leg, classItem] as const;
-            for (const chest of exoticChests)
-              yield [helmet, gauntlet, chest, leg, classItem, base, chest, exoticChests] as const;
-          }
-
-    for (const helmet of legendaryHelmets)
-      for (const gauntlet of legendaryGauntlets)
-        for (const chest of legendaryChests)
-          for (const classItem of legendaryClassItems) {
-            const base = [helmet, gauntlet, chest, classItem] as const;
-            for (const leg of exoticLegs)
-              yield [helmet, gauntlet, chest, leg, classItem, base, leg, exoticLegs] as const;
-          }
-
-    for (const helmet of legendaryHelmets)
-      for (const gauntlet of legendaryGauntlets)
-        for (const chest of legendaryChests)
-          for (const leg of legendaryLegs) {
-            const base = [helmet, gauntlet, chest, leg] as const;
-            for (const classItem of exoticClassItems)
-              yield [
-                helmet,
-                gauntlet,
-                chest,
-                leg,
-                classItem,
-                base,
-                classItem,
-                exoticClassItems,
-              ] as const;
-          }
+    for (let slot = 0; slot < 5; slot++) blocks.push({ exoticSlot: slot, variableSlot: slot });
   }
+  if (yieldAllLegendary) blocks.push({ exoticSlot: -1, variableSlot: 4 });
 
-  // Yield all-legendary combinations
-  if (yieldAllLegendary) {
-    for (const helmet of legendaryHelmets)
-      for (const gauntlet of legendaryGauntlets)
-        for (const chest of legendaryChests)
-          for (const leg of legendaryLegs) {
-            const base = [helmet, gauntlet, chest, leg] as const;
-            for (const classItem of legendaryClassItems)
-              yield [
-                helmet,
-                gauntlet,
-                chest,
-                leg,
-                classItem,
-                base,
-                classItem,
-                legendaryClassItems,
-              ] as const;
+  for (const { exoticSlot, variableSlot } of blocks) {
+    const order = [0, 1, 2, 3, 4].filter((slot) => slot !== variableSlot);
+    order.push(variableSlot);
+    const pools = order.map((slot) => (slot === exoticSlot ? exotic[slot] : legendary[slot]));
+    if (pools.some((pool) => pool.length === 0)) continue;
+
+    const bound = new PartialReachBound(pools, addConstent1Health && exoticSlot !== 2 ? 1 : 0);
+    const [pool0, pool1, pool2, pool3, variablePool] = pools;
+
+    // Skips the subtree below a node that has chosen `level + 1` pieces; returns whether to descend.
+    const enter = (level: number, item: IPermutatorArmor): boolean => {
+      combination[order[level]] = item;
+      if (!useBound || bound.descend(level, item)) return true;
+      skippedCombinations += bound.suffixCount[level + 1];
+      prunedNodes++;
+      return false;
+    };
+
+    for (const item0 of pool0) {
+      if (prunedNodes >= TICK_INTERVAL) {
+        prunedNodes = 0;
+        yield COMBINATION_TICK;
+      }
+      if (!enter(0, item0)) continue;
+      for (const item1 of pool1) {
+        if (prunedNodes >= TICK_INTERVAL) {
+          prunedNodes = 0;
+          yield COMBINATION_TICK;
+        }
+        if (!enter(1, item1)) continue;
+        for (const item2 of pool2) {
+          if (!enter(2, item2)) continue;
+          for (const item3 of pool3) {
+            if (!enter(3, item3)) continue;
+            combination[5] = [item0, item1, item2, item3];
+            combination[7] = variablePool;
+            for (const variableItem of variablePool) {
+              combination[order[4]] = variableItem;
+              combination[6] = variableItem;
+              yield combination as unknown as ArmorCombination;
+            }
           }
+        }
+      }
+    }
   }
 }
 
@@ -576,7 +455,7 @@ function computeNoTargetMaximumTiers(
     targetFixed.some(Boolean) ||
     tryLimitWastedStats ||
     onlyShowResultsWithNoWastedStats ||
-    requiredPerkSlotCounts.size > 0
+    requirementMatcher.size > 0
   ) {
     return null;
   }
@@ -675,7 +554,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
 
   // Initialize module-level constants directly from config
   enabledModBonuses = computeEnabledModBonuses(config);
-  requiredPerkSlotCounts = calculateRequiredPerkCounts(config);
+  requirementMatcher = new ArmorRequirementMatcher(config);
 
   // Initialize target values and configuration flags
   targetVals = [0, 0, 0, 0, 0, 0];
@@ -691,7 +570,6 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   possibleIncreaseByMod = 10 * maxMajorMods + 5 * Math.max(0, maxMods - maxMajorMods);
   assumeEveryLegendaryIsArtifice = !!config.assumeEveryLegendaryIsArtifice;
   assumeEveryExoticIsArtifice = !!config.assumeEveryExoticIsArtifice;
-  assumeClassItemIsArtifice = !!config.assumeClassItemIsArtifice;
   calculateTierFiveTuning = !!config.calculateTierFiveTuning;
   onlyShowResultsWithNoWastedStats = !!config.onlyShowResultsWithNoWastedStats;
   tryLimitWastedStats = !!config.tryLimitWastedStats;
@@ -781,33 +659,23 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   let stoppedEarlyAtMaxTier = false;
   let lastProgressReportTime = 0;
   let cachedTuningBase: TuningBaseCache = { items: [], accumulator: null };
-  let cachedGroupBaseItems: readonly IPermutatorArmor[] | null = null;
-  let cachedGroupCanReachTargets = true;
+  let iterations = 0;
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 250ms
   let progressBarDelay = estimatedCalculations >= 1e6 ? 250 : 75;
 
   resultLimitReached = false;
+  skippedCombinations = 0;
 
-  for (let [
-    helmet,
-    gauntlet,
-    chest,
-    leg,
-    classItem,
-    tuningBaseItems,
-    tuningVariableItem,
-    tuningVariableCandidates,
-  ] of generateArmorCombinations(
-    helmets,
-    gauntlets,
-    chests,
-    legs,
-    classItems,
+  for (const combination of generateArmorCombinations(
+    [helmets, gauntlets, chests, legs, classItems],
     yieldExoticCombinations,
     yieldAllLegendary
   )) {
+    checkedCalculations += skippedCombinations;
+    skippedCombinations = 0;
+
     if (cancelRequested) {
       console.log(
         `Thread #${threadSplit.current} received cancel request, stopping calculation early.`
@@ -831,65 +699,63 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       }
     }
 
-    checkedCalculations++;
-    if (cachedGroupBaseItems !== tuningBaseItems) {
-      cachedGroupCanReachTargets = groupCanReachTargets(tuningBaseItems, tuningVariableCandidates);
-      cachedGroupBaseItems = tuningBaseItems;
-    }
-    if (!cachedGroupCanReachTargets) continue;
-    if (!checkSlots(helmet, gauntlet, chest, leg, classItem)) continue;
+    if (combination !== COMBINATION_TICK) {
+      checkedCalculations++;
+      const [helmet, gauntlet, chest, leg, classItem, tuningBaseItems, tuningVariableItem] =
+        combination;
 
-    if (cachedTuningBase.items !== tuningBaseItems) {
-      cachedTuningBase = { items: tuningBaseItems, accumulator: null };
-    }
-
-    // Only calculate more permutations if the results limit has not been reached yet and
-    const result = handlePermutation(
-      helmet,
-      gauntlet,
-      chest,
-      leg,
-      classItem,
-      cachedTuningBase,
-      tuningVariableItem,
-      noTargetMaximumTiers !== null
-    );
-    // Only add 50k to the list if the setting is activated.
-    // We will still calculate the rest so that we get accurate results for the runtime values
-    if (!!result) {
-      computedResults++;
-      // Track the best result
-      const resultSkillTier = getSkillTier(result.statsWithMods);
-      const resultWaste = getWaste(result.statsWithMods);
-      if (
-        bestResult === null ||
-        resultSkillTier > bestSkillTier ||
-        (resultSkillTier === bestSkillTier && resultWaste < bestWaste)
-      ) {
-        bestResult = result;
-        bestSkillTier = resultSkillTier;
-        bestWaste = resultWaste;
-        bestResultSent = false; // Reset since we have a new best
-      }
-
-      if (!resultLimitReached) {
-        resultsSent++;
-        results.push(result);
-        resultsLength++;
-        listedResults++;
-
-        // Check if we just added the best result
-        if (result === bestResult) {
-          bestResultSent = true;
+      if (requirementMatcher.matches(helmet, gauntlet, chest, leg, classItem)) {
+        if (cachedTuningBase.items !== tuningBaseItems) {
+          cachedTuningBase = { items: tuningBaseItems, accumulator: null };
         }
 
-        resultLimitReached =
-          config.parsedResultLimit > 0 &&
-          listedResults >= config.parsedResultLimit / threadSplit.count;
-        if (resultLimitReached) {
-          console.log(
-            `Thread #${threadSplit.current} reached result limit of ${listedResults} results`
-          );
+        const result = handlePermutation(
+          helmet,
+          gauntlet,
+          chest,
+          leg,
+          classItem,
+          cachedTuningBase,
+          tuningVariableItem,
+          noTargetMaximumTiers !== null
+        );
+        // The result list may be capped, but everything is still computed for accurate runtime values.
+        if (!!result) {
+          computedResults++;
+          // Track the best result
+          const resultSkillTier = getSkillTier(result.statsWithMods);
+          const resultWaste = getWaste(result.statsWithMods);
+          if (
+            bestResult === null ||
+            resultSkillTier > bestSkillTier ||
+            (resultSkillTier === bestSkillTier && resultWaste < bestWaste)
+          ) {
+            bestResult = result;
+            bestSkillTier = resultSkillTier;
+            bestWaste = resultWaste;
+            bestResultSent = false; // Reset since we have a new best
+          }
+
+          if (!resultLimitReached) {
+            resultsSent++;
+            results.push(result);
+            resultsLength++;
+            listedResults++;
+
+            // Check if we just added the best result
+            if (result === bestResult) {
+              bestResultSent = true;
+            }
+
+            resultLimitReached =
+              config.parsedResultLimit > 0 &&
+              listedResults >= config.parsedResultLimit / threadSplit.count;
+            if (resultLimitReached) {
+              console.log(
+                `Thread #${threadSplit.current} reached result limit of ${listedResults} results`
+              );
+            }
+          }
         }
       }
     }
@@ -913,7 +779,11 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       results = [];
       resultsLength = 0;
       await new Promise((resolve) => setTimeout(resolve, 0));
-    } else if (lastProgressReportTime + progressBarDelay < performance.now()) {
+    } else if (
+      // Pruned combinations skip the work above, so progress and queued messages are serviced here.
+      (++iterations & 15) === 0 &&
+      lastProgressReportTime + progressBarDelay < performance.now()
+    ) {
       lastProgressReportTime = performance.now();
       postMessage({
         checkedCalculations,
@@ -924,6 +794,8 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
   }
+  checkedCalculations += skippedCombinations;
+  skippedCombinations = 0;
   console.timeEnd(`Total run thread #${threadSplit.current}`);
 
   // Check if the best result is in the final batch
