@@ -160,6 +160,10 @@ export class ArmorCalculatorService implements OnDestroy {
   private static readonly IDLE_WORKER_LIFETIME_MS = 60000;
   private static theoreticalWorker?: Worker;
   private static freshEntries: ResultEntry[] = [];
+  // Worker batches wait here and are merged once per publish, not once per message.
+  private static pendingResultSets: IPermutatorArmorSet[] = [];
+  // Duration of the last intermediate publish; the next one waits proportionally longer.
+  private static lastPublishCost = 0;
   // Results of the previous run that still match the current settings; shown until the new run
   // finishes and replaced entry by entry as the same armor sets are recomputed.
   private static retainedEntries: ResultEntry[] = [];
@@ -402,6 +406,7 @@ export class ArmorCalculatorService implements OnDestroy {
       )
       .sort(compareResultEntries);
     ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.pendingResultSets = [];
     ArmorCalculatorService.freshKeys.clear();
     ArmorCalculatorService.allThreadsResultLimitReached = false;
     ArmorCalculatorService.stoppedEarlyAtMaxTier = false;
@@ -412,6 +417,7 @@ export class ArmorCalculatorService implements OnDestroy {
   private clearResults(force: boolean = false) {
     ArmorCalculatorService.prePruneArmorItems = [];
     ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.pendingResultSets = [];
     ArmorCalculatorService.retainedEntries = [];
     ArmorCalculatorService.freshKeys.clear();
     ArmorCalculatorService.entriesConfig = null;
@@ -585,6 +591,7 @@ export class ArmorCalculatorService implements OnDestroy {
     ArmorCalculatorService.intermediatePublishTimer = null;
     ArmorCalculatorService.retainedEntries = [];
     ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.pendingResultSets = [];
     ArmorCalculatorService.freshKeys.clear();
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this._calculationProgress.next(0);
@@ -1056,7 +1063,7 @@ export class ArmorCalculatorService implements OnDestroy {
 
     // Add partial results to the collection
     const partialResults = data.packed ? unpackArmorSets(data.packed) : [];
-    ArmorCalculatorService.ingestResults(partialResults);
+    for (const armorSet of partialResults) ArmorCalculatorService.pendingResultSets.push(armorSet);
     if (partialResults.length > 0 && !data.done) {
       this.processIntermediateResults(inventoryArmorItems);
     }
@@ -1111,7 +1118,10 @@ export class ArmorCalculatorService implements OnDestroy {
     // Workers deliver small batches early, so publish at most once per interval (first one at once).
     const itemCount = inventoryArmorItems.length;
     const wait =
-      ArmorCalculatorService.INTERMEDIATE_PUBLISH_INTERVAL_MS -
+      Math.max(
+        ArmorCalculatorService.INTERMEDIATE_PUBLISH_INTERVAL_MS,
+        ArmorCalculatorService.lastPublishCost * 4
+      ) -
       (performance.now() - ArmorCalculatorService.lastIntermediatePublish);
     if (wait > 0) {
       if (ArmorCalculatorService.intermediatePublishTimer == null) {
@@ -1128,7 +1138,7 @@ export class ArmorCalculatorService implements OnDestroy {
   private publishIntermediateResults(itemCount: number): void {
     clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
     ArmorCalculatorService.intermediatePublishTimer = null;
-    ArmorCalculatorService.lastIntermediatePublish = performance.now();
+    const publishStart = performance.now();
     // Do not toggle calculatingResults or reset progress; workers are still running.
     ArmorCalculatorService.publishResults(this._armorResults, itemCount, {
       totalTime: null,
@@ -1136,6 +1146,9 @@ export class ArmorCalculatorService implements OnDestroy {
         (k) => Math.min(200, k) / 10
       ),
     });
+    ArmorCalculatorService.lastIntermediatePublish = performance.now();
+    ArmorCalculatorService.lastPublishCost =
+      ArmorCalculatorService.lastIntermediatePublish - publishStart;
   }
 
   private static currentEntries(): ResultEntry[] {
@@ -1170,6 +1183,8 @@ export class ArmorCalculatorService implements OnDestroy {
     itemCount: number,
     summary: Pick<info, "totalTime" | "maximumPossibleTiers"> & { savedResults?: number }
   ): void {
+    ArmorCalculatorService.ingestResults(ArmorCalculatorService.pendingResultSets);
+    ArmorCalculatorService.pendingResultSets = [];
     const entries = ArmorCalculatorService.currentEntries();
     ArmorCalculatorService.endResults = entries.map((entry) => entry.definition);
     updateSharedBuildCounts(ArmorCalculatorService.endResults);
@@ -1634,6 +1649,7 @@ export class ArmorCalculatorService implements OnDestroy {
     clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
     ArmorCalculatorService.intermediatePublishTimer = null;
     ArmorCalculatorService.lastIntermediatePublish = 0;
+    ArmorCalculatorService.lastPublishCost = 0;
 
     // Reset cancellation state for the new calculation
     ArmorCalculatorService.cancellationRequested = false;
@@ -1708,6 +1724,7 @@ export class ArmorCalculatorService implements OnDestroy {
         );
         ArmorCalculatorService.retainedEntries = [];
         ArmorCalculatorService.freshEntries = [];
+        ArmorCalculatorService.pendingResultSets = [];
         ArmorCalculatorService.freshKeys.clear();
         ArmorCalculatorService.entriesConfig = null;
         this._armorResults.next({

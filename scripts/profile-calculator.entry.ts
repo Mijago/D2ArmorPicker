@@ -2,3 +2,4 @@
 export { ArmorCalculatorService } from "../src/app/services/armor-calculator.service";
 export { BuildConfiguration } from "../src/app/data/buildConfiguration";
 export { ArmorStat } from "../src/app/data/enum/armor-stat";
+export { unpackArmorSets } from "../src/app/services/packed-armor-sets";

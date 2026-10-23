@@ -107,13 +107,14 @@ function prepareWorkerItems(service, calculator, prepared, config) {
   return { items, poolBefore, deduped: prepared.items.length, duplicates: prepared.duplicates.length };
 }
 
-function runWorker(config, items, seconds) {
+function runWorker(config, items, seconds, recorded, unpack) {
   const log = console.log;
   const time = console.time;
   const timeEnd = console.timeEnd;
   console.log = console.time = console.timeEnd = () => {};
   return new Promise((resolve) => {
     let results = 0;
+    let unpackMs = 0;
     let last = null;
     let progress = null;
     const started = performance.now();
@@ -126,15 +127,25 @@ function runWorker(config, items, seconds) {
         }, 2000)
       : null;
     globalThis.__onWorkerMessage = (message) => {
-      if (message.packed) results += message.packed.count;
+      if (message.packed) {
+        results += message.packed.count;
+        if (recorded) {
+          const unpackStart = performance.now();
+          const sets = unpack(message.packed);
+          unpackMs += performance.now() - unpackStart;
+          recorded.push({ t: unpackStart - started, sets });
+        }
+      }
       if (message.checkedCalculations !== undefined) progress = message;
       if (message.done) {
         last = message;
         clearTimeout(timer);
+        clearInterval(memoryTimer);
         console.log = log;
         console.time = time;
         console.timeEnd = timeEnd;
         resolve({
+          unpackMs,
           ms: performance.now() - started,
           results,
           checked: last.checkedCalculations,
@@ -159,6 +170,57 @@ function runWorker(config, items, seconds) {
   });
 }
 
+function regroup(messages) {
+  const grouped = [];
+  let pending = null;
+  for (const message of messages) {
+    pending ??= { t: message.t, sets: [] };
+    pending.sets.push(...message.sets);
+    pending.t = message.t;
+    if (pending.sets.length >= 5000) {
+      grouped.push(pending);
+      pending = null;
+    }
+  }
+  if (pending) grouped.push(pending);
+  return grouped;
+}
+
+// Replays the recorded worker messages through the service's ingest and throttled publish.
+function simulateMain(calculator, recorded, label, transform) {
+  calculator["freshEntries"] = [];
+  calculator["pendingResultSets"] = [];
+  calculator["freshKeys"].clear();
+  calculator["retainedEntries"] = [];
+  const messages = transform(recorded);
+  const subject = { next() {} };
+  let publishMs = 0;
+  let maxPublish = 0;
+  let publishes = 0;
+  let lastPublish = -Infinity;
+  const publish = () => {
+    const start = performance.now();
+    calculator["publishResults"](subject, 0, { totalTime: null, maximumPossibleTiers: [0, 0, 0, 0, 0, 0] });
+    const took = performance.now() - start;
+    publishMs += took;
+    maxPublish = Math.max(maxPublish, took);
+    publishes++;
+  };
+  for (const message of messages) {
+    for (const armorSet of message.sets) calculator["pendingResultSets"].push(armorSet);
+    if (message.t - lastPublish >= 200) {
+      lastPublish = message.t;
+      publish();
+    }
+  }
+  publish();
+  const total = calculator["freshEntries"].length;
+  console.log(
+    `    ${label.padEnd(24)} messages ${String(messages.length).padStart(4)}  ` +
+      `publishes ${publishes}  ingest+publish ${publishMs.toFixed(0)}ms (max ${maxPublish.toFixed(0)}ms, ${total} results)`
+  );
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -170,13 +232,14 @@ async function main() {
       vendor: { type: "boolean", default: false },
       summarize: { type: "string" },
       config: { type: "string" },
+      "main-sim": { type: "boolean", default: false },
     },
   });
   if (values.summarize) return summarize(values.summarize);
   if (!values.input) throw new Error("Provide --input <armor.json> or --summarize <file.cpuprofile>.");
 
   const bundlePath = await bundle();
-  const { ArmorCalculatorService, BuildConfiguration } = require(bundlePath);
+  const { ArmorCalculatorService, BuildConfiguration, unpackArmorSets } = require(bundlePath);
   const inventory = JSON.parse(fs.readFileSync(values.input, "utf8"));
   const classes = values.class !== undefined ? [Number(values.class)] : [0, 1, 2];
 
@@ -219,13 +282,26 @@ async function main() {
       const pool = prepareWorkerItems(service, ArmorCalculatorService, prepared, config);
       const perSlot = [1, 2, 3, 4, 5].map((slot) => pool.items.filter((item) => item.slot === slot).length);
       process.stdout.write(`  ${name}: pool ${pool.items.length} [${perSlot.join("/")}], running worker\n`);
-      const outcome = await runWorker(config, pool.items, Number(values.seconds));
+      const recorded = values["main-sim"] ? [] : null;
+      const outcome = await runWorker(config, pool.items, Number(values.seconds), recorded, unpackArmorSets);
       console.log(
         `  ${name.padEnd(18)} pool ${pool.items.length} [${perSlot.join("/")}] (distinct ${pool.deduped}, pruned ${pool.poolBefore - pool.items.length}) ` +
           `combos ${outcome.estimated.toLocaleString()} checked ${outcome.checked.toLocaleString()} computed ${outcome.computed.toLocaleString()} ` +
           `results ${outcome.results} ${(outcome.ms / 1000).toFixed(2)}s` +
           `${outcome.cancelled ? " CANCELLED" : ""}${outcome.stoppedEarly ? " stopped-early" : ""}${outcome.limit ? " limit" : ""}`
       );
+      if (recorded) {
+        ArmorCalculatorService["inventoryById"] = new Map(prepared.items.map((armor) => [armor.id, armor]));
+        console.log(`  main thread (unpack of ${recorded.length} messages: ${outcome.unpackMs.toFixed(0)}ms)`);
+        simulateMain(ArmorCalculatorService, recorded, "as posted by the worker", (r) => r);
+        simulateMain(ArmorCalculatorService, recorded, "regrouped into 5000", regroup);
+        const copies = (n) => (messages) =>
+          Array.from({ length: n }, () => messages)
+            .flat()
+            .sort((a, b) => a.t - b.t);
+        simulateMain(ArmorCalculatorService, recorded, "x8 workers as posted", copies(8));
+        simulateMain(ArmorCalculatorService, recorded, "x8 workers regrouped", (m) => regroup(copies(8)(m)));
+      }
     }
   }
 }
