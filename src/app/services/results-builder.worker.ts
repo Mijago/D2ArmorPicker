@@ -161,7 +161,14 @@ function mapItemToTuning(i: IPermutatorArmor): t5Improvement {
 // Pieces with the same tuning options share an id; accumulators only depend on these ids in order.
 const tuningSignatureIds = new Map<string, number>();
 const tuningAccumulatorCache = new Map<string, Map<number, Tuning>>();
-const TUNING_ACCUMULATOR_CACHE_LIMIT = 20000;
+// Accumulators hold thousands of tunings each, so the cache is bounded by their total count.
+const TUNING_ACCUMULATOR_CACHE_TUNING_LIMIT = 300000;
+let tuningAccumulatorCacheTunings = 0;
+
+function clearTuningAccumulatorCache(): void {
+  tuningAccumulatorCache.clear();
+  tuningAccumulatorCacheTunings = 0;
+}
 
 function tuningSignatureId(i: IPermutatorArmor): number {
   if (i._sig !== undefined) return i._sig;
@@ -182,10 +189,11 @@ function cachedTuningAccumulator(
 ): Map<number, Tuning> {
   let accumulator = tuningAccumulatorCache.get(key);
   if (!accumulator) {
-    if (tuningAccumulatorCache.size >= TUNING_ACCUMULATOR_CACHE_LIMIT) {
-      tuningAccumulatorCache.clear();
-    }
     accumulator = build();
+    if (tuningAccumulatorCacheTunings + accumulator.size > TUNING_ACCUMULATOR_CACHE_TUNING_LIMIT) {
+      clearTuningAccumulatorCache();
+    }
+    tuningAccumulatorCacheTunings += accumulator.size;
     tuningAccumulatorCache.set(key, accumulator);
   }
   return accumulator;
@@ -611,7 +619,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   // Reset runtime state for this calculation
   runtime.maximumPossibleTiers = [0, 0, 0, 0, 0, 0];
   theoreticalMaximumTiers = null;
-  tuningAccumulatorCache.clear();
+  clearTuningAccumulatorCache();
   const stopAtTheoreticalMaximum = config.stopAtTheoreticalMaximum !== false;
 
   // Initialize module-level constants directly from config
@@ -905,7 +913,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
     results
   );
   // The worker is reused, so release the accumulator cache instead of holding it while idle.
-  tuningAccumulatorCache.clear();
+  clearTuningAccumulatorCache();
 }
 
 addEventListener("message", async ({ data }) => {

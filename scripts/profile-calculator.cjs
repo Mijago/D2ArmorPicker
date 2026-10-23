@@ -118,6 +118,13 @@ function runWorker(config, items, seconds) {
     let progress = null;
     const started = performance.now();
     const timer = setTimeout(() => globalThis.__workerListeners.message({ data: { type: "cancel" } }), seconds * 1000);
+    const memoryTimer = process.env.TRACE_MEMORY
+      ? setInterval(() => {
+          process.stderr.write(
+            `heap ${(process.memoryUsage().heapUsed / 1048576).toFixed(0)}MB checked ${progress?.checkedCalculations} computed ${progress?.computedPermutations} results ${results}\n`
+          );
+        }, 2000)
+      : null;
     globalThis.__onWorkerMessage = (message) => {
       if (message.packed) results += message.packed.count;
       if (message.checkedCalculations !== undefined) progress = message;
@@ -162,6 +169,7 @@ async function main() {
       collections: { type: "boolean", default: false },
       vendor: { type: "boolean", default: false },
       summarize: { type: "string" },
+      config: { type: "string" },
     },
   });
   if (values.summarize) return summarize(values.summarize);
@@ -180,11 +188,24 @@ async function main() {
       const targets = SCENARIOS[name];
       if (!targets) throw new Error(`Unknown scenario ${name}`);
       const config = new BuildConfiguration();
-      config.characterClass = characterClass;
-      config.calculateTierFiveTuning = true;
-      config.includeCollectionRolls = values.collections;
-      config.includeVendorRolls = values.vendor;
-      for (const [stat, tier] of Object.entries(targets)) config.minimumStatTiers[stat].value = tier;
+      if (values.config) {
+        const encoded = fs.existsSync(values.config)
+          ? fs.readFileSync(values.config, "utf8").trim()
+          : values.config;
+        const shared = JSON.parse(require("lzutf8").decompress(encoded, { inputEncoding: "Base64" }));
+        Object.assign(config, shared);
+        const statNames = ["Health", "Melee", "Grenade", "Super", "Class", "Weapon"];
+        config.minimumStatTiers = Object.fromEntries(
+          statNames.map((name, stat) => [stat, shared.minimumStatTiers[name]])
+        );
+      }
+      config.characterClass = values.config ? config.characterClass : characterClass;
+      if (!values.config) {
+        config.calculateTierFiveTuning = true;
+        config.includeCollectionRolls = values.collections;
+        config.includeVendorRolls = values.vendor;
+        for (const [stat, tier] of Object.entries(targets)) config.minimumStatTiers[stat].value = tier;
+      }
 
       const service = Object.create(ArmorCalculatorService.prototype);
       Object.defineProperty(service, "db", {
@@ -197,6 +218,7 @@ async function main() {
       const prepared = await service["filterAndPrepareInventoryItems"](config);
       const pool = prepareWorkerItems(service, ArmorCalculatorService, prepared, config);
       const perSlot = [1, 2, 3, 4, 5].map((slot) => pool.items.filter((item) => item.slot === slot).length);
+      process.stdout.write(`  ${name}: pool ${pool.items.length} [${perSlot.join("/")}], running worker\n`);
       const outcome = await runWorker(config, pool.items, Number(values.seconds));
       console.log(
         `  ${name.padEnd(18)} pool ${pool.items.length} [${perSlot.join("/")}] (distinct ${pool.deduped}, pruned ${pool.poolBefore - pool.items.length}) ` +
