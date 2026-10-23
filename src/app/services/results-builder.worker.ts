@@ -191,6 +191,25 @@ function cachedTuningAccumulator(
   return accumulator;
 }
 
+const sortedAccumulatorTunings = new WeakMap<
+  Map<number, Tuning>,
+  { targets: string; sorted: Tuning[] }
+>();
+
+// Tunings of a cached accumulator in priority order. Filtering preserves this order, and the sort is
+// stable, so this is identical to filtering first and sorting afterwards. Do not modify the result.
+function prioritizedAccumulatorTunings(
+  accumulator: Map<number, Tuning>,
+  targets: number[]
+): Tuning[] {
+  const targetsKey = targets.join(",");
+  const cached = sortedAccumulatorTunings.get(accumulator);
+  if (cached && cached.targets === targetsKey) return cached.sorted;
+  const sorted = prioritizeTuningsByTotalStats(Array.from(accumulator.values()), targets);
+  sortedAccumulatorTunings.set(accumulator, { targets: targetsKey, sorted });
+  return sorted;
+}
+
 function annotateArmor(pieces: IPermutatorArmor[], config: BuildConfiguration): void {
   for (const piece of pieces) {
     const masterworkedStats = pieceStatsWithMasterwork(piece, config);
@@ -987,16 +1006,39 @@ const STAT_MODIFIERS: [StatModifier, StatModifier, StatModifier][] = [
   [StatModifier.MINOR_CLASS, StatModifier.MAJOR_CLASS, StatModifier.ARTIFICE_CLASS],
   [StatModifier.MINOR_WEAPON, StatModifier.MAJOR_WEAPON, StatModifier.ARTIFICE_WEAPON],
 ];
+const TUNING_KEY_SPACE = 256 ** 6;
+
 function packTuningKey(values: number[]): number {
   let key = 0;
   for (let index = 0; index < 6; index++) key = key * 256 + values[index] + TUNING_KEY_OFFSET;
   return key;
 }
 
+const tuningOptionCache = new WeakMap<t5Improvement, number[][][]>();
+
+// The returned option lists are shared between calls and must not be modified.
 function tuningOptions(
   improvement: t5Improvement,
   includeNoTuning = true,
   includeDirectionalTunings = true
+): number[][] {
+  const variant = (includeNoTuning ? 1 : 0) + (includeDirectionalTunings ? 2 : 0);
+  let variants = tuningOptionCache.get(improvement);
+  if (!variants) {
+    variants = [];
+    tuningOptionCache.set(improvement, variants);
+  }
+  return (variants[variant] ??= buildTuningOptions(
+    improvement,
+    includeNoTuning,
+    includeDirectionalTunings
+  ));
+}
+
+function buildTuningOptions(
+  improvement: t5Improvement,
+  includeNoTuning: boolean,
+  includeDirectionalTunings: boolean
 ): number[][] {
   const options: number[][] = [];
   if (includeDirectionalTunings && improvement.flexible) {
@@ -1125,32 +1167,76 @@ export function findTuningModHashes(
   improvements: (t5Improvement | null)[],
   target: Tuning
 ): number[] | null {
-  const failedStates = new Set<string>();
+  // Depth-first search over each piece's options in a fixed order; the first full assignment wins.
+  // Dead ends are memoised by (piece index, remaining tuning) using a numeric key.
+  const failedStates = new Set<number>();
+  const remaining = [...target];
+  const chosen: number[] = [];
+  const noTuning = [[0, 0, 0, 0, 0, 0]];
+  const inKeyRange = () => remaining.every((value) => Math.abs(value) < TUNING_KEY_OFFSET);
+  const memoisable = inKeyRange();
 
-  function find(index: number, remaining: Tuning): (number | null)[] | null {
-    if (index === improvements.length) {
-      return remaining.every((value) => value === 0) ? [] : null;
-    }
-
-    const stateKey = `${index}:${remaining.join(",")}`;
-    if (failedStates.has(stateKey)) return null;
-    const options = improvements[index]
-      ? tuningOptions(improvements[index]!)
-      : [[0, 0, 0, 0, 0, 0]];
-    for (const option of options) {
-      const next = remaining.map((value, stat) => value - option[stat]) as Tuning;
-      const rest = find(index + 1, next);
-      if (rest !== null) {
-        const hash = tuningOptionHash(option);
-        return [hash, ...rest];
+  // Per-stat range the pieces from `index` onwards can still contribute. A remaining tuning outside
+  // it cannot be completed, so those branches are skipped without searching them.
+  const suffixMin: number[][] = [];
+  const suffixMax: number[][] = [];
+  let runningMin = [0, 0, 0, 0, 0, 0];
+  let runningMax = [0, 0, 0, 0, 0, 0];
+  suffixMin[improvements.length] = runningMin;
+  suffixMax[improvements.length] = runningMax;
+  for (let index = improvements.length - 1; index >= 0; index--) {
+    const improvement = improvements[index];
+    const options = improvement ? tuningOptions(improvement) : noTuning;
+    const nextMin = [...runningMin];
+    const nextMax = [...runningMax];
+    for (let stat = 0; stat < 6; stat++) {
+      let low = Infinity;
+      let high = -Infinity;
+      for (const option of options) {
+        if (option[stat] < low) low = option[stat];
+        if (option[stat] > high) high = option[stat];
       }
+      nextMin[stat] += low;
+      nextMax[stat] += high;
     }
-    failedStates.add(stateKey);
-    return null;
+    suffixMin[index] = runningMin = nextMin;
+    suffixMax[index] = runningMax = nextMax;
   }
 
-  const assignment = find(0, [...target] as Tuning);
-  return assignment?.filter((hash): hash is number => hash !== null) ?? null;
+  function withinReach(index: number): boolean {
+    const low = suffixMin[index];
+    const high = suffixMax[index];
+    for (let stat = 0; stat < 6; stat++) {
+      if (remaining[stat] < low[stat] || remaining[stat] > high[stat]) return false;
+    }
+    return true;
+  }
+
+  function find(index: number): boolean {
+    if (!withinReach(index)) return false;
+    if (index === improvements.length) {
+      return remaining.every((value) => value === 0);
+    }
+
+    const stateKey = memoisable ? index * TUNING_KEY_SPACE + packTuningKey(remaining) : -1;
+    if (memoisable && failedStates.has(stateKey)) return false;
+    const improvement = improvements[index];
+    const options = improvement ? tuningOptions(improvement) : noTuning;
+    for (const option of options) {
+      for (let stat = 0; stat < 6; stat++) remaining[stat] -= option[stat];
+      if ((!memoisable || inKeyRange()) && find(index + 1)) {
+        const hash = tuningOptionHash(option);
+        if (hash !== null) chosen.push(hash);
+        return true;
+      }
+      for (let stat = 0; stat < 6; stat++) remaining[stat] += option[stat];
+    }
+    if (memoisable) failedStates.add(stateKey);
+    return false;
+  }
+
+  if (!find(0)) return null;
+  return chosen.reverse();
 }
 
 export function extendTuningAcc(
@@ -1160,18 +1246,27 @@ export function extendTuningAcc(
   includeDirectionalTunings = true
 ): Map<number, Tuning> {
   const next = new Map<number, Tuning>();
-  for (const current of accumulated.values()) {
-    for (const option of tuningOptions(improvement, includeNoTuning, includeDirectionalTunings)) {
-      const combined = [
+  const options = tuningOptions(improvement, includeNoTuning, includeDirectionalTunings);
+  // packTuningKey is linear in the stat values, so a combined key is the current key plus the
+  // option's own offset. This avoids allocating tunings that already exist.
+  const optionKeys = options.map((option) => {
+    let delta = 0;
+    for (let stat = 0; stat < 6; stat++) delta = delta * 256 + option[stat];
+    return delta;
+  });
+  for (const [currentKey, current] of accumulated) {
+    for (let index = 0; index < options.length; index++) {
+      const key = currentKey + optionKeys[index];
+      if (next.has(key)) continue;
+      const option = options[index];
+      next.set(key, [
         current[0] + option[0],
         current[1] + option[1],
         current[2] + option[2],
         current[3] + option[3],
         current[4] + option[4],
         current[5] + option[5],
-      ] as Tuning;
-      const key = packTuningKey(combined);
-      if (!next.has(key)) next.set(key, combined);
+      ] as Tuning);
     }
   }
   return next;
@@ -1252,9 +1347,12 @@ export function prioritizeTuningsByTotalStats(tunings: Tuning[], targets: number
   const reductionOrder = [0, 1, 2, 3, 4, 5].sort(
     (left, right) => (targets[left] ?? 0) - (targets[right] ?? 0)
   );
+  const totals = new Map<Tuning, number>();
+  for (const tuning of tunings) {
+    totals.set(tuning, tuning[0] + tuning[1] + tuning[2] + tuning[3] + tuning[4] + tuning[5]);
+  }
   return tunings.sort((left, right) => {
-    const totalDiff =
-      right.reduce((sum, value) => sum + value, 0) - left.reduce((sum, value) => sum + value, 0);
+    const totalDiff = totals.get(right)! - totals.get(left)!;
     if (totalDiff !== 0) return totalDiff;
 
     for (const stat of reductionOrder) {
@@ -1474,6 +1572,7 @@ export function handlePermutation(
   }
 
   let availableTunings: Tuning[] = [[0, 0, 0, 0, 0, 0]];
+  let tuningsPrioritized = false;
   if (t5Count > 0) {
     const includeNoTuning = targetFixed.some(Boolean);
     if (exactNoTargetMaximum) {
@@ -1500,7 +1599,8 @@ export function handlePermutation(
                 )
             )
           : baseAccumulator;
-        availableTunings = Array.from(tuningAccumulator.values());
+        availableTunings = prioritizedAccumulatorTunings(tuningAccumulator, targetVals);
+        tuningsPrioritized = true;
       } else {
         availableTunings = generate_tunings(t5Improvements, includeNoTuning);
       }
@@ -1516,7 +1616,7 @@ export function handlePermutation(
     possibleIncreaseByMod + 3 * artificeCount
   );
   if (availableTunings.length === 0) return null;
-  prioritizeTuningsByTotalStats(availableTunings, targetVals);
+  if (!tuningsPrioritized) prioritizeTuningsByTotalStats(availableTunings, targetVals);
 
   // heavy work: mod precalc
   let result: StatModifierPrecalc | null;
