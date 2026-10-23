@@ -5,6 +5,7 @@ import { ModifierType } from "./enum/modifierType";
 import { FORCE_USE_ANY_EXOTIC, FORCE_USE_NO_EXOTIC } from "./constants";
 import { ModOrAbility } from "./enum/modOrAbility";
 import { T5Candidate, t5ArrangementFromPieces } from "./theorizer";
+import { ArmorSlot } from "./enum/armor-slot";
 import { groupT5Archetypes } from "./theorizer";
 import { createT5SavedRun, restoreT5Arrangements, suggestedT5RunName } from "./theorizer";
 import {
@@ -17,6 +18,7 @@ import {
   createT5UpdateEncoder,
   DEFAULT_T5_SEARCH_BUDGET_MS,
   groupT5Arrangements,
+  hasLegalT5Shape,
   mergeT5SearchUpdates,
   reflectMainCalculationSettings,
   T5_ARCHETYPES,
@@ -118,6 +120,25 @@ describe("T5 theorizer archetypes", () => {
     expect(suggestedT5RunName(config)).toBe(
       "100*/0/0/80/0/0 | Mods max 3 (1 major) | Stasis: Whisper of Durance"
     );
+  });
+  it("only accepts 30/25/20 shapes as T5 (class exotics need the 30/25 pair)", () => {
+    const piece = (stats: number[], isExotic = 0, slot = ArmorSlot.ArmorSlotHelmet) => ({
+      resilience: stats[0],
+      strength: stats[1],
+      discipline: stats[2],
+      intellect: stats[3],
+      recovery: stats[4],
+      mobility: stats[5],
+      isExotic,
+      slot,
+    });
+
+    expect(hasLegalT5Shape(piece([30, 0, 25, 20, 0, 0]))).toBeTrue();
+    expect(hasLegalT5Shape(piece([0, 0, 25, 0, 20, 30], 1, ArmorSlot.ArmorSlotLegs))).toBeTrue();
+    expect(hasLegalT5Shape(piece([28, 0, 16, 8, 0, 0], 1, ArmorSlot.ArmorSlotLegs))).toBeFalse();
+    expect(hasLegalT5Shape(piece([30, 0, 25, 0, 0, 0]))).toBeFalse();
+    expect(hasLegalT5Shape(piece([30, 0, 25, 0, 0, 0], 1, ArmorSlot.ArmorSlotClass))).toBeTrue();
+    expect(hasLegalT5Shape(piece([20, 0, 0, 0, 0, 35], 1, ArmorSlot.ArmorSlotClass))).toBeFalse();
   });
   it("groups tertiary and tuning arrangements beneath their archetype combination", () => {
     const base = (name: string, tertiary: ArmorStat) =>

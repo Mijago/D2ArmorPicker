@@ -54,6 +54,7 @@ import {
   applyInvestmentStats,
 } from "../data/types/IInventoryArmor";
 import { ArmorSlot } from "../data/enum/armor-slot";
+import { hasLegalT5Shape } from "../data/theorizer";
 import {
   ArmorPerkOrSlot,
   ArmorPerkSocketHashes,
@@ -565,6 +566,16 @@ export class BungieApiService implements OnDestroy {
           }
         }
         this.processStatsAndPerks(armorItem, d, profile, validManifestArmorMap, modsMap);
+
+        if (armorItem.tier >= 5 && !hasLegalT5Shape(armorItem)) {
+          this.logger.warn(
+            "BungieApiService",
+            "updateInventory",
+            `Item ${d.itemInstanceId} claims tier 5 but is not 30/25/20, not marking it as T5`
+          );
+          armorItem.tier = 1;
+          armorItem.tuningStat = null;
+        }
 
         return armorItem as IInventoryArmor;
       })

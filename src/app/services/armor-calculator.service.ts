@@ -51,6 +51,7 @@ import { calculateCPUConcurrency } from "../data/commonFunctions";
 import { ModOptimizationStrategy } from "../data/enum/mod-optimization-strategy";
 import { EventArmorType } from "../data/enum/event-armor-type";
 import { ArmorSystem } from "../data/types/IManifestArmor";
+import { hasLegalT5Shape } from "../data/theorizer";
 import { environment } from "../../environments/environment";
 import type { T5LimitsReply, T5LimitsRequest } from "./theorizer-model";
 import { combineLatest, Subscription } from "rxjs";
@@ -1211,6 +1212,12 @@ export class ArmorCalculatorService implements OnDestroy {
       .equals(config.characterClass)
       .distinct()
       .toArray()) as IInventoryArmor[];
+    // Stored items may claim T5 without the 30/25/20 shape; they get no T5 tuning.
+    inventoryArmorItems = inventoryArmorItems.map((item) =>
+      item.armorSystem === ArmorSystem.Armor3 && item.tier >= 5 && !hasLegalT5Shape(item)
+        ? { ...item, tier: 1, tuningStat: null }
+        : item
+    );
     const selectedExoticSlots = new Set(
       ArmorCalculatorService.selectedExotics.map((exotic) => exotic.slot)
     );

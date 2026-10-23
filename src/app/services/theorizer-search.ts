@@ -14,6 +14,7 @@ import {
   T5SearchUpdate,
   T5Solution,
   t5ArchetypeIndex,
+  hasLegalT5Shape,
   t5ArrangementFromPieces,
   t5BaseStats,
   t5Tertiaries,
@@ -180,14 +181,7 @@ function candidateFromItem(item: IInventoryArmor, id: number): T5Candidate | nul
   if (item.armorSystem !== ArmorSystem.Armor3 || (!item.isExotic && item.tier !== 5)) return null;
   const stats = t5ItemStats(item);
   const archetypeIndex = t5ArchetypeIndex(stats);
-  const classExotic = item.isExotic && item.slot === ArmorSlot.ArmorSlotClass;
-  if (
-    !classExotic &&
-    (archetypeIndex < 0 ||
-      stats.filter((value) => value === 20).length !== 1 ||
-      stats.filter((value) => value === 0).length !== 3)
-  )
-    return null;
+  if (!hasLegalT5Shape(item)) return null;
   return {
     ...item,
     id,

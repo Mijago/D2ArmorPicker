@@ -1,3 +1,4 @@
+import { ArmorSlot } from "./enum/armor-slot";
 import { ArmorStat } from "./enum/armor-stat";
 import { BuildConfiguration } from "./buildConfiguration";
 import { ModInformation } from "./ModInformation";
@@ -71,6 +72,34 @@ export function t5BaseStats(archetype: T5Archetype, tertiary: ArmorStat): number
 export function t5ArchetypeIndex(stats: readonly number[]): number {
   return T5_ARCHETYPES.findIndex(
     (archetype) => stats[archetype.primary] === 30 && stats[archetype.secondary] === 25
+  );
+}
+
+// Legendary and non-class exotic T5 armor is always 30/25/20 on three stats. Exotic class items
+// take their stats from spirit perks, so only the 30/25 archetype pair is required.
+export function hasLegalT5Shape(item: {
+  resilience: number;
+  strength: number;
+  discipline: number;
+  intellect: number;
+  recovery: number;
+  mobility: number;
+  isExotic: number;
+  slot: ArmorSlot;
+}): boolean {
+  const stats = [
+    item.resilience,
+    item.strength,
+    item.discipline,
+    item.intellect,
+    item.recovery,
+    item.mobility,
+  ];
+  if (t5ArchetypeIndex(stats) < 0) return false;
+  if (item.isExotic && item.slot === ArmorSlot.ArmorSlotClass) return true;
+  return (
+    stats.filter((value) => value === 20).length === 1 &&
+    stats.filter((value) => value === 0).length === 3
   );
 }
 
