@@ -153,10 +153,9 @@ function fnv(text: string): string {
   return hash.toString(16);
 }
 
-async function run(config: BuildConfiguration, items: IPermutatorArmor[]) {
-  const worker = new Worker(new URL("./results-builder.worker", import.meta.url), {
-    type: "module",
-  });
+async function run(config: BuildConfiguration, items: IPermutatorArmor[], reuse?: Worker) {
+  const worker =
+    reuse ?? new Worker(new URL("./results-builder.worker", import.meta.url), { type: "module" });
   const sets: any[] = [];
   let last: any = null;
   const finished = new Promise<void>((resolve, reject) => {
@@ -178,8 +177,15 @@ async function run(config: BuildConfiguration, items: IPermutatorArmor[]) {
     selectedExotics: [],
   });
   await finished;
-  worker.terminate();
+  if (!reuse) worker.terminate();
   return { sets, last };
+}
+
+function signatureOf({ sets, last }: Awaited<ReturnType<typeof run>>): string {
+  const signature = sets
+    .map((s) => `${s.armor.join(",")}|${s.statsWithMods.join(",")}|${s.usedMods.join(",")}`)
+    .join(";");
+  return `count=${sets.length} hash=${fnv(signature)} checked=${last.checkedCalculations}/${last.estimatedCalculations} computed=${last.computedPermutations} tiers=${last.runtime.maximumPossibleTiers.join(",")}`;
 }
 
 // Golden signatures recorded from the unoptimized worker; any optimization must reproduce them.
@@ -219,16 +225,24 @@ const EXPECTED: Record<string, string> = {
 };
 
 describe("results builder worker equivalence", () => {
+  it("gives the same results when one worker runs several requests in a row", async () => {
+    const worker = new Worker(new URL("./results-builder.worker", import.meta.url), {
+      type: "module",
+    });
+    try {
+      for (const name of ["high targets", "no targets", "requirements", "high targets", "fixed"]) {
+        const config = CONFIGS.find(([configName]) => configName === name)![1];
+        expect(signatureOf(await run(config, makeItems(1), worker))).toBe(EXPECTED[`1 ${name}`]);
+      }
+    } finally {
+      worker.terminate();
+    }
+  }, 120000);
+
   for (const seed of [1, 2]) {
     for (const [name, config] of CONFIGS) {
       it(`${name} seed ${seed}`, async () => {
-        const { sets, last } = await run(config, makeItems(seed));
-        const signature = sets
-          .map((s) => `${s.armor.join(",")}|${s.statsWithMods.join(",")}|${s.usedMods.join(",")}`)
-          .join(";");
-        expect(
-          `count=${sets.length} hash=${fnv(signature)} checked=${last.checkedCalculations}/${last.estimatedCalculations} computed=${last.computedPermutations} tiers=${last.runtime.maximumPossibleTiers.join(",")}`
-        ).toBe(EXPECTED[`${seed} ${name}`]);
+        expect(signatureOf(await run(config, makeItems(seed)))).toBe(EXPECTED[`${seed} ${name}`]);
       }, 120000);
     }
   }

@@ -872,6 +872,8 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
     },
     results
   );
+  // The worker is reused, so release the accumulator cache instead of holding it while idle.
+  tuningAccumulatorCache.clear();
 }
 
 addEventListener("message", async ({ data }) => {

@@ -143,4 +143,25 @@ describe("armor pruning power preference", () => {
 
     expect(result.items).toEqual([artifice]);
   });
+
+  it("reuses released builder workers and ignores duplicate or missing releases", () => {
+    const worker = { terminate: jasmine.createSpy("terminate") } as unknown as Worker;
+    calculator["releaseWorker"](worker);
+    calculator["releaseWorker"](worker);
+    calculator["releaseWorker"](undefined);
+
+    expect(calculator["isActiveWorker"](worker)).toBeFalse();
+    expect(calculator["acquireWorker"]("0")).toBe(worker);
+    expect(calculator["isActiveWorker"](worker)).toBeTrue();
+    calculator["terminateIdleWorkers"]();
+    expect(worker.terminate).not.toHaveBeenCalled();
+  });
+
+  it("terminates idle workers on teardown", () => {
+    const worker = { terminate: jasmine.createSpy("terminate") } as unknown as Worker;
+    calculator["releaseWorker"](worker);
+    calculator["terminateIdleWorkers"]();
+
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+  });
 });

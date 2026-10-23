@@ -152,6 +152,10 @@ export class ArmorCalculatorService implements OnDestroy {
 
   // Static properties for calculation state
   private static workers: Worker[] = [];
+  // Builders that finished their run; reused so later runs skip worker startup and JIT warm-up.
+  private static idleWorkers: Worker[] = [];
+  private static idleWorkerTimeoutId: any = null;
+  private static readonly IDLE_WORKER_LIFETIME_MS = 60000;
   private static theoreticalWorker?: Worker;
   private static freshEntries: ResultEntry[] = [];
   private static inventoryById = new Map<number, IInventoryArmor>();
@@ -228,7 +232,7 @@ export class ArmorCalculatorService implements OnDestroy {
   ngOnDestroy() {
     this.logger.debug("ArmorCalculatorService", "ngOnDestroy", "Destroying ArmorCalculatorService");
     this.calculationSubscription?.unsubscribe();
-    this.killWorkers();
+    this.killWorkers(true);
     this.logger.debug(
       "ArmorCalculatorService",
       "ngOnDestroy",
@@ -384,16 +388,48 @@ export class ArmorCalculatorService implements OnDestroy {
     }
   }
 
-  private killWorkers() {
+  private killWorkers(includeIdle = false) {
     ArmorCalculatorService.theoreticalWorker?.terminate();
     ArmorCalculatorService.theoreticalWorker = undefined;
     if (ArmorCalculatorService.workers.length > 0) {
       this.logger.debug("ArmorCalculatorService", "killWorkers", "Terminating all workers");
       ArmorCalculatorService.workers.forEach((w) => {
-        w.terminate();
+        if (!ArmorCalculatorService.idleWorkers.includes(w)) w.terminate();
       });
       ArmorCalculatorService.workers = [];
     }
+    if (includeIdle) ArmorCalculatorService.terminateIdleWorkers();
+  }
+
+  private static terminateIdleWorkers() {
+    clearTimeout(ArmorCalculatorService.idleWorkerTimeoutId);
+    ArmorCalculatorService.idleWorkerTimeoutId = null;
+    ArmorCalculatorService.idleWorkers.forEach((w) => w.terminate());
+    ArmorCalculatorService.idleWorkers = [];
+  }
+
+  private static releaseWorker(worker: Worker | undefined) {
+    if (!worker || ArmorCalculatorService.idleWorkers.includes(worker)) return;
+    ArmorCalculatorService.idleWorkers.push(worker);
+    clearTimeout(ArmorCalculatorService.idleWorkerTimeoutId);
+    ArmorCalculatorService.idleWorkerTimeoutId = setTimeout(
+      () => ArmorCalculatorService.terminateIdleWorkers(),
+      ArmorCalculatorService.IDLE_WORKER_LIFETIME_MS
+    );
+  }
+
+  private static acquireWorker(name: string): Worker {
+    return (
+      ArmorCalculatorService.idleWorkers.pop() ??
+      new Worker(new URL("./results-builder.worker", import.meta.url), {
+        name,
+        type: "module",
+      })
+    );
+  }
+
+  private static isActiveWorker(worker: Worker | undefined): worker is Worker {
+    return !!worker && !ArmorCalculatorService.idleWorkers.includes(worker);
   }
 
   private static estimateCombinationsToBeChecked(
@@ -435,6 +471,7 @@ export class ArmorCalculatorService implements OnDestroy {
 
     // Ask all active workers to cancel gracefully
     ArmorCalculatorService.workers.forEach((w, index) => {
+      if (!ArmorCalculatorService.isActiveWorker(w)) return;
       try {
         w.postMessage({ type: "cancel" });
       } catch (error) {
@@ -492,11 +529,16 @@ export class ArmorCalculatorService implements OnDestroy {
         ArmorCalculatorService.theoreticalWorker = undefined;
     };
     limitsWorker.onmessage = ({ data }: MessageEvent<T5LimitsReply>) => {
+      // A newer run terminates this worker; its late reply must not reach reused builders.
+      if (ArmorCalculatorService.theoreticalWorker !== limitsWorker) return;
       if (data.status === "feasible" && data.maximumComplete && !data.preview) {
         const tiers = data.maximum.map((value) => Math.min(200, value + slack));
         for (const builder of builders) {
           // Only the builders of this run; a newer run replaces the array.
-          if (ArmorCalculatorService.workers.includes(builder))
+          if (
+            ArmorCalculatorService.workers.includes(builder) &&
+            ArmorCalculatorService.isActiveWorker(builder)
+          )
             builder.postMessage({ type: "theoreticalMaximum", tiers });
         }
       }
@@ -861,7 +903,10 @@ export class ArmorCalculatorService implements OnDestroy {
     if (foundHigher) {
       ArmorCalculatorService.globalMaximumPossibleTiers = [...globalMaxTiers];
       for (let i = 0; i < ArmorCalculatorService.workers.length; i++) {
-        if (i !== workerIndex && ArmorCalculatorService.workers[i]) {
+        if (
+          i !== workerIndex &&
+          ArmorCalculatorService.isActiveWorker(ArmorCalculatorService.workers[i])
+        ) {
           ArmorCalculatorService.workers[i].postMessage({
             type: "siblingUpdate",
             threadId: workerIndex,
@@ -935,9 +980,9 @@ export class ArmorCalculatorService implements OnDestroy {
 
     if (data.done == true && ArmorCalculatorService.doneWorkerCount == totalThreads) {
       this.processCompleteResults(inventoryArmorItems);
-      ArmorCalculatorService.workers[workerIndex].terminate();
-    } else if (data.done == true && ArmorCalculatorService.doneWorkerCount != totalThreads) {
-      ArmorCalculatorService.workers[workerIndex].terminate();
+    }
+    if (data.done == true) {
+      ArmorCalculatorService.releaseWorker(ArmorCalculatorService.workers[workerIndex]);
     }
   }
 
@@ -1646,26 +1691,23 @@ export class ArmorCalculatorService implements OnDestroy {
       this._calculationProgress.next(0);
 
       for (let n = 0; n < nthreads; n++) {
-        ArmorCalculatorService.workers[n] = new Worker(
-          new URL("./results-builder.worker", import.meta.url),
-          {
-            name: n.toString(),
-            type: "module",
-          }
-        );
-        ArmorCalculatorService.workers[n].onmessage = (ev: MessageEvent) => {
+        const worker = ArmorCalculatorService.acquireWorker(n.toString());
+        ArmorCalculatorService.workers[n] = worker;
+        worker.onmessage = (ev: MessageEvent) => {
+          // Late messages of a superseded run must not touch the current one.
+          if (ArmorCalculatorService.workers[n] !== worker) return;
           this.processWorkerMessage(ev.data, n, nthreads, inventoryArmorItems);
         };
-        ArmorCalculatorService.workers[n].onerror = (ev) => {
+        worker.onerror = (ev) => {
           this.logger.error(
             "ArmorCalculatorService",
             "updateResults",
             formatWorkerErrorEvent(n, ev)
           );
-          ArmorCalculatorService.workers[n].terminate();
+          worker.terminate();
         };
 
-        ArmorCalculatorService.workers[n].postMessage({
+        worker.postMessage({
           type: "builderRequest",
           currentClass: currentClass,
           config: config,
