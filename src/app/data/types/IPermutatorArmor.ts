@@ -23,4 +23,7 @@ export interface IPermutatorArmor extends IDestinyArmor {
   _art?: number;
   _tuneTot?: number;
   _sum?: number;
+  // Cached tuning improvement and its signature id (see mapItemToTuning in the worker).
+  _imp?: unknown;
+  _sig?: number;
 }

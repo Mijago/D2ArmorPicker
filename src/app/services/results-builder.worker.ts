@@ -106,6 +106,7 @@ type ArmorCombination = readonly [
 type TuningBaseCache = {
   items: readonly IPermutatorArmor[];
   accumulator: Map<number, Tuning> | null;
+  key?: string;
 };
 
 export interface SerializedWorkerError {
@@ -146,12 +147,49 @@ export function isT5WithTuning(i: IPermutatorArmor): boolean {
 }
 
 function mapItemToTuning(i: IPermutatorArmor): t5Improvement {
-  return {
+  const cached = i._imp as t5Improvement | undefined;
+  if (cached) return cached;
+  const improvement: t5Improvement = {
     tuningStat: isFlexibleExotic(i) ? null : i.tuningStat!,
     archetypeStats: i.archetypeStats ?? [],
     flexible: isFlexibleExotic(i),
     balancedBonus: lowestThreeBonus(i),
   };
+  i._imp = improvement;
+  return improvement;
+}
+
+// Pieces with the same tuning options share an id; accumulators only depend on these ids in order.
+const tuningSignatureIds = new Map<string, number>();
+const tuningAccumulatorCache = new Map<string, Map<number, Tuning>>();
+const TUNING_ACCUMULATOR_CACHE_LIMIT = 20000;
+
+function tuningSignatureId(i: IPermutatorArmor): number {
+  if (i._sig !== undefined) return i._sig;
+  const improvement = mapItemToTuning(i);
+  const signature = `${improvement.flexible ? "F" : improvement.tuningStat}/${improvement.balancedBonus.join("")}`;
+  let id = tuningSignatureIds.get(signature);
+  if (id === undefined) {
+    id = tuningSignatureIds.size;
+    tuningSignatureIds.set(signature, id);
+  }
+  i._sig = id;
+  return id;
+}
+
+function cachedTuningAccumulator(
+  key: string,
+  build: () => Map<number, Tuning>
+): Map<number, Tuning> {
+  let accumulator = tuningAccumulatorCache.get(key);
+  if (!accumulator) {
+    if (tuningAccumulatorCache.size >= TUNING_ACCUMULATOR_CACHE_LIMIT) {
+      tuningAccumulatorCache.clear();
+    }
+    accumulator = build();
+    tuningAccumulatorCache.set(key, accumulator);
+  }
+  return accumulator;
 }
 
 function annotateArmor(pieces: IPermutatorArmor[], config: BuildConfiguration): void {
@@ -550,6 +588,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   // Reset runtime state for this calculation
   runtime.maximumPossibleTiers = [0, 0, 0, 0, 0, 0];
   theoreticalMaximumTiers = null;
+  tuningAccumulatorCache.clear();
   const stopAtTheoreticalMaximum = config.stopAtTheoreticalMaximum !== false;
 
   // Initialize module-level constants directly from config
@@ -1428,18 +1467,25 @@ export function handlePermutation(
     } else if (calculateTierFiveTuning) {
       if (tuningBaseCache && tuningVariableItem) {
         if (tuningBaseCache.accumulator === null) {
-          const baseImprovements = tuningBaseCache.items
-            .filter(isT5WithTuning)
-            .map(mapItemToTuning);
-          tuningBaseCache.accumulator = buildTuningAcc(baseImprovements, includeNoTuning);
+          const baseTuned = tuningBaseCache.items.filter(isT5WithTuning);
+          const baseImprovements = baseTuned.map(mapItemToTuning);
+          tuningBaseCache.key = baseTuned.map(tuningSignatureId).join(",");
+          tuningBaseCache.accumulator = cachedTuningAccumulator(tuningBaseCache.key, () =>
+            buildTuningAcc(baseImprovements, includeNoTuning)
+          );
         }
+        const baseAccumulator = tuningBaseCache.accumulator;
         const tuningAccumulator = isT5WithTuning(tuningVariableItem)
-          ? extendTuningAcc(
-              tuningBaseCache.accumulator,
-              mapItemToTuning(tuningVariableItem),
-              includeNoTuning
+          ? cachedTuningAccumulator(
+              `${tuningBaseCache.key}+${tuningSignatureId(tuningVariableItem)}`,
+              () =>
+                extendTuningAcc(
+                  baseAccumulator,
+                  mapItemToTuning(tuningVariableItem),
+                  includeNoTuning
+                )
             )
-          : tuningBaseCache.accumulator;
+          : baseAccumulator;
         availableTunings = Array.from(tuningAccumulator.values());
       } else {
         availableTunings = generate_tunings(t5Improvements, includeNoTuning);
