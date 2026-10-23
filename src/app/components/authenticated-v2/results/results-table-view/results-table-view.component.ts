@@ -94,6 +94,7 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
   private totalStatsCache = new Map<string, number>();
   private displayedResults: ResultDefinition[] = [];
   private gearsetBonuses = new Map<ResultDefinition, GearsetBonusDisplay[]>();
+  private gearsetPerks = new Map<string, DestinySandboxPerkDefinition>();
   private gearsetRequirementCounts = new Map<number, number>();
   private gearsetBonusLoadId = 0;
   showAllResults = false;
@@ -148,6 +149,9 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["results"] && this.results) {
+      // A new array with the same rows would only reset the page, the expanded row and the icons.
+      if (this.viewInitialized && this.hasSameRows(this.results, this.displayedResults)) return;
+
       // Reset expanded element when results change
       this.expandedElement = null;
       this.expandedElementId = null;
@@ -167,6 +171,10 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
   ngOnDestroy(): void {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  private hasSameRows(left: ResultDefinition[], right: ResultDefinition[]): boolean {
+    return left.length === right.length && left.every((row, index) => row === right[index]);
   }
 
   private setupTableSorting(): void {
@@ -273,8 +281,10 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
     // Limit initial results for performance
     this.displayedResults = this.results;
 
+    // Started first so cached icons are in place when the new rows render.
+    const loadingBonuses = this.loadGearsetBonuses();
     this.tableDataSource.data = this.displayedResults;
-    await this.loadGearsetBonuses();
+    await loadingBonuses;
 
     // Reconnect paginator and sort if they're available
     if (this.paginator) {
@@ -306,11 +316,21 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
     return this.gearsetBonuses.get(element) ?? [];
   }
 
-  private async loadGearsetBonuses(): Promise<void> {
+  // The bonus objects are rebuilt on every update; tracking them keeps the icons in the DOM.
+  trackByBonus(index: number, bonus: GearsetBonusDisplay): string {
+    return `${bonus.perk.hash}-${bonus.requiredSetCount}`;
+  }
+
+  // False while the bonuses of a new row are still loading, so no placeholder flashes.
+  hasLoadedGearsetBonuses(element: ResultDefinition): boolean {
+    return this.gearsetBonuses.has(element);
+  }
+
+  private loadGearsetBonuses(): Promise<void> {
     const loadId = ++this.gearsetBonusLoadId;
     const results = this.results;
     const requestsByResult = new Map<ResultDefinition, { hash: number; amount: number }[]>();
-    const uniqueRequests = new Map<string, { hash: number; amount: number }>();
+    const missingRequests = new Map<string, { hash: number; amount: number }>();
 
     results.forEach((result) => {
       const gearsetCounts = this.getGearsetCounts(result);
@@ -320,33 +340,42 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
         if (count >= 4) requests.push({ hash, amount: 4 });
         else if (count >= 2) requests.push({ hash, amount: 2 });
       });
-      requests.forEach((request) =>
-        uniqueRequests.set(`${request.hash}-${request.amount}`, request)
-      );
+      requests.forEach((request) => {
+        const key = `${request.hash}-${request.amount}`;
+        if (!this.gearsetPerks.has(key)) missingRequests.set(key, request);
+      });
       requestsByResult.set(result, requests);
     });
 
-    const perks = new Map<string, DestinySandboxPerkDefinition>();
-    await Promise.all(
-      Array.from(uniqueRequests.entries()).map(async ([key, request]) => {
+    const apply = () => {
+      const bonuses = new Map<ResultDefinition, GearsetBonusDisplay[]>();
+      requestsByResult.forEach((requests, result) => {
+        bonuses.set(
+          result,
+          requests.flatMap((request) => {
+            const perk = this.gearsetPerks.get(`${request.hash}-${request.amount}`);
+            return perk ? [{ perk, requiredSetCount: request.amount }] : [];
+          })
+        );
+      });
+      this.gearsetBonuses = bonuses;
+      this.cdr.markForCheck();
+    };
+
+    // Known perks are applied synchronously; only unseen gearsets wait for a lookup.
+    if (missingRequests.size === 0) {
+      apply();
+      return Promise.resolve();
+    }
+
+    return Promise.all(
+      Array.from(missingRequests.entries()).map(async ([key, request]) => {
         const perk = await this.itemIconService.getGearsetPerkCached(request.hash, request.amount);
-        if (perk) perks.set(key, perk);
+        if (perk) this.gearsetPerks.set(key, perk);
       })
-    );
-
-    if (loadId !== this.gearsetBonusLoadId) return;
-
-    this.gearsetBonuses.clear();
-    requestsByResult.forEach((requests, result) => {
-      this.gearsetBonuses.set(
-        result,
-        requests.flatMap((request) => {
-          const perk = perks.get(`${request.hash}-${request.amount}`);
-          return perk ? [{ perk, requiredSetCount: request.amount }] : [];
-        })
-      );
+    ).then(() => {
+      if (loadId === this.gearsetBonusLoadId) apply();
     });
-    this.cdr.markForCheck();
   }
 
   getTotalStats(element: ResultDefinition): number {

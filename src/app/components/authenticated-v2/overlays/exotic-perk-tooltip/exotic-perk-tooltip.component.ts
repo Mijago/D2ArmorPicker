@@ -15,7 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, OnInit, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  Input,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  NgZone,
+} from "@angular/core";
 import { IManifestArmor } from "../../../../data/types/IManifestArmor";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
@@ -37,12 +44,16 @@ export class ExoticPerkTooltipComponent implements OnInit {
 
   constructor(
     public inv: UserInformationService,
-    public iconService: ItemIconServiceService
+    public iconService: ItemIconServiceService,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   async ngOnInit() {
     const perk = (this.armor?.exoticPerkHash ?? [])[0];
     this.exoticPerk = !!perk ? await this.iconService.getItemCached(perk) : undefined;
     this.exoticPerkNotThere = this.exoticPerk === undefined;
+    // The lookup can finish outside the Angular zone, which would leave "Loading" on screen.
+    this.zone.run(() => this.cdr.markForCheck());
   }
 }

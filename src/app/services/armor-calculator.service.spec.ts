@@ -188,6 +188,44 @@ describe("armor pruning power preference", () => {
     calculator["freshEntries"] = [];
   });
 
+  it("keeps the published results array while the entries are unchanged", () => {
+    const entry = (key: string) =>
+      ({
+        key,
+        total: 9,
+        gearSetRank: 0,
+        sharedHash: key,
+        modCount: 0,
+        modCost: 0,
+        masterworkedCount: 0,
+        power: 0,
+        definition: { sharedArmorHash: key, sharedBuildCount: 1 },
+      }) as any;
+    const emitted: any[] = [];
+    const subject = { next: (value: any) => emitted.push(value) } as any;
+    const summary = { totalTime: null, maximumPossibleTiers: [0, 0, 0, 0, 0, 0] };
+    const reset = () => {
+      calculator["retainedEntries"] = [];
+      calculator["freshEntries"] = [];
+      calculator["pendingResultSets"] = [];
+      calculator["lastPublishedEntries"] = null;
+      calculator["freshKeys"].clear();
+    };
+
+    reset();
+    calculator["freshEntries"] = [entry("a"), entry("b")];
+    calculator["publishResults"](subject, 0, summary);
+    calculator["publishResults"](subject, 0, summary);
+    expect(emitted[1].results).toBe(emitted[0].results);
+
+    calculator["freshEntries"] = [...calculator["freshEntries"], entry("c")];
+    calculator["publishResults"](subject, 0, summary);
+    expect(emitted[2].results).not.toBe(emitted[0].results);
+    expect(emitted[2].results.length).toBe(3);
+
+    reset();
+  });
+
   it("only trusts the theoretical T5 verdict for plain T5 pools without locks or extra health", () => {
     const t5 = (overrides: Record<string, unknown> = {}) =>
       ({

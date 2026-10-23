@@ -172,7 +172,7 @@
     <td *matCellDef="let element" mat-cell>
       <div class="gearset-bonuses">
         <span
-          *ngFor="let bonus of getGearsetBonuses(element)"
+          *ngFor="let bonus of getGearsetBonuses(element); trackBy: trackByBonus"
           [gearsetTooltip]="bonus.perk"
           class="gearset-bonus">
           <img
@@ -183,7 +183,9 @@
             loading="lazy" />
           <span class="gearset-bonus-count">{{ bonus.requiredSetCount }}</span>
         </span>
-        <span *ngIf="getGearsetBonuses(element).length === 0">-</span>
+        <span *ngIf="hasLoadedGearsetBonuses(element) && getGearsetBonuses(element).length === 0"
+          >-</span
+        >
       </div>
     </td>
   </ng-container>

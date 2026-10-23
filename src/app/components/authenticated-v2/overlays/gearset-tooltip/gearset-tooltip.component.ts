@@ -15,7 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Component, Input, ChangeDetectionStrategy } from "@angular/core";
+import {
+  Component,
+  Input,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  NgZone,
+} from "@angular/core";
 import { UserInformationService } from "src/app/services/user-information.service";
 import { ItemIconServiceService } from "../../../../services/item-icon-service.service";
 import { DestinySandboxPerkDefinition } from "bungie-api-ts/destiny2";
@@ -54,7 +60,9 @@ export class GearsetTooltipComponent {
   constructor(
     public inv: UserInformationService,
     public iconService: ItemIconServiceService,
-    private db: DatabaseService
+    private db: DatabaseService,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   private async loadAcquisitionSources(perkHash?: number): Promise<void> {
@@ -68,5 +76,7 @@ export class GearsetTooltipComponent {
     this.acquisitionSources =
       gearSets.find((gearSet) => gearSet.setPerks.some((perk) => perk.sandboxPerkHash === perkHash))
         ?.acquisitionSources ?? [];
+    // The lookup can finish outside the Angular zone, which would leave "Unknown" on screen.
+    this.zone.run(() => this.cdr.markForCheck());
   }
 }

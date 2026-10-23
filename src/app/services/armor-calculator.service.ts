@@ -162,6 +162,8 @@ export class ArmorCalculatorService implements OnDestroy {
   private static freshEntries: ResultEntry[] = [];
   // Worker batches wait here and are merged once per publish, not once per message.
   private static pendingResultSets: IPermutatorArmorSet[] = [];
+  // The entries behind the last published results array; an identical list keeps that array.
+  private static lastPublishedEntries: ResultEntry[] | null = null;
   // Duration of the last intermediate publish; the next one waits proportionally longer.
   private static lastPublishCost = 0;
   // Results of the previous run that still match the current settings; shown until the new run
@@ -407,6 +409,7 @@ export class ArmorCalculatorService implements OnDestroy {
       .sort(compareResultEntries);
     ArmorCalculatorService.freshEntries = [];
     ArmorCalculatorService.pendingResultSets = [];
+    ArmorCalculatorService.lastPublishedEntries = null;
     ArmorCalculatorService.freshKeys.clear();
     ArmorCalculatorService.allThreadsResultLimitReached = false;
     ArmorCalculatorService.stoppedEarlyAtMaxTier = false;
@@ -418,6 +421,7 @@ export class ArmorCalculatorService implements OnDestroy {
     ArmorCalculatorService.prePruneArmorItems = [];
     ArmorCalculatorService.freshEntries = [];
     ArmorCalculatorService.pendingResultSets = [];
+    ArmorCalculatorService.lastPublishedEntries = null;
     ArmorCalculatorService.retainedEntries = [];
     ArmorCalculatorService.freshKeys.clear();
     ArmorCalculatorService.entriesConfig = null;
@@ -592,6 +596,7 @@ export class ArmorCalculatorService implements OnDestroy {
     ArmorCalculatorService.retainedEntries = [];
     ArmorCalculatorService.freshEntries = [];
     ArmorCalculatorService.pendingResultSets = [];
+    ArmorCalculatorService.lastPublishedEntries = null;
     ArmorCalculatorService.freshKeys.clear();
     this.status.modifyStatus((s) => (s.calculatingResults = false));
     this._calculationProgress.next(0);
@@ -1186,8 +1191,17 @@ export class ArmorCalculatorService implements OnDestroy {
     ArmorCalculatorService.ingestResults(ArmorCalculatorService.pendingResultSets);
     ArmorCalculatorService.pendingResultSets = [];
     const entries = ArmorCalculatorService.currentEntries();
-    ArmorCalculatorService.endResults = entries.map((entry) => entry.definition);
-    updateSharedBuildCounts(ArmorCalculatorService.endResults);
+    const previous = ArmorCalculatorService.lastPublishedEntries;
+    // The table re-renders for every new array, so unchanged results keep the old one.
+    if (
+      previous === null ||
+      previous.length !== entries.length ||
+      entries.some((entry, index) => entry !== previous[index])
+    ) {
+      ArmorCalculatorService.endResults = entries.map((entry) => entry.definition);
+      updateSharedBuildCounts(ArmorCalculatorService.endResults);
+      ArmorCalculatorService.lastPublishedEntries = entries;
+    }
     subject.next({
       results: ArmorCalculatorService.endResults,
       totalPermutations: ArmorCalculatorService.totalPermutationsCount,
@@ -1725,6 +1739,7 @@ export class ArmorCalculatorService implements OnDestroy {
         ArmorCalculatorService.retainedEntries = [];
         ArmorCalculatorService.freshEntries = [];
         ArmorCalculatorService.pendingResultSets = [];
+        ArmorCalculatorService.lastPublishedEntries = null;
         ArmorCalculatorService.freshKeys.clear();
         ArmorCalculatorService.entriesConfig = null;
         this._armorResults.next({
