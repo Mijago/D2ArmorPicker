@@ -219,7 +219,8 @@ export class ResultsComponent implements OnInit, OnDestroy {
         }
         this._results = value.results;
         this.itemCount = value.itemCount;
-        this.totalTime = value.totalTime;
+        // Intermediate results carry no total; keep the live elapsed time instead of blanking it.
+        if (value.totalTime !== null) this.totalTime = value.totalTime;
         this.savedResults = value.savedResults;
         this.totalPermutations = value.totalPermutations;
         this.resultLimitReached = value.resultLimitReached;
