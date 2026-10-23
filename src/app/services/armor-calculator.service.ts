@@ -554,10 +554,52 @@ export class ArmorCalculatorService implements OnDestroy {
     return 3 * artificeSlots.size + (config.addConstent1Health ? 1 : 0);
   }
 
+  // The theoretical T5 model is an upper bound for a pool of T5 pieces, which cannot be artifice.
+  // It ignores the constant +1 health, and locked stats have a different meaning in its model.
+  private static theoreticalInfeasibilityIsFinal(
+    config: BuildConfiguration,
+    items: IPermutatorArmor[]
+  ): boolean {
+    return (
+      items.length > 0 &&
+      !config.addConstent1Health &&
+      !Object.values(config.minimumStatTiers).some((selection) => selection.fixed) &&
+      items.every(
+        (item) =>
+          item.armorSystem === ArmorSystem.Armor3 &&
+          item.tier >= 5 &&
+          item.perk !== ArmorPerkOrSlot.SlotArtifice
+      )
+    );
+  }
+
+  private finishWithoutResults(itemCount: number) {
+    this.logger.info(
+      "ArmorCalculatorService",
+      "finishWithoutResults",
+      "Targets are unreachable even with ideal T5 armor, stopping"
+    );
+    this.killWorkers();
+    clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
+    ArmorCalculatorService.intermediatePublishTimer = null;
+    ArmorCalculatorService.retainedEntries = [];
+    ArmorCalculatorService.freshEntries = [];
+    ArmorCalculatorService.freshKeys.clear();
+    this.status.modifyStatus((s) => (s.calculatingResults = false));
+    this._calculationProgress.next(0);
+    ArmorCalculatorService.publishResults(this._armorResults, itemCount, {
+      savedResults: 0,
+      totalTime: performance.now() - ArmorCalculatorService.updateResultsStart,
+      maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+    });
+  }
+
   private static startTheoreticalMaximum(
     config: BuildConfiguration,
     items: IPermutatorArmor[],
-    builders: Worker[]
+    builders: Worker[],
+    limitBuilders: boolean,
+    onInfeasible?: () => void
   ): void {
     ArmorCalculatorService.theoreticalWorker?.terminate();
     const limitsWorker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
@@ -573,7 +615,12 @@ export class ArmorCalculatorService implements OnDestroy {
     limitsWorker.onmessage = ({ data }: MessageEvent<T5LimitsReply>) => {
       // A newer run terminates this worker; its late reply must not reach reused builders.
       if (ArmorCalculatorService.theoreticalWorker !== limitsWorker) return;
-      if (data.status === "feasible" && data.maximumComplete && !data.preview) {
+      if (data.status === "infeasible" && onInfeasible) {
+        finish();
+        onInfeasible();
+        return;
+      }
+      if (limitBuilders && data.status === "feasible" && data.maximumComplete && !data.preview) {
         const tiers = data.maximum.map((value) => Math.min(200, value + slack));
         for (const builder of builders) {
           // Only the builders of this run; a newer run replaces the array.
@@ -1783,10 +1830,19 @@ export class ArmorCalculatorService implements OnDestroy {
           selectedExotics: ArmorCalculatorService.selectedExotics,
         });
       }
-      if (config.stopAtTheoreticalMaximum !== false)
-        ArmorCalculatorService.startTheoreticalMaximum(config, permutatorArmorItems, [
-          ...ArmorCalculatorService.workers,
-        ]);
+      const limitBuilders = config.stopAtTheoreticalMaximum !== false;
+      const stopOnInfeasible = ArmorCalculatorService.theoreticalInfeasibilityIsFinal(
+        config,
+        permutatorArmorItems
+      );
+      if (limitBuilders || stopOnInfeasible)
+        ArmorCalculatorService.startTheoreticalMaximum(
+          config,
+          permutatorArmorItems,
+          [...ArmorCalculatorService.workers],
+          limitBuilders,
+          stopOnInfeasible ? () => this.finishWithoutResults(inventoryArmorItems.length) : undefined
+        );
     } catch (error) {
       this.logger.error(
         "ArmorCalculatorService",

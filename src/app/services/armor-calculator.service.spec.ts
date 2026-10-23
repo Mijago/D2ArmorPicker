@@ -2,7 +2,7 @@ import { DestinyClass, TierType } from "bungie-api-ts/destiny2";
 import Tracker from "@openreplay/tracker";
 import { BuildConfiguration } from "../data/buildConfiguration";
 import { ArmorSlot } from "../data/enum/armor-slot";
-import { ArmorPerkOrSlot } from "../data/enum/armor-stat";
+import { ArmorPerkOrSlot, ArmorStat } from "../data/enum/armor-stat";
 import { IInventoryArmor, InventoryArmorSource } from "../data/types/IInventoryArmor";
 import { ArmorSystem } from "../data/types/IManifestArmor";
 import type { ArmorCalculatorService } from "./armor-calculator.service";
@@ -186,6 +186,64 @@ describe("armor pruning power preference", () => {
     calculator["retainedEntries"] = [];
     calculator["freshKeys"].clear();
     calculator["freshEntries"] = [];
+  });
+
+  it("only trusts the theoretical T5 verdict for plain T5 pools without locks or extra health", () => {
+    const t5 = (overrides: Record<string, unknown> = {}) =>
+      ({
+        armorSystem: ArmorSystem.Armor3,
+        tier: 5,
+        perk: ArmorPerkOrSlot.Any,
+        ...overrides,
+      }) as any;
+    const trusted = (config: BuildConfiguration, items: any[]) =>
+      calculator["theoreticalInfeasibilityIsFinal"](config, items);
+    const config = new BuildConfiguration();
+
+    expect(trusted(config, [t5(), t5()])).toBeTrue();
+    expect(trusted(config, [])).toBeFalse();
+    expect(trusted(config, [t5(), t5({ tier: 4 })])).toBeFalse();
+    expect(trusted(config, [t5(), t5({ armorSystem: ArmorSystem.Armor2 })])).toBeFalse();
+    expect(trusted(config, [t5({ perk: ArmorPerkOrSlot.SlotArtifice })])).toBeFalse();
+
+    const withHealth = new BuildConfiguration();
+    withHealth.addConstent1Health = true;
+    expect(trusted(withHealth, [t5()])).toBeFalse();
+
+    const locked = new BuildConfiguration();
+    locked.minimumStatTiers[0].fixed = true;
+    expect(trusted(locked, [t5()])).toBeFalse();
+  });
+
+  it("gets an exact infeasible verdict from the T5 limits worker for unreachable targets", async () => {
+    const worker = new Worker(new URL("./theorizer-stat-limits.worker", import.meta.url), {
+      type: "module",
+    });
+    const reply = (config: BuildConfiguration) =>
+      new Promise<{ status: string }>((resolve, reject) => {
+        worker.onmessage = ({ data }) => resolve(data);
+        worker.onerror = (error) => reject(new Error(error.message));
+        worker.postMessage({
+          id: 1,
+          config,
+          validateOnly: false,
+          exactOnly: true,
+          tuning: true,
+          wasmUrl: "",
+        });
+      });
+    try {
+      const unreachable = new BuildConfiguration();
+      for (let stat = 0; stat < 6; stat++)
+        unreachable.minimumStatTiers[stat as ArmorStat].value = 20;
+      const reachable = new BuildConfiguration();
+      reachable.minimumStatTiers[0].value = 10;
+
+      expect((await reply(unreachable)).status).toBe("infeasible");
+      expect((await reply(reachable)).status).toBe("feasible");
+    } finally {
+      worker.terminate();
+    }
   });
 
   it("terminates idle workers on teardown", () => {
