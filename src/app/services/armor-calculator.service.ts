@@ -166,6 +166,9 @@ export class ArmorCalculatorService implements OnDestroy {
   // Settings the entries above are valid for.
   private static entriesConfig: BuildConfiguration | null = null;
   private static runCounter = 0;
+  private static readonly INTERMEDIATE_PUBLISH_INTERVAL_MS = 200;
+  private static lastIntermediatePublish = 0;
+  private static intermediatePublishTimer: any = null;
   private static inventoryById = new Map<number, IInventoryArmor>();
   private static savedResultsCount = 0;
   private static totalPermutationsCount = 0;
@@ -1030,6 +1033,8 @@ export class ArmorCalculatorService implements OnDestroy {
     this._calculationProgress.next(0);
 
     // The finished run replaces everything kept from the previous one.
+    clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
+    ArmorCalculatorService.intermediatePublishTimer = null;
     ArmorCalculatorService.retainedEntries = [];
     ArmorCalculatorService.freshKeys.clear();
 
@@ -1055,19 +1060,34 @@ export class ArmorCalculatorService implements OnDestroy {
   }
 
   private processIntermediateResults(inventoryArmorItems: IInventoryArmor[]): void {
+    // Workers deliver small batches early, so publish at most once per interval (first one at once).
+    const itemCount = inventoryArmorItems.length;
+    const wait =
+      ArmorCalculatorService.INTERMEDIATE_PUBLISH_INTERVAL_MS -
+      (performance.now() - ArmorCalculatorService.lastIntermediatePublish);
+    if (wait > 0) {
+      if (ArmorCalculatorService.intermediatePublishTimer == null) {
+        ArmorCalculatorService.intermediatePublishTimer = setTimeout(
+          () => this.publishIntermediateResults(itemCount),
+          wait
+        );
+      }
+      return;
+    }
+    this.publishIntermediateResults(itemCount);
+  }
+
+  private publishIntermediateResults(itemCount: number): void {
+    clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
+    ArmorCalculatorService.intermediatePublishTimer = null;
+    ArmorCalculatorService.lastIntermediatePublish = performance.now();
     // Do not toggle calculatingResults or reset progress; workers are still running.
-    ArmorCalculatorService.publishResults(this._armorResults, inventoryArmorItems.length, {
+    ArmorCalculatorService.publishResults(this._armorResults, itemCount, {
       totalTime: null,
       maximumPossibleTiers: ArmorCalculatorService.globalMaximumPossibleTiers.map(
         (k) => Math.min(200, k) / 10
       ),
     });
-
-    this.logger.info(
-      "ArmorCalculatorService",
-      "processIntermediateResults",
-      "Published intermediate results after all workers reached result limit"
-    );
   }
 
   private static currentEntries(): ResultEntry[] {
@@ -1557,6 +1577,9 @@ export class ArmorCalculatorService implements OnDestroy {
     this._totalPossibleCombinations.next(0);
     this.killWorkers();
     const runId = ++ArmorCalculatorService.runCounter;
+    clearTimeout(ArmorCalculatorService.intermediatePublishTimer);
+    ArmorCalculatorService.intermediatePublishTimer = null;
+    ArmorCalculatorService.lastIntermediatePublish = 0;
 
     // Reset cancellation state for the new calculation
     ArmorCalculatorService.cancellationRequested = false;

@@ -342,6 +342,8 @@ const COMBINATION_TICK = [] as unknown as ArmorCombination;
 // Leaf combinations skipped by pruning that the consumer has not yet counted as checked.
 let skippedCombinations = 0;
 const TICK_INTERVAL = 2048;
+const FIRST_RESULT_FLUSH_MS = 50;
+const LATER_RESULT_FLUSH_MS = 250;
 
 /**
  * Enumerates armor combinations in the same order as nested loops would: for each exotic slot (then
@@ -701,6 +703,9 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   let lastProgressReportTime = 0;
   let cachedTuningBase: TuningBaseCache = { items: [], accumulator: null };
   let iterations = 0;
+  // The first results go out quickly so the table fills early; later batches are less frequent.
+  let resultFlushInterval = FIRST_RESULT_FLUSH_MS;
+  let lastResultFlush = performance.now();
 
   // define the delay; it can be 75ms if the estimated calculations are low
   // if the estimated calculations >= 1e6, then we will use 250ms
@@ -801,7 +806,13 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       }
     }
 
-    if (resultsLength >= 5000 || (resultLimitReached && resultsLength > 0)) {
+    const checkClock = (++iterations & 15) === 0;
+    const now = checkClock ? performance.now() : 0;
+    if (
+      resultsLength >= 5000 ||
+      (resultLimitReached && resultsLength > 0) ||
+      (checkClock && resultsLength > 0 && now - lastResultFlush >= resultFlushInterval)
+    ) {
       // Check if the best result is in this batch
       if (bestResult && results.includes(bestResult)) {
         bestResultSent = true;
@@ -820,13 +831,15 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       );
       results = [];
       resultsLength = 0;
+      lastResultFlush = performance.now();
+      resultFlushInterval = LATER_RESULT_FLUSH_MS;
       await new Promise((resolve) => setTimeout(resolve, 0));
     } else if (
       // Pruned combinations skip the work above, so progress and queued messages are serviced here.
-      (++iterations & 15) === 0 &&
-      lastProgressReportTime + progressBarDelay < performance.now()
+      checkClock &&
+      lastProgressReportTime + progressBarDelay < now
     ) {
-      lastProgressReportTime = performance.now();
+      lastProgressReportTime = now;
       postMessage({
         checkedCalculations,
         estimatedCalculations,
