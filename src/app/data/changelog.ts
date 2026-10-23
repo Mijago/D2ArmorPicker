@@ -82,6 +82,30 @@ export const CHANGELOG_DATA: {
         type: ChangelogEntryType.ADD,
         text: 'Added a "Max workers to use" setting to Calculation Performance & Results to choose how many worker threads the calculator uses.',
       },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Greatly improved calculator performance: results are built, sorted and merged incrementally, workers are reused, partial armor sets are pruned early, and the tuning search is faster and uses less memory.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The first results now appear early, and matching results are kept while recalculating.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The calculator stops immediately when the selected T5 targets are unreachable.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor is only treated as T5 when it has a 30/25/20 stat shape.",
+      },
+      {
+        type: ChangelogEntryType.REMOVE,
+        text: "Removed the legacy artifice-related calculator options.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Fixed result table refreshes, gear set icon flashing, tooltips hanging, and the elapsed time disappearing during intermediate results.",
+      },
     ],
   },
   {
