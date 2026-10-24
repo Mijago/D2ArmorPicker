@@ -520,6 +520,31 @@ describe("T5 theorizer archetypes", () => {
     expect(groups[0].tertiaries).toEqual([{ stat: ArmorStat.StatClass, count: 5 }]);
   });
 
+  it("attaches calculated builds to the minimal arrangement that requested them", () => {
+    const pieces = (tertiaries: ArmorStat[]) =>
+      tertiaries.map((tertiary) => ({ archetype: "Grenedier", tertiary }) as T5Candidate);
+    const base = t5ArrangementFromPieces(pieces([ArmorStat.StatClass]).slice(0, 1));
+    const minimal = { ...base, archetypes: [{ ...base.archetypes[0], count: 5 }] };
+    const build = {
+      key: "build",
+      patternKey: "build",
+      covered: 3,
+      owned: 3,
+      arrangementKey: minimal.key,
+      pieces: pieces([
+        ArmorStat.StatClass,
+        ArmorStat.StatHealth,
+        ArmorStat.StatMelee,
+        ArmorStat.StatHealth,
+        ArmorStat.StatMelee,
+      ]),
+    } as T5Solution;
+    const groups = groupT5Arrangements([build], [minimal]);
+    expect(groups.length).toBe(1);
+    expect(groups[0].key).toBe(minimal.key);
+    expect(groups[0].builds.length).toBe(1);
+  });
+
   it("keeps equal archetype counts separate when their required tertiary counts differ", () => {
     const build = (key: string, tertiary: ArmorStat) =>
       ({

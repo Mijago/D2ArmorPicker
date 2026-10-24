@@ -783,6 +783,94 @@ describe("T5 theorizer search", () => {
     expect(final.evaluations).toBe(7);
   });
 
+  it("does not list extra directional tuning when the same pieces reach the targets without it", () => {
+    const input = request();
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 10000;
+    input.task = { archetypes: Array(5).fill("Grenedier"), archetypeCounts: true };
+    input.arrangementConfig = t5ArrangementConfiguration(input.config);
+    input.arrangementConfig.calculateTierFiveTuning = true;
+    const prepared = prepareT5Search(input);
+    prepared.archetypeDomains.set(
+      "Grenedier",
+      prepared.archetypeDomains
+        .get("Grenedier")!
+        .filter(
+          (piece) =>
+            piece.tertiary === ArmorStat.StatClass || piece.tertiary === ArmorStat.StatHealth
+        )
+    );
+    const final = [...searchT5(input, undefined, prepared)].pop()!;
+    expect(final.complete).toBeTrue();
+    expect(final.arrangements!.length).toBe(6);
+    for (const arrangement of final.arrangements!)
+      expect(arrangement.tunings.every((entry) => entry.stat === null)).toBeTrue();
+  });
+
+  it("collapses tertiary and tuning variants into the smallest requirements that reach the targets", () => {
+    const input = request();
+    input.stage = "arrangements";
+    input.skipMaxima = true;
+    input.timeLimitMs = 20000;
+    input.config.minimumStatTiers[ArmorStat.StatGrenade].value = 17;
+    input.config.minimumStatTiers[ArmorStat.StatClass].value = 9;
+    input.task = {
+      archetypes: ["Grenedier", "Grenedier", "Demolitionist", "Demolitionist", "Demolitionist"],
+      archetypeCounts: true,
+    };
+    input.arrangementConfig = t5ArrangementConfiguration(input.config);
+    input.arrangementConfig.calculateTierFiveTuning = true;
+    const prepared = prepareT5Search(input);
+    const narrow = (pieces: T5Candidate[]) =>
+      pieces.filter(
+        (piece) =>
+          piece.anyTertiary ||
+          piece.tertiary === ArmorStat.StatClass ||
+          piece.tertiary === ArmorStat.StatHealth ||
+          piece.tertiary === ArmorStat.StatMelee
+      );
+    for (const name of [...prepared.archetypeDomains.keys()])
+      if (name !== "Grenedier" && name !== "Demolitionist") prepared.archetypeDomains.delete(name);
+    for (const [name, pieces] of prepared.archetypeDomains)
+      prepared.archetypeDomains.set(name, narrow(pieces));
+    const discover = (anyTertiary: boolean) => {
+      const domains = new Map(
+        [...prepared.archetypeDomains].map(([name, pieces]) => [
+          name,
+          anyTertiary ? pieces : pieces.filter((piece) => !piece.anyTertiary),
+        ])
+      );
+      const final = [
+        ...searchT5(input, undefined, { ...prepared, archetypeDomains: domains }),
+      ].pop()!;
+      expect(final.complete).toBeTrue();
+      return final.arrangements!;
+    };
+    const collapsed = discover(true);
+    const exact = discover(false);
+    const count = (entries: { stat: ArmorStat | null; count: number }[], stat: ArmorStat | null) =>
+      entries.find((entry) => entry.stat === stat)?.count ?? 0;
+    const covers = (small: (typeof exact)[number], large: (typeof exact)[number]) =>
+      [null, 0, 1, 2, 3, 4, 5].every(
+        (stat) =>
+          count(small.tertiaries, stat as ArmorStat | null) <=
+            count(large.tertiaries, stat as ArmorStat | null) &&
+          (stat === null || count(small.tunings, stat) <= count(large.tunings, stat))
+      );
+    expect(collapsed.some((arrangement) => canAssignT5Tertiaries(arrangement))).toBeTrue();
+    expect(collapsed.some((arrangement) => arrangement.tertiaries.length < 3)).toBeTrue();
+    expect(collapsed.length).toBeLessThan(exact.length);
+    for (const arrangement of exact)
+      expect(collapsed.some((candidate) => covers(candidate, arrangement)))
+        .withContext(arrangement.key)
+        .toBeTrue();
+    for (const arrangement of collapsed)
+      expect(collapsed.filter((candidate) => covers(candidate, arrangement)).length)
+        .withContext(arrangement.key)
+        .toBe(1);
+  });
+
   it("ranks the existing class-tertiary helmet and melee-tertiary exotic chest as two covered slots", () => {
     const input = request();
     input.config.selectedExotics = [];

@@ -29,7 +29,7 @@ interface ModelDefinition {
   variables: Record<string, Record<string, number>>;
   binaries?: Record<string, number>;
   ints?: Record<string, number>;
-  options?: { timeout?: number; exitOnCycles?: boolean };
+  options?: { timeout?: number; exitOnCycles?: boolean; gap?: number };
 }
 
 interface SolveResult {
@@ -72,13 +72,19 @@ function solveModel(
   if (!highs) throw new Error("The T5 optimizer has not initialized.");
   const started = profile ? performance.now() : 0;
   const variables = Object.keys(model.variables);
+  // Row-major terms built in one pass over the nonzeros instead of scanning every variable per row.
+  const rowTerms = new Map<string, string[]>();
+  for (const name of variables) {
+    for (const [attribute, value] of Object.entries(model.variables[name])) {
+      if (!value) continue;
+      const term = `${value < 0 ? "-" : "+"} ${Math.abs(value)} ${name}`;
+      const terms = rowTerms.get(attribute);
+      if (terms) terms.push(term);
+      else rowTerms.set(attribute, [term]);
+    }
+  }
   const expression = (attribute: string) =>
-    variables
-      .flatMap((name) => {
-        const value = model.variables[name][attribute] ?? 0;
-        return value ? [`${value < 0 ? "-" : "+"} ${Math.abs(value)} ${name}`] : [];
-      })
-      .join(" ") || `0 ${variables[0]}`;
+    rowTerms.get(attribute)?.join(" ") || `0 ${variables[0]}`;
   const objective =
     typeof model.optimize === "string" ? model.optimize : Object.keys(model.optimize)[0];
   const lines = [
@@ -108,6 +114,7 @@ function solveModel(
   const solution = highs.solve(lp, {
     time_limit: (model.options?.timeout ?? 150) / 1000,
     output_flag: false,
+    ...(model.options?.gap !== undefined ? { mip_abs_gap: model.options.gap } : {}),
   });
   const solvedAt = profile ? performance.now() : 0;
   const values: Record<string, number> = {};
@@ -119,14 +126,20 @@ function solveModel(
   const integral = [...Object.keys(model.ints ?? {}), ...Object.keys(model.binaries ?? {})].every(
     (name) => Math.abs((values[name] ?? 0) - Math.round(values[name] ?? 0)) < 0.00001
   );
+  const rowValues = new Map<string, number>();
+  if (integral) {
+    for (const variable of variables) {
+      const amount = values[variable] ?? 0;
+      if (!amount) continue;
+      for (const [attribute, coefficient] of Object.entries(model.variables[variable]))
+        rowValues.set(attribute, (rowValues.get(attribute) ?? 0) + coefficient * amount);
+    }
+  }
   const feasible =
     integral &&
     Object.entries(model.constraints).every(([name, bound]) => {
       if (typeof bound === "string") return true;
-      const value = variables.reduce(
-        (sum, variable) => sum + (model.variables[variable][name] ?? 0) * (values[variable] ?? 0),
-        0
-      );
+      const value = rowValues.get(name) ?? 0;
       return (
         (bound.equal === undefined || Math.abs(value - bound.equal) < 0.00001) &&
         (bound.min === undefined || value >= bound.min - 0.00001) &&
@@ -373,6 +386,9 @@ export function t5RollStats(item: T5Candidate, config: BuildConfiguration): numb
 }
 
 function balancedStats(item: T5Candidate): number[] {
+  // An unknown tertiary leaves the other four non-archetype stats as the worst case.
+  if (item.anyTertiary)
+    return [0, 1, 2, 3, 4, 5].map((stat) => (item.archetypeStats.includes(stat) ? 0 : 1));
   const stats = [
     item.resilience,
     item.strength,
@@ -883,26 +899,35 @@ export function constrainT5Arrangement(
 
 export function constrainT5TertiaryCounts(
   problem: T5OptimizationModel,
-  tertiaries: readonly { stat: ArmorStat | null; count: number }[]
+  tertiaries: readonly { stat: ArmorStat | null; count: number }[],
+  exact = false
 ): void {
   for (let index = 0; index < tertiaries.length; index++) {
     const entry = tertiaries[index];
     const name = `required_tertiary_${index}`;
-    problem.model.constraints[name] = { equal: entry.count };
+    problem.model.constraints[name] = exact ? { equal: entry.count } : { min: entry.count };
     for (const roll of problem.rolls)
-      if ((roll.item.tertiary ?? null) === entry.stat) problem.model.variables[roll.name][name] = 1;
+      if (!roll.item.anyTertiary && (roll.item.tertiary ?? null) === entry.stat)
+        problem.model.variables[roll.name][name] = 1;
   }
 }
 
+/** With `dominated`, also excludes every arrangement that needs the same pieces plus extra directional tuning. */
 export function excludeT5Arrangement(
   problem: T5OptimizationModel,
   arrangement: T5Arrangement,
-  index: number
+  index: number,
+  dominated = false,
+  fixedArchetypes = false
 ): void {
   const choice = `different_arrangement_${index}`;
   problem.model.constraints[choice] = { min: 1 };
+  const tuningEntries = dominated
+    ? arrangement.tunings.filter((entry) => entry.stat !== null)
+    : arrangement.tunings;
   const categories: { count: number; terms: [string, number][] }[] = [
-    ...arrangement.archetypes.map((entry) => ({
+    // Archetype counts never differ when the task already fixes them.
+    ...(fixedArchetypes ? [] : arrangement.archetypes).map((entry) => ({
       count: entry.count,
       terms: problem.rolls
         .filter((roll) => roll.item.archetype === entry.name)
@@ -911,10 +936,10 @@ export function excludeT5Arrangement(
     ...arrangement.tertiaries.map((entry) => ({
       count: entry.count,
       terms: problem.rolls
-        .filter((roll) => (roll.item.tertiary ?? null) === entry.stat)
+        .filter((roll) => !roll.item.anyTertiary && (roll.item.tertiary ?? null) === entry.stat)
         .map((roll): [string, number] => [roll.name, 1]),
     })),
-    ...arrangement.tunings.map((entry) => ({
+    ...tuningEntries.map((entry) => ({
       count: entry.stat === null ? entry.count - 5 : entry.count,
       terms: Array.from({ length: 5 }, (_, slot) =>
         Array.from({ length: 6 }, (_, stat): [string, number] => [

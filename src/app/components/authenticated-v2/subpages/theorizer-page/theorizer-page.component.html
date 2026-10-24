@@ -265,6 +265,8 @@
                         >{{ tertiary.count }} x
                         {{ tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat] }}
                         tertiary</span
+                      ><span *ngIf="anyTertiaryCount(arrangement) as wild"
+                        >{{ wild }} x any tertiary</span
                       ></div
                     >
                     <div class="tertiary-counts"
@@ -319,6 +321,8 @@
                         {{
                           tertiary.stat === null ? "perk-defined" : statNames[tertiary.stat]
                         }}</strong
+                      ><strong *ngIf="anyTertiaryCount(arrangement) as wild"
+                        >{{ wild }} x Any</strong
                       ></div
                     >
                     <h4>Floating tuning-family requirements</h4>

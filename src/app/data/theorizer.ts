@@ -105,6 +105,8 @@ export function hasLegalT5Shape(item: {
 
 export interface T5Candidate extends IPermutatorArmor {
   hypotheticalTuning?: boolean;
+  /** Discovery-only roll whose tertiary is unknown, so it carries the worst-case stats of every tertiary. */
+  anyTertiary?: boolean;
   name: string;
   icon: string;
   archetype: string;
@@ -135,6 +137,8 @@ export interface T5Solution {
   covered: number;
   owned: number;
   patternKey?: string;
+  /** The arrangement whose build calculation produced this solution. */
+  arrangementKey?: string;
   missingRolls?: {
     archetype: string;
     tertiary: ArmorStat | null;
@@ -182,7 +186,7 @@ export function t5ArrangementFromPieces(
   for (const [index, piece] of pieces.entries()) {
     archetypes.set(piece.archetype, (archetypes.get(piece.archetype) ?? 0) + 1);
     const stat = piece.tertiary ?? null;
-    tertiaries.set(stat, (tertiaries.get(stat) ?? 0) + 1);
+    if (!piece.anyTertiary) tertiaries.set(stat, (tertiaries.get(stat) ?? 0) + 1);
     const tuning = tuningMods ? t5TuningFamily(tuningMods[index]) : (piece.tuningStat ?? null);
     tunings.set(tuning, (tunings.get(tuning) ?? 0) + 1);
   }
@@ -218,10 +222,16 @@ export function canAssignT5Tertiaries(
     Array.from({ length: entry.count }, () => entry)
   );
   const remaining = arrangement.tertiaries.map((entry) => entry.count);
-  if (remaining.reduce((sum, count) => sum + count, 0) !== pieces.length) return false;
+  let unconstrained = pieces.length - remaining.reduce((sum, count) => sum + count, 0);
+  if (unconstrained < 0) return false;
   const assign = (index: number): boolean => {
     if (index === pieces.length) return true;
     const piece = pieces[index];
+    if (unconstrained > 0) {
+      unconstrained--;
+      if (assign(index + 1)) return true;
+      unconstrained++;
+    }
     for (let tertiary = 0; tertiary < remaining.length; tertiary++) {
       const stat = arrangement.tertiaries[tertiary].stat;
       if (
@@ -255,7 +265,10 @@ export function groupT5Arrangements(
   }
   for (const solution of solutions) {
     const base = t5ArrangementFromPieces(solution.pieces, solution.tuningMods, solution.result);
-    const key = base.key;
+    const key =
+      solution.arrangementKey && groups.has(solution.arrangementKey)
+        ? solution.arrangementKey
+        : base.key;
     let arrangement = groups.get(key);
     if (!arrangement) {
       arrangement = base;
@@ -399,8 +412,12 @@ export function createT5TertiaryTasks(
         tasks.set(key, {
           ...task,
           tertiaries,
-          excludedArrangements: task.excludedArrangements?.filter(
-            (arrangement) => JSON.stringify(arrangement.tertiaries) === key
+          excludedArrangements: task.excludedArrangements?.filter((arrangement) =>
+            arrangement.tertiaries.every(
+              (required) =>
+                (tertiaries.find((entry) => entry.stat === required.stat)?.count ?? 0) >=
+                required.count
+            )
           ),
         });
       return;

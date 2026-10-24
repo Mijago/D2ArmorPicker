@@ -36,6 +36,12 @@ import {
   t5TuningStat,
 } from "./theorizer-model";
 
+// Discovery only needs a feasible arrangement; accept up to one extra stat mod over the minimum.
+const DISCOVERY_MIP_ABS_GAP = 1.5;
+// Must exceed the gap and the whole mod budget so the fewest directional tunings are found first.
+const TUNING_WEIGHT = 10;
+const TERTIARY_WEIGHT = 8;
+
 export const T5_SLOTS = [
   ArmorSlot.ArmorSlotHelmet,
   ArmorSlot.ArmorSlotGauntlet,
@@ -554,6 +560,42 @@ function generationRolls(choices: readonly T5Candidate[], achievableOnly: boolea
   return [...unique.values()];
 }
 
+/** One worst-case roll per hypothetical identity, so discovery can leave a tertiary unspecified. */
+function anyTertiaryRolls(choices: readonly T5Candidate[]): T5Candidate[] {
+  const unique = new Map<string, T5Candidate>();
+  for (const item of choices) {
+    if (item.tertiary === null || (item.isExotic && item.slot === ArmorSlot.ArmorSlotClass))
+      continue;
+    const key = JSON.stringify([
+      item.archetype,
+      item.masterworkLevel,
+      item.isExotic,
+      item.hash,
+      item.perk,
+      item.gearSetHash,
+      item.gearSetPerkSelectable,
+      item.hypotheticalTuning,
+      item.tuningStat,
+    ]);
+    if (unique.has(key)) continue;
+    const stats = t5ItemStats(item);
+    stats[item.tertiary] = 0;
+    unique.set(key, {
+      ...item,
+      resilience: stats[0],
+      strength: stats[1],
+      discipline: stats[2],
+      intellect: stats[3],
+      recovery: stats[4],
+      mobility: stats[5],
+      archetypeStats: item.archetypeStats.filter((stat) => stat !== item.tertiary),
+      tertiary: null,
+      anyTertiary: true,
+    });
+  }
+  return [...unique.values()];
+}
+
 export interface PreparedT5Search {
   domains: Map<string, T5Candidate[]>[];
   arrangementDomains: Map<string, T5Candidate[]>[];
@@ -581,16 +623,16 @@ export function prepareT5Search(request: T5SearchRequest): PreparedT5Search {
     for (const [name, choices] of domain)
       pooled.set(name, [...(pooled.get(name) ?? []), ...choices]);
   const archetypeDomains = new Map(
-    [...pooled].map(([name, choices]) => [
-      name,
-      generationRolls(choices, request.achievableOnly).map((piece) => ({
+    [...pooled].map(([name, choices]) => {
+      const rolls = generationRolls(choices, request.achievableOnly).map((piece) => ({
         ...piece,
         slot:
           piece.isExotic && piece.slot === ArmorSlot.ArmorSlotClass
             ? ArmorSlot.ArmorSlotClass
             : ArmorSlot.ArmorSlotNone,
-      })),
-    ])
+      }));
+      return [name, [...rolls, ...anyTertiaryRolls(rolls)]] as [string, T5Candidate[]];
+    })
   );
   if (
     !arrangementRequest.achievableOnly &&
@@ -621,10 +663,11 @@ export function inventoryFitT5(
 ): NonNullable<T5Arrangement["inventoryMatch"]> {
   const names = new Set(arrangement.archetypes.map((entry) => entry.name));
   const tertiaries = new Set(arrangement.tertiaries.map((entry) => entry.stat));
+  const anyTertiary = arrangement.tertiaries.reduce((sum, entry) => sum + entry.count, 0) < 5;
   const domains = prepared.domains.map((domain) =>
     [...domain.values()]
       .flat()
-      .filter((item) => names.has(item.archetype) && tertiaries.has(item.tertiary))
+      .filter((item) => names.has(item.archetype) && (anyTertiary || tertiaries.has(item.tertiary)))
   );
   if (domains.some((items) => !items.length))
     return { covered: 0, owned: 0, proven: true, pieces: [], feasible: false };
@@ -663,7 +706,7 @@ export function t5FitCoverageUpperBound(
         requirement.count,
         candidates.filter((candidate) => candidate.tertiary === requirement.stat).length
       ),
-    0
+    Math.max(0, 5 - arrangement.tertiaries.reduce((sum, entry) => sum + entry.count, 0))
   );
   return Math.min(5, archetypeCoverage, tertiaryCoverage);
 }
@@ -855,12 +898,16 @@ export function* searchT5(
       : arrangeOnly
         ? cache.theoryDomains.map((domain, slot) => keys[slot].flatMap((key) => domain.get(key)!))
         : allRolls;
+  const anyTertiarySlots =
+    !!request.arrangement &&
+    request.arrangement.tertiaries.reduce((sum, entry) => sum + entry.count, 0) < 5;
   const generationDomains = generationRollsBySlot.map((choices) =>
     request.arrangement
       ? choices.filter(
           (item) =>
             request.arrangement!.archetypes.some((entry) => entry.name === item.archetype) &&
-            request.arrangement!.tertiaries.some((entry) => entry.stat === item.tertiary)
+            (anyTertiarySlots ||
+              request.arrangement!.tertiaries.some((entry) => entry.stat === item.tertiary))
         )
       : choices
   );
@@ -881,16 +928,29 @@ export function* searchT5(
       [...counts].map(([name, count]) => ({ name, count }))
     );
   }
+  if (arrangeOnly) {
+    problem.model.options = { ...problem.model.options, gap: DISCOVERY_MIP_ABS_GAP };
+    // Mods are agnostic while directional tuning needs a specific key, so prefer mods.
+    for (const [name, coefficients] of Object.entries(problem.model.variables))
+      if (name.startsWith("up_")) coefficients["score"] = -TUNING_WEIGHT;
+    // Likewise a specific tertiary is rarer than a mod, so find the fewest required tertiaries first.
+    if (problem.rolls.some((roll) => roll.item.anyTertiary))
+      for (const roll of problem.rolls)
+        if (!roll.item.anyTertiary)
+          problem.model.variables[roll.name]["score"] =
+            (problem.model.variables[roll.name]["score"] ?? 0) - TERTIARY_WEIGHT;
+  }
   if (!arrangeOnly) problem.model.constraints["covered"] = { min: 3 };
   if (request.arrangement) constrainT5Arrangement(problem, request.arrangement);
-  if (request.task?.tertiaries) constrainT5TertiaryCounts(problem, request.task.tertiaries);
+  if (request.task?.tertiaries) constrainT5TertiaryCounts(problem, request.task.tertiaries, true);
   if (!arrangeOnly && request.buildPartition) partitionT5Builds(problem, request.buildPartition);
   const visitedGroups = new Set<string>();
   const retainedPatterns = new Set<string>();
+  const fixedArchetypes = arrangeOnly && !!request.task?.archetypeCounts;
   let exhausted = false;
   let patternIndex = 0;
   for (const arrangement of request.task?.excludedArrangements ?? [])
-    excludeT5Arrangement(problem, arrangement, patternIndex++);
+    excludeT5Arrangement(problem, arrangement, patternIndex++, arrangeOnly, fixedArchetypes);
   let solverRetries = 0;
   let retriesWithoutProgress = 0;
   let solveTimeoutMs = problem.model.options?.timeout ?? 150;
@@ -985,7 +1045,14 @@ export function* searchT5(
         feasible++;
       }
       checked = visitedGroups.size;
-      excludeT5Arrangement(problem, arrangement, patternIndex++);
+      excludeT5Arrangement(problem, arrangement, patternIndex++, true, fixedArchetypes);
+      // Needing no specific tertiary and no directional tuning leaves nothing the cut could still allow.
+      if (
+        fixedArchetypes &&
+        !arrangement.tertiaries.length &&
+        arrangement.tunings.every((entry) => entry.stat === null)
+      )
+        exhausted = true;
       yield {
         results: [],
         arrangements: [...arrangements],
@@ -1017,6 +1084,7 @@ export function* searchT5(
       : matchT5Pattern(pattern, domains, config, request.achievableOnly);
     retainedPatterns.add(patternKey);
     if (solution && solution.covered >= 3) {
+      if (request.arrangement) solution.arrangementKey = request.arrangement.key;
       feasible++;
       results.push(solution);
       if (results.length > limit + 100) {

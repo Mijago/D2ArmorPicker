@@ -438,6 +438,10 @@ export class TheorizerPageComponent implements OnInit, OnDestroy {
     return this.modAllocationSummary(solution.result);
   }
 
+  anyTertiaryCount(arrangement: T5Arrangement): number {
+    return Math.max(0, 5 - arrangement.tertiaries.reduce((sum, entry) => sum + entry.count, 0));
+  }
+
   modAllocationSummary(allocation: {
     usedMods: readonly StatModifier[];
     usedArtifice: readonly StatModifier[];
