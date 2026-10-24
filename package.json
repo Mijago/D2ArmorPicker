@@ -1,9 +1,10 @@
 {
   "name": "d2-armor-picker",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "scripts": {
     "ng": "ng",
-    "config": "ts-node set-env.ts",
+    "config": "ts-node set-env.ts && npm run wasm:build",
+    "wasm:build": "node scripts/build-wasm.cjs",
     "start": "npm run config && ng serve --ssl --disable-host-check",
     "build": "npm run config && ng build",
     "deploy": "set \"RELEASE=PROD\" && npm run config && ng build D2ArmorPicker --configuration=production --base-href=/ && angular-cli-ghpages --dir=dist/D2ArmorPicker/browser --cname=d2armorpicker.com",
@@ -12,6 +13,7 @@
     "deploy-nznaza": "set \"RELEASE=DEV\" && npm run config && ng build D2ArmorPicker --configuration=beta --base-href=/D2ArmorPicker/ && angular-cli-ghpages --dir=dist/D2ArmorPicker/browser --no-silent --repo=https://github.com/nznaza/D2ArmorPicker.git --cname=nznaza.github.io/D2ArmorPicker/",
     "watch": "npm run config && ng build --watch --configuration development",
     "test": "ng test",
+    "pretest": "npm run wasm:build",
     "profile:theorizer": "node scripts/profile-theorizer.cjs",
     "prepare": "husky install",
     "lint": "ng lint --fix --max-warnings=0",
@@ -70,6 +72,8 @@
     "@types/sql.js": "^1.4.9",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.72.0",
+    "angular-eslint": "^22.6.0",
+    "assemblyscript": "^0.28.20",
     "dotenv": "^16.4.5",
     "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
@@ -86,7 +90,6 @@
     "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
     "typescript": "~6.0.3",
-    "angular-eslint": "^22.6.0",
     "typescript-eslint": "^8.72.0"
   }
 }

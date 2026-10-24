@@ -29,6 +29,9 @@ import { takeUntil } from "rxjs/operators";
 import { InventoryArmorSource } from "src/app/data/types/IInventoryArmor";
 import { MAXIMUM_STAT_MOD_AMOUNT } from "src/app/data/constants";
 import { Tuning } from "src/app/data/types/IPermutatorArmorSet";
+import { calculateCPUConcurrency } from "../../../data/commonFunctions";
+
+const FIREFOX_NOTICE_KEY = "d2ap-firefox-cores-notice-dismissed";
 
 export interface ResultDefinition {
   exotic:
@@ -131,6 +134,10 @@ export class ResultsComponent implements OnInit, OnDestroy {
   isCalculatingPermutations: boolean = false;
   initializing: boolean = true; // Flag to indicate if the page is still initializing
   cancelledCalculation: boolean = false;
+  readonly detectedLogicalCores = navigator.hardwareConcurrency || 4;
+  readonly automaticWorkers = calculateCPUConcurrency();
+  showFirefoxCoresNotice =
+    /firefox/i.test(navigator.userAgent) && localStorage.getItem(FIREFOX_NOTICE_KEY) !== "1";
 
   constructor(
     private armorCalculator: ArmorCalculatorService,
@@ -231,6 +238,11 @@ export class ResultsComponent implements OnInit, OnDestroy {
 
   cancelCalculation() {
     this.armorCalculator.cancelCalculation();
+  }
+
+  dismissFirefoxCoresNotice() {
+    localStorage.setItem(FIREFOX_NOTICE_KEY, "1");
+    this.showFirefoxCoresNotice = false;
   }
 
   private ngUnsubscribe = new Subject();

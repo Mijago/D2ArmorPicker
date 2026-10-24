@@ -195,6 +195,8 @@ export interface T5LimitsRequest {
   config: BuildConfiguration;
   validateOnly: boolean;
   wasmUrl: string;
+  /** WASM kernels for the exact limits; the TypeScript build is used when absent or broken. */
+  kernelsUrl?: string;
   /** Skip the HiGHS preview and optimizer load; only the exact limits are computed. */
   exactOnly?: boolean;
   /** Defaults to true; false models builds without T5 tuning. */

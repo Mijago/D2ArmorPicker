@@ -6,7 +6,11 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { parseArgs } = require("node:util");
+const crypto = require("node:crypto");
 const esbuild = require("esbuild");
+
+// Set from the command line: --wasm <kernels.wasm> runs the WASM kernels, --digest hashes every result.
+const harness = { wasmBytes: null, digest: false, dump: null };
 
 const SCENARIOS = {
   none: {},
@@ -32,7 +36,9 @@ function summarize(file) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 25)
     .forEach(([key, value]) =>
-      console.log(`${((value / total) * 100).toFixed(1).padStart(5)}%  ${(value / 1000).toFixed(0).padStart(7)} ms  ${key}`)
+      console.log(
+        `${((value / total) * 100).toFixed(1).padStart(5)}%  ${(value / 1000).toFixed(0).padStart(7)} ms  ${key}`
+      )
     );
 }
 
@@ -102,12 +108,27 @@ function prepareWorkerItems(service, calculator, prepared, config) {
     if (masterwork !== 0) return masterwork;
     const selectedDiff = selected.reduce((s, stat) => s + stats(b)[stat] - stats(a)[stat], 0);
     if (selectedDiff !== 0) return selectedDiff;
-    return Number(b.gearSetHash != null || b.gearSetPerkSelectable) - Number(a.gearSetHash != null || a.gearSetPerkSelectable);
+    return (
+      Number(b.gearSetHash != null || b.gearSetPerkSelectable) -
+      Number(a.gearSetHash != null || a.gearSetPerkSelectable)
+    );
   });
-  return { items, poolBefore, deduped: prepared.items.length, duplicates: prepared.duplicates.length };
+  return {
+    items,
+    poolBefore,
+    deduped: prepared.items.length,
+    duplicates: prepared.duplicates.length,
+  };
 }
 
-function runWorker(config, items, seconds, recorded, unpack) {
+function runWorker(
+  config,
+  items,
+  seconds,
+  recorded,
+  unpack,
+  threadSplit = { count: 1, current: 0 }
+) {
   const log = console.log;
   const time = console.time;
   const timeEnd = console.timeEnd;
@@ -117,18 +138,37 @@ function runWorker(config, items, seconds, recorded, unpack) {
     let unpackMs = 0;
     let last = null;
     let progress = null;
+    const hash = crypto.createHash("sha1");
     const started = performance.now();
-    const timer = setTimeout(() => globalThis.__workerListeners.message({ data: { type: "cancel" } }), seconds * 1000);
+    const timer = setTimeout(
+      () => globalThis.__workerListeners.message({ data: { type: "cancel" } }),
+      seconds * 1000
+    );
     const memoryTimer = process.env.TRACE_MEMORY
       ? setInterval(() => {
           process.stderr.write(
-            `heap ${(process.memoryUsage().heapUsed / 1048576).toFixed(0)}MB checked ${progress?.checkedCalculations} computed ${progress?.computedPermutations} results ${results}\n`
+            `heap ${(process.memoryUsage().heapUsed / 1048576).toFixed(0)}MB rss ${(process.memoryUsage().rss / 1048576).toFixed(0)}MB checked ${progress?.checkedCalculations} computed ${progress?.computedPermutations} results ${results}\n`
           );
         }, 2000)
       : null;
     globalThis.__onWorkerMessage = (message) => {
+      if (message.type === "workerError") {
+        console.log = log;
+        console.time = time;
+        console.timeEnd = timeEnd;
+        clearTimeout(timer);
+        console.error("workerError", message.error);
+        process.exit(1);
+      }
       if (message.packed) {
         results += message.packed.count;
+        if (harness.dump || harness.digest) {
+          for (const set of unpack(message.packed)) {
+            const line = `${set.armor} | ${set.statsWithMods} | ${set.usedMods} | ${set.usedArtifice} | ${set.tuning} | ${set.usedTuningMods}\n`;
+            if (harness.dump) fs.appendFileSync(harness.dump, line);
+            if (harness.digest) hash.update(line);
+          }
+        }
         if (recorded) {
           const unpackStart = performance.now();
           const sets = unpack(message.packed);
@@ -139,6 +179,10 @@ function runWorker(config, items, seconds, recorded, unpack) {
       if (message.checkedCalculations !== undefined) progress = message;
       if (message.done) {
         last = message;
+        if (harness.dump) {
+          fs.appendFileSync(harness.dump, `tiers ${message.runtime?.maximumPossibleTiers}\n`);
+        }
+        if (harness.digest) hash.update(JSON.stringify(message.runtime?.maximumPossibleTiers));
         clearTimeout(timer);
         clearInterval(memoryTimer);
         console.log = log;
@@ -151,9 +195,13 @@ function runWorker(config, items, seconds, recorded, unpack) {
           checked: last.checkedCalculations,
           estimated: last.estimatedCalculations,
           computed: last.computedPermutations,
-          cancelled: last.checkedCalculations < last.estimatedCalculations && !last.stoppedEarlyAtMaxTier && !last.resultLimitReached,
+          cancelled:
+            last.checkedCalculations < last.estimatedCalculations &&
+            !last.stoppedEarlyAtMaxTier &&
+            !last.resultLimitReached,
           stoppedEarly: !!last.stoppedEarlyAtMaxTier,
           limit: !!last.resultLimitReached,
+          digest: harness.digest ? hash.digest("hex").slice(0, 12) : null,
         });
       }
     };
@@ -162,9 +210,10 @@ function runWorker(config, items, seconds, recorded, unpack) {
         type: "builderRequest",
         currentClass: config.characterClass,
         config: JSON.parse(JSON.stringify(config)),
-        threadSplit: { count: 1, current: 0 },
+        threadSplit,
         items,
         selectedExotics: [],
+        kernelsBytes: harness.wasmBytes,
       },
     });
   });
@@ -200,7 +249,10 @@ function simulateMain(calculator, recorded, label, transform) {
   let lastPublish = -Infinity;
   const publish = () => {
     const start = performance.now();
-    calculator["publishResults"](subject, 0, { totalTime: null, maximumPossibleTiers: [0, 0, 0, 0, 0, 0] });
+    calculator["publishResults"](subject, 0, {
+      totalTime: null,
+      maximumPossibleTiers: [0, 0, 0, 0, 0, 0],
+    });
     const took = performance.now() - start;
     publishMs += took;
     maxPublish = Math.max(maxPublish, took);
@@ -233,10 +285,21 @@ async function main() {
       summarize: { type: "string" },
       config: { type: "string" },
       "main-sim": { type: "boolean", default: false },
+      wasm: { type: "string" },
+      threads: { type: "string", default: "1" },
+      masterwork: { type: "boolean", default: false },
+      digest: { type: "boolean", default: false },
+      dump: { type: "string" },
+      "request-out": { type: "string" },
     },
   });
+  harness.digest = values.digest;
+  harness.dump = values.dump ?? null;
+  if (harness.dump) fs.writeFileSync(harness.dump, "");
+  if (values.wasm) harness.wasmBytes = fs.readFileSync(values.wasm);
   if (values.summarize) return summarize(values.summarize);
-  if (!values.input) throw new Error("Provide --input <armor.json> or --summarize <file.cpuprofile>.");
+  if (!values.input)
+    throw new Error("Provide --input <armor.json> or --summarize <file.cpuprofile>.");
 
   const bundlePath = await bundle();
   const { ArmorCalculatorService, BuildConfiguration, unpackArmorSets } = require(bundlePath);
@@ -255,7 +318,9 @@ async function main() {
         const encoded = fs.existsSync(values.config)
           ? fs.readFileSync(values.config, "utf8").trim()
           : values.config;
-        const shared = JSON.parse(require("lzutf8").decompress(encoded, { inputEncoding: "Base64" }));
+        const shared = JSON.parse(
+          require("lzutf8").decompress(encoded, { inputEncoding: "Base64" })
+        );
         Object.assign(config, shared);
         const statNames = ["Health", "Melee", "Grenade", "Super", "Class", "Weapon"];
         config.minimumStatTiers = Object.fromEntries(
@@ -265,34 +330,84 @@ async function main() {
       config.characterClass = values.config ? config.characterClass : characterClass;
       if (!values.config) {
         config.calculateTierFiveTuning = true;
+        if (values.masterwork) {
+          config.assumeLegendariesMasterworked = true;
+          config.assumeExoticsMasterworked = true;
+        }
         config.includeCollectionRolls = values.collections;
         config.includeVendorRolls = values.vendor;
-        for (const [stat, tier] of Object.entries(targets)) config.minimumStatTiers[stat].value = tier;
+        for (const [stat, tier] of Object.entries(targets))
+          config.minimumStatTiers[stat].value = tier;
       }
 
       const service = Object.create(ArmorCalculatorService.prototype);
       Object.defineProperty(service, "db", {
         value: {
           inventoryArmor: {
-            where: () => ({ equals: (clazz) => ({ distinct: () => ({ toArray: async () => inventory.filter((item) => item.clazz === clazz) }) }) }),
+            where: () => ({
+              equals: (clazz) => ({
+                distinct: () => ({
+                  toArray: async () => inventory.filter((item) => item.clazz === clazz),
+                }),
+              }),
+            }),
           },
         },
       });
       const prepared = await service["filterAndPrepareInventoryItems"](config);
       const pool = prepareWorkerItems(service, ArmorCalculatorService, prepared, config);
-      const perSlot = [1, 2, 3, 4, 5].map((slot) => pool.items.filter((item) => item.slot === slot).length);
-      process.stdout.write(`  ${name}: pool ${pool.items.length} [${perSlot.join("/")}], running worker\n`);
+      if (values["request-out"]) {
+        const count = Number(values.threads);
+        const batches =
+          count > 1
+            ? ArmorCalculatorService["splitArmorItemsForWorkers"](pool.items, count)
+            : undefined;
+        fs.writeFileSync(
+          values["request-out"],
+          JSON.stringify({ config, items: pool.items, batches })
+        );
+      }
+      const perSlot = [1, 2, 3, 4, 5].map(
+        (slot) => pool.items.filter((item) => item.slot === slot).length
+      );
+      process.stdout.write(
+        `  ${name}: pool ${pool.items.length} [${perSlot.join("/")}], running worker\n`
+      );
       const recorded = values["main-sim"] ? [] : null;
-      const outcome = await runWorker(config, pool.items, Number(values.seconds), recorded, unpackArmorSets);
+      const threads = Number(values.threads);
+      const batches =
+        threads > 1
+          ? ArmorCalculatorService["splitArmorItemsForWorkers"](pool.items, threads)
+          : [pool.items];
+      let outcome;
+      for (const [current, batch] of batches.entries()) {
+        outcome = await runWorker(
+          config,
+          batch,
+          Number(values.seconds),
+          recorded,
+          unpackArmorSets,
+          { count: batches.length, current }
+        );
+        if (batches.length > 1)
+          console.log(
+            `    thread ${current}: checked ${outcome.checked} computed ${outcome.computed}`
+          );
+      }
       console.log(
         `  ${name.padEnd(18)} pool ${pool.items.length} [${perSlot.join("/")}] (distinct ${pool.deduped}, pruned ${pool.poolBefore - pool.items.length}) ` +
           `combos ${outcome.estimated.toLocaleString()} checked ${outcome.checked.toLocaleString()} computed ${outcome.computed.toLocaleString()} ` +
           `results ${outcome.results} ${(outcome.ms / 1000).toFixed(2)}s` +
-          `${outcome.cancelled ? " CANCELLED" : ""}${outcome.stoppedEarly ? " stopped-early" : ""}${outcome.limit ? " limit" : ""}`
+          `${outcome.cancelled ? " CANCELLED" : ""}${outcome.stoppedEarly ? " stopped-early" : ""}${outcome.limit ? " limit" : ""}` +
+          `${outcome.digest ? ` digest ${outcome.digest}` : ""}`
       );
       if (recorded) {
-        ArmorCalculatorService["inventoryById"] = new Map(prepared.items.map((armor) => [armor.id, armor]));
-        console.log(`  main thread (unpack of ${recorded.length} messages: ${outcome.unpackMs.toFixed(0)}ms)`);
+        ArmorCalculatorService["inventoryById"] = new Map(
+          prepared.items.map((armor) => [armor.id, armor])
+        );
+        console.log(
+          `  main thread (unpack of ${recorded.length} messages: ${outcome.unpackMs.toFixed(0)}ms)`
+        );
         simulateMain(ArmorCalculatorService, recorded, "as posted by the worker", (r) => r);
         simulateMain(ArmorCalculatorService, recorded, "regrouped into 5000", regroup);
         const copies = (n) => (messages) =>
@@ -300,7 +415,9 @@ async function main() {
             .flat()
             .sort((a, b) => a.t - b.t);
         simulateMain(ArmorCalculatorService, recorded, "x8 workers as posted", copies(8));
-        simulateMain(ArmorCalculatorService, recorded, "x8 workers regrouped", (m) => regroup(copies(8)(m)));
+        simulateMain(ArmorCalculatorService, recorded, "x8 workers regrouped", (m) =>
+          regroup(copies(8)(m))
+        );
       }
     }
   }

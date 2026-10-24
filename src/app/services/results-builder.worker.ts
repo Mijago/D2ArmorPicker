@@ -41,7 +41,20 @@ import { IPermutatorArmor } from "../data/types/IPermutatorArmor";
 import { IPermutatorArmorSet, Tuning, createArmorSet } from "../data/types/IPermutatorArmorSet";
 import { ArmorSystem } from "../data/types/IManifestArmor";
 
-import { precalculatedTuningModCombinations } from "../data/generated/precalculatedModCombinationsWithTunings";
+import { initKernels, kernels } from "../wasm/kernels";
+import {
+  TuningSet,
+  extendTuningSet,
+  filterTuningSetBySharedBudget,
+  filterTuningSetForLockedStats,
+  findStatMods,
+  prioritizeTuningSet,
+  raiseReachableTiers,
+  setModSearchContext,
+  singleTuningSet,
+  tuningSetAt,
+  tuningSetSize,
+} from "./tuning-kernel";
 
 // endregion Imports
 let runtime: {
@@ -104,7 +117,7 @@ type ArmorCombination = readonly [
 
 type TuningBaseCache = {
   items: readonly IPermutatorArmor[];
-  accumulator: Map<number, Tuning> | null;
+  accumulator: CachedAccumulator | null;
   key?: string;
 };
 
@@ -160,7 +173,12 @@ function mapItemToTuning(i: IPermutatorArmor): t5Improvement {
 
 // Pieces with the same tuning options share an id; accumulators only depend on these ids in order.
 const tuningSignatureIds = new Map<string, number>();
-const tuningAccumulatorCache = new Map<string, Map<number, Tuning>>();
+interface CachedAccumulator {
+  set: TuningSet;
+  generation: number;
+  sorted?: { targets: string; set: TuningSet };
+}
+const tuningAccumulatorCache = new Map<string, CachedAccumulator>();
 // Accumulators hold thousands of tunings each, so the cache is bounded by their total count.
 const TUNING_ACCUMULATOR_CACHE_TUNING_LIMIT = 300000;
 let tuningAccumulatorCacheTunings = 0;
@@ -168,6 +186,7 @@ let tuningAccumulatorCacheTunings = 0;
 function clearTuningAccumulatorCache(): void {
   tuningAccumulatorCache.clear();
   tuningAccumulatorCacheTunings = 0;
+  kernels().clearPersistent();
 }
 
 function tuningSignatureId(i: IPermutatorArmor): number {
@@ -183,39 +202,43 @@ function tuningSignatureId(i: IPermutatorArmor): number {
   return id;
 }
 
-function cachedTuningAccumulator(
-  key: string,
-  build: () => Map<number, Tuning>
-): Map<number, Tuning> {
-  let accumulator = tuningAccumulatorCache.get(key);
-  if (!accumulator) {
-    accumulator = build();
-    if (tuningAccumulatorCacheTunings + accumulator.size > TUNING_ACCUMULATOR_CACHE_TUNING_LIMIT) {
-      clearTuningAccumulatorCache();
-    }
-    tuningAccumulatorCacheTunings += accumulator.size;
-    tuningAccumulatorCache.set(key, accumulator);
-  }
-  return accumulator;
+function cachedTuningAccumulator(key: string, build: () => TuningSet): CachedAccumulator {
+  const k = kernels();
+  const cached = tuningAccumulatorCache.get(key);
+  if (cached && cached.generation === k.persistentGeneration()) return cached;
+  // keep() discards other scratch sets, so cached sets are always created before scratch work.
+  const set = k.keep(build());
+  const entry: CachedAccumulator = { set, generation: k.persistentGeneration() };
+  tuningAccumulatorCacheTunings += tuningSetSize(set);
+  tuningAccumulatorCache.set(key, entry);
+  return entry;
 }
 
-const sortedAccumulatorTunings = new WeakMap<
-  Map<number, Tuning>,
-  { targets: string; sorted: Tuning[] }
->();
-
-// Tunings of a cached accumulator in priority order. Filtering preserves this order, and the sort is
-// stable, so this is identical to filtering first and sorting afterwards. Do not modify the result.
-function prioritizedAccumulatorTunings(
-  accumulator: Map<number, Tuning>,
-  targets: number[]
-): Tuning[] {
+// Cached accumulator in priority order. Filtering preserves this order, and the sort is stable, so
+// this is identical to filtering first and sorting afterwards.
+function prioritizedAccumulatorSet(entry: CachedAccumulator, targets: number[]): TuningSet {
   const targetsKey = targets.join(",");
-  const cached = sortedAccumulatorTunings.get(accumulator);
-  if (cached && cached.targets === targetsKey) return cached.sorted;
-  const sorted = prioritizeTuningsByTotalStats(Array.from(accumulator.values()), targets);
-  sortedAccumulatorTunings.set(accumulator, { targets: targetsKey, sorted });
-  return sorted;
+  if (entry.sorted?.targets === targetsKey) return entry.sorted.set;
+  const set = kernels().keep(prioritizeTuningSet(entry.set, targets));
+  tuningAccumulatorCacheTunings += tuningSetSize(set);
+  entry.sorted = { targets: targetsKey, set };
+  return set;
+}
+
+/** Deduplicated sums of every piece's tuning options, in first-seen order. */
+export function buildTuningSet(
+  improvements: t5Improvement[],
+  includeNoTuning = true,
+  includeDirectionalTunings = true
+): TuningSet {
+  let set = singleTuningSet([0, 0, 0, 0, 0, 0]);
+  for (const improvement of improvements) {
+    set = extendTuningSet(
+      set,
+      tuningOptions(improvement, includeNoTuning, includeDirectionalTunings)
+    );
+  }
+  return set;
 }
 
 function annotateArmor(pieces: IPermutatorArmor[], config: BuildConfiguration): void {
@@ -597,6 +620,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
     return;
   }
 
+  await initKernels({ url: data.kernelsUrl, bytes: data.kernelsBytes });
   const startTime = Date.now();
   console.log(`Thread ${threadSplit.current} started with ${items.length} items to process.`);
   console.time(`Total run thread #${threadSplit.current}`);
@@ -638,6 +662,13 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
   maxMajorMods = config.statModLimits?.maxMajorMods || 0;
   maxMods = config.statModLimits?.maxMods || 0;
   possibleIncreaseByMod = 10 * maxMajorMods + 5 * Math.max(0, maxMods - maxMajorMods);
+  setModSearchContext({
+    targets: targetVals,
+    fixed: targetFixed,
+    minimumTiers: minimumStatTierValues,
+    maxMajorMods,
+    maxMods,
+  });
   calculateTierFiveTuning = !!config.calculateTierFiveTuning;
   onlyShowResultsWithNoWastedStats = !!config.onlyShowResultsWithNoWastedStats;
   tryLimitWastedStats = !!config.tryLimitWastedStats;
@@ -903,6 +934,7 @@ async function handleArmorBuilderRequest(data: any): Promise<void> {
       computedPermutations: computedResults,
       resultLimitReached,
       stoppedEarlyAtMaxTier,
+      kernelBackend: kernels().backend,
       stats: {
         savedResults: resultsSent,
         computedPermutations: computedResults,
@@ -1006,14 +1038,6 @@ const TUNING_WEAPON_UP_MELEE_DOWN_HASH = 691392383;
 const TUNING_WEAPON_UP_GRENADE_DOWN_HASH = 3284443097;
 const TUNING_WEAPON_UP_SUPER_DOWN_HASH = 891771298;
 const TUNING_WEAPON_UP_CLASS_DOWN_HASH = 1918710127;
-const STAT_MODIFIERS: [StatModifier, StatModifier, StatModifier][] = [
-  [StatModifier.MINOR_HEALTH, StatModifier.MAJOR_HEALTH, StatModifier.ARTIFICE_HEALTH],
-  [StatModifier.MINOR_MELEE, StatModifier.MAJOR_MELEE, StatModifier.ARTIFICE_MELEE],
-  [StatModifier.MINOR_GRENADE, StatModifier.MAJOR_GRENADE, StatModifier.ARTIFICE_GRENADE],
-  [StatModifier.MINOR_SUPER, StatModifier.MAJOR_SUPER, StatModifier.ARTIFICE_SUPER],
-  [StatModifier.MINOR_CLASS, StatModifier.MAJOR_CLASS, StatModifier.ARTIFICE_CLASS],
-  [StatModifier.MINOR_WEAPON, StatModifier.MAJOR_WEAPON, StatModifier.ARTIFICE_WEAPON],
-];
 const TUNING_KEY_SPACE = 256 ** 6;
 
 function packTuningKey(values: number[]): number {
@@ -1025,7 +1049,7 @@ function packTuningKey(values: number[]): number {
 const tuningOptionCache = new WeakMap<t5Improvement, number[][][]>();
 
 // The returned option lists are shared between calls and must not be modified.
-function tuningOptions(
+export function tuningOptions(
   improvement: t5Improvement,
   includeNoTuning = true,
   includeDirectionalTunings = true
@@ -1247,130 +1271,6 @@ export function findTuningModHashes(
   return chosen.reverse();
 }
 
-export function extendTuningAcc(
-  accumulated: Map<number, Tuning>,
-  improvement: t5Improvement,
-  includeNoTuning = true,
-  includeDirectionalTunings = true
-): Map<number, Tuning> {
-  const next = new Map<number, Tuning>();
-  const options = tuningOptions(improvement, includeNoTuning, includeDirectionalTunings);
-  // packTuningKey is linear in the stat values, so a combined key is the current key plus the
-  // option's own offset. This avoids allocating tunings that already exist.
-  const optionKeys = options.map((option) => {
-    let delta = 0;
-    for (let stat = 0; stat < 6; stat++) delta = delta * 256 + option[stat];
-    return delta;
-  });
-  for (const [currentKey, current] of accumulated) {
-    for (let index = 0; index < options.length; index++) {
-      const key = currentKey + optionKeys[index];
-      if (next.has(key)) continue;
-      const option = options[index];
-      next.set(key, [
-        current[0] + option[0],
-        current[1] + option[1],
-        current[2] + option[2],
-        current[3] + option[3],
-        current[4] + option[4],
-        current[5] + option[5],
-      ] as Tuning);
-    }
-  }
-  return next;
-}
-
-export function buildTuningAcc(
-  possibleImprovements: t5Improvement[],
-  includeNoTuning = true,
-  includeDirectionalTunings = true
-): Map<number, Tuning> {
-  let accumulated = new Map<number, Tuning>();
-  const zero = [0, 0, 0, 0, 0, 0] as Tuning;
-  accumulated.set(packTuningKey(zero), zero);
-
-  for (const improvement of possibleImprovements) {
-    accumulated = extendTuningAcc(
-      accumulated,
-      improvement,
-      includeNoTuning,
-      includeDirectionalTunings
-    );
-  }
-
-  return accumulated;
-}
-
-export function generate_tunings(
-  possibleImprovements: t5Improvement[],
-  includeNoTuning = true,
-  includeDirectionalTunings = true
-): Tuning[] {
-  // Incremental deduped Minkowski sum. Deduping after each piece preserves first-seen ordering but
-  // avoids materializing the much larger full Cartesian product before deduplicating its leaves.
-  const accumulated = buildTuningAcc(
-    possibleImprovements,
-    includeNoTuning,
-    includeDirectionalTunings
-  );
-
-  return Array.from(accumulated.values());
-}
-
-export function filterTuningsForLockedStats(
-  tunings: Tuning[],
-  stats: number[],
-  fixed: boolean[],
-  targets: number[]
-): Tuning[] {
-  if (!fixed.some(Boolean)) return tunings;
-  return tunings.filter((tuning) => {
-    for (let stat = 0; stat < 6; stat++) {
-      if (fixed[stat] && tuning[stat] > targets[stat] - stats[stat]) return false;
-    }
-    return true;
-  });
-}
-
-export function filterTuningsBySharedBudget(
-  tunings: Tuning[],
-  stats: number[],
-  targets: number[],
-  sharedBudget: number
-): Tuning[] {
-  if (!targets.some((target) => target > 0)) return tunings;
-  return tunings.filter((tuning) => {
-    let totalGap = 0;
-    for (let stat = 0; stat < 6; stat++) {
-      if (targets[stat] <= 0) continue;
-      const gap = Math.max(0, targets[stat] - stats[stat] - tuning[stat]);
-      if (gap > sharedBudget) return false;
-      totalGap += gap;
-    }
-    return totalGap <= sharedBudget;
-  });
-}
-
-export function prioritizeTuningsByTotalStats(tunings: Tuning[], targets: number[] = []): Tuning[] {
-  const reductionOrder = [0, 1, 2, 3, 4, 5].sort(
-    (left, right) => (targets[left] ?? 0) - (targets[right] ?? 0)
-  );
-  const totals = new Map<Tuning, number>();
-  for (const tuning of tunings) {
-    totals.set(tuning, tuning[0] + tuning[1] + tuning[2] + tuning[3] + tuning[4] + tuning[5]);
-  }
-  return tunings.sort((left, right) => {
-    const totalDiff = totals.get(right)! - totals.get(left)!;
-    if (totalDiff !== 0) return totalDiff;
-
-    for (const stat of reductionOrder) {
-      const reductionDiff = Math.min(0, left[stat]) - Math.min(0, right[stat]);
-      if (reductionDiff !== 0) return reductionDiff;
-    }
-    return 0;
-  });
-}
-
 function combineBalancedTunings(improvements: t5Improvement[]): Tuning {
   return improvements.reduce(
     (combined, improvement) =>
@@ -1579,20 +1479,29 @@ export function handlePermutation(
     }
   }
 
-  let availableTunings: Tuning[] = [[0, 0, 0, 0, 0, 0]];
+  const k = kernels();
+  k.scratchReset();
+  let tunings: TuningSet;
   let tuningsPrioritized = false;
   if (t5Count > 0) {
     const includeNoTuning = targetFixed.some(Boolean);
     if (exactNoTargetMaximum) {
-      availableTunings = [combineBalancedTunings(t5Improvements)];
+      tunings = singleTuningSet(combineBalancedTunings(t5Improvements));
     } else if (calculateTierFiveTuning) {
       if (tuningBaseCache && tuningVariableItem) {
+        // Checked up front: clearing mid-build would invalidate the base accumulator being extended.
+        if (tuningAccumulatorCacheTunings >= TUNING_ACCUMULATOR_CACHE_TUNING_LIMIT) {
+          clearTuningAccumulatorCache();
+        }
+        if (tuningBaseCache.accumulator?.generation !== k.persistentGeneration()) {
+          tuningBaseCache.accumulator = null;
+        }
         if (tuningBaseCache.accumulator === null) {
           const baseTuned = tuningBaseCache.items.filter(isT5WithTuning);
           const baseImprovements = baseTuned.map(mapItemToTuning);
           tuningBaseCache.key = baseTuned.map(tuningSignatureId).join(",");
           tuningBaseCache.accumulator = cachedTuningAccumulator(tuningBaseCache.key, () =>
-            buildTuningAcc(baseImprovements, includeNoTuning)
+            buildTuningSet(baseImprovements, includeNoTuning)
           );
         }
         const baseAccumulator = tuningBaseCache.accumulator;
@@ -1600,42 +1509,39 @@ export function handlePermutation(
           ? cachedTuningAccumulator(
               `${tuningBaseCache.key}+${tuningSignatureId(tuningVariableItem)}`,
               () =>
-                extendTuningAcc(
-                  baseAccumulator,
-                  mapItemToTuning(tuningVariableItem),
-                  includeNoTuning
+                extendTuningSet(
+                  baseAccumulator.set,
+                  tuningOptions(mapItemToTuning(tuningVariableItem), includeNoTuning)
                 )
             )
           : baseAccumulator;
-        availableTunings = prioritizedAccumulatorTunings(tuningAccumulator, targetVals);
+        tunings = prioritizedAccumulatorSet(tuningAccumulator, targetVals);
         tuningsPrioritized = true;
       } else {
-        availableTunings = generate_tunings(t5Improvements, includeNoTuning);
+        tunings = buildTuningSet(t5Improvements, includeNoTuning);
       }
     } else {
-      availableTunings = generate_tunings(t5Improvements, includeNoTuning, false);
+      tunings = buildTuningSet(t5Improvements, includeNoTuning, false);
     }
+  } else {
+    tunings = singleTuningSet([0, 0, 0, 0, 0, 0]);
   }
-  availableTunings = filterTuningsForLockedStats(availableTunings, stats, targetFixed, targetVals);
-  availableTunings = filterTuningsBySharedBudget(
-    availableTunings,
+  tunings = filterTuningSetForLockedStats(tunings, stats, targetFixed, targetVals);
+  tunings = filterTuningSetBySharedBudget(
+    tunings,
     stats,
     targetVals,
     possibleIncreaseByMod + 3 * artificeCount
   );
-  if (availableTunings.length === 0) return null;
-  if (!tuningsPrioritized) prioritizeTuningsByTotalStats(availableTunings, targetVals);
+  if (tuningSetSize(tunings) === 0) return null;
+  if (!tuningsPrioritized) tunings = prioritizeTuningSet(tunings, targetVals);
 
   // heavy work: mod precalc
-  let result: StatModifierPrecalc | null;
+  let result: { mods: StatModifier[]; tuning: Tuning } | null;
   if (distanceSum === 0 && totalOptionalDistances === 0) {
-    result = {
-      mods: [],
-      tuning: availableTunings[0],
-      modBonus: [0, 0, 0, 0, 0, 0],
-    };
+    result = { mods: [], tuning: tuningSetAt(tunings, 0) };
   } else {
-    result = get_mods_precalc(stats, distances, optionalDistances, artificeCount, availableTunings);
+    result = findStatMods(stats, distances, optionalDistances, artificeCount, tunings);
   }
 
   if (result === null) return null;
@@ -1658,14 +1564,15 @@ export function handlePermutation(
     return ceiling > runtime.maximumPossibleTiers[stat];
   });
   if (canImproveTiers && !exactNoTargetMaximum) {
-    performTierAvailabilityTesting(
+    raiseReachableTiers(
       stats,
       distances,
       artificeCount,
-      availableTunings,
+      tunings,
       !targetFixed.some((fixed) => fixed) &&
         !tryLimitWastedStats &&
-        !onlyShowResultsWithNoWastedStats
+        !onlyShowResultsWithNoWastedStats,
+      runtime.maximumPossibleTiers
     );
   }
 
@@ -1707,407 +1614,7 @@ export function handlePermutation(
   );
 }
 
-function getStatVal(statId: ArmorStat, mods: StatModifierPrecalc, start: number) {
-  return start + mods.tuning[statId] + mods.modBonus[statId];
-}
-
-// region Tier Availability Testing
-function performTierAvailabilityTesting(
-  stats: number[],
-  distances: number[],
-  availableArtificeCount: number,
-  availableTunings: Tuning[],
-  useParetoFront: boolean
-): void {
-  let feasibilityTuningsCache: Tuning[] | null = null;
-  const feasibilityTunings = () => {
-    if (feasibilityTuningsCache === null) {
-      // For pure lower-bound queries, a componentwise-dominated tuning can never be more feasible
-      // than its dominator. Fixed-stat and waste modes retain the complete tuning set.
-      feasibilityTuningsCache = useParetoFront
-        ? paretoFrontTunings(availableTunings)
-        : availableTunings;
-    }
-    return feasibilityTuningsCache;
-  };
-
-  for (let stat = 0; stat < 6; stat++) {
-    let minimumTuning = 0;
-    for (const tuning of availableTunings) {
-      if (tuning[stat] < minimumTuning) minimumTuning = tuning[stat];
-    }
-    const minStat = stats[stat];
-
-    // Sorting is only consumed by get_mods_precalc. Build it lazily because a saturated stat often
-    // exits without probing, avoiding six full tuning sorts for most later permutations.
-    let sortedTuningsCache: Tuning[] | null = null;
-    const sortedTunings = () => {
-      if (sortedTuningsCache === null) {
-        sortedTuningsCache = feasibilityTunings()
-          .slice()
-          .sort((a, b) => {
-            const aVal = a[stat];
-            const bVal = b[stat];
-            const aNeg = aVal < 0;
-            const bNeg = bVal < 0;
-            if (aNeg && bNeg) return bVal - aVal;
-            if (!aNeg && !bNeg) return aVal - bVal;
-            return aNeg ? 1 : -1;
-          });
-      }
-      return sortedTuningsCache;
-    };
-
-    const naturalFloor = Math.min(200, stats[stat] + minimumTuning);
-    if (runtime.maximumPossibleTiers[stat] < naturalFloor) {
-      runtime.maximumPossibleTiers[stat] = naturalFloor;
-    }
-    //const tuningsWithoutNegatives = tmpTunings.filter((t) => t[stat] >= 0);
-
-    if (minStat >= 200) continue; // Already at max value, no need to test
-
-    const minTier = minimumStatTierValues[stat] * 10;
-
-    // Binary search to find maximum possible value
-    let low = Math.max(runtime.maximumPossibleTiers[stat], minTier);
-    let high = 200;
-
-    while (low <= high) {
-      // Try middle value, rounded to nearest 10 for tier optimization
-      const mid = Math.min(200, Math.ceil((low + high) / 2));
-
-      if (minStat >= mid && minimumTuning == 0) {
-        // We can already reach this value naturally
-        low = mid + 1;
-        continue;
-      }
-
-      // Calculate distance needed to reach this value
-      const testDistances = [...distances];
-      testDistances[stat] = Math.max(0, mid - minStat);
-
-      // Check if this value is achievable with mods
-      const mods = get_mods_precalc(
-        stats,
-        testDistances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        sortedTunings()
-      );
-
-      if (mods != null) {
-        let val = Math.min(200, getStatVal(stat, mods, minStat));
-        runtime.maximumPossibleTiers[stat] = Math.max(val, runtime.maximumPossibleTiers[stat]);
-        low = Math.max(runtime.maximumPossibleTiers[stat], mid) + 1;
-      } else {
-        // This value is not achievable, try lower
-        high = mid - 1;
-      }
-    }
-
-    // Verify the final value
-    if (low > runtime.maximumPossibleTiers[stat] && low <= 200) {
-      const testDistances = [...distances];
-      testDistances[stat] = Math.max(low - minStat, 0);
-      const mods = get_mods_precalc(
-        stats,
-        testDistances,
-        [0, 0, 0, 0, 0, 0],
-        availableArtificeCount,
-        sortedTunings()
-      );
-      if (mods != null) {
-        runtime.maximumPossibleTiers[stat] = low;
-        // also set the other stats
-        // This may reduce the amount of required calculations for the stats that will be checked later on
-        for (let otherStat = stat + 1; otherStat < 6; otherStat++) {
-          runtime.maximumPossibleTiers[otherStat] = Math.max(
-            Math.min(200, getStatVal(otherStat, mods, stats[otherStat])),
-            runtime.maximumPossibleTiers[otherStat]
-          );
-        }
-      }
-    }
-  }
-}
-
 // region Mod Calculation Functions
-const ZERO_MOD_LIST: number[][] = [[0, 0, 0, 0, 0, 0]];
-const ZERO_TUNING_MAX = [0, 0, 0, 0, 0, 0];
-
-// Pareto-maximal tuning vectors. Sorting by total descending means a vector can only be dominated
-// by an already-kept vector, keeping the filter small while preserving lower-bound feasibility.
-function paretoFrontTunings(tunings: Tuning[]): Tuning[] {
-  if (tunings.length <= 1) return tunings;
-
-  const sorted = tunings
-    .map((tuning, index) => ({
-      tuning,
-      index,
-      sum: tuning[0] + tuning[1] + tuning[2] + tuning[3] + tuning[4] + tuning[5],
-    }))
-    .sort((a, b) => b.sum - a.sum || a.index - b.index);
-  const kept: Tuning[] = [];
-
-  for (const candidate of sorted) {
-    const dominated = kept.some(
-      (existing) =>
-        existing[0] >= candidate.tuning[0] &&
-        existing[1] >= candidate.tuning[1] &&
-        existing[2] >= candidate.tuning[2] &&
-        existing[3] >= candidate.tuning[3] &&
-        existing[4] >= candidate.tuning[4] &&
-        existing[5] >= candidate.tuning[5]
-    );
-    if (!dominated) kept.push(candidate.tuning);
-  }
-
-  return kept;
-}
-
-export function canCoverRemainingDistance(
-  distances: number[],
-  statIndex: number,
-  tuningMax: number[],
-  availableArtificeCount: number,
-  availableMajorMods: number,
-  availableMods: number
-): boolean {
-  let remainingDistance = 0;
-  let optimisticTuning = 0;
-  for (let stat = statIndex; stat < 6; stat++) {
-    remainingDistance += distances[stat];
-    optimisticTuning += Math.max(0, tuningMax[stat]);
-  }
-  const majorMods = Math.min(availableMajorMods, availableMods);
-  const regularModPoints = 10 * majorMods + 5 * (availableMods - majorMods);
-  const maximumRemainingPoints = regularModPoints + 3 * availableArtificeCount + optimisticTuning;
-  return remainingDistance <= maximumRemainingPoints;
-}
-
-export function get_mods_recursive(
-  currentStats: number[],
-  targetStats: number[],
-
-  distances_to_check: number[],
-  availableTunings: Tuning[],
-  statIdx: number,
-  availableArtificeCount: number,
-  availableMajorMods: number,
-  availableMods: number,
-  // Per-stat maxima for the current tuning subset. Carrying this through recursion avoids reducing
-  // the entire tuning list at every node; it is recomputed only when the subset is filtered.
-  tuningMax: number[],
-  fixedStats: boolean[] = targetFixed
-): number[][] | null {
-  if (
-    !canCoverRemainingDistance(
-      distances_to_check,
-      statIdx,
-      tuningMax,
-      availableArtificeCount,
-      availableMajorMods,
-      availableMods
-    )
-  ) {
-    return null;
-  }
-
-  if (statIdx > 5) {
-    // Now we have a valid set of mods and tunings, but we still have to check -5 values. This will happen in innermost loop
-    // statIdx is no longer useful here
-
-    // 1. If there is any tuning with no negative in any value, then return []
-    // if (availableTunings.some(tuning => tuning.every(v => v >= 0))) {
-    // return [];
-    // }
-
-    // Now there are only tunings with negative values left.
-    // 2.1 If there is any stat where (currentStat - tuningValue) >= target value, then return
-    const validTuning = availableTunings.find((tuning) => {
-      for (let i = 0; i < 6; i++) {
-        if (tuning[i] >= 0) continue;
-        if (currentStats[i] + tuning[i] < targetStats[i]) return false;
-      }
-      return true;
-    });
-    if (validTuning) {
-      return [validTuning];
-    }
-
-    // 2.2 if we still have a few mods left, we can simply call the recursion again, but with the new "temp" stats
-    if (availableMods > 0) {
-      for (let tuning of availableTunings) {
-        const newStats = currentStats.map((s, i) => s + tuning[i]);
-        const newDists = distances_to_check.map((d, i) =>
-          Math.max(0, targetStats[i] - newStats[i])
-        );
-        const otherMods = get_mods_recursive(
-          newStats,
-          targetStats,
-          newDists,
-          [],
-          0,
-          availableArtificeCount,
-          availableMajorMods,
-          availableMods,
-          ZERO_TUNING_MAX,
-          fixedStats
-        );
-        if (otherMods !== null) {
-          return [...otherMods, tuning];
-        }
-      }
-    }
-
-    return null;
-  }
-
-  const maxValueOfAvailableTunings = tuningMax[statIdx];
-
-  const distance = distances_to_check[statIdx];
-
-  //let precalculatedMods = precalculatedModCombinations[distance] || [[0, 0, 0, 0, 0, 0]];
-  const precalculatedMods = precalculatedTuningModCombinations[distance] || ZERO_MOD_LIST;
-
-  for (const pickedMod of precalculatedMods) {
-    if (
-      pickedMod[0] > availableArtificeCount ||
-      pickedMod[2] > availableMajorMods ||
-      pickedMod[2] + pickedMod[1] > availableMods ||
-      pickedMod[3] > maxValueOfAvailableTunings
-    ) {
-      continue;
-    }
-
-    const totalMods = Math.max(0, availableMods - pickedMod[1] - pickedMod[2]);
-    const majorMods = Math.min(totalMods, Math.max(0, availableMajorMods - pickedMod[2]));
-    const artifice = Math.max(0, availableArtificeCount - pickedMod[0]);
-
-    let selectedTuningsInner = availableTunings;
-    let nextTuningMax = tuningMax;
-    const requiredTuningCount = pickedMod[4];
-    const requiredTuningValue = pickedMod[3];
-    const maximumTuningValue = fixedStats[statIdx]
-      ? targetStats[statIdx] -
-        currentStats[statIdx] -
-        (3 * pickedMod[0] + 5 * pickedMod[1] + 10 * pickedMod[2])
-      : Infinity;
-    if (requiredTuningCount > 0 || fixedStats[statIdx]) {
-      selectedTuningsInner = [];
-      nextTuningMax = [0, 0, 0, 0, 0, 0];
-      for (const tuning of availableTunings) {
-        if (requiredTuningCount > 0 && tuning[statIdx] < requiredTuningValue) continue;
-        if (tuning[statIdx] > maximumTuningValue) continue;
-        selectedTuningsInner.push(tuning);
-        for (let stat = 0; stat < 6; stat++) {
-          if (tuning[stat] > nextTuningMax[stat]) nextTuningMax[stat] = tuning[stat];
-        }
-      }
-      if (selectedTuningsInner.length == 0) {
-        continue;
-        // return null; // we could also return, if the table is sorted ascending to tuningCount
-      }
-    }
-
-    const otherMods = get_mods_recursive(
-      currentStats,
-      targetStats,
-      distances_to_check, //.slice(1),
-      selectedTuningsInner,
-      statIdx + 1,
-      artifice,
-      majorMods,
-      totalMods,
-      nextTuningMax,
-      fixedStats
-    );
-    if (otherMods !== null) {
-      return [pickedMod, ...otherMods];
-    }
-  }
-  return null;
-}
-
-type StatModifierPrecalc = {
-  mods: StatModifier[];
-  modBonus: number[];
-  tuning: Tuning;
-};
-
-function get_mods_precalc(
-  currentStats: number[],
-  distances: number[],
-  optionalDistances: number[],
-  availableArtificeCount: number,
-  availableTunings: Tuning[]
-): StatModifierPrecalc | null {
-  const totalDistance =
-    distances[0] + distances[1] + distances[2] + distances[3] + distances[4] + distances[5];
-
-  if (totalDistance == 0 && optionalDistances.every((d) => d == 0)) {
-    // no mods needed, return empty array
-    return { mods: [], tuning: [0, 0, 0, 0, 0, 0], modBonus: [0, 0, 0, 0, 0, 0] };
-  }
-
-  const tuningMax = [0, 0, 0, 0, 0, 0];
-  for (const tuning of availableTunings) {
-    for (let stat = 0; stat < 6; stat++) {
-      if (tuning[stat] > tuningMax[stat]) tuningMax[stat] = tuning[stat];
-    }
-  }
-  if (
-    !canCoverRemainingDistance(
-      distances,
-      0,
-      tuningMax,
-      availableArtificeCount,
-      maxMajorMods,
-      maxMods
-    )
-  ) {
-    return null;
-  }
-
-  let pickedMods = get_mods_recursive(
-    currentStats,
-    targetVals,
-    distances,
-    availableTunings,
-    0,
-    availableArtificeCount,
-    maxMajorMods,
-    maxMods,
-    tuningMax
-  );
-
-  if (pickedMods === null) return null;
-
-  const usedMods = [];
-  const modBonus = [0, 0, 0, 0, 0, 0];
-  // The last entry is always the tuning
-  for (let i = 0; i < pickedMods.length - 1; i++) {
-    for (let n = 0; n < pickedMods[i][1]; n++) {
-      usedMods.push(STAT_MODIFIERS[i][0]);
-      modBonus[i] += 5;
-    }
-    for (let n = 0; n < pickedMods[i][2]; n++) {
-      usedMods.push(STAT_MODIFIERS[i][1]);
-      modBonus[i] += 10;
-    }
-    for (let n = 0; n < pickedMods[i][0]; n++) {
-      usedMods.push(STAT_MODIFIERS[i][2]);
-      modBonus[i] += 3;
-    }
-  }
-
-  return {
-    mods: usedMods,
-    modBonus: modBonus,
-    tuning: pickedMods[pickedMods.length - 1] as Tuning,
-  };
-}
-
 export function getSkillTier(stats: number[]) {
   return (
     Math.floor(Math.min(200, stats[ArmorStat.StatWeapon]) / 10) +

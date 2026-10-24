@@ -303,11 +303,18 @@ export class GearsetSelectionComponent implements OnInit, OnDestroy {
     this.changeDetector?.markForCheck();
   }
 
+  private acquisitionTooltips = new WeakMap<GearSet, string>();
+
+  // Called from the template on every change detection pass.
   getAcquisitionSourceTooltip(gearSet: GearSet): string {
+    const cached = this.acquisitionTooltips.get(gearSet);
+    if (cached !== undefined) return cached;
     const sources = gearSet.acquisitionSources.slice(0, 6).map(formatGearSetAcquisitionSourceName);
     const remaining = gearSet.acquisitionSources.length - sources.length;
     const sourceText = sources.length > 0 ? sources.join(", ") : "Unknown";
-    return `Source: ${sourceText}${remaining > 0 ? `, +${remaining} more` : ""}`;
+    const tooltip = `Source: ${sourceText}${remaining > 0 ? `, +${remaining} more` : ""}`;
+    this.acquisitionTooltips.set(gearSet, tooltip);
+    return tooltip;
   }
 
   get hasTwoPieceSelected(): boolean {

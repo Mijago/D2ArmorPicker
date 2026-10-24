@@ -53,3 +53,5 @@ environment.prod.ts
 .env_dev
 .env_beta
 .env_canary
+# compiled WASM kernels (npm run wasm:build)
+/src/assets/wasm/

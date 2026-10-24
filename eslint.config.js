@@ -4,7 +4,7 @@ const tseslint = require("typescript-eslint");
 
 module.exports = tseslint.config(
   {
-    ignores: ["projects/**/*"],
+    ignores: ["projects/**/*", "src/kernels/wasm-entry.ts"],
   },
   {
     files: ["**/*.ts"],

@@ -20,6 +20,26 @@
     <mat-card-title>Results</mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    <div class="cancelled-warning-banner" *ngIf="showFirefoxCoresNotice">
+      <mat-icon>info</mat-icon>
+      <div class="banner-text">
+        <strong>Firefox may report fewer CPU cores than you have.</strong>
+        <span>
+          Enhanced Tracking Protection can hide your real core count. Your browser reports
+          {{ detectedLogicalCores }} logical processors, so Auto uses
+          {{ automaticWorkers }} workers. If your CPU has more, turn off Enhanced Tracking
+          Protection for this site or pick the Workers count in the advanced settings.</span
+        >
+      </div>
+      <button
+        mat-icon-button
+        type="button"
+        aria-label="Dismiss"
+        matTooltip="Do not show again"
+        (click)="dismissFirefoxCoresNotice()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
     <div>
       <div class="info-stats-container">
         <div class="info-stat-card">

@@ -173,7 +173,9 @@ export class ArmorCalculatorService implements OnDestroy {
   // Settings the entries above are valid for.
   private static entriesConfig: BuildConfiguration | null = null;
   private static runCounter = 0;
-  private static readonly INTERMEDIATE_PUBLISH_INTERVAL_MS = 200;
+  private static readonly INTERMEDIATE_PUBLISH_INTERVAL_MS = 500;
+  // The first partial publish waits this long after the run starts; later ones follow the interval.
+  private static readonly FIRST_PUBLISH_DELAY_MS = 250;
   private static lastIntermediatePublish = 0;
   private static intermediatePublishTimer: any = null;
   private static inventoryById = new Map<number, IInventoryArmor>();
@@ -657,6 +659,7 @@ export class ArmorCalculatorService implements OnDestroy {
       exactOnly: true,
       tuning: config.calculateTierFiveTuning,
       wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+      kernelsUrl: new URL("assets/wasm/kernels.wasm", document.baseURI).href,
     } satisfies T5LimitsRequest);
   }
 
@@ -701,10 +704,22 @@ export class ArmorCalculatorService implements OnDestroy {
       Math.floor(config.maxWorkers) > 0
         ? Math.min(64, Math.floor(config.maxWorkers))
         : calculateCPUConcurrency(),
-      largestArmorBucket // limit it to the largest armor bucket, as we will split the work by this value
+      largestArmorBucket, // limit it to the largest armor bucket, as we will split the work by this value
+      ArmorCalculatorService.threadsUntilResultLimit(config)
     );
 
     return nthreads;
+  }
+
+  // Without any filter every combination is a result, so the result limit ends the run long
+  // before the combinations do and extra workers only add startup cost.
+  private static threadsUntilResultLimit(config: BuildConfiguration): number {
+    const unfiltered =
+      Object.values(config.minimumStatTiers).every((tier) => tier.value <= 0 && !tier.fixed) &&
+      !config.tryLimitWastedStats &&
+      !config.onlyShowResultsWithNoWastedStats;
+    if (!unfiltered || config.parsedResultLimit <= 0) return Infinity;
+    return Math.max(1, Math.ceil(config.parsedResultLimit / 4000));
   }
 
   private static splitArmorItemsForWorkers(
@@ -1122,12 +1137,15 @@ export class ArmorCalculatorService implements OnDestroy {
   private processIntermediateResults(inventoryArmorItems: IInventoryArmor[]): void {
     // Workers deliver small batches early, so publish at most once per interval (first one at once).
     const itemCount = inventoryArmorItems.length;
-    const wait =
+    const wait = Math.max(
       Math.max(
         ArmorCalculatorService.INTERMEDIATE_PUBLISH_INTERVAL_MS,
         ArmorCalculatorService.lastPublishCost * 4
       ) -
-      (performance.now() - ArmorCalculatorService.lastIntermediatePublish);
+        (performance.now() - ArmorCalculatorService.lastIntermediatePublish),
+      ArmorCalculatorService.FIRST_PUBLISH_DELAY_MS -
+        (performance.now() - ArmorCalculatorService.updateResultsStart)
+    );
     if (wait > 0) {
       if (ArmorCalculatorService.intermediatePublishTimer == null) {
         ArmorCalculatorService.intermediatePublishTimer = setTimeout(
@@ -1867,6 +1885,7 @@ export class ArmorCalculatorService implements OnDestroy {
           },
           items: workerItemBatches[n],
           selectedExotics: ArmorCalculatorService.selectedExotics,
+          kernelsUrl: new URL("assets/wasm/kernels.wasm", document.baseURI).href,
         });
       }
       const limitBuilders = config.stopAtTheoreticalMaximum !== false;

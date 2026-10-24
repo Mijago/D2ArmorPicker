@@ -153,7 +153,12 @@ function fnv(text: string): string {
   return hash.toString(16);
 }
 
-async function run(config: BuildConfiguration, items: IPermutatorArmor[], reuse?: Worker) {
+async function run(
+  config: BuildConfiguration,
+  items: IPermutatorArmor[],
+  reuse?: Worker,
+  kernelsUrl?: string
+) {
   const worker =
     reuse ?? new Worker(new URL("./results-builder.worker", import.meta.url), { type: "module" });
   const sets: any[] = [];
@@ -175,6 +180,7 @@ async function run(config: BuildConfiguration, items: IPermutatorArmor[], reuse?
     threadSplit: { count: 1, current: 0 },
     items,
     selectedExotics: [],
+    kernelsUrl,
   });
   await finished;
   if (!reuse) worker.terminate();
@@ -243,6 +249,20 @@ describe("results builder worker equivalence", () => {
     for (const [name, config] of CONFIGS) {
       it(`${name} seed ${seed}`, async () => {
         expect(signatureOf(await run(config, makeItems(seed)))).toBe(EXPECTED[`${seed} ${name}`]);
+      }, 120000);
+    }
+  }
+});
+
+describe("results builder worker with WASM kernels", () => {
+  const kernelsUrl = new URL("assets/wasm/kernels.wasm", document.baseURI).href;
+
+  for (const seed of [1, 2]) {
+    for (const [name, config] of CONFIGS) {
+      it(`${name} seed ${seed}`, async () => {
+        const result = await run(config, makeItems(seed), undefined, kernelsUrl);
+        expect(result.last.kernelBackend).toBe("wasm");
+        expect(signatureOf(result)).toBe(EXPECTED[`${seed} ${name}`]);
       }, 120000);
     }
   }

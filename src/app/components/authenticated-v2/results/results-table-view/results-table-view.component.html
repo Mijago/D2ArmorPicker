@@ -183,9 +183,7 @@
             loading="lazy" />
           <span class="gearset-bonus-count">{{ bonus.requiredSetCount }}</span>
         </span>
-        <span *ngIf="hasLoadedGearsetBonuses(element) && getGearsetBonuses(element).length === 0"
-          >-</span
-        >
+        <span *ngIf="hasLoadedGearsetBonuses() && getGearsetBonuses(element).length === 0">-</span>
       </div>
     </td>
   </ng-container>

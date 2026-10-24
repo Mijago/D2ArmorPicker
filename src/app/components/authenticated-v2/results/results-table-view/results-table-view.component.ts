@@ -93,8 +93,11 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
   // Performance optimizations
   private totalStatsCache = new Map<string, number>();
   private displayedResults: ResultDefinition[] = [];
-  private gearsetBonuses = new Map<ResultDefinition, GearsetBonusDisplay[]>();
+  // Filled per row on demand: only the visible page ever reads it.
+  private gearsetBonuses = new WeakMap<ResultDefinition, GearsetBonusDisplay[]>();
+  private gearsetBonusesLoaded = false;
   private gearsetPerks = new Map<string, DestinySandboxPerkDefinition>();
+  private missingGearsetPerks = new Set<string>();
   private gearsetRequirementCounts = new Map<number, number>();
   private gearsetBonusLoadId = 0;
   showAllResults = false;
@@ -195,11 +198,11 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
         case "Tiers":
           return data.tiers;
         case "Total":
-          return data.stats.reduce((sum, stat) => sum + stat, 0);
+          return this.getSortTotal(data);
         case "Mods":
           return +100 * (data.modCount + data.tuningMods.length) + data.modCost;
         case "GearsetBonuses":
-          return this.getGearsetBonusRank(data);
+          return this.getCachedGearsetBonusRank(data);
         case "EasySwap":
           return data.sharedBuildCount ?? 1;
       }
@@ -207,23 +210,52 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
     };
   }
 
-  private getGearsetCounts(result: ResultDefinition): Map<number, number> {
-    const gearsetCounts = new Map<number, number>();
-    result.items.forEach((item) => {
-      if (item.gearSetHash != null) {
-        gearsetCounts.set(item.gearSetHash, (gearsetCounts.get(item.gearSetHash) ?? 0) + 1);
-      }
-    });
+  // Sorting reads every row about n log n times; Firefox pays heavily for recomputing these.
+  private sortTotals = new WeakMap<ResultDefinition, number>();
+  private gearsetRanks = new WeakMap<ResultDefinition, number>();
+
+  private getSortTotal(result: ResultDefinition): number {
+    let total = this.sortTotals.get(result);
+    if (total === undefined) {
+      total = result.stats.reduce((sum, stat) => sum + stat, 0);
+      this.sortTotals.set(result, total);
+    }
+    return total;
+  }
+
+  private getCachedGearsetBonusRank(result: ResultDefinition): number {
+    let rank = this.gearsetRanks.get(result);
+    if (rank === undefined) {
+      rank = this.getGearsetBonusRank(result);
+      this.gearsetRanks.set(result, rank);
+    }
+    return rank;
+  }
+
+  // Parallel arrays: this runs for every result on each update, so it avoids allocating Maps.
+  private getGearsetCounts(result: ResultDefinition): { hashes: number[]; counts: number[] } {
+    const hashes: number[] = [];
+    const counts: number[] = [];
+    for (const item of result.items) {
+      if (item.gearSetHash == null) continue;
+      const index = hashes.indexOf(item.gearSetHash);
+      if (index === -1) {
+        hashes.push(item.gearSetHash);
+        counts.push(1);
+      } else counts[index]++;
+    }
     this.gearsetRequirementCounts.forEach((count, hash) => {
-      gearsetCounts.set(hash, Math.max(count, gearsetCounts.get(hash) ?? 0));
+      const index = hashes.indexOf(hash);
+      if (index === -1) {
+        hashes.push(hash);
+        counts.push(count);
+      } else counts[index] = Math.max(count, counts[index]);
     });
-    return gearsetCounts;
+    return { hashes, counts };
   }
 
   private getGearsetBonusRank(result: ResultDefinition): number {
-    const activeSetCounts = Array.from(this.getGearsetCounts(result).values()).filter(
-      (count) => count >= 2
-    );
+    const activeSetCounts = this.getGearsetCounts(result).counts.filter((count) => count >= 2);
     if (activeSetCounts.some((count) => count >= 4)) return 3;
     if (activeSetCounts.length >= 2) return 2;
     if (activeSetCounts.length === 1) return 1;
@@ -232,6 +264,7 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
 
   private updateShownColumns(config: BuildConfiguration): void {
     this.gearsetRequirementCounts.clear();
+    this.gearsetRanks = new WeakMap();
     config.armorRequirements.forEach((requirement) => {
       if ("gearSetHash" in requirement) {
         this.gearsetRequirementCounts.set(
@@ -266,13 +299,6 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
   }
 
   private async updateTableData(): Promise<void> {
-    this.logger.info(
-      "ResultsTableViewComponent",
-      "updateData",
-      "Table total results: " + this.results.length
-    );
-    const start = performance.now();
-
     // Clear caches and reset expanded element
     this.totalStatsCache.clear();
     this.expandedElement = null;
@@ -301,19 +327,29 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
       this.cdr.markForCheck();
     }, 0);
 
-    const end = performance.now();
-    this.logger.info(
-      "ResultsTableViewComponent",
-      "updateData",
-      `Update Table Data took ${end - start} ms`
-    );
-
     // Force change detection to update the UI immediately
     this.cdr.markForCheck();
   }
 
   getGearsetBonuses(element: ResultDefinition): GearsetBonusDisplay[] {
-    return this.gearsetBonuses.get(element) ?? [];
+    let bonuses = this.gearsetBonuses.get(element);
+    if (bonuses === undefined) {
+      if (!this.gearsetBonusesLoaded) return [];
+      bonuses = this.buildGearsetBonuses(element);
+      this.gearsetBonuses.set(element, bonuses);
+    }
+    return bonuses;
+  }
+
+  private buildGearsetBonuses(result: ResultDefinition): GearsetBonusDisplay[] {
+    const { hashes, counts } = this.getGearsetCounts(result);
+    const bonuses: GearsetBonusDisplay[] = [];
+    for (let index = 0; index < hashes.length; index++) {
+      const amount = counts[index] >= 4 ? 4 : counts[index] >= 2 ? 2 : 0;
+      const perk = amount ? this.gearsetPerks.get(`${hashes[index]}-${amount}`) : undefined;
+      if (perk) bonuses.push({ perk, requiredSetCount: amount });
+    }
+    return bonuses;
   }
 
   // The bonus objects are rebuilt on every update; tracking them keeps the icons in the DOM.
@@ -321,57 +357,48 @@ export class ResultsTableViewComponent implements OnInit, AfterViewInit, OnChang
     return `${bonus.perk.hash}-${bonus.requiredSetCount}`;
   }
 
-  // False while the bonuses of a new row are still loading, so no placeholder flashes.
-  hasLoadedGearsetBonuses(element: ResultDefinition): boolean {
-    return this.gearsetBonuses.has(element);
+  // False while perks are still loading, so no placeholder flashes.
+  hasLoadedGearsetBonuses(): boolean {
+    return this.gearsetBonusesLoaded;
   }
 
   private loadGearsetBonuses(): Promise<void> {
     const loadId = ++this.gearsetBonusLoadId;
-    const results = this.results;
-    const requestsByResult = new Map<ResultDefinition, { hash: number; amount: number }[]>();
-    const missingRequests = new Map<string, { hash: number; amount: number }>();
-
-    results.forEach((result) => {
-      const gearsetCounts = this.getGearsetCounts(result);
-
-      const requests: { hash: number; amount: number }[] = [];
-      gearsetCounts.forEach((count, hash) => {
-        if (count >= 4) requests.push({ hash, amount: 4 });
-        else if (count >= 2) requests.push({ hash, amount: 2 });
-      });
-      requests.forEach((request) => {
-        const key = `${request.hash}-${request.amount}`;
-        if (!this.gearsetPerks.has(key)) missingRequests.set(key, request);
-      });
-      requestsByResult.set(result, requests);
-    });
+    // Perks are fetched for every gearset in the results; rows only combine them when rendered.
+    const gearsetHashes = new Set<number>(this.gearsetRequirementCounts.keys());
+    for (const result of this.results) {
+      for (const item of result.items) {
+        if (item.gearSetHash != null) gearsetHashes.add(item.gearSetHash);
+      }
+    }
+    const missingRequests: { hash: number; amount: number }[] = [];
+    for (const hash of gearsetHashes) {
+      for (const amount of [2, 4]) {
+        const key = `${hash}-${amount}`;
+        if (!this.gearsetPerks.has(key) && !this.missingGearsetPerks.has(key))
+          missingRequests.push({ hash, amount });
+      }
+    }
 
     const apply = () => {
-      const bonuses = new Map<ResultDefinition, GearsetBonusDisplay[]>();
-      requestsByResult.forEach((requests, result) => {
-        bonuses.set(
-          result,
-          requests.flatMap((request) => {
-            const perk = this.gearsetPerks.get(`${request.hash}-${request.amount}`);
-            return perk ? [{ perk, requiredSetCount: request.amount }] : [];
-          })
-        );
-      });
-      this.gearsetBonuses = bonuses;
+      this.gearsetBonuses = new WeakMap();
+      this.gearsetBonusesLoaded = true;
       this.cdr.markForCheck();
     };
 
     // Known perks are applied synchronously; only unseen gearsets wait for a lookup.
-    if (missingRequests.size === 0) {
+    if (missingRequests.length === 0) {
       apply();
       return Promise.resolve();
     }
 
+    this.gearsetBonusesLoaded = false;
     return Promise.all(
-      Array.from(missingRequests.entries()).map(async ([key, request]) => {
-        const perk = await this.itemIconService.getGearsetPerkCached(request.hash, request.amount);
+      missingRequests.map(async ({ hash, amount }) => {
+        const key = `${hash}-${amount}`;
+        const perk = await this.itemIconService.getGearsetPerkCached(hash, amount);
         if (perk) this.gearsetPerks.set(key, perk);
+        else this.missingGearsetPerks.add(key);
       })
     ).then(() => {
       if (loadId === this.gearsetBonusLoadId) apply();

@@ -34,6 +34,33 @@ export const CHANGELOG_DATA: {
   entries: ChangelogEntry[];
 }[] = [
   {
+    version: "2.10.1",
+    date: "October 26, 2026",
+    clearManifest: false,
+    entries: [
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "The calculator and the armor theorizer now run their hot paths as WebAssembly, if it fails to load, the same source in JavaScript fallback is used.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Faster tuning and mod search in the calculator, including a quicker dominance check and sorting of tuning options.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Armor theorizer stat limits are now computed by a shared WebAssembly kernel.",
+      },
+      {
+        type: ChangelogEntryType.MODIFIED,
+        text: "Partial results are no longer published during the first 100 ms of a calculation, so very quick runs render the table fewer times.",
+      },
+      {
+        type: ChangelogEntryType.ADD,
+        text: "Firefox users now see a dismissible notice that Enhanced Tracking Protection can hide the real CPU core count, which lowers the automatic worker count.",
+      },
+    ],
+  },
+  {
     version: "2.10.0",
     date: "October 25, 2026",
     clearManifest: false,
@@ -93,10 +120,6 @@ export const CHANGELOG_DATA: {
       {
         type: ChangelogEntryType.MODIFIED,
         text: "The calculator stops immediately when the selected T5 targets are unreachable.",
-      },
-      {
-        type: ChangelogEntryType.MODIFIED,
-        text: "Armor is only treated as T5 when it has a 30/25/20 stat shape.",
       },
       {
         type: ChangelogEntryType.REMOVE,

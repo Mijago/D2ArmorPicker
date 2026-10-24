@@ -153,6 +153,7 @@ export class TheorizerStatLimits {
         config,
         validateOnly,
         wasmUrl: new URL("assets/highs.wasm", document.baseURI).href,
+        kernelsUrl: new URL("assets/wasm/kernels.wasm", document.baseURI).href,
       } satisfies T5LimitsRequest);
     } catch {
       this.fail("Stat limits could not be calculated. Retry to continue.");
